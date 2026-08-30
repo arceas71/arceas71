@@ -2,180 +2,675 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport"
+      content="width=device-width,
+               initial-scale=1.0,
+               maximum-scale=1.0,
+               user-scalable=no">
 
-<title>Navigation</title>
+<title>H.I.D.E.A</title>
 
 <style>
+
 * {
     box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
 }
 
-html, body {
+html,
+body {
     margin: 0;
     width: 100%;
     height: 100%;
     overflow: hidden;
     background: #ffffff;
     font-family: Arial, Helvetica, sans-serif;
-    color: #1f2937;
+    color: #14213d;
 }
 
-#screen {
+
+/* ========================================
+   SPLASH SCREEN
+======================================== */
+
+#splash {
+    position: fixed;
+    inset: 0;
+
+    background: white;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    z-index: 1000;
+
+    animation: splashOut 0.7s ease 2.4s forwards;
+}
+
+
+/* LOGO */
+
+.logo {
+    width: clamp(150px, 45vw, 260px);
+
+    opacity: 0;
+
+    transform: scale(0.75);
+
+    animation:
+        logoIn 0.8s cubic-bezier(.2,.8,.2,1) .15s forwards,
+        logoPulse 1.2s ease 1s;
+}
+
+
+/* LOGO ENTRANCE */
+
+@keyframes logoIn {
+
+    from {
+        opacity: 0;
+        transform: scale(0.75);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+}
+
+
+/* SMALL PULSE */
+
+@keyframes logoPulse {
+
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.025);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+
+}
+
+
+/* SPLASH EXIT */
+
+@keyframes splashOut {
+
+    from {
+        opacity: 1;
+    }
+
+    to {
+        opacity: 0;
+        visibility: hidden;
+    }
+
+}
+
+
+/* ========================================
+   MAIN SCREEN
+======================================== */
+
+#app {
     position: relative;
+
     width: 100vw;
     height: 100vh;
+
+    opacity: 0;
+
+    animation: appIn 0.7s ease 2.5s forwards;
 }
 
-/* Coordinates */
+
+@keyframes appIn {
+
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+
+}
+
+
+/* ========================================
+   COORDINATES
+======================================== */
 
 .coordinates {
+
     position: absolute;
+
     top: 50%;
     left: 50%;
 
-    transform: translate(-50%, -50%);
+    transform:
+        translate(-50%, -50%);
 
     text-align: center;
+
     white-space: nowrap;
 
-    font-size: clamp(12px, 2.2vw, 18px);
-    line-height: 1.7;
+    font-size:
+        clamp(12px, 2.2vw, 18px);
+
+    line-height: 1.65;
+
     font-weight: 500;
+
+    color: #202b3c;
 }
 
-/* Arrow */
 
-.arrow-container {
+/* ========================================
+   PERSON
+======================================== */
+
+.person {
+
     position: absolute;
 
-    left: 50%;
     top: 50%;
+    left: 50%;
 
-    width: clamp(35px, 7vw, 60px);
-    height: clamp(55px, 11vw, 90px);
+    width:
+        clamp(32px, 7vw, 58px);
 
-    transform: translate(-50%, 25%);
+    height:
+        clamp(58px, 13vw, 100px);
+
+    transform:
+        translate(-50%, 18%)
+        rotate(0deg);
+
     transform-origin: center;
+
+    transition:
+        transform 0.12s linear;
 }
 
-.arrow {
+
+/* HEAD */
+
+.head {
+
     position: absolute;
+
+    width: 25%;
+
+    aspect-ratio: 1;
 
     left: 50%;
     top: 0;
 
-    width: clamp(2px, .5vw, 4px);
-    height: 70%;
-
-    transform: translateX(-50%);
+    transform:
+        translateX(-50%);
 
     background: #1e5a91;
-    border-radius: 10px;
-}
 
-.arrow::before {
-    content: "";
-
-    position: absolute;
-
-    top: 0;
-    left: 50%;
-
-    transform: translateX(-50%);
-
-    border-left: clamp(8px, 1.8vw, 13px) solid transparent;
-    border-right: clamp(8px, 1.8vw, 13px) solid transparent;
-    border-bottom: clamp(15px, 3vw, 24px) solid #1e5a91;
-}
-
-.arrow-center {
-    position: absolute;
-
-    left: 50%;
-    bottom: 0;
-
-    width: clamp(7px, 1.4vw, 11px);
-    height: clamp(7px, 1.4vw, 11px);
-
-    transform: translateX(-50%);
-
-    background: #1e5a91;
     border-radius: 50%;
 }
 
-/* Direction */
 
-.direction {
+/* BODY */
+
+.body {
+
     position: absolute;
+
+    width: 34%;
+    height: 43%;
 
     left: 50%;
-    top: 50%;
+    top: 25%;
 
-    transform: translate(-50%, 95px);
+    transform:
+        translateX(-50%);
 
-    font-size: clamp(10px, 1.7vw, 14px);
-    color: #9ca3af;
+    background: #1e5a91;
+
+    border-radius:
+        40% 40% 15% 15%;
 }
 
-/* Altitude */
 
-.altitude {
+/* ARMS */
+
+.arm {
+
     position: absolute;
 
-    top: clamp(12px, 2.5vw, 25px);
-    right: clamp(12px, 2.5vw, 25px);
+    width: 10%;
+    height: 40%;
+
+    top: 29%;
+
+    background: #1e5a91;
+
+    border-radius: 10px;
+}
+
+
+.arm.left {
+
+    left: 27%;
+
+    transform:
+        rotate(10deg);
+}
+
+
+.arm.right {
+
+    right: 27%;
+
+    transform:
+        rotate(-10deg);
+}
+
+
+/* LEGS */
+
+.leg {
+
+    position: absolute;
+
+    width: 11%;
+    height: 38%;
+
+    top: 64%;
+
+    background: #1e5a91;
+
+    border-radius: 10px;
+}
+
+
+.leg.left {
+
+    left: 39%;
+
+    transform:
+        rotate(4deg);
+}
+
+
+.leg.right {
+
+    right: 39%;
+
+    transform:
+        rotate(-4deg);
+}
+
+
+/* ========================================
+   DIRECTION
+======================================== */
+
+.direction {
+
+    position: absolute;
+
+    top: 50%;
+    left: 50%;
+
+    transform:
+        translate(-50%, 95px);
+
+    color: #9ca3af;
+
+    font-size:
+        clamp(10px, 1.6vw, 14px);
+
+    white-space: nowrap;
+}
+
+
+/* ========================================
+   ALTITUDE
+======================================== */
+
+.altitude {
+
+    position: absolute;
+
+    top:
+        clamp(14px, 2.5vw, 25px);
+
+    right:
+        clamp(14px, 2.5vw, 25px);
 
     text-align: right;
 }
 
+
+.altitude-label {
+
+    font-size:
+        clamp(8px, 1.2vw, 11px);
+
+    letter-spacing: .7px;
+
+    color: #9ca3af;
+}
+
+
 .altitude-value {
-    font-size: clamp(16px, 3vw, 23px);
+
+    margin-top: 2px;
+
+    font-size:
+        clamp(16px, 3vw, 23px);
+
     font-weight: 600;
+
     color: #1e3a5f;
 }
 
-.altitude-label {
-    font-size: clamp(8px, 1.3vw, 11px);
-    color: #9ca3af;
-    margin-bottom: 2px;
-}
 
-/* Status */
+/* ========================================
+   LOCATION ERROR
+======================================== */
 
-.status {
+#error {
+
     position: absolute;
 
-    bottom: clamp(10px, 2vw, 20px);
     left: 50%;
 
-    transform: translateX(-50%);
+    bottom:
+        clamp(40px, 7vw, 65px);
 
-    font-size: clamp(8px, 1.3vw, 11px);
-    color: #c1c7cf;
+    transform:
+        translateX(-50%);
+
+    display: none;
+
+    padding:
+        9px 14px;
+
+    border:
+        1px solid #efcaca;
+
+    border-radius: 7px;
+
+    background: #fff5f5;
+
+    color: #b42318;
+
+    font-size:
+        clamp(10px, 1.5vw, 13px);
+
+    white-space: nowrap;
 }
+
+
+/* ========================================
+   STATUS
+======================================== */
+
+#status {
+
+    position: absolute;
+
+    bottom:
+        clamp(12px, 2vw, 20px);
+
+    left: 50%;
+
+    transform:
+        translateX(-50%);
+
+    color: #c1c7cf;
+
+    font-size:
+        clamp(8px, 1.2vw, 11px);
+
+    white-space: nowrap;
+}
+
+
 </style>
 </head>
 
+
 <body>
 
-<div id="screen">
+
+<!-- ========================================
+     SPLASH LOGO
+======================================== -->
+
+<div id="splash">
+
+    <svg
+        class="logo"
+        viewBox="0 0 500 570"
+        xmlns="http://www.w3.org/2000/svg"
+    >
+
+        <!-- OUTER CIRCLE -->
+
+        <circle
+            cx="250"
+            cy="225"
+            r="150"
+            fill="white"
+            stroke="#14213d"
+            stroke-width="7"
+        />
+
+
+        <!-- COMPASS MARKERS -->
+
+        <g
+            stroke="#14213d"
+            stroke-width="5"
+            stroke-linecap="round"
+        >
+
+            <line
+                x1="250"
+                y1="70"
+                x2="250"
+                y2="88"
+            />
+
+            <line
+                x1="405"
+                y1="225"
+                x2="387"
+                y2="225"
+            />
+
+            <line
+                x1="250"
+                y1="380"
+                x2="250"
+                y2="362"
+            />
+
+            <line
+                x1="95"
+                y1="225"
+                x2="113"
+                y2="225"
+            />
+
+        </g>
+
+
+        <!-- GLOBE -->
+
+        <g
+            fill="none"
+            stroke="#b7bec7"
+            stroke-width="2"
+        >
+
+            <ellipse
+                cx="250"
+                cy="285"
+                rx="105"
+                ry="35"
+            />
+
+            <ellipse
+                cx="250"
+                cy="285"
+                rx="50"
+                ry="35"
+            />
+
+            <path
+                d="M145 285 Q250 250 355 285"
+            />
+
+            <path
+                d="M150 300 Q250 330 350 300"
+            />
+
+            <path
+                d="M250 250 Q215 285 250 320"
+            />
+
+            <path
+                d="M250 250 Q285 285 250 320"
+            />
+
+        </g>
+
+
+        <!-- NAVIGATION SYMBOL -->
+
+        <path
+            d="
+                M250 125
+                L315 300
+                L250 260
+                L185 300
+                Z
+            "
+            fill="#4da9ed"
+        />
+
+        <path
+            d="
+                M250 125
+                L315 300
+                L250 260
+                Z
+            "
+            fill="#174f9c"
+        />
+
+
+        <!-- NORTH -->
+
+        <path
+            d="
+                M250 55
+                L261 92
+                L250 108
+                L239 92
+                Z
+            "
+            fill="#14213d"
+        />
+
+
+        <!-- NAME -->
+
+        <text
+            x="250"
+            y="475"
+            text-anchor="middle"
+            font-family="Arial, Helvetica, sans-serif"
+            font-size="62"
+            font-weight="500"
+            letter-spacing="10"
+            fill="#14213d"
+        >
+            H.I.D.E.A
+        </text>
+
+    </svg>
+
+</div>
+
+
+
+<!-- ========================================
+     MAIN APP
+======================================== -->
+
+<div id="app">
+
+
+    <!-- COORDINATES -->
 
     <div class="coordinates">
-        <div id="lat">--</div>
-        <div id="lon">--</div>
+
+        <div id="latitude">
+            --
+        </div>
+
+        <div id="longitude">
+            --
+        </div>
+
     </div>
 
-    <div class="arrow-container" id="arrow">
 
-        <div class="arrow"></div>
-        <div class="arrow-center"></div>
+
+    <!-- PERSON -->
+
+    <div
+        class="person"
+        id="person"
+    >
+
+        <div class="head"></div>
+
+        <div class="body"></div>
+
+        <div class="arm left"></div>
+
+        <div class="arm right"></div>
+
+        <div class="leg left"></div>
+
+        <div class="leg right"></div>
 
     </div>
 
-    <div class="direction" id="direction">
+
+
+    <!-- DIRECTION -->
+
+    <div
+        class="direction"
+        id="direction"
+    >
         --
     </div>
+
+
+
+    <!-- ALTITUDE -->
 
     <div class="altitude">
 
@@ -183,180 +678,395 @@ html, body {
             ALT
         </div>
 
-        <div class="altitude-value" id="altitude">
+        <div
+            class="altitude-value"
+            id="altitude"
+        >
             --
         </div>
 
     </div>
 
-    <div class="status" id="status">
-        Waiting for GPS...
+
+
+    <!-- ERROR -->
+
+    <div id="error">
+        Location not available
     </div>
+
+
+
+    <!-- STATUS -->
+
+    <div id="status">
+        Initializing...
+    </div>
+
 
 </div>
 
 
+
 <script>
 
-/* GPS */
+/* ========================================
+   GPS
+======================================== */
 
-if (navigator.geolocation) {
+function startGPS() {
+
+    if (!navigator.geolocation) {
+
+        showLocationError();
+
+        return;
+
+    }
+
 
     navigator.geolocation.watchPosition(
 
         function(position) {
 
-            const c = position.coords;
+            const c =
+                position.coords;
 
-            document.getElementById("lat").textContent =
-                c.latitude.toFixed(6) + "°";
 
-            document.getElementById("lon").textContent =
-                c.longitude.toFixed(6) + "°";
+            /* LATITUDE */
 
-            if (c.altitude !== null) {
+            document.getElementById(
+                "latitude"
+            ).textContent =
 
-                document.getElementById("altitude").textContent =
-                    c.altitude.toFixed(1) + " m";
+                c.latitude.toFixed(6)
+                + "°";
 
-            } else {
 
-                document.getElementById("altitude").textContent =
-                    "--";
+            /* LONGITUDE */
+
+            document.getElementById(
+                "longitude"
+            ).textContent =
+
+                c.longitude.toFixed(6)
+                + "°";
+
+
+            /* ALTITUDE */
+
+            if (
+                c.altitude !== null &&
+                Number.isFinite(c.altitude)
+            ) {
+
+                document.getElementById(
+                    "altitude"
+                ).textContent =
+
+                    c.altitude.toFixed(1)
+                    + " m";
+
             }
 
-            document.getElementById("status").textContent =
+            else {
+
+                document.getElementById(
+                    "altitude"
+                ).textContent =
+                    "--";
+
+            }
+
+
+            /* HIDE ERROR */
+
+            document.getElementById(
+                "error"
+            ).style.display =
+                "none";
+
+
+            document.getElementById(
+                "status"
+            ).textContent =
                 "GPS active";
+
         },
+
 
         function() {
 
-            document.getElementById("status").textContent =
-                "Location unavailable";
+            showLocationError();
 
         },
 
+
         {
+
             enableHighAccuracy: true,
+
             maximumAge: 1000,
-            timeout: 15000
+
+            timeout: 10000
+
         }
+
     );
 
 }
 
 
-/* Compass */
+/* ========================================
+   LOCATION ERROR
+======================================== */
+
+function showLocationError() {
+
+    document.getElementById(
+        "error"
+    ).style.display =
+        "block";
+
+
+    document.getElementById(
+        "status"
+    ).textContent =
+        "Location unavailable";
+
+}
+
+
+/* ========================================
+   COMPASS
+======================================== */
 
 function startCompass() {
 
     if (
-        typeof DeviceOrientationEvent !== "undefined" &&
-        typeof DeviceOrientationEvent.requestPermission === "function"
+        typeof DeviceOrientationEvent !==
+        "undefined" &&
+
+        typeof DeviceOrientationEvent
+            .requestPermission ===
+        "function"
     ) {
 
-        DeviceOrientationEvent.requestPermission()
-        .then(function(permission) {
+        DeviceOrientationEvent
+            .requestPermission()
 
-            if (permission === "granted") {
+            .then(
+                function(permission) {
 
-                window.addEventListener(
-                    "deviceorientation",
-                    compass,
-                    true
-                );
+                    if (
+                        permission ===
+                        "granted"
+                    ) {
 
-            }
+                        window.addEventListener(
+                            "deviceorientation",
+                            handleCompass,
+                            true
+                        );
 
-        });
+                    }
 
-    } else {
+                }
+            )
+
+            .catch(
+                function() {
+
+                    document.getElementById(
+                        "direction"
+                    ).textContent =
+                        "--";
+
+                }
+            );
+
+    }
+
+    else {
 
         window.addEventListener(
             "deviceorientationabsolute",
-            compass,
+            handleCompass,
             true
         );
 
         window.addEventListener(
             "deviceorientation",
-            compass,
+            handleCompass,
             true
         );
+
     }
+
 }
 
 
-function compass(event) {
+/* ========================================
+   COMPASS DATA
+======================================== */
+
+function handleCompass(event) {
 
     let heading;
 
-    if (event.webkitCompassHeading !== undefined) {
 
-        heading = event.webkitCompassHeading;
+    /* iPhone */
 
-    } else if (event.alpha !== null) {
+    if (
+        event.webkitCompassHeading !==
+        undefined
+    ) {
 
-        heading = 360 - event.alpha;
+        heading =
+            event.webkitCompassHeading;
 
-    } else {
+    }
+
+
+    /* Android */
+
+    else if (
+        event.alpha !== null
+    ) {
+
+        heading =
+            360 - event.alpha;
+
+    }
+
+
+    else {
 
         return;
+
     }
+
 
     heading =
         (heading + 360) % 360;
 
-    document.getElementById("arrow").style.transform =
-        "translate(-50%, 25%) rotate(" +
+
+    /* ROTATE PERSON */
+
+    document.getElementById(
+        "person"
+    ).style.transform =
+
+        "translate(-50%, 18%) " +
+        "rotate(" +
         heading +
         "deg)";
 
-    document.getElementById("direction").textContent =
-        heading.toFixed(0) +
-        "° " +
-        getDirection(heading);
+
+    /* DISPLAY DIRECTION */
+
+    document.getElementById(
+        "direction"
+    ).textContent =
+
+        heading.toFixed(0)
+        + "° "
+        + getDirection(heading);
+
 }
 
+
+/* ========================================
+   CARDINAL DIRECTION
+======================================== */
 
 function getDirection(degrees) {
 
-    if (degrees >= 337.5 || degrees < 22.5)
+    if (
+        degrees >= 337.5 ||
+        degrees < 22.5
+    ) {
+
         return "N";
 
-    if (degrees < 67.5)
+    }
+
+
+    if (degrees < 67.5) {
+
         return "NE";
 
-    if (degrees < 112.5)
+    }
+
+
+    if (degrees < 112.5) {
+
         return "E";
 
-    if (degrees < 157.5)
+    }
+
+
+    if (degrees < 157.5) {
+
         return "SE";
 
-    if (degrees < 202.5)
+    }
+
+
+    if (degrees < 202.5) {
+
         return "S";
 
-    if (degrees < 247.5)
+    }
+
+
+    if (degrees < 247.5) {
+
         return "SW";
 
-    if (degrees < 292.5)
+    }
+
+
+    if (degrees < 292.5) {
+
         return "W";
 
+    }
+
+
     return "NW";
+
 }
 
 
-/* Required for phones that ask for sensor permission */
+/* ========================================
+   START GPS
+======================================== */
+
+startGPS();
+
+
+/* ========================================
+   START COMPASS AFTER TOUCH
+======================================== */
+
+function enableCompass() {
+
+    startCompass();
+
+}
+
 
 document.addEventListener(
     "click",
-    startCompass,
+    enableCompass,
     { once: true }
 );
 
+
 document.addEventListener(
     "touchstart",
-    startCompass,
+    enableCompass,
     { once: true }
 );
 
