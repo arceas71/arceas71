@@ -5,39 +5,34 @@
 
 <meta charset="UTF-8">
 
-<meta name="viewport"
-content="width=device-width,
-initial-scale=1.0,
-maximum-scale=1.0,
-user-scalable=no,
-viewport-fit=cover">
+<meta
+    name="viewport"
+    content="width=device-width,
+             initial-scale=1,
+             maximum-scale=1,
+             user-scalable=no,
+             viewport-fit=cover">
 
 <title>H.I.D.E.A.</title>
+
 
 <style>
 
 /* ==================================================
-   COLOUR SYSTEM
+   THEME
 ================================================== */
 
 :root {
 
     --background: #D3D3D3;
+
     --primary: #282828;
-    --secondary: #282828;
-    --text: #282828;
-    --muted: #666666;
-    --globe-line: #8f8f8f;
-    --border: #aaaaaa;
-    --button-background: #D3D3D3;
 
-    --blue: #4285f4;
-    --blue-light: #4da9ed;
-    --blue-dark: #174f9c;
+    --panel:
+        rgba(255,255,255,.72);
 
-    --error: #b51f1f;
-
-    --player-color: #4285f4;
+    --map:
+        #c7c7c7;
 }
 
 
@@ -46,35 +41,29 @@ viewport-fit=cover">
     :root {
 
         --background: #282828;
+
         --primary: #D3D3D3;
-        --secondary: #D3D3D3;
-        --text: #D3D3D3;
-        --muted: #999999;
-        --globe-line: #686868;
-        --border: #555555;
-        --button-background: #282828;
 
-        --blue: #5b9df9;
-        --blue-light: #67b5f4;
-        --blue-dark: #2865b5;
+        --panel:
+            rgba(40,40,40,.82);
 
-        --error: #ff5c5c;
+        --map:
+            #333333;
     }
 }
 
 
 /* ==================================================
-   BASE
+   RESET
 ================================================== */
 
 * {
 
-    box-sizing: border-box;
+    box-sizing:
+        border-box;
 
     -webkit-tap-highlight-color:
         transparent;
-
-    user-select: none;
 }
 
 
@@ -84,6 +73,7 @@ body {
     margin: 0;
 
     width: 100%;
+
     height: 100%;
 
     overflow: hidden;
@@ -92,26 +82,12 @@ body {
         var(--background);
 
     color:
-        var(--text);
+        var(--primary);
 
     font-family:
         Arial,
         Helvetica,
         sans-serif;
-
-    transition:
-        background .25s ease,
-        color .25s ease;
-}
-
-
-body {
-
-    padding:
-        env(safe-area-inset-top)
-        env(safe-area-inset-right)
-        env(safe-area-inset-bottom)
-        env(safe-area-inset-left);
 }
 
 
@@ -264,7 +240,8 @@ body {
 
     opacity: 0;
 
-    stroke-dasharray: 500;
+    stroke-dasharray:
+        500;
 
     animation:
         linesIn
@@ -464,13 +441,21 @@ body {
 
 
 .l1 { animation-delay: 1.45s; }
+
 .l2 { animation-delay: 1.58s; }
+
 .l3 { animation-delay: 1.71s; }
+
 .l4 { animation-delay: 1.84s; }
+
 .l5 { animation-delay: 1.97s; }
+
 .l6 { animation-delay: 2.10s; }
+
 .l7 { animation-delay: 2.23s; }
+
 .l8 { animation-delay: 2.36s; }
+
 .l9 { animation-delay: 2.49s; }
 
 
@@ -539,371 +524,172 @@ body {
 
     inset: 0;
 
-    width: 100vw;
-    height: 100vh;
-
-    background:
-        var(--background);
-
-    opacity: 0;
-
-    animation:
-        appIn
-        .7s
-        ease
-        4.85s
-        forwards;
-
-    transition:
-        background .25s ease;
-}
-
-
-@keyframes appIn {
-
-    to {
-
-        opacity: 1;
-    }
-}
-
-
-/* ==================================================
-   SETUP
-================================================== */
-
-#setup {
-
-    position: fixed;
-
-    inset: 0;
-
-    z-index: 200;
-
     display: flex;
 
     flex-direction: column;
 
-    align-items: center;
-
-    justify-content: center;
-
     background:
         var(--background);
 
-    transition:
-        background .25s ease;
+    opacity: 0;
 }
 
 
-.setup-title {
-
-    font-size: 29px;
-
-    font-weight: 600;
-
-    letter-spacing: 1px;
-
-    margin-bottom: 7px;
-}
-
-
-.setup-subtitle {
-
-    color:
-        var(--muted);
-
-    font-size: 13px;
-
-    margin-bottom: 25px;
-}
-
-
-#username {
-
-    width: 280px;
-
-    height: 48px;
-
-    border:
-        1px solid
-        var(--border);
-
-    border-radius: 11px;
-
-    outline: none;
-
-    background:
-        var(--button-background);
-
-    color:
-        var(--text);
-
-    text-align: center;
-
-    font-size: 16px;
-
-    margin-bottom: 22px;
-}
-
-
-/* ==================================================
-   COLOURS
-================================================== */
-
-.colors {
-
-    display: flex;
-
-    align-items: center;
-
-    justify-content: center;
-
-    gap: 12px;
-
-    margin-bottom: 25px;
-}
-
-
-.color {
-
-    width: 27px;
-    height: 27px;
-
-    padding: 0;
-
-    border-radius: 50%;
-
-    border:
-        2px solid
-        transparent;
-
-    cursor: pointer;
-}
-
-
-.color.selected {
-
-    border-color:
-        var(--text);
-
-    transform:
-        scale(1.12);
-}
-
-
-.color1 {
-    background: #4285f4;
-}
-
-.color2 {
-    background: #e53935;
-}
-
-.color3 {
-    background: #43a047;
-}
-
-.color4 {
-    background: #8e44ad;
-}
-
-.color5 {
-    background: #f39c12;
-}
-
-.color6 {
-    background: #00acc1;
-}
-
-
-.custom-color {
+#map {
 
     position: relative;
 
-    width: 27px;
-    height: 27px;
+    flex: 1;
 
-    border-radius: 50%;
-
-    border:
-        2px solid
-        var(--muted);
-
-    display: flex;
-
-    align-items: center;
-
-    justify-content: center;
-
-    color:
-        var(--text);
-
-    font-size: 20px;
-
-    cursor: pointer;
-}
-
-
-.custom-color input {
-
-    position: absolute;
-
-    inset: 0;
-
-    width: 100%;
-    height: 100%;
-
-    opacity: 0;
-
-    cursor: pointer;
-}
-
-
-/* ==================================================
-   START BUTTON
-================================================== */
-
-#startButton {
-
-    width: 280px;
-
-    height: 48px;
-
-    border: none;
-
-    border-radius: 11px;
+    overflow: hidden;
 
     background:
-        var(--secondary);
-
-    color:
-        var(--background);
-
-    font-size: 15px;
-
-    font-weight: 600;
-
-    cursor: pointer;
-}
-
-
-#startButton:active {
-
-    transform:
-        scale(.97);
+        var(--map);
 }
 
 
 /* ==================================================
-   PLAYER NAME
+   MAP GRID
 ================================================== */
 
-.player-name {
+#map::before {
+
+    content: "";
 
     position: absolute;
 
-    left: 50%;
+    inset: -100%;
 
-    top: calc(50% - 91px);
+    background-image:
+
+        linear-gradient(
+            rgba(0,0,0,.07)
+            1px,
+            transparent 1px
+        ),
+
+        linear-gradient(
+            90deg,
+            rgba(0,0,0,.07)
+            1px,
+            transparent 1px
+        );
+
+    background-size:
+        55px 55px;
 
     transform:
-        translateX(-50%);
+        rotate(-8deg);
 
-    color:
-        var(--text);
-
-    font-size: 15px;
-
-    font-weight: 600;
-
-    white-space: nowrap;
-
-    text-align: center;
-
-    z-index: 10;
+    pointer-events:
+        none;
 }
 
 
 /* ==================================================
-   COORDINATES
+   PLAYER INFORMATION
 ================================================== */
 
-.coordinates {
+#playerInfo {
 
     position: absolute;
 
-    left: 50%;
+    top:
+        calc(
+            env(safe-area-inset-top)
+            + 18px
+        );
 
-    top: calc(50% - 58px);
-
-    transform:
-        translateX(-50%);
-
-    text-align: center;
-
-    color:
-        var(--text);
-
-    font-size: 13px;
-
-    line-height: 1.5;
-
-    font-weight: 500;
-
-    white-space: nowrap;
-
-    z-index: 9;
-}
-
-
-/* ==================================================
-   LOCATION MARKER
-================================================== */
-
-.location-marker {
-
-    position: absolute;
-
-    left: 50%;
-
-    top: 50%;
-
-    width: 56px;
-    height: 56px;
-
-    transform:
-        translate(-50%, -50%);
-}
-
-
-/* ==================================================
-   ACCURACY
-================================================== */
-
-.accuracy {
-
-    position: absolute;
-
-    inset: 0;
-
-    border-radius:
+    left:
         50%;
 
-    background:
-        color-mix(
-            in srgb,
-            var(--player-color) 6%,
-            transparent
-        );
+    transform:
+        translateX(-50%);
 
-    border:
-        1px solid
-        color-mix(
-            in srgb,
-            var(--player-color) 15%,
-            transparent
-        );
+    z-index:
+        10;
+
+    min-width:
+        190px;
+
+    padding:
+        9px 15px;
+
+    border-radius:
+        14px;
+
+    background:
+        var(--panel);
+
+    backdrop-filter:
+        blur(12px);
+
+    -webkit-backdrop-filter:
+        blur(12px);
+
+    text-align:
+        center;
+
+    box-shadow:
+        0 5px 20px
+        rgba(0,0,0,.12);
+}
+
+
+#usernameDisplay {
+
+    font-size:
+        16px;
+
+    font-weight:
+        700;
+
+    margin-bottom:
+        3px;
+}
+
+
+#coordinates {
+
+    font-size:
+        11px;
+
+    opacity:
+        .72;
+
+    white-space:
+        nowrap;
+}
+
+
+/* ==================================================
+   PLAYER
+================================================== */
+
+#player {
+
+    position: absolute;
+
+    left:
+        50%;
+
+    top:
+        50%;
+
+    width:
+        28px;
+
+    height:
+        40px;
+
+    transform:
+        translate(-50%,-50%);
+
+    z-index:
+        8;
+
+    --playerColor:
+        #1976D2;
 }
 
 
@@ -911,175 +697,95 @@ body {
    EXPLORER ARROW
 ================================================== */
 
-.heading {
+#playerArrow {
 
     position: absolute;
 
-    left: 50%;
+    left:
+        50%;
 
-    top: 3px;
+    top:
+        50%;
 
-    width: 0;
-    height: 0;
+    width:
+        0;
+
+    height:
+        0;
 
     transform:
-        translateX(-50%);
-
-    transform-origin:
-        50% 50%;
+        translate(-50%,-50%);
 
     border-left:
-        5px solid transparent;
+        7px solid transparent;
 
     border-right:
-        5px solid transparent;
+        7px solid transparent;
 
     border-bottom:
-        18px solid
-        var(--player-color);
+        25px solid
+        var(--playerColor);
 
     filter:
         drop-shadow(
-            0 1px 2px
-            rgba(0,0,0,.15)
+            0 2px 3px
+            rgba(0,0,0,.25)
         );
-
-    transition:
-        transform .12s linear;
-}
-
-
-.heading::after {
-
-    content: "";
-
-    position: absolute;
-
-    left: 50%;
-
-    top: 6px;
-
-    width: 0;
-    height: 0;
-
-    transform:
-        translateX(-50%);
-
-    border-left:
-        1.5px solid transparent;
-
-    border-right:
-        1.5px solid transparent;
-
-    border-bottom:
-        7px solid
-        var(--background);
 }
 
 
 /* ==================================================
-   DOT
+   PLAYER DOT
 ================================================== */
 
-.dot {
+#playerDot {
 
     position: absolute;
 
-    left: 50%;
+    left:
+        50%;
 
-    top: 50%;
+    top:
+        50%;
 
-    width: 11px;
-    height: 11px;
+    width:
+        6px;
+
+    height:
+        6px;
 
     transform:
-        translate(-50%, -50%);
+        translate(-50%,-50%);
 
     border-radius:
         50%;
 
     background:
-        var(--player-color);
+        var(--playerColor);
 
     border:
-        2px solid
-        var(--background);
+        1.5px solid white;
 
-    box-shadow:
-        0 1px 4px
-        rgba(0,0,0,.22);
-
-    z-index: 2;
+    z-index:
+        2;
 }
 
 
 /* ==================================================
-   ALTITUDE
+   ERROR SCREEN
 ================================================== */
 
-.altitude {
-
-    position: absolute;
-
-    top:
-        calc(
-            18px +
-            env(safe-area-inset-top)
-        );
-
-    right:
-        calc(
-            18px +
-            env(safe-area-inset-right)
-        );
-
-    text-align:
-        right;
-}
-
-
-.altitude-label {
-
-    font-size:
-        9px;
-
-    letter-spacing:
-        .9px;
-
-    color:
-        var(--muted);
-}
-
-
-.altitude-value {
-
-    margin-top:
-        2px;
-
-    font-size:
-        18px;
-
-    font-weight:
-        600;
-
-    color:
-        var(--secondary);
-}
-
-
-/* ==================================================
-   ERROR
-================================================== */
-
-#error {
+#errorScreen {
 
     position: fixed;
 
     inset: 0;
 
-    z-index: 500;
+    z-index:
+        500;
 
-    display: none;
+    display:
+        none;
 
     align-items:
         center;
@@ -1090,126 +796,175 @@ body {
     flex-direction:
         column;
 
-    background:
-        var(--background);
+    padding:
+        30px;
 
     text-align:
         center;
 
-    padding:
-        30px;
+    background:
+        var(--background);
+
+    color:
+        var(--primary);
 }
 
 
-.wifi {
+#wifiIcon {
 
-    width:
-        96px;
+    font-size:
+        88px;
 
-    height:
-        96px;
+    line-height:
+        1;
+
+    color:
+        #e53935;
 
     margin-bottom:
         22px;
 }
 
 
-#errorText {
-
-    color:
-        var(--error);
+#errorTitle {
 
     font-size:
-        30px;
+        26px;
 
     font-weight:
-        600;
+        800;
 
     margin-bottom:
-        26px;
+        10px;
 }
 
 
-.error-buttons {
+#errorText {
 
-    display:
-        flex;
-
-    flex-direction:
-        column;
-
-    gap:
-        12px;
-
-    width:
-        min(280px, 82vw);
-}
-
-
-.error-button {
-
-    width:
-        100%;
-
-    min-height:
-        50px;
-
-    padding:
-        0 16px;
-
-    border-radius:
-        12px;
-
-    border:
-        1px solid
-        var(--border);
-
-    background:
-        var(--button-background);
-
-    color:
-        var(--secondary);
+    max-width:
+        310px;
 
     font-size:
-        16px;
+        15px;
 
-    font-weight:
-        600;
+    line-height:
+        1.5;
 
-    cursor:
-        pointer;
+    opacity:
+        .75;
+
+    margin-bottom:
+        25px;
 }
 
 
-.error-button.primary {
+#errorButton {
+
+    border:
+        none;
+
+    padding:
+        14px 22px;
+
+    border-radius:
+        14px;
 
     background:
-        var(--secondary);
+        var(--primary);
 
     color:
         var(--background);
 
-    border:
-        none;
+    font-size:
+        15px;
+
+    font-weight:
+        700;
 }
 
 
-#errorHelp {
+/* ==================================================
+   COLOUR CONTROLS
+================================================== */
 
-    margin-top:
-        17px;
+#settings {
 
-    max-width:
-        300px;
+    position: absolute;
 
-    color:
-        var(--muted);
+    bottom:
+        calc(
+            env(safe-area-inset-bottom)
+            + 18px
+        );
 
-    font-size:
-        12px;
+    left:
+        50%;
 
-    line-height:
-        1.5;
+    transform:
+        translateX(-50%);
+
+    z-index:
+        20;
+
+    padding:
+        10px 14px;
+
+    border-radius:
+        16px;
+
+    background:
+        var(--panel);
+
+    backdrop-filter:
+        blur(12px);
+
+    -webkit-backdrop-filter:
+        blur(12px);
+
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    gap:
+        9px;
+}
+
+
+.color {
+
+    width:
+        22px;
+
+    height:
+        22px;
+
+    border-radius:
+        50%;
+
+    border:
+        2px solid
+        rgba(255,255,255,.8);
+}
+
+
+#customColor {
+
+    width:
+        25px;
+
+    height:
+        25px;
+
+    border:
+        none;
+
+    padding:
+        0;
+
+    background:
+        none;
 }
 
 </style>
@@ -1228,295 +983,214 @@ body {
 
 <svg
     class="logo"
-    viewBox="0 0 500 570"
-    xmlns="http://www.w3.org/2000/svg"
->
+    viewBox="0 0 500 500"
+    xmlns="http://www.w3.org/2000/svg">
 
 
-<g class="globe">
-
-    <circle
-        cx="250"
-        cy="225"
-        r="150"
-        fill="var(--background)"
+    <g
+        class="globe"
+        fill="none"
         stroke="var(--primary)"
-        stroke-width="7"
-    />
-
-</g>
+        stroke-width="5">
 
 
-<g
-    class="globeLines"
-    fill="none"
-    stroke="var(--globe-line)"
-    stroke-width="2"
->
+        <circle
+            cx="250"
+            cy="225"
+            r="105"/>
 
-    <ellipse
-        cx="250"
-        cy="285"
-        rx="105"
-        ry="35"
-    />
 
-    <ellipse
-        cx="250"
-        cy="285"
-        rx="50"
-        ry="35"
-    />
+        <g
+            class="globeLines"
+            stroke-width="1.5"
+            opacity=".55">
+
+
+            <ellipse
+                cx="250"
+                cy="225"
+                rx="105"
+                ry="25"/>
+
+
+            <ellipse
+                cx="250"
+                cy="225"
+                rx="42"
+                ry="105"/>
+
+
+            <ellipse
+                cx="250"
+                cy="225"
+                rx="18"
+                ry="105"/>
+
+
+        </g>
+
+
+        <line
+            class="cardinal"
+            x1="250"
+            y1="111"
+            x2="250"
+            y2="121"/>
+
+
+        <line
+            class="cardinal east"
+            x1="364"
+            y1="225"
+            x2="354"
+            y2="225"/>
+
+
+        <line
+            class="cardinal south"
+            x1="250"
+            y1="339"
+            x2="250"
+            y2="329"/>
+
+
+        <line
+            class="cardinal west"
+            x1="136"
+            y1="225"
+            x2="146"
+            y2="225"/>
+
+
+    </g>
+
 
     <path
-        d="M145 285 Q250 250 355 285"
-    />
-
-    <path
-        d="M150 300 Q250 330 350 300"
-    />
-
-    <path
-        d="M250 250 Q215 285 250 320"
-    />
-
-    <path
-        d="M250 250 Q285 285 250 320"
-    />
-
-</g>
-
-
-<g
-    class="cardinal east"
-    stroke-width="5"
-    stroke-linecap="round"
->
-
-    <line
-        x1="405"
-        y1="225"
-        x2="387"
-        y2="225"
-    />
-
-</g>
-
-
-<g
-    class="cardinal south"
-    stroke-width="5"
-    stroke-linecap="round"
->
-
-    <line
-        x1="250"
-        y1="380"
-        x2="250"
-        y2="362"
-    />
-
-</g>
-
-
-<g
-    class="cardinal west"
-    stroke-width="5"
-    stroke-linecap="round"
->
-
-    <line
-        x1="95"
-        y1="225"
-        x2="113"
-        y2="225"
-    />
-
-</g>
-
-
-<g class="navArrow">
-
-    <path
+        class="cardinal"
         d="
-        M250 125
-        L315 300
-        L250 260
-        L185 300
-        Z
-        "
-        fill="var(--blue-light)"
-    />
-
-    <path
-        d="
-        M250 125
-        L315 300
-        L250 260
-        Z
-        "
-        fill="var(--blue-dark)"
-    />
-
-    <path
-        d="
-        M250 55
-        L261 92
-        L250 108
-        L239 92
-        Z
-        "
+        M250 92
+        L258 111
+        L250 106
+        L242 111
+        Z"
         fill="var(--primary)"
-    />
-
-</g>
+        stroke="none"/>
 
 
-<g
-    text-anchor="middle"
-    font-family="Arial, Helvetica, sans-serif"
-    font-size="62"
-    font-weight="500"
->
+    <g class="navArrow">
+
+        <path
+            d="
+            M250 145
+            L214 285
+            L250 262
+            L286 285
+            Z"
+            fill="#4AA8F0"/>
+
+
+        <path
+            d="
+            M250 145
+            L250 262
+            L286 285
+            Z"
+            fill="#1668B5"/>
+
+    </g>
+
 
     <text
         class="letter l1"
-        x="95"
-        y="475"
-    >H</text>
+        x="110"
+        y="410"
+        font-size="30"
+        text-anchor="middle">
+        H
+    </text>
+
 
     <text
         class="letter l2"
-        x="135"
-        y="475"
-    >.</text>
+        x="142"
+        y="410"
+        font-size="30"
+        text-anchor="middle">
+        .
+    </text>
+
 
     <text
         class="letter l3"
-        x="165"
-        y="475"
-    >I</text>
+        x="168"
+        y="410"
+        font-size="30"
+        text-anchor="middle">
+        I
+    </text>
+
 
     <text
         class="letter l4"
         x="195"
-        y="475"
-    >.</text>
+        y="410"
+        font-size="30"
+        text-anchor="middle">
+        .
+    </text>
+
 
     <text
         class="letter l5"
-        x="235"
-        y="475"
-    >D</text>
+        x="226"
+        y="410"
+        font-size="30"
+        text-anchor="middle">
+        D
+    </text>
+
 
     <text
         class="letter l6"
-        x="285"
-        y="475"
-    >.</text>
+        x="260"
+        y="410"
+        font-size="30"
+        text-anchor="middle">
+        .
+    </text>
+
 
     <text
         class="letter l7"
-        x="325"
-        y="475"
-    >E</text>
+        x="292"
+        y="410"
+        font-size="30"
+        text-anchor="middle">
+        E
+    </text>
+
 
     <text
         class="letter l8"
-        x="370"
-        y="475"
-    >.</text>
+        x="326"
+        y="410"
+        font-size="30"
+        text-anchor="middle">
+        .
+    </text>
+
 
     <text
         class="letter l9"
-        x="410"
-        y="475"
-    >A</text>
+        x="358"
+        y="410"
+        font-size="30"
+        text-anchor="middle">
+        A
+    </text>
 
-</g>
 
 </svg>
-
-</div>
-
-
-<!-- ==================================================
-     SETUP
-================================================== -->
-
-<div id="setup">
-
-    <div class="setup-title">
-        H.I.D.E.A.
-    </div>
-
-    <div class="setup-subtitle">
-        Choose your explorer
-    </div>
-
-
-    <input
-        id="username"
-        type="text"
-        maxlength="16"
-        placeholder="Username"
-        autocomplete="off"
-    >
-
-
-    <div class="colors">
-
-        <button
-            class="color color1 selected"
-            data-color="#4285F4">
-        </button>
-
-        <button
-            class="color color2"
-            data-color="#E53935">
-        </button>
-
-        <button
-            class="color color3"
-            data-color="#43A047">
-        </button>
-
-        <button
-            class="color color4"
-            data-color="#8E44AD">
-        </button>
-
-        <button
-            class="color color5"
-            data-color="#F39C12">
-        </button>
-
-        <button
-            class="color color6"
-            data-color="#00ACC1">
-        </button>
-
-
-        <label
-            class="custom-color"
-            id="customColor">
-
-            +
-
-            <input
-                id="colorPicker"
-                type="color"
-                value="#4285F4"
-            >
-
-        </label>
-
-    </div>
-
-
-    <button id="startButton">
-        Continue
-    </button>
 
 </div>
 
@@ -1527,54 +1201,79 @@ body {
 
 <div id="app">
 
+    <div id="map">
 
-    <div
-        class="player-name"
-        id="playerName">
+
+        <div id="playerInfo">
+
+            <div id="usernameDisplay">
+                Player
+            </div>
+
+            <div id="coordinates">
+                Waiting for location...
+            </div>
+
+        </div>
+
+
+        <div id="player">
+
+            <div id="playerArrow"></div>
+
+            <div id="playerDot"></div>
+
+        </div>
+
+
+        <div id="settings">
+
+
+            <div
+                class="color"
+                data-color="#1976D2"
+                style="background:#1976D2">
+            </div>
+
+
+            <div
+                class="color"
+                data-color="#E53935"
+                style="background:#E53935">
+            </div>
+
+
+            <div
+                class="color"
+                data-color="#43A047"
+                style="background:#43A047">
+            </div>
+
+
+            <div
+                class="color"
+                data-color="#FB8C00"
+                style="background:#FB8C00">
+            </div>
+
+
+            <div
+                class="color"
+                data-color="#8E24AA"
+                style="background:#8E24AA">
+            </div>
+
+
+            <input
+                id="customColor"
+                type="color"
+                value="#1976D2">
+
+
+        </div>
+
+
     </div>
-
-
-    <div class="coordinates">
-
-        <div id="latitude">
-            --
-        </div>
-
-        <div id="longitude">
-            --
-        </div>
-
-    </div>
-
-
-    <div class="location-marker">
-
-        <div class="accuracy"></div>
-
-        <div
-            class="heading"
-            id="heading">
-        </div>
-
-        <div class="dot"></div>
-
-    </div>
-
-
-    <div class="altitude">
-
-        <div class="altitude-label">
-            ALT
-        </div>
-
-        <div
-            class="altitude-value"
-            id="altitude">
-            --
-        </div>
-
-    </div>
-
 
 </div>
 
@@ -1583,86 +1282,28 @@ body {
      LOCATION ERROR
 ================================================== -->
 
-<div id="error">
+<div id="errorScreen">
 
 
-<svg
-    class="wifi"
-    viewBox="0 0 100 100"
-    xmlns="http://www.w3.org/2000/svg"
->
-
-    <path
-        d="M10 35 Q50 5 90 35"
-        fill="none"
-        stroke="var(--error)"
-        stroke-width="10"
-        stroke-linecap="round"
-    />
-
-    <path
-        d="M23 52 Q50 30 77 52"
-        fill="none"
-        stroke="var(--error)"
-        stroke-width="10"
-        stroke-linecap="round"
-    />
-
-    <path
-        d="M37 69 Q50 58 63 69"
-        fill="none"
-        stroke="var(--error)"
-        stroke-width="10"
-        stroke-linecap="round"
-    />
-
-    <circle
-        cx="50"
-        cy="84"
-        r="6"
-        fill="var(--error)"
-    />
-
-    <line
-        x1="18"
-        y1="15"
-        x2="82"
-        y2="85"
-        stroke="var(--error)"
-        stroke-width="9"
-        stroke-linecap="round"
-    />
-
-</svg>
+    <div id="wifiIcon">
+        ◔
+    </div>
 
 
-<div id="errorText">
-    Location unavailable
-</div>
+    <div id="errorTitle">
+        Location unavailable
+    </div>
 
 
-<div class="error-buttons">
+    <div id="errorText">
+        H.I.D.E.A. needs your phone's
+        location to place you on the map.
+    </div>
 
-    <button
-        class="error-button primary"
-        id="allowButton">
-        Allow Location
-    </button>
 
-    <button
-        class="error-button"
-        id="settingsButton">
+    <button id="errorButton">
         Open Location Settings
     </button>
-
-</div>
-
-
-<div id="errorHelp">
-    Location permission is required
-    for H.I.D.E.A. to determine your
-    position.
-</div>
 
 
 </div>
@@ -1671,203 +1312,115 @@ body {
 <script>
 
 /* ==================================================
-   VARIABLES
-================================================== */
-
-let locationWatch = null;
-
-let compassStarted = false;
-
-let selectedColor =
-    localStorage.getItem(
-        "hidea_color"
-    ) || "#4285F4";
-
-
-/* ==================================================
    ELEMENTS
 ================================================== */
 
-const setup =
-    document.getElementById("setup");
+const splash =
+    document.getElementById("splash");
 
 const app =
     document.getElementById("app");
 
-const error =
-    document.getElementById("error");
+const player =
+    document.getElementById("player");
 
-const username =
-    document.getElementById("username");
+const playerArrow =
+    document.getElementById("playerArrow");
 
-const playerName =
-    document.getElementById("playerName");
+const coordinates =
+    document.getElementById("coordinates");
 
-const heading =
-    document.getElementById("heading");
+const errorScreen =
+    document.getElementById("errorScreen");
 
 
 /* ==================================================
-   LOAD SAVED USERNAME
+   USERNAME
 ================================================== */
 
-const savedUsername =
+let username =
     localStorage.getItem(
         "hidea_username"
     );
 
 
-if (savedUsername) {
+if (!username) {
 
-    username.value =
-        savedUsername;
+    username =
+        "Player";
 
-    playerName.textContent =
-        savedUsername;
-
-    setup.style.display =
-        "none";
 }
 
 
-/* ==================================================
-   APPLY SAVED COLOUR
-================================================== */
-
-function applyColor() {
-
-    document.documentElement
-        .style
-        .setProperty(
-            "--player-color",
-            selectedColor
-        );
-
-
-    document
-        .querySelectorAll(".color")
-        .forEach(
-            button => {
-
-                button.classList.toggle(
-                    "selected",
-
-                    button.dataset.color
-                        .toUpperCase()
-                        ===
-                    selectedColor
-                        .toUpperCase()
-                );
-
-            }
-        );
-
-
-    document
-        .getElementById("customColor")
-        .style
-        .borderColor =
-            selectedColor;
-}
-
-
-applyColor();
-
-
-/* ==================================================
-   PRESET COLOURS
-================================================== */
-
 document
-    .querySelectorAll(".color")
-    .forEach(
-        button => {
-
-            button.addEventListener(
-                "click",
-                function() {
-
-                    selectedColor =
-                        this.dataset.color;
-
-                    localStorage.setItem(
-                        "hidea_color",
-                        selectedColor
-                    );
-
-                    applyColor();
-
-                }
-            );
-
-        }
-    );
+.getElementById("usernameDisplay")
+.textContent =
+    username;
 
 
 /* ==================================================
-   CUSTOM COLOUR
+   LOCATION
+   IMPORTANT:
+   THIS DOES NOT RUN DURING SPLASH.
 ================================================== */
 
-document
-    .getElementById("colorPicker")
-    .addEventListener(
-        "input",
-        function() {
+function requestLocation() {
 
-            selectedColor =
-                this.value.toUpperCase();
+    if (!navigator.geolocation) {
 
-            localStorage.setItem(
-                "hidea_color",
-                selectedColor
-            );
+        showLocationError();
 
-            applyColor();
-
-        }
-    );
+        return;
+    }
 
 
-/* ==================================================
-   START BUTTON
-================================================== */
+    navigator.geolocation.watchPosition(
 
-document
-    .getElementById("startButton")
-    .addEventListener(
-        "click",
-        function() {
+        function(position) {
 
-            const name =
-                username.value.trim();
+            const lat =
+                position.coords.latitude;
+
+            const lon =
+                position.coords.longitude;
 
 
-            if (!name) {
-
-                username.focus();
-
-                return;
-            }
-
-
-            localStorage.setItem(
-                "hidea_username",
-                name
-            );
+            coordinates.textContent =
+                lat.toFixed(6) +
+                "°, " +
+                lon.toFixed(6) +
+                "°";
 
 
-            playerName.textContent =
-                name;
-
-
-            setup.style.display =
+            errorScreen.style.display =
                 "none";
 
+        },
 
-            requestLocation();
+
+        function(error) {
+
+            showLocationError();
+
+        },
+
+
+        {
+
+            enableHighAccuracy:
+                true,
+
+            maximumAge:
+                1000,
+
+            timeout:
+                10000
 
         }
+
     );
+
+}
 
 
 /* ==================================================
@@ -1876,405 +1429,205 @@ document
 
 function showLocationError() {
 
-    error.style.display =
+    errorScreen.style.display =
         "flex";
-}
 
-
-function hideLocationError() {
-
-    error.style.display =
-        "none";
 }
 
 
 /* ==================================================
-   UPDATE LOCATION
+   LOCATION SETTINGS
 ================================================== */
 
-function updateLocation(position) {
-
-    const c =
-        position.coords;
-
-
-    document.getElementById(
-        "latitude"
-    ).textContent =
-
-        c.latitude.toFixed(6)
-        + "°";
-
-
-    document.getElementById(
-        "longitude"
-    ).textContent =
-
-        c.longitude.toFixed(6)
-        + "°";
-
-
-    if (
-        c.altitude !== null
-        &&
-        Number.isFinite(
-            c.altitude
-        )
-    ) {
-
-        document.getElementById(
-            "altitude"
-        ).textContent =
-
-            c.altitude.toFixed(1)
-            + " m";
-
-    }
-
-    else {
-
-        document.getElementById(
-            "altitude"
-        ).textContent =
-            "--";
-
-    }
-
-
-    hideLocationError();
-}
-
-
-/* ==================================================
-   LOCATION WATCH
-================================================== */
-
-function startLocationWatch() {
-
-    if (
-        locationWatch !== null
-    ) {
-
-        navigator.geolocation
-            .clearWatch(
-                locationWatch
-            );
-
-    }
-
-
-    locationWatch =
-        navigator.geolocation
-            .watchPosition(
-
-                updateLocation,
-
-                function() {
-
-                    showLocationError();
-
-                },
-
-                {
-
-                    enableHighAccuracy:
-                        true,
-
-                    maximumAge:
-                        1000,
-
-                    timeout:
-                        15000
-
-                }
-
-            );
-}
-
-
-/* ==================================================
-   REQUEST LOCATION
-================================================== */
-
-function requestLocation() {
-
-    if (
-        !navigator.geolocation
-    ) {
-
-        showLocationError();
-
-        return;
-    }
-
-
-    navigator.geolocation
-        .getCurrentPosition(
-
-            function(position) {
-
-                updateLocation(
-                    position
-                );
-
-                startLocationWatch();
-
-                startCompass();
-
-            },
-
-            function() {
-
-                showLocationError();
-
-            },
-
-            {
-
-                enableHighAccuracy:
-                    true,
-
-                maximumAge:
-                    0,
-
-                timeout:
-                    15000
-
-            }
-
-        );
-}
-
-
-/* ==================================================
-   ANDROID LOCATION SETTINGS
-================================================== */
-
-function openLocationSettings() {
-
-    const intent =
-        "intent://settings/location" +
-        "#Intent;" +
-        "scheme=android-app;" +
-        "package=com.android.settings;" +
-        "end";
-
-
-    try {
+document
+.getElementById("errorButton")
+.addEventListener(
+    "click",
+    function() {
 
         window.location.href =
-            intent;
+            "intent:#Intent;" +
+            "action=android.settings.LOCATION_SOURCE_SETTINGS;" +
+            "end";
 
     }
-
-    catch (e) {
-
-        requestLocation();
-
-    }
-}
+);
 
 
 /* ==================================================
-   COMPASS
+   START APP AFTER SPLASH
 ================================================== */
 
-function handleCompass(event) {
-
-    let direction;
-
-
-    if (
-        event.webkitCompassHeading
-        !== undefined
-    ) {
-
-        direction =
-            event.webkitCompassHeading;
-
-    }
-
-    else if (
-        event.alpha !== null
-    ) {
-
-        direction =
-            360 - event.alpha;
-
-    }
-
-    else {
-
-        return;
-
-    }
-
-
-    direction =
-        (direction + 360) % 360;
-
-
-    heading.style.transform =
-
-        "translateX(-50%) rotate("
-        +
-        direction
-        +
-        "deg)";
-}
-
-
-/* ==================================================
-   START COMPASS
-================================================== */
-
-function startCompass() {
-
-    if (
-        compassStarted
-    ) {
-
-        return;
-    }
-
-
-    compassStarted = true;
-
-
-    if (
-
-        typeof DeviceOrientationEvent
-        !== "undefined"
-
-        &&
-
-        typeof DeviceOrientationEvent
-            .requestPermission
-        === "function"
-
-    ) {
-
-        DeviceOrientationEvent
-            .requestPermission()
-            .then(
-
-                function(permission) {
-
-                    if (
-                        permission ===
-                        "granted"
-                    ) {
-
-                        window
-                            .addEventListener(
-                                "deviceorientation",
-                                handleCompass,
-                                true
-                            );
-
-                    }
-
-                }
-
-            )
-            .catch(
-                function() {}
-            );
-
-    }
-
-    else {
-
-        window
-            .addEventListener(
-                "deviceorientationabsolute",
-                handleCompass,
-                true
-            );
-
-
-        window
-            .addEventListener(
-                "deviceorientation",
-                handleCompass,
-                true
-            );
-
-    }
-}
-
-
-/* ==================================================
-   ALLOW LOCATION
-================================================== */
-
-document
-    .getElementById("allowButton")
-    .addEventListener(
-        "click",
-        function() {
-
-            requestLocation();
-
-        }
-    );
-
-
-/* ==================================================
-   SETTINGS
-================================================== */
-
-document
-    .getElementById("settingsButton")
-    .addEventListener(
-        "click",
-        function() {
-
-            openLocationSettings();
-
-        }
-    );
-
-
-/* ==================================================
-   COMPASS TOUCH FALLBACK
-================================================== */
-
-document.addEventListener(
-
-    "touchstart",
+setTimeout(
 
     function() {
 
-        startCompass();
+        /*
+           Splash is now finished.
+        */
+
+        app.style.opacity =
+            "1";
+
+
+        /*
+           ONLY NOW do we ask for
+           location access.
+        */
+
+        requestLocation();
 
     },
 
-    {
+    5000
 
-        once: true,
+);
 
-        passive: true
+
+/* ==================================================
+   PLAYER COLOUR
+================================================== */
+
+function setPlayerColor(color) {
+
+    player.style.setProperty(
+        "--playerColor",
+        color
+    );
+
+
+    localStorage.setItem(
+        "hidea_color",
+        color
+    );
+
+}
+
+
+const savedColor =
+    localStorage.getItem(
+        "hidea_color"
+    );
+
+
+if (savedColor) {
+
+    setPlayerColor(
+        savedColor
+    );
+
+}
+
+
+document
+.querySelectorAll(".color")
+.forEach(
+
+    function(button) {
+
+        button.addEventListener(
+            "click",
+            function() {
+
+                setPlayerColor(
+                    button.dataset.color
+                );
+
+            }
+        );
 
     }
 
 );
 
 
+document
+.getElementById("customColor")
+.addEventListener(
+    "input",
+    function(event) {
+
+        setPlayerColor(
+            event.target.value
+        );
+
+    }
+);
+
+
 /* ==================================================
-   AUTO START FOR RETURNING USERS
+   PHONE ORIENTATION
 ================================================== */
 
-if (savedUsername) {
+function updateHeading(event) {
 
-    setTimeout(
-        function() {
+    let heading =
+        null;
 
-            requestLocation();
 
-        },
-        50
+    if (
+        typeof event.webkitCompassHeading
+        === "number"
+    ) {
+
+        heading =
+            event.webkitCompassHeading;
+
+    }
+
+
+    else if (
+        typeof event.alpha
+        === "number"
+    ) {
+
+        heading =
+            360 - event.alpha;
+
+    }
+
+
+    if (heading === null)
+        return;
+
+
+    playerArrow.style.transform =
+        "translate(-50%, -50%) " +
+        "rotate(" +
+        heading +
+        "deg)";
+
+}
+
+
+/* ==================================================
+   ORIENTATION
+================================================== */
+
+function startOrientation() {
+
+    window.addEventListener(
+        "deviceorientation",
+        updateHeading,
+        true
     );
+
+}
+
+
+startOrientation();
+
+
+/* ==================================================
+   SAVE COLOUR
+================================================== */
+
+if (!savedColor) {
+
+    setPlayerColor(
+        "#1976D2"
+    );
+
 }
 
 </script>
