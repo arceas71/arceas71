@@ -6,18 +6,14 @@
 <meta charset="UTF-8">
 
 <meta name="viewport"
-      content="width=device-width,
-               initial-scale=1.0,
-               maximum-scale=1.0,
-               user-scalable=no">
+content="width=device-width,
+initial-scale=1.0,
+maximum-scale=1.0,
+user-scalable=no">
 
 <title>H.I.D.E.A.</title>
 
 <style>
-
-/* ==================================================
-   BASIC PHONE LAYOUT
-================================================== */
 
 * {
     box-sizing: border-box;
@@ -27,75 +23,79 @@
 
 html,
 body {
-
     margin: 0;
-
     width: 100%;
     height: 100%;
-
     overflow: hidden;
-
-    background: #ffffff;
-
-    font-family:
-        Arial,
-        Helvetica,
-        sans-serif;
+    background: white;
+    font-family: Arial, Helvetica, sans-serif;
 }
 
 
-/* ==================================================
-   SPLASH SCREEN
-================================================== */
+/* ================================
+   SPLASH
+================================ */
 
 #splash {
-
     position: fixed;
-
     inset: 0;
-
     z-index: 1000;
-
-    background: #ffffff;
+    background: white;
 
     display: flex;
-
     align-items: center;
-
     justify-content: center;
 
     animation:
         splashOut
-        0.7s
+        .7s
         ease
-        4.4s
+        4.8s
         forwards;
 }
 
 
+/* WHOLE LOGO */
+
 .logo {
-
     width: 72vw;
-
     max-width: 300px;
-
     overflow: visible;
+
+    animation:
+        logoZoomOut
+        .8s
+        cubic-bezier(.16,1,.3,1)
+        3.1s
+        forwards;
 }
 
 
-/* ==================================================
-   GLOBE ANIMATION
-================================================== */
+/* Whole logo zooms out after
+   all the individual animations */
+
+@keyframes logoZoomOut {
+
+    0% {
+        transform: scale(1);
+    }
+
+    100% {
+        transform: scale(.72);
+    }
+}
+
+
+/* ================================
+   GLOBE
+================================ */
 
 .globe {
-
     opacity: 0;
 
-    transform-origin:
-        250px 225px;
+    transform-origin: 250px 225px;
 
     animation:
-
         globeIn
         1s
         cubic-bezier(.16,1,.3,1)
@@ -113,7 +113,6 @@ body {
 @keyframes globeIn {
 
     0% {
-
         opacity: 0;
 
         transform:
@@ -122,7 +121,6 @@ body {
     }
 
     70% {
-
         opacity: 1;
 
         transform:
@@ -131,7 +129,6 @@ body {
     }
 
     100% {
-
         opacity: 1;
 
         transform:
@@ -145,22 +142,20 @@ body {
 
     0%,
     100% {
-
         transform:
             translateY(0);
     }
 
     50% {
-
         transform:
             translateY(-4px);
     }
 }
 
 
-/* ==================================================
+/* ================================
    GLOBE LINES
-================================================== */
+================================ */
 
 .globeLines {
 
@@ -169,7 +164,6 @@ body {
     stroke-dasharray: 500;
 
     animation:
-
         linesIn
         .8s
         ease
@@ -181,34 +175,82 @@ body {
 @keyframes linesIn {
 
     from {
-
         opacity: 0;
-
         stroke-dashoffset: 500;
     }
 
     to {
-
         opacity: 1;
-
         stroke-dashoffset: 0;
     }
 }
 
 
-/* ==================================================
+/* ================================
+   CARDINAL DIRECTIONS
+================================ */
+
+.cardinal {
+
+    opacity: 0;
+
+    transform-origin: center;
+
+    animation:
+        cardinalIn
+        .65s
+        cubic-bezier(.16,1,.3,1)
+        forwards;
+}
+
+
+.cardinal.north {
+    animation-delay: .95s;
+}
+
+.cardinal.east {
+    animation-delay: 1.08s;
+}
+
+.cardinal.south {
+    animation-delay: 1.21s;
+}
+
+.cardinal.west {
+    animation-delay: 1.34s;
+}
+
+
+@keyframes cardinalIn {
+
+    0% {
+        opacity: 0;
+        transform: scale(.3);
+    }
+
+    70% {
+        opacity: 1;
+        transform: scale(1.12);
+    }
+
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+
+/* ================================
    NAVIGATION ARROW
-================================================== */
+================================ */
 
 .navArrow {
 
     opacity: 0;
 
-    transform-origin:
-        250px 210px;
+    transform-origin: 250px 210px;
 
     animation:
-
         arrowIn
         .8s
         cubic-bezier(.16,1,.3,1)
@@ -226,7 +268,6 @@ body {
 @keyframes arrowIn {
 
     0% {
-
         opacity: 0;
 
         transform:
@@ -235,7 +276,6 @@ body {
     }
 
     70% {
-
         opacity: 1;
 
         transform:
@@ -244,7 +284,6 @@ body {
     }
 
     100% {
-
         opacity: 1;
 
         transform:
@@ -258,32 +297,28 @@ body {
 
     0%,
     100% {
-
         transform:
             translateY(0);
     }
 
     50% {
-
         transform:
             translateY(-5px);
     }
 }
 
 
-/* ==================================================
-   LETTERS
-================================================== */
+/* ================================
+   H.I.D.E.A. TEXT
+================================ */
 
 .letter {
 
     opacity: 0;
 
-    filter:
-        blur(7px);
+    filter: blur(7px);
 
     animation:
-
         letterFloatIn
         .9s
         cubic-bezier(.16,1,.3,1)
@@ -292,50 +327,48 @@ body {
 
 
 .l1 {
-    animation-delay: 1.25s;
+    animation-delay: 1.45s;
 }
 
 .l2 {
-    animation-delay: 1.38s;
+    animation-delay: 1.58s;
 }
 
 .l3 {
-    animation-delay: 1.51s;
+    animation-delay: 1.71s;
 }
 
 .l4 {
-    animation-delay: 1.64s;
+    animation-delay: 1.84s;
 }
 
 .l5 {
-    animation-delay: 1.77s;
+    animation-delay: 1.97s;
 }
 
 .l6 {
-    animation-delay: 1.90s;
+    animation-delay: 2.10s;
 }
 
 .l7 {
-    animation-delay: 2.03s;
+    animation-delay: 2.23s;
 }
 
 .l8 {
-    animation-delay: 2.16s;
+    animation-delay: 2.36s;
 }
 
 .l9 {
-    animation-delay: 2.29s;
+    animation-delay: 2.49s;
 }
 
 
 @keyframes letterFloatIn {
 
     0% {
-
         opacity: 0;
 
-        filter:
-            blur(7px);
+        filter: blur(7px);
 
         transform:
             translateY(20px)
@@ -343,11 +376,9 @@ body {
     }
 
     55% {
-
         opacity: 1;
 
-        filter:
-            blur(1px);
+        filter: blur(1px);
 
         transform:
             translateY(-4px)
@@ -355,11 +386,9 @@ body {
     }
 
     100% {
-
         opacity: 1;
 
-        filter:
-            blur(0);
+        filter: blur(0);
 
         transform:
             translateY(0)
@@ -368,24 +397,22 @@ body {
 }
 
 
-/* ==================================================
+/* ================================
    SPLASH EXIT
-================================================== */
+================================ */
 
 @keyframes splashOut {
 
     to {
-
         opacity: 0;
-
         visibility: hidden;
     }
 }
 
 
-/* ==================================================
+/* ================================
    MAIN APP
-================================================== */
+================================ */
 
 #app {
 
@@ -394,16 +421,15 @@ body {
     width: 100vw;
     height: 100vh;
 
-    background: #ffffff;
+    background: white;
 
     opacity: 0;
 
     animation:
-
         appIn
         .7s
         ease
-        4.45s
+        4.85s
         forwards;
 }
 
@@ -411,22 +437,20 @@ body {
 @keyframes appIn {
 
     to {
-
         opacity: 1;
     }
 }
 
 
-/* ==================================================
+/* ================================
    COORDINATES
-================================================== */
+================================ */
 
 .coordinates {
 
     position: absolute;
 
     left: 50%;
-
     top: 50%;
 
     transform:
@@ -446,30 +470,24 @@ body {
 }
 
 
-/* ==================================================
-   LOCATION INDICATOR
-================================================== */
+/* ================================
+   LOCATION MARKER
+================================ */
 
 .location-marker {
 
     position: absolute;
 
     left: 50%;
-
     top: 50%;
 
     width: 64px;
-
     height: 64px;
 
     transform:
         translate(-50%, -50%);
 }
 
-
-/* ==================================================
-   ACCURACY CIRCLE
-================================================== */
 
 .accuracy {
 
@@ -488,27 +506,24 @@ body {
 }
 
 
-/* ==================================================
+/* ================================
    DIRECTION TRIANGLE
-================================================== */
+================================ */
 
 .heading {
 
     position: absolute;
 
     left: 50%;
-
     top: 4px;
 
     width: 0;
-
     height: 0;
 
     transform:
         translateX(-50%);
 
-    transform-origin:
-        50% 50%;
+    transform-origin: 50% 50%;
 
     border-left:
         6px solid transparent;
@@ -530,10 +545,6 @@ body {
 }
 
 
-/* ==================================================
-   TRIANGLE CENTER
-================================================== */
-
 .heading::after {
 
     content: "";
@@ -541,11 +552,9 @@ body {
     position: absolute;
 
     left: 50%;
-
     top: 7px;
 
     width: 0;
-
     height: 0;
 
     transform:
@@ -562,20 +571,18 @@ body {
 }
 
 
-/* ==================================================
-   BLUE LOCATION DOT
-================================================== */
+/* ================================
+   BLUE DOT
+================================ */
 
 .dot {
 
     position: absolute;
 
     left: 50%;
-
     top: 50%;
 
     width: 13px;
-
     height: 13px;
 
     transform:
@@ -597,16 +604,15 @@ body {
 }
 
 
-/* ==================================================
+/* ================================
    ALTITUDE
-================================================== */
+================================ */
 
 .altitude {
 
     position: absolute;
 
     top: 18px;
-
     right: 18px;
 
     text-align: right;
@@ -635,9 +641,9 @@ body {
 }
 
 
-/* ==================================================
-   LOCATION ERROR
-================================================== */
+/* ================================
+   ERROR SCREEN
+================================ */
 
 #error {
 
@@ -650,36 +656,119 @@ body {
     display: none;
 
     align-items: center;
-
     justify-content: center;
 
     flex-direction: column;
 
-    background: #ffffff;
+    background: white;
 
     text-align: center;
+
+    padding: 30px;
 }
 
 
 .wifi {
 
     width: 100px;
-
     height: 100px;
 
-    margin-bottom: 25px;
+    margin-bottom: 22px;
 }
 
 
 #errorText {
 
-    color:
-        #c62828;
+    color: #c62828;
 
-    font-size:
-        32px;
+    font-size: 30px;
 
     font-weight: 600;
+
+    margin-bottom: 28px;
+}
+
+
+/* ================================
+   ERROR BUTTONS
+================================ */
+
+.error-buttons {
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 12px;
+
+    width:
+        min(280px, 80vw);
+}
+
+
+.error-button {
+
+    width: 100%;
+
+    min-height: 48px;
+
+    border-radius: 12px;
+
+    border:
+        1px solid #d8dee8;
+
+    background: white;
+
+    color: #1e3a5f;
+
+    font-size: 16px;
+
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition:
+        transform .12s,
+        background .12s;
+}
+
+
+.error-button:active {
+
+    transform:
+        scale(.97);
+
+    background:
+        #f3f6fa;
+}
+
+
+.error-button.primary {
+
+    background:
+        #1e3a5f;
+
+    color: white;
+
+    border: none;
+}
+
+
+/* ================================
+   ERROR HELP
+================================ */
+
+#errorHelp {
+
+    margin-top: 18px;
+
+    max-width: 300px;
+
+    color: #8b95a5;
+
+    font-size: 12px;
+
+    line-height: 1.5;
 }
 
 </style>
@@ -691,7 +780,7 @@ body {
 
 
 <!-- ==================================================
-     SPLASH
+     SPLASH SCREEN
 ================================================== -->
 
 <div id="splash">
@@ -699,191 +788,150 @@ body {
 
 <svg
     class="logo"
-
     viewBox="0 0 500 570"
-
     xmlns="http://www.w3.org/2000/svg"
 >
 
 
-<!-- Globe -->
+<!-- GLOBE -->
 
 <g class="globe">
 
     <circle
-
         cx="250"
-
         cy="225"
-
         r="150"
-
         fill="white"
-
         stroke="#14213d"
-
         stroke-width="7"
-
     />
 
 </g>
 
 
-<!-- Globe lines -->
+<!-- GLOBE LINES -->
 
 <g
-
     class="globeLines"
-
     fill="none"
-
     stroke="#b7bec7"
-
     stroke-width="2"
 >
 
-
     <ellipse
-
         cx="250"
-
         cy="285"
-
         rx="105"
-
         ry="35"
-
     />
-
 
     <ellipse
-
         cx="250"
-
         cy="285"
-
         rx="50"
-
         ry="35"
-
     />
 
-
     <path
-
-        d="
-        M145 285
-        Q250 250 355 285
-        "
-
+        d="M145 285 Q250 250 355 285"
     />
 
-
     <path
-
-        d="
-        M150 300
-        Q250 330 350 300
-        "
-
+        d="M150 300 Q250 330 350 300"
     />
 
-
     <path
-
-        d="
-        M250 250
-        Q215 285 250 320
-        "
-
+        d="M250 250 Q215 285 250 320"
     />
 
-
     <path
-
-        d="
-        M250 250
-        Q285 285 250 320
-        "
-
+        d="M250 250 Q285 285 250 320"
     />
 
 </g>
 
 
-<!-- Cardinal marks -->
+<!-- NORTH -->
 
 <g
-
+    class="cardinal north"
     stroke="#14213d"
-
     stroke-width="5"
-
     stroke-linecap="round"
 >
 
-
     <line
-
         x1="250"
-
         y1="70"
-
         x2="250"
-
         y2="88"
-
-    />
-
-
-    <line
-
-        x1="405"
-
-        y1="225"
-
-        x2="387"
-
-        y2="225"
-
-    />
-
-
-    <line
-
-        x1="250"
-
-        y1="380"
-
-        x2="250"
-
-        y2="362"
-
-    />
-
-
-    <line
-
-        x1="95"
-
-        y1="225"
-
-        x2="113"
-
-        y2="225"
-
     />
 
 </g>
 
 
-<!-- Navigation arrow -->
+<!-- EAST -->
+
+<g
+    class="cardinal east"
+    stroke="#14213d"
+    stroke-width="5"
+    stroke-linecap="round"
+>
+
+    <line
+        x1="405"
+        y1="225"
+        x2="387"
+        y2="225"
+    />
+
+</g>
+
+
+<!-- SOUTH -->
+
+<g
+    class="cardinal south"
+    stroke="#14213d"
+    stroke-width="5"
+    stroke-linecap="round"
+>
+
+    <line
+        x1="250"
+        y1="380"
+        x2="250"
+        y2="362"
+    />
+
+</g>
+
+
+<!-- WEST -->
+
+<g
+    class="cardinal west"
+    stroke="#14213d"
+    stroke-width="5"
+    stroke-linecap="round"
+>
+
+    <line
+        x1="95"
+        y1="225"
+        x2="113"
+        y2="225"
+    />
+
+</g>
+
+
+<!-- NAVIGATION ARROW -->
 
 <g class="navArrow">
 
-
     <path
-
         d="
         M250 125
         L315 300
@@ -891,28 +939,20 @@ body {
         L185 300
         Z
         "
-
         fill="#4da9ed"
-
     />
 
-
     <path
-
         d="
         M250 125
         L315 300
         L250 260
         Z
         "
-
         fill="#174f9c"
-
     />
 
-
     <path
-
         d="
         M250 55
         L261 92
@@ -920,112 +960,75 @@ body {
         L239 92
         Z
         "
-
         fill="#14213d"
-
     />
 
 </g>
 
 
-<!-- ==================================================
-     H.I.D.E.A.
-================================================== -->
+<!-- H.I.D.E.A. -->
 
 <g
-
     text-anchor="middle"
-
     font-family="Arial, Helvetica, sans-serif"
-
     font-size="62"
-
     font-weight="500"
-
     fill="#14213d"
 >
-
 
     <text
         class="letter l1"
         x="95"
         y="475"
-    >
-        H
-    </text>
-
+    >H</text>
 
     <text
         class="letter l2"
         x="135"
         y="475"
-    >
-        .
-    </text>
-
+    >.</text>
 
     <text
         class="letter l3"
         x="165"
         y="475"
-    >
-        I
-    </text>
-
+    >I</text>
 
     <text
         class="letter l4"
         x="195"
         y="475"
-    >
-        .
-    </text>
-
+    >.</text>
 
     <text
         class="letter l5"
         x="235"
         y="475"
-    >
-        D
-    </text>
-
+    >D</text>
 
     <text
         class="letter l6"
         x="285"
         y="475"
-    >
-        .
-    </text>
-
+    >.</text>
 
     <text
         class="letter l7"
         x="325"
         y="475"
-    >
-        E
-    </text>
-
+    >E</text>
 
     <text
         class="letter l8"
         x="370"
         y="475"
-    >
-        .
-    </text>
-
+    >.</text>
 
     <text
         class="letter l9"
         x="410"
         y="475"
-    >
-        A
-    </text>
-
+    >A</text>
 
 </g>
 
@@ -1043,8 +1046,6 @@ body {
 <div id="app">
 
 
-<!-- Coordinates -->
-
 <div class="coordinates">
 
     <div id="latitude">
@@ -1057,8 +1058,6 @@ body {
 
 </div>
 
-
-<!-- Location indicator -->
 
 <div class="location-marker">
 
@@ -1073,8 +1072,6 @@ body {
 
 </div>
 
-
-<!-- Altitude -->
 
 <div class="altitude">
 
@@ -1092,112 +1089,99 @@ body {
 </div>
 
 
+
 <!-- ==================================================
-     ERROR SCREEN
+     LOCATION ERROR
 ================================================== -->
 
 <div id="error">
 
 
 <svg
-
     class="wifi"
-
     viewBox="0 0 100 100"
-
     xmlns="http://www.w3.org/2000/svg"
 >
 
-
     <path
-
         d="M10 35 Q50 5 90 35"
-
         fill="none"
-
         stroke="#d62828"
-
         stroke-width="10"
-
         stroke-linecap="round"
-
     />
 
-
     <path
-
         d="M23 52 Q50 30 77 52"
-
         fill="none"
-
         stroke="#d62828"
-
         stroke-width="10"
-
         stroke-linecap="round"
-
     />
-
 
     <path
-
         d="M37 69 Q50 58 63 69"
-
         fill="none"
-
         stroke="#d62828"
-
         stroke-width="10"
-
         stroke-linecap="round"
-
     />
-
 
     <circle
-
         cx="50"
-
         cy="84"
-
         r="6"
-
         fill="#d62828"
-
     />
-
 
     <line
-
         x1="18"
-
         y1="15"
-
         x2="82"
-
         y2="85"
-
         stroke="#d62828"
-
         stroke-width="9"
-
         stroke-linecap="round"
-
     />
-
 
 </svg>
 
 
 <div id="errorText">
-
     Location unavailable
+</div>
+
+
+<div class="error-buttons">
+
+    <button
+        class="error-button primary"
+        onclick="requestLocation()"
+    >
+        Allow Location
+    </button>
+
+
+    <button
+        class="error-button"
+        onclick="openLocationSettings()"
+    >
+        Open Location Settings
+    </button>
+
+</div>
+
+
+<div id="errorHelp">
+
+    Location permission is required
+    for H.I.D.E.A. to determine your
+    position and altitude.
 
 </div>
 
 
 </div>
-
 
 </div>
 
@@ -1209,6 +1193,8 @@ body {
    LOCATION
 ================================================== */
 
+let locationWatch = null;
+
 
 function showLocationError() {
 
@@ -1219,9 +1205,22 @@ function showLocationError() {
 }
 
 
+function hideLocationError() {
+
+    document.getElementById(
+        "error"
+    ).style.display = "none";
+
+}
+
+
+/* ==================================================
+   UPDATE LOCATION
+================================================== */
+
 function updateLocation(position) {
 
-    const coordinates =
+    const c =
         position.coords;
 
 
@@ -1229,7 +1228,7 @@ function updateLocation(position) {
         "latitude"
     ).textContent =
 
-        coordinates.latitude.toFixed(6)
+        c.latitude.toFixed(6)
         + "°";
 
 
@@ -1237,16 +1236,16 @@ function updateLocation(position) {
         "longitude"
     ).textContent =
 
-        coordinates.longitude.toFixed(6)
+        c.longitude.toFixed(6)
         + "°";
 
 
     if (
 
-        coordinates.altitude !== null &&
+        c.altitude !== null &&
 
         Number.isFinite(
-            coordinates.altitude
+            c.altitude
         )
 
     ) {
@@ -1255,7 +1254,7 @@ function updateLocation(position) {
             "altitude"
         ).textContent =
 
-            coordinates.altitude.toFixed(1)
+            c.altitude.toFixed(1)
             + " m";
 
     }
@@ -1266,23 +1265,64 @@ function updateLocation(position) {
             "altitude"
         ).textContent =
             "--";
+
     }
 
 
-    document.getElementById(
-        "error"
-    ).style.display =
-        "none";
+    hideLocationError();
+
 }
 
 
-
 /* ==================================================
-   ASK FOR LOCATION PERMISSION
+   LOCATION WATCH
 ================================================== */
 
-function startGPS() {
+function startLocationWatch() {
 
+    if (locationWatch !== null) {
+
+        navigator.geolocation.clearWatch(
+            locationWatch
+        );
+
+    }
+
+
+    locationWatch =
+        navigator.geolocation.watchPosition(
+
+            updateLocation,
+
+            function() {
+
+                showLocationError();
+
+            },
+
+            {
+
+                enableHighAccuracy:
+                    true,
+
+                maximumAge:
+                    1000,
+
+                timeout:
+                    10000
+
+            }
+
+        );
+
+}
+
+
+/* ==================================================
+   REQUEST LOCATION
+================================================== */
+
+function requestLocation() {
 
     if (
         !navigator.geolocation
@@ -1291,14 +1331,9 @@ function startGPS() {
         showLocationError();
 
         return;
+
     }
 
-
-    /*
-       This first call explicitly causes
-       the phone/browser to request
-       location permission.
-    */
 
     navigator.geolocation.getCurrentPosition(
 
@@ -1306,36 +1341,7 @@ function startGPS() {
 
             updateLocation(position);
 
-
-            /*
-               Once permission has been granted,
-               continuously monitor the position.
-            */
-
-            navigator.geolocation.watchPosition(
-
-                updateLocation,
-
-                function() {
-
-                    showLocationError();
-
-                },
-
-                {
-
-                    enableHighAccuracy:
-                        true,
-
-                    maximumAge:
-                        1000,
-
-                    timeout:
-                        10000
-
-                }
-
-            );
+            startLocationWatch();
 
         },
 
@@ -1356,7 +1362,7 @@ function startGPS() {
                 0,
 
             timeout:
-                10000
+                15000
 
         }
 
@@ -1365,20 +1371,61 @@ function startGPS() {
 }
 
 
+/* ==================================================
+   OPEN LOCATION SETTINGS
+================================================== */
+
+function openLocationSettings() {
+
+    const androidIntent =
+
+        "intent://settings/location" +
+        "#Intent;" +
+        "scheme=android-app;" +
+        "package=com.android.settings;" +
+        "end";
+
+
+    const userAgent =
+        navigator.userAgent.toLowerCase();
+
+
+    if (
+        userAgent.includes("android")
+    ) {
+
+        try {
+
+            window.location.href =
+                androidIntent;
+
+        }
+
+        catch (e) {
+
+            requestLocation();
+
+        }
+
+    }
+
+    else {
+
+        requestLocation();
+
+    }
+
+}
+
 
 /* ==================================================
    COMPASS
 ================================================== */
 
-
 function handleCompass(event) {
 
     let heading;
 
-
-    /*
-       iPhone / iPad
-    */
 
     if (
 
@@ -1392,10 +1439,6 @@ function handleCompass(event) {
 
     }
 
-
-    /*
-       Android / other devices
-    */
 
     else if (
 
@@ -1427,21 +1470,15 @@ function handleCompass(event) {
         "translateX(-50%) rotate("
         + heading
         + "deg)";
+
 }
 
 
-
 /* ==================================================
-   ASK FOR SENSOR PERMISSION
+   COMPASS PERMISSION
 ================================================== */
 
 function startCompass() {
-
-
-    /*
-       iOS requires explicit permission
-       for motion/orientation sensors.
-    */
 
     if (
 
@@ -1456,22 +1493,17 @@ function startCompass() {
 
     ) {
 
-
         DeviceOrientationEvent
+
             .requestPermission()
 
             .then(
 
                 function(permission) {
 
-
                     if (
-
-                        permission
-                        === "granted"
-
+                        permission === "granted"
                     ) {
-
 
                         window.addEventListener(
 
@@ -1490,21 +1522,12 @@ function startCompass() {
             )
 
             .catch(
-
                 function() {}
-
             );
 
     }
 
-
     else {
-
-
-        /*
-           Android browsers normally
-           don't require this extra prompt.
-        */
 
         window.addEventListener(
 
@@ -1532,39 +1555,18 @@ function startCompass() {
 }
 
 
-
 /* ==================================================
-   START
+   START APP
 ================================================== */
 
 
-/*
-   Location starts immediately.
-   The phone should show its location
-   permission prompt if permission has
-   not already been granted.
-*/
+/* Request GPS */
 
-startGPS();
+requestLocation();
 
 
-/*
-   Sensor permission is requested
-   after the first user interaction.
-*/
-
-document.addEventListener(
-
-    "click",
-
-    startCompass,
-
-    {
-        once: true
-    }
-
-);
-
+/* Start compass after
+   phone user interaction */
 
 document.addEventListener(
 
@@ -1578,8 +1580,20 @@ document.addEventListener(
 
 );
 
-</script>
 
+document.addEventListener(
+
+    "click",
+
+    startCompass,
+
+    {
+        once: true
+    }
+
+);
+
+</script>
 
 </body>
 
