@@ -17,26 +17,26 @@ viewport-fit=cover">
 <style>
 
 /* ==================================================
-   THEME VARIABLES
+   H.I.D.E.A. COLOUR SYSTEM
 ================================================== */
 
 :root {
 
-    --background: #ffffff;
+    --background: #D3D3D3;
 
-    --primary: #14213d;
+    --primary: #282828;
 
-    --secondary: #1e3a5f;
+    --secondary: #282828;
 
-    --text: #202b3c;
+    --text: #282828;
 
-    --muted: #8b95a5;
+    --muted: #666666;
 
-    --globe-line: #b7bec7;
+    --globe-line: #8f8f8f;
 
-    --border: #d8dee8;
+    --border: #aaaaaa;
 
-    --button-background: #ffffff;
+    --button-background: #D3D3D3;
 
     --blue: #4285f4;
 
@@ -44,7 +44,7 @@ viewport-fit=cover">
 
     --blue-dark: #174f9c;
 
-    --error: #d62828;
+    --error: #b51f1f;
 }
 
 
@@ -56,21 +56,21 @@ viewport-fit=cover">
 
     :root {
 
-        --background: #101216;
+        --background: #282828;
 
-        --primary: #f1f3f5;
+        --primary: #D3D3D3;
 
-        --secondary: #dce7f5;
+        --secondary: #D3D3D3;
 
-        --text: #e7ebf0;
+        --text: #D3D3D3;
 
-        --muted: #9299a5;
+        --muted: #999999;
 
-        --globe-line: #59616d;
+        --globe-line: #686868;
 
-        --border: #343a44;
+        --border: #555555;
 
-        --button-background: #181b21;
+        --button-background: #282828;
 
         --blue: #5b9df9;
 
@@ -78,7 +78,7 @@ viewport-fit=cover">
 
         --blue-dark: #2865b5;
 
-        --error: #ff5555;
+        --error: #ff5c5c;
     }
 }
 
@@ -663,7 +663,7 @@ body {
 
     border:
         1px solid
-        rgba(66,133,244,.12);
+        rgba(66,133,244,.15);
 }
 
 
@@ -701,7 +701,7 @@ body {
     filter:
         drop-shadow(
             0 1px 2px
-            rgba(0,0,0,.12)
+            rgba(0,0,0,.15)
         );
 
     transition:
@@ -1164,7 +1164,7 @@ body {
 </g>
 
 
-<!-- NAVIGATION ARROW -->
+<!-- NORTH ARROW -->
 
 <g class="navArrow">
 
@@ -1282,8 +1282,6 @@ body {
 <div id="app">
 
 
-<!-- COORDINATES -->
-
 <div class="coordinates">
 
     <div id="latitude">
@@ -1296,8 +1294,6 @@ body {
 
 </div>
 
-
-<!-- LOCATION MARKER -->
 
 <div class="location-marker">
 
@@ -1312,8 +1308,6 @@ body {
 
 </div>
 
-
-<!-- ALTITUDE -->
 
 <div class="altitude">
 
@@ -1338,8 +1332,6 @@ body {
 
 <div id="error">
 
-
-<!-- RED WIFI ICON -->
 
 <svg
     class="wifi"
@@ -1874,7 +1866,7 @@ setTimeout(
 
 
 /* ==================================================
-   FIRST TOUCH
+   START COMPASS ON TOUCH
 ================================================== */
 
 document.addEventListener(
