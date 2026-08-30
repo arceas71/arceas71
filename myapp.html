@@ -1,1 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+<title>Navigation</title>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+html, body {
+    margin: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: #ffffff;
+    font-family: Arial, Helvetica, sans-serif;
+    color: #1f2937;
+}
+
+#screen {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+}
+
+/* Coordinates */
+
+.coordinates {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+
+    transform: translate(-50%, -50%);
+
+    text-align: center;
+    white-space: nowrap;
+
+    font-size: clamp(12px, 2.2vw, 18px);
+    line-height: 1.7;
+    font-weight: 500;
+}
+
+/* Arrow */
+
+.arrow-container {
+    position: absolute;
+
+    left: 50%;
+    top: 50%;
+
+    width: clamp(35px, 7vw, 60px);
+    height: clamp(55px, 11vw, 90px);
+
+    transform: translate(-50%, 25%);
+    transform-origin: center;
+}
+
+.arrow {
+    position: absolute;
+
+    left: 50%;
+    top: 0;
+
+    width: clamp(2px, .5vw, 4px);
+    height: 70%;
+
+    transform: translateX(-50%);
+
+    background: #1e5a91;
+    border-radius: 10px;
+}
+
+.arrow::before {
+    content: "";
+
+    position: absolute;
+
+    top: 0;
+    left: 50%;
+
+    transform: translateX(-50%);
+
+    border-left: clamp(8px, 1.8vw, 13px) solid transparent;
+    border-right: clamp(8px, 1.8vw, 13px) solid transparent;
+    border-bottom: clamp(15px, 3vw, 24px) solid #1e5a91;
+}
+
+.arrow-center {
+    position: absolute;
+
+    left: 50%;
+    bottom: 0;
+
+    width: clamp(7px, 1.4vw, 11px);
+    height: clamp(7px, 1.4vw, 11px);
+
+    transform: translateX(-50%);
+
+    background: #1e5a91;
+    border-radius: 50%;
+}
+
+/* Direction */
+
+.direction {
+    position: absolute;
+
+    left: 50%;
+    top: 50%;
+
+    transform: translate(-50%, 95px);
+
+    font-size: clamp(10px, 1.7vw, 14px);
+    color: #9ca3af;
+}
+
+/* Altitude */
+
+.altitude {
+    position: absolute;
+
+    top: clamp(12px, 2.5vw, 25px);
+    right: clamp(12px, 2.5vw, 25px);
+
+    text-align: right;
+}
+
+.altitude-value {
+    font-size: clamp(16px, 3vw, 23px);
+    font-weight: 600;
+    color: #1e3a5f;
+}
+
+.altitude-label {
+    font-size: clamp(8px, 1.3vw, 11px);
+    color: #9ca3af;
+    margin-bottom: 2px;
+}
+
+/* Status */
+
+.status {
+    position: absolute;
+
+    bottom: clamp(10px, 2vw, 20px);
+    left: 50%;
+
+    transform: translateX(-50%);
+
+    font-size: clamp(8px, 1.3vw, 11px);
+    color: #c1c7cf;
+}
+</style>
+</head>
+
+<body>
+
+<div id="screen">
+
+    <div class="coordinates">
+        <div id="lat">--</div>
+        <div id="lon">--</div>
+    </div>
+
+    <div class="arrow-container" id="arrow">
+
+        <div class="arrow"></div>
+        <div class="arrow-center"></div>
+
+    </div>
+
+    <div class="direction" id="direction">
+        --
+    </div>
+
+    <div class="altitude">
+
+        <div class="altitude-label">
+            ALT
+        </div>
+
+        <div class="altitude-value" id="altitude">
+            --
+        </div>
+
+    </div>
+
+    <div class="status" id="status">
+        Waiting for GPS...
+    </div>
+
+</div>
+
+
+<script>
+
+/* GPS */
+
+if (navigator.geolocation) {
+
+    navigator.geolocation.watchPosition(
+
+        function(position) {
+
+            const c = position.coords;
+
+            document.getElementById("lat").textContent =
+                c.latitude.toFixed(6) + "°";
+
+            document.getElementById("lon").textContent =
+                c.longitude.toFixed(6) + "°";
+
+            if (c.altitude !== null) {
+
+                document.getElementById("altitude").textContent =
+                    c.altitude.toFixed(1) + " m";
+
+            } else {
+
+                document.getElementById("altitude").textContent =
+                    "--";
+            }
+
+            document.getElementById("status").textContent =
+                "GPS active";
+        },
+
+        function() {
+
+            document.getElementById("status").textContent =
+                "Location unavailable";
+
+        },
+
+        {
+            enableHighAccuracy: true,
+            maximumAge: 1000,
+            timeout: 15000
+        }
+    );
+
+}
+
+
+/* Compass */
+
+function startCompass() {
+
+    if (
+        typeof DeviceOrientationEvent !== "undefined" &&
+        typeof DeviceOrientationEvent.requestPermission === "function"
+    ) {
+
+        DeviceOrientationEvent.requestPermission()
+        .then(function(permission) {
+
+            if (permission === "granted") {
+
+                window.addEventListener(
+                    "deviceorientation",
+                    compass,
+                    true
+                );
+
+            }
+
+        });
+
+    } else {
+
+        window.addEventListener(
+            "deviceorientationabsolute",
+            compass,
+            true
+        );
+
+        window.addEventListener(
+            "deviceorientation",
+            compass,
+            true
+        );
+    }
+}
+
+
+function compass(event) {
+
+    let heading;
+
+    if (event.webkitCompassHeading !== undefined) {
+
+        heading = event.webkitCompassHeading;
+
+    } else if (event.alpha !== null) {
+
+        heading = 360 - event.alpha;
+
+    } else {
+
+        return;
+    }
+
+    heading =
+        (heading + 360) % 360;
+
+    document.getElementById("arrow").style.transform =
+        "translate(-50%, 25%) rotate(" +
+        heading +
+        "deg)";
+
+    document.getElementById("direction").textContent =
+        heading.toFixed(0) +
+        "° " +
+        getDirection(heading);
+}
+
+
+function getDirection(degrees) {
+
+    if (degrees >= 337.5 || degrees < 22.5)
+        return "N";
+
+    if (degrees < 67.5)
+        return "NE";
+
+    if (degrees < 112.5)
+        return "E";
+
+    if (degrees < 157.5)
+        return "SE";
+
+    if (degrees < 202.5)
+        return "S";
+
+    if (degrees < 247.5)
+        return "SW";
+
+    if (degrees < 292.5)
+        return "W";
+
+    return "NW";
+}
+
+
+/* Required for phones that ask for sensor permission */
+
+document.addEventListener(
+    "click",
+    startCompass,
+    { once: true }
+);
+
+document.addEventListener(
+    "touchstart",
+    startCompass,
+    { once: true }
+);
+
+</script>
+
+</body>
+</html>
