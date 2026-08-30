@@ -23,59 +23,39 @@ viewport-fit=cover">
 :root {
 
     --background: #D3D3D3;
-
     --primary: #282828;
-
     --secondary: #282828;
-
     --text: #282828;
-
     --muted: #666666;
-
     --globe-line: #8f8f8f;
-
     --border: #aaaaaa;
-
     --button-background: #D3D3D3;
 
     --blue: #4285f4;
-
     --blue-light: #4da9ed;
-
     --blue-dark: #174f9c;
 
     --error: #b51f1f;
+
+    --player-color: #4285f4;
 }
 
-
-/* ==================================================
-   AUTOMATIC DARK MODE
-================================================== */
 
 @media (prefers-color-scheme: dark) {
 
     :root {
 
         --background: #282828;
-
         --primary: #D3D3D3;
-
         --secondary: #D3D3D3;
-
         --text: #D3D3D3;
-
         --muted: #999999;
-
         --globe-line: #686868;
-
         --border: #555555;
-
         --button-background: #282828;
 
         --blue: #5b9df9;
-
         --blue-light: #67b5f4;
-
         --blue-dark: #2865b5;
 
         --error: #ff5c5c;
@@ -104,13 +84,15 @@ body {
     margin: 0;
 
     width: 100%;
-
     height: 100%;
 
     overflow: hidden;
 
     background:
         var(--background);
+
+    color:
+        var(--text);
 
     font-family:
         Arial,
@@ -558,7 +540,6 @@ body {
     inset: 0;
 
     width: 100vw;
-
     height: 100vh;
 
     background:
@@ -588,6 +569,233 @@ body {
 
 
 /* ==================================================
+   SETUP
+================================================== */
+
+#setup {
+
+    position: fixed;
+
+    inset: 0;
+
+    z-index: 200;
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+
+    justify-content: center;
+
+    background:
+        var(--background);
+
+    transition:
+        background .25s ease;
+}
+
+
+.setup-title {
+
+    font-size: 29px;
+
+    font-weight: 600;
+
+    letter-spacing: 1px;
+
+    margin-bottom: 7px;
+}
+
+
+.setup-subtitle {
+
+    color:
+        var(--muted);
+
+    font-size: 13px;
+
+    margin-bottom: 25px;
+}
+
+
+#username {
+
+    width: 280px;
+
+    height: 48px;
+
+    border:
+        1px solid
+        var(--border);
+
+    border-radius: 11px;
+
+    outline: none;
+
+    background:
+        var(--button-background);
+
+    color:
+        var(--text);
+
+    text-align: center;
+
+    font-size: 16px;
+
+    margin-bottom: 22px;
+}
+
+
+/* ==================================================
+   COLOUR CHOOSER
+================================================== */
+
+.colors {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 12px;
+
+    margin-bottom: 25px;
+}
+
+
+.color {
+
+    width: 27px;
+    height: 27px;
+
+    padding: 0;
+
+    border-radius: 50%;
+
+    border:
+        2px solid
+        transparent;
+
+    cursor: pointer;
+}
+
+
+.color.selected {
+
+    border-color:
+        var(--text);
+
+    transform:
+        scale(1.12);
+}
+
+
+.color1 {
+    background: #4285f4;
+}
+
+.color2 {
+    background: #e53935;
+}
+
+.color3 {
+    background: #43a047;
+}
+
+.color4 {
+    background: #8e44ad;
+}
+
+.color5 {
+    background: #f39c12;
+}
+
+.color6 {
+    background: #00acc1;
+}
+
+
+.custom-color {
+
+    position: relative;
+
+    width: 27px;
+    height: 27px;
+
+    border-radius: 50%;
+
+    border:
+        2px solid
+        var(--muted);
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    color:
+        var(--text);
+
+    font-size: 20px;
+
+    cursor: pointer;
+}
+
+
+.custom-color input {
+
+    position: absolute;
+
+    inset: 0;
+
+    width: 100%;
+    height: 100%;
+
+    opacity: 0;
+
+    cursor: pointer;
+}
+
+
+/* ==================================================
+   START BUTTON
+================================================== */
+
+#startButton {
+
+    width: 280px;
+
+    height: 48px;
+
+    border: none;
+
+    border-radius: 11px;
+
+    background:
+        var(--secondary);
+
+    color:
+        var(--background);
+
+    font-size: 15px;
+
+    font-weight: 600;
+
+    cursor: pointer;
+}
+
+
+#startButton:active {
+
+    transform:
+        scale(.97);
+}
+
+
+/* ==================================================
    COORDINATES
 ================================================== */
 
@@ -607,17 +815,13 @@ body {
     color:
         var(--text);
 
-    font-size:
-        14px;
+    font-size: 14px;
 
-    line-height:
-        1.65;
+    line-height: 1.65;
 
-    font-weight:
-        500;
+    font-weight: 500;
 
-    white-space:
-        nowrap;
+    white-space: nowrap;
 
     transition:
         color .25s ease;
@@ -637,7 +841,6 @@ body {
     top: 50%;
 
     width: 56px;
-
     height: 56px;
 
     transform:
@@ -659,16 +862,24 @@ body {
         50%;
 
     background:
-        rgba(66,133,244,.055);
+        color-mix(
+            in srgb,
+            var(--player-color) 6%,
+            transparent
+        );
 
     border:
         1px solid
-        rgba(66,133,244,.15);
+        color-mix(
+            in srgb,
+            var(--player-color) 15%,
+            transparent
+        );
 }
 
 
 /* ==================================================
-   DIRECTION TRIANGLE
+   EXPLORER ARROW
 ================================================== */
 
 .heading {
@@ -680,7 +891,6 @@ body {
     top: 3px;
 
     width: 0;
-
     height: 0;
 
     transform:
@@ -696,7 +906,8 @@ body {
         5px solid transparent;
 
     border-bottom:
-        18px solid var(--blue);
+        18px solid
+        var(--player-color);
 
     filter:
         drop-shadow(
@@ -720,7 +931,6 @@ body {
     top: 6px;
 
     width: 0;
-
     height: 0;
 
     transform:
@@ -733,12 +943,13 @@ body {
         1.5px solid transparent;
 
     border-bottom:
-        7px solid var(--background);
+        7px solid
+        var(--background);
 }
 
 
 /* ==================================================
-   BLUE DOT
+   CENTRE DOT
 ================================================== */
 
 .dot {
@@ -750,7 +961,6 @@ body {
     top: 50%;
 
     width: 11px;
-
     height: 11px;
 
     transform:
@@ -760,7 +970,7 @@ body {
         50%;
 
     background:
-        var(--blue);
+        var(--player-color);
 
     border:
         2px solid
@@ -771,10 +981,36 @@ body {
         rgba(0,0,0,.22);
 
     z-index: 2;
+}
 
-    transition:
-        background .25s ease,
-        border-color .25s ease;
+
+/* ==================================================
+   USERNAME
+================================================== */
+
+.player-name {
+
+    position: absolute;
+
+    left: 50%;
+
+    top: calc(50% - 35px);
+
+    transform:
+        translate(-50%, -100%);
+
+    color:
+        var(--text);
+
+    font-size: 12px;
+
+    font-weight: 600;
+
+    white-space: nowrap;
+
+    text-align: center;
+
+    z-index: 10;
 }
 
 
@@ -813,9 +1049,6 @@ body {
 
     color:
         var(--muted);
-
-    transition:
-        color .25s ease;
 }
 
 
@@ -832,9 +1065,6 @@ body {
 
     color:
         var(--secondary);
-
-    transition:
-        color .25s ease;
 }
 
 
@@ -869,27 +1099,8 @@ body {
 
     padding:
         30px;
-
-    padding-top:
-        calc(
-            30px +
-            env(safe-area-inset-top)
-        );
-
-    padding-bottom:
-        calc(
-            30px +
-            env(safe-area-inset-bottom)
-        );
-
-    transition:
-        background .25s ease;
 }
 
-
-/* ==================================================
-   ERROR ICON
-================================================== */
 
 .wifi {
 
@@ -903,10 +1114,6 @@ body {
         22px;
 }
 
-
-/* ==================================================
-   ERROR TEXT
-================================================== */
 
 #errorText {
 
@@ -923,10 +1130,6 @@ body {
         26px;
 }
 
-
-/* ==================================================
-   ERROR BUTTONS
-================================================== */
 
 .error-buttons {
 
@@ -976,23 +1179,6 @@ body {
 
     cursor:
         pointer;
-
-    transition:
-
-        transform .12s,
-
-        background .25s,
-
-        color .25s,
-
-        border-color .25s;
-}
-
-
-.error-button:active {
-
-    transform:
-        scale(.97);
 }
 
 
@@ -1008,10 +1194,6 @@ body {
         none;
 }
 
-
-/* ==================================================
-   ERROR HELP
-================================================== */
 
 #errorHelp {
 
@@ -1268,11 +1450,90 @@ body {
 
 </g>
 
-
 </svg>
 
 </div>
 
+
+<!-- ==================================================
+     SETUP
+================================================== -->
+
+<div id="setup">
+
+    <div class="setup-title">
+        H.I.D.E.A.
+    </div>
+
+    <div class="setup-subtitle">
+        Choose your explorer
+    </div>
+
+
+    <input
+        id="username"
+        type="text"
+        maxlength="16"
+        placeholder="Username"
+        autocomplete="off"
+    >
+
+
+    <div class="colors">
+
+        <button
+            class="color color1 selected"
+            data-color="#4285F4">
+        </button>
+
+        <button
+            class="color color2"
+            data-color="#E53935">
+        </button>
+
+        <button
+            class="color color3"
+            data-color="#43A047">
+        </button>
+
+        <button
+            class="color color4"
+            data-color="#8E44AD">
+        </button>
+
+        <button
+            class="color color5"
+            data-color="#F39C12">
+        </button>
+
+        <button
+            class="color color6"
+            data-color="#00ACC1">
+        </button>
+
+
+        <label
+            class="custom-color"
+            id="customColor">
+
+            +
+
+            <input
+                id="colorPicker"
+                type="color"
+                value="#4285F4"
+            >
+
+        </label>
+
+    </div>
+
+
+    <button id="startButton">
+        Continue
+    </button>
+
+</div>
 
 
 <!-- ==================================================
@@ -1282,48 +1543,54 @@ body {
 <div id="app">
 
 
-<div class="coordinates">
-
-    <div id="latitude">
-        --
+    <div class="player-name"
+         id="playerName">
     </div>
 
-    <div id="longitude">
-        --
+
+    <div class="coordinates">
+
+        <div id="latitude">
+            --
+        </div>
+
+        <div id="longitude">
+            --
+        </div>
+
     </div>
+
+
+    <div class="location-marker">
+
+        <div class="accuracy"></div>
+
+        <div
+            class="heading"
+            id="heading">
+        </div>
+
+        <div class="dot"></div>
+
+    </div>
+
+
+    <div class="altitude">
+
+        <div class="altitude-label">
+            ALT
+        </div>
+
+        <div
+            class="altitude-value"
+            id="altitude">
+            --
+        </div>
+
+    </div>
+
 
 </div>
-
-
-<div class="location-marker">
-
-    <div class="accuracy"></div>
-
-    <div
-        class="heading"
-        id="heading"
-    ></div>
-
-    <div class="dot"></div>
-
-</div>
-
-
-<div class="altitude">
-
-    <div class="altitude-label">
-        ALT
-    </div>
-
-    <div
-        class="altitude-value"
-        id="altitude"
-    >
-        --
-    </div>
-
-</div>
-
 
 
 <!-- ==================================================
@@ -1390,40 +1657,29 @@ body {
 
 <div class="error-buttons">
 
-
     <button
         class="error-button primary"
-        id="allowButton"
-    >
+        id="allowButton">
         Allow Location
     </button>
 
-
     <button
         class="error-button"
-        id="settingsButton"
-    >
+        id="settingsButton">
         Open Location Settings
     </button>
-
 
 </div>
 
 
 <div id="errorHelp">
-
     Location permission is required
     for H.I.D.E.A. to determine your
-    position and altitude.
-
+    position.
 </div>
 
 
 </div>
-
-
-</div>
-
 
 
 <script>
@@ -1436,6 +1692,182 @@ let locationWatch = null;
 
 let compassStarted = false;
 
+let selectedColor =
+    localStorage.getItem(
+        "hidea_color"
+    ) || "#4285F4";
+
+
+/* ==================================================
+   ELEMENTS
+================================================== */
+
+const setup =
+    document.getElementById("setup");
+
+const app =
+    document.getElementById("app");
+
+const error =
+    document.getElementById("error");
+
+const username =
+    document.getElementById("username");
+
+const playerName =
+    document.getElementById("playerName");
+
+const heading =
+    document.getElementById("heading");
+
+
+/* ==================================================
+   LOAD SAVED USERNAME
+================================================== */
+
+username.value =
+    localStorage.getItem(
+        "hidea_username"
+    ) || "";
+
+
+/* ==================================================
+   APPLY COLOUR
+================================================== */
+
+function applyColor() {
+
+    document.documentElement
+        .style
+        .setProperty(
+            "--player-color",
+            selectedColor
+        );
+
+
+    document
+        .querySelectorAll(".color")
+        .forEach(
+            button => {
+
+                button.classList.toggle(
+                    "selected",
+                    button.dataset.color
+                    .toUpperCase()
+                    ===
+                    selectedColor.toUpperCase()
+                );
+
+            }
+        );
+
+
+    document
+        .getElementById("customColor")
+        .style
+        .borderColor =
+            selectedColor;
+}
+
+
+applyColor();
+
+
+/* ==================================================
+   PRESET COLOURS
+================================================== */
+
+document
+    .querySelectorAll(".color")
+    .forEach(
+        button => {
+
+            button.addEventListener(
+                "click",
+                function() {
+
+                    selectedColor =
+                        this.dataset.color;
+
+                    localStorage.setItem(
+                        "hidea_color",
+                        selectedColor
+                    );
+
+                    applyColor();
+
+                }
+            );
+
+        }
+    );
+
+
+/* ==================================================
+   CUSTOM COLOUR
+================================================== */
+
+document
+    .getElementById("colorPicker")
+    .addEventListener(
+        "input",
+        function() {
+
+            selectedColor =
+                this.value.toUpperCase();
+
+            localStorage.setItem(
+                "hidea_color",
+                selectedColor
+            );
+
+            applyColor();
+
+        }
+    );
+
+
+/* ==================================================
+   START
+================================================== */
+
+document
+    .getElementById("startButton")
+    .addEventListener(
+        "click",
+        function() {
+
+            const name =
+                username.value.trim();
+
+
+            if (!name) {
+
+                username.focus();
+
+                return;
+            }
+
+
+            localStorage.setItem(
+                "hidea_username",
+                name
+            );
+
+
+            playerName.textContent =
+                name;
+
+
+            setup.style.display =
+                "none";
+
+
+            requestLocation();
+
+        }
+    );
+
 
 /* ==================================================
    SHOW ERROR
@@ -1443,10 +1875,8 @@ let compassStarted = false;
 
 function showLocationError() {
 
-    document.getElementById(
-        "error"
-    ).style.display = "flex";
-
+    error.style.display =
+        "flex";
 }
 
 
@@ -1456,10 +1886,8 @@ function showLocationError() {
 
 function hideLocationError() {
 
-    document.getElementById(
-        "error"
-    ).style.display = "none";
-
+    error.style.display =
+        "none";
 }
 
 
@@ -1490,13 +1918,11 @@ function updateLocation(position) {
 
 
     if (
-
-        c.altitude !== null &&
-
+        c.altitude !== null
+        &&
         Number.isFinite(
             c.altitude
         )
-
     ) {
 
         document.getElementById(
@@ -1519,7 +1945,6 @@ function updateLocation(position) {
 
 
     hideLocationError();
-
 }
 
 
@@ -1533,40 +1958,40 @@ function startLocationWatch() {
         locationWatch !== null
     ) {
 
-        navigator.geolocation.clearWatch(
-            locationWatch
-        );
+        navigator.geolocation
+            .clearWatch(
+                locationWatch
+            );
 
     }
 
 
     locationWatch =
+        navigator.geolocation
+            .watchPosition(
 
-        navigator.geolocation.watchPosition(
+                updateLocation,
 
-            updateLocation,
+                function() {
 
-            function() {
+                    showLocationError();
 
-                showLocationError();
+                },
 
-            },
+                {
 
-            {
+                    enableHighAccuracy:
+                        true,
 
-                enableHighAccuracy:
-                    true,
+                    maximumAge:
+                        1000,
 
-                maximumAge:
-                    1000,
+                    timeout:
+                        15000
 
-                timeout:
-                    15000
+                }
 
-            }
-
-        );
-
+            );
 }
 
 
@@ -1583,45 +2008,44 @@ function requestLocation() {
         showLocationError();
 
         return;
-
     }
 
 
-    navigator.geolocation.getCurrentPosition(
+    navigator.geolocation
+        .getCurrentPosition(
 
-        function(position) {
+            function(position) {
 
-            updateLocation(
-                position
-            );
+                updateLocation(
+                    position
+                );
 
-            startLocationWatch();
+                startLocationWatch();
 
-            startCompass();
+                startCompass();
 
-        },
+            },
 
-        function() {
+            function() {
 
-            showLocationError();
+                showLocationError();
 
-        },
+            },
 
-        {
+            {
 
-            enableHighAccuracy:
-                true,
+                enableHighAccuracy:
+                    true,
 
-            maximumAge:
-                0,
+                maximumAge:
+                    0,
 
-            timeout:
-                15000
+                timeout:
+                    15000
 
-        }
+            }
 
-    );
-
+        );
 }
 
 
@@ -1632,15 +2056,10 @@ function requestLocation() {
 function openLocationSettings() {
 
     const intent =
-
         "intent://settings/location" +
-
         "#Intent;" +
-
         "scheme=android-app;" +
-
         "package=com.android.settings;" +
-
         "end";
 
 
@@ -1656,7 +2075,6 @@ function openLocationSettings() {
         requestLocation();
 
     }
-
 }
 
 
@@ -1666,28 +2084,24 @@ function openLocationSettings() {
 
 function handleCompass(event) {
 
-    let heading;
+    let direction;
 
 
     if (
-
         event.webkitCompassHeading
         !== undefined
-
     ) {
 
-        heading =
+        direction =
             event.webkitCompassHeading;
 
     }
 
     else if (
-
         event.alpha !== null
-
     ) {
 
-        heading =
+        direction =
             360 - event.alpha;
 
     }
@@ -1699,18 +2113,17 @@ function handleCompass(event) {
     }
 
 
-    heading =
-        (heading + 360) % 360;
+    direction =
+        (direction + 360) % 360;
 
 
-    document.getElementById(
-        "heading"
-    ).style.transform =
+    heading.style.transform =
 
         "translateX(-50%) rotate("
-        + heading
-        + "deg)";
-
+        +
+        direction
+        +
+        "deg)";
 }
 
 
@@ -1725,7 +2138,6 @@ function startCompass() {
     ) {
 
         return;
-
     }
 
 
@@ -1740,15 +2152,13 @@ function startCompass() {
         &&
 
         typeof DeviceOrientationEvent
-        .requestPermission
+            .requestPermission
         === "function"
 
     ) {
 
         DeviceOrientationEvent
-
             .requestPermission()
-
             .then(
 
                 function(permission) {
@@ -1758,111 +2168,75 @@ function startCompass() {
                         "granted"
                     ) {
 
-                        window.addEventListener(
-
-                            "deviceorientation",
-
-                            handleCompass,
-
-                            true
-
-                        );
+                        window
+                            .addEventListener(
+                                "deviceorientation",
+                                handleCompass,
+                                true
+                            );
 
                     }
 
                 }
 
             )
-
             .catch(
-
                 function() {}
-
             );
 
     }
 
     else {
 
-        window.addEventListener(
-
-            "deviceorientationabsolute",
-
-            handleCompass,
-
-            true
-
-        );
+        window
+            .addEventListener(
+                "deviceorientationabsolute",
+                handleCompass,
+                true
+            );
 
 
-        window.addEventListener(
-
-            "deviceorientation",
-
-            handleCompass,
-
-            true
-
-        );
+        window
+            .addEventListener(
+                "deviceorientation",
+                handleCompass,
+                true
+            );
 
     }
-
 }
 
 
 /* ==================================================
-   ALLOW LOCATION
+   ALLOW LOCATION BUTTON
 ================================================== */
 
-document.getElementById(
-    "allowButton"
-).addEventListener(
+document
+    .getElementById("allowButton")
+    .addEventListener(
+        "click",
+        function() {
 
-    "click",
+            requestLocation();
 
-    function() {
-
-        requestLocation();
-
-    }
-
-);
+        }
+    );
 
 
 /* ==================================================
-   OPEN SETTINGS
+   SETTINGS BUTTON
 ================================================== */
 
-document.getElementById(
-    "settingsButton"
-).addEventListener(
+document
+    .getElementById("settingsButton")
+    .addEventListener(
+        "click",
+        function() {
 
-    "click",
+            openLocationSettings();
 
-    function() {
-
-        openLocationSettings();
-
-    }
-
-);
-
-
-/* ==================================================
-   INITIAL LOCATION REQUEST
-================================================== */
-
-setTimeout(
-
-    function() {
-
-        requestLocation();
-
-    },
-
-    500
-
-);
+        }
+    );
 
 
 /* ==================================================
