@@ -17,14 +17,86 @@ viewport-fit=cover">
 <style>
 
 /* ==================================================
+   THEME VARIABLES
+================================================== */
+
+:root {
+
+    --background: #ffffff;
+
+    --primary: #14213d;
+
+    --secondary: #1e3a5f;
+
+    --text: #202b3c;
+
+    --muted: #8b95a5;
+
+    --globe-line: #b7bec7;
+
+    --border: #d8dee8;
+
+    --button-background: #ffffff;
+
+    --blue: #4285f4;
+
+    --blue-light: #4da9ed;
+
+    --blue-dark: #174f9c;
+
+    --error: #d62828;
+}
+
+
+/* ==================================================
+   AUTOMATIC DARK MODE
+================================================== */
+
+@media (prefers-color-scheme: dark) {
+
+    :root {
+
+        --background: #101216;
+
+        --primary: #f1f3f5;
+
+        --secondary: #dce7f5;
+
+        --text: #e7ebf0;
+
+        --muted: #9299a5;
+
+        --globe-line: #59616d;
+
+        --border: #343a44;
+
+        --button-background: #181b21;
+
+        --blue: #5b9df9;
+
+        --blue-light: #67b5f4;
+
+        --blue-dark: #2865b5;
+
+        --error: #ff5555;
+    }
+}
+
+
+/* ==================================================
    BASE
 ================================================== */
 
 * {
+
     box-sizing: border-box;
-    -webkit-tap-highlight-color: transparent;
+
+    -webkit-tap-highlight-color:
+        transparent;
+
     user-select: none;
 }
+
 
 html,
 body {
@@ -32,17 +104,24 @@ body {
     margin: 0;
 
     width: 100%;
+
     height: 100%;
 
     overflow: hidden;
 
-    background: white;
+    background:
+        var(--background);
 
     font-family:
         Arial,
         Helvetica,
         sans-serif;
+
+    transition:
+        background .25s ease,
+        color .25s ease;
 }
+
 
 body {
 
@@ -66,7 +145,8 @@ body {
 
     z-index: 1000;
 
-    background: white;
+    background:
+        var(--background);
 
     display: flex;
 
@@ -80,6 +160,9 @@ body {
         ease
         4.8s
         forwards;
+
+    transition:
+        background .25s ease;
 }
 
 
@@ -103,11 +186,15 @@ body {
 @keyframes logoZoomOut {
 
     0% {
-        transform: scale(1);
+
+        transform:
+            scale(1);
     }
 
     100% {
-        transform: scale(.72);
+
+        transform:
+            scale(.72);
     }
 }
 
@@ -124,6 +211,7 @@ body {
         250px 225px;
 
     animation:
+
         globeIn
         1s
         cubic-bezier(.16,1,.3,1)
@@ -211,49 +299,60 @@ body {
 
         opacity: 0;
 
-        stroke-dashoffset: 500;
+        stroke-dashoffset:
+            500;
     }
 
     to {
 
         opacity: 1;
 
-        stroke-dashoffset: 0;
+        stroke-dashoffset:
+            0;
     }
 }
 
 
 /* ==================================================
    CARDINAL MARKERS
-
-   NORTH REMOVED.
-   THE ARROW IS THE NORTH INDICATOR.
 ================================================== */
 
 .cardinal {
 
     opacity: 0;
 
-    transform-origin: center;
+    transform-origin:
+        center;
 
     animation:
         cardinalIn
         .65s
         cubic-bezier(.16,1,.3,1)
         forwards;
+
+    stroke:
+        var(--primary);
 }
 
 
 .cardinal.east {
-    animation-delay: 1.08s;
+
+    animation-delay:
+        1.08s;
 }
+
 
 .cardinal.south {
-    animation-delay: 1.21s;
+
+    animation-delay:
+        1.21s;
 }
 
+
 .cardinal.west {
-    animation-delay: 1.34s;
+
+    animation-delay:
+        1.34s;
 }
 
 
@@ -371,6 +470,9 @@ body {
     filter:
         blur(7px);
 
+    fill:
+        var(--primary);
+
     animation:
         letterFloatIn
         .9s
@@ -456,9 +558,11 @@ body {
     inset: 0;
 
     width: 100vw;
+
     height: 100vh;
 
-    background: white;
+    background:
+        var(--background);
 
     opacity: 0;
 
@@ -468,12 +572,16 @@ body {
         ease
         4.85s
         forwards;
+
+    transition:
+        background .25s ease;
 }
 
 
 @keyframes appIn {
 
     to {
+
         opacity: 1;
     }
 }
@@ -497,7 +605,7 @@ body {
     text-align: center;
 
     color:
-        #202b3c;
+        var(--text);
 
     font-size:
         14px;
@@ -510,6 +618,9 @@ body {
 
     white-space:
         nowrap;
+
+    transition:
+        color .25s ease;
 }
 
 
@@ -535,7 +646,7 @@ body {
 
 
 /* ==================================================
-   ACCURACY
+   ACCURACY CIRCLE
 ================================================== */
 
 .accuracy {
@@ -544,7 +655,8 @@ body {
 
     inset: 0;
 
-    border-radius: 50%;
+    border-radius:
+        50%;
 
     background:
         rgba(66,133,244,.055);
@@ -584,7 +696,7 @@ body {
         5px solid transparent;
 
     border-bottom:
-        18px solid #4285f4;
+        18px solid var(--blue);
 
     filter:
         drop-shadow(
@@ -621,7 +733,7 @@ body {
         1.5px solid transparent;
 
     border-bottom:
-        7px solid white;
+        7px solid var(--background);
 }
 
 
@@ -644,19 +756,25 @@ body {
     transform:
         translate(-50%, -50%);
 
-    border-radius: 50%;
+    border-radius:
+        50%;
 
     background:
-        #4285f4;
+        var(--blue);
 
     border:
-        2px solid white;
+        2px solid
+        var(--background);
 
     box-shadow:
         0 1px 4px
         rgba(0,0,0,.22);
 
     z-index: 2;
+
+    transition:
+        background .25s ease,
+        border-color .25s ease;
 }
 
 
@@ -694,7 +812,10 @@ body {
         .9px;
 
     color:
-        #9ca3af;
+        var(--muted);
+
+    transition:
+        color .25s ease;
 }
 
 
@@ -710,7 +831,10 @@ body {
         600;
 
     color:
-        #1e3a5f;
+        var(--secondary);
+
+    transition:
+        color .25s ease;
 }
 
 
@@ -738,7 +862,7 @@ body {
         column;
 
     background:
-        white;
+        var(--background);
 
     text-align:
         center;
@@ -757,11 +881,14 @@ body {
             30px +
             env(safe-area-inset-bottom)
         );
+
+    transition:
+        background .25s ease;
 }
 
 
 /* ==================================================
-   RED WIFI ICON
+   ERROR ICON
 ================================================== */
 
 .wifi {
@@ -784,7 +911,7 @@ body {
 #errorText {
 
     color:
-        #c62828;
+        var(--error);
 
     font-size:
         30px;
@@ -798,7 +925,7 @@ body {
 
 
 /* ==================================================
-   BUTTONS
+   ERROR BUTTONS
 ================================================== */
 
 .error-buttons {
@@ -832,13 +959,14 @@ body {
         12px;
 
     border:
-        1px solid #d8dee8;
+        1px solid
+        var(--border);
 
     background:
-        white;
+        var(--button-background);
 
     color:
-        #1e3a5f;
+        var(--secondary);
 
     font-size:
         16px;
@@ -850,8 +978,14 @@ body {
         pointer;
 
     transition:
+
         transform .12s,
-        background .12s;
+
+        background .25s,
+
+        color .25s,
+
+        border-color .25s;
 }
 
 
@@ -859,19 +993,16 @@ body {
 
     transform:
         scale(.97);
-
-    background:
-        #f3f6fa;
 }
 
 
 .error-button.primary {
 
     background:
-        #1e3a5f;
+        var(--secondary);
 
     color:
-        white;
+        var(--background);
 
     border:
         none;
@@ -891,7 +1022,7 @@ body {
         300px;
 
     color:
-        #8b95a5;
+        var(--muted);
 
     font-size:
         12px;
@@ -909,11 +1040,10 @@ body {
 
 
 <!-- ==================================================
-     SPLASH
+     SPLASH SCREEN
 ================================================== -->
 
 <div id="splash">
-
 
 <svg
     class="logo"
@@ -930,8 +1060,8 @@ body {
         cx="250"
         cy="225"
         r="150"
-        fill="white"
-        stroke="#14213d"
+        fill="var(--background)"
+        stroke="var(--primary)"
         stroke-width="7"
     />
 
@@ -943,7 +1073,7 @@ body {
 <g
     class="globeLines"
     fill="none"
-    stroke="#b7bec7"
+    stroke="var(--globe-line)"
     stroke-width="2"
 >
 
@@ -984,7 +1114,6 @@ body {
 
 <g
     class="cardinal east"
-    stroke="#14213d"
     stroke-width="5"
     stroke-linecap="round"
 >
@@ -1003,7 +1132,6 @@ body {
 
 <g
     class="cardinal south"
-    stroke="#14213d"
     stroke-width="5"
     stroke-linecap="round"
 >
@@ -1022,7 +1150,6 @@ body {
 
 <g
     class="cardinal west"
-    stroke="#14213d"
     stroke-width="5"
     stroke-linecap="round"
 >
@@ -1049,7 +1176,7 @@ body {
         L185 300
         Z
         "
-        fill="#4da9ed"
+        fill="var(--blue-light)"
     />
 
     <path
@@ -1059,7 +1186,7 @@ body {
         L250 260
         Z
         "
-        fill="#174f9c"
+        fill="var(--blue-dark)"
     />
 
     <path
@@ -1070,7 +1197,7 @@ body {
         L239 92
         Z
         "
-        fill="#14213d"
+        fill="var(--primary)"
     />
 
 </g>
@@ -1083,7 +1210,6 @@ body {
     font-family="Arial, Helvetica, sans-serif"
     font-size="62"
     font-weight="500"
-    fill="#14213d"
 >
 
     <text
@@ -1171,7 +1297,7 @@ body {
 </div>
 
 
-<!-- LOCATION -->
+<!-- LOCATION MARKER -->
 
 <div class="location-marker">
 
@@ -1213,7 +1339,7 @@ body {
 <div id="error">
 
 
-<!-- RED WIFI -->
+<!-- RED WIFI ICON -->
 
 <svg
     class="wifi"
@@ -1224,7 +1350,7 @@ body {
     <path
         d="M10 35 Q50 5 90 35"
         fill="none"
-        stroke="#d62828"
+        stroke="var(--error)"
         stroke-width="10"
         stroke-linecap="round"
     />
@@ -1232,7 +1358,7 @@ body {
     <path
         d="M23 52 Q50 30 77 52"
         fill="none"
-        stroke="#d62828"
+        stroke="var(--error)"
         stroke-width="10"
         stroke-linecap="round"
     />
@@ -1240,7 +1366,7 @@ body {
     <path
         d="M37 69 Q50 58 63 69"
         fill="none"
-        stroke="#d62828"
+        stroke="var(--error)"
         stroke-width="10"
         stroke-linecap="round"
     />
@@ -1249,7 +1375,7 @@ body {
         cx="50"
         cy="84"
         r="6"
-        fill="#d62828"
+        fill="var(--error)"
     />
 
     <line
@@ -1257,7 +1383,7 @@ body {
         y1="15"
         x2="82"
         y2="85"
-        stroke="#d62828"
+        stroke="var(--error)"
         stroke-width="9"
         stroke-linecap="round"
     />
@@ -1265,14 +1391,10 @@ body {
 </svg>
 
 
-<!-- ERROR -->
-
 <div id="errorText">
     Location unavailable
 </div>
 
-
-<!-- BUTTONS -->
 
 <div class="error-buttons">
 
@@ -1517,20 +1639,16 @@ function requestLocation() {
 
 function openLocationSettings() {
 
-    /*
-       Android intent that opens:
-
-       Settings
-          ↓
-       Location
-    */
-
     const intent =
 
         "intent://settings/location" +
+
         "#Intent;" +
+
         "scheme=android-app;" +
+
         "package=com.android.settings;" +
+
         "end";
 
 
@@ -1542,12 +1660,6 @@ function openLocationSettings() {
     }
 
     catch (error) {
-
-        /*
-           If the APK/browser refuses
-           the intent, try requesting
-           permission again.
-        */
 
         requestLocation();
 
@@ -1641,7 +1753,6 @@ function startCompass() {
 
     ) {
 
-
         DeviceOrientationEvent
 
             .requestPermission()
@@ -1681,7 +1792,6 @@ function startCompass() {
 
     else {
 
-
         window.addEventListener(
 
             "deviceorientationabsolute",
@@ -1709,7 +1819,7 @@ function startCompass() {
 
 
 /* ==================================================
-   ALLOW LOCATION BUTTON
+   ALLOW LOCATION
 ================================================== */
 
 document.getElementById(
@@ -1728,7 +1838,7 @@ document.getElementById(
 
 
 /* ==================================================
-   SETTINGS BUTTON
+   OPEN SETTINGS
 ================================================== */
 
 document.getElementById(
@@ -1749,16 +1859,6 @@ document.getElementById(
 /* ==================================================
    INITIAL LOCATION REQUEST
 ================================================== */
-
-/*
-   Try once when the app starts.
-
-   If Android allows the request,
-   the permission dialog appears.
-
-   If permission is blocked,
-   the error screen appears.
-*/
 
 setTimeout(
 
@@ -1788,8 +1888,11 @@ document.addEventListener(
     },
 
     {
+
         once: true,
+
         passive: true
+
     }
 
 );
