@@ -1,0 +1,548 @@
+import base64, html, os
+
+img_path = "/mnt/data/0e7e19dc-0601-47ac-a25b-a8a8431d6c0d.png"
+out_path = "/mnt/data/HIDEA.html"
+
+with open(img_path, "rb") as f:
+    image_b64 = base64.b64encode(f.read()).decode("ascii")
+
+image_data = f"data:image/png;base64,{image_b64}"
+
+code = r'''<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+<title>H.I.D.E.A</title>
+
+<style>
+* {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+}
+
+html, body {
+    margin: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: white;
+    font-family: Arial, Helvetica, sans-serif;
+    color: #172033;
+}
+
+#splash {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: splashOut .6s ease 2.3s forwards;
+}
+
+.logo {
+    width: clamp(150px, 42vw, 250px);
+    opacity: 0;
+    transform: scale(.78);
+    animation: logoIn .8s cubic-bezier(.2,.8,.2,1) .15s forwards,
+               logoPulse 1s ease 1.05s;
+}
+
+@keyframes logoIn {
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes logoPulse {
+    50% {
+        transform: scale(1.025);
+    }
+}
+
+@keyframes splashOut {
+    to {
+        opacity: 0;
+        visibility: hidden;
+    }
+}
+
+#app {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    opacity: 0;
+    animation: appIn .6s ease 2.35s forwards;
+}
+
+@keyframes appIn {
+    to {
+        opacity: 1;
+    }
+}
+
+/* Coordinates */
+
+.coordinates {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, calc(-50% - clamp(35px, 7vw, 65px)));
+    text-align: center;
+    white-space: nowrap;
+    font-size: clamp(12px, 2.2vw, 18px);
+    line-height: 1.65;
+    font-weight: 500;
+    color: #202b3c;
+}
+
+/* Person image */
+
+.person {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+
+    width: clamp(58px, 12vw, 105px);
+    height: auto;
+
+    transform:
+        translate(-50%, -50%)
+        rotate(180deg);
+
+    transform-origin: center;
+
+    transition: transform .12s linear;
+
+    object-fit: contain;
+}
+
+/* Direction */
+
+.direction {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, clamp(58px, 11vw, 92px));
+
+    font-size: clamp(10px, 1.6vw, 14px);
+    color: #9ca3af;
+    white-space: nowrap;
+}
+
+/* Altitude */
+
+.altitude {
+    position: absolute;
+    top: clamp(14px, 2.5vw, 25px);
+    right: clamp(14px, 2.5vw, 25px);
+    text-align: right;
+}
+
+.altitude-label {
+    font-size: clamp(8px, 1.2vw, 11px);
+    letter-spacing: .7px;
+    color: #9ca3af;
+}
+
+.altitude-value {
+    margin-top: 2px;
+    font-size: clamp(16px, 3vw, 23px);
+    font-weight: 600;
+    color: #1e3a5f;
+}
+
+/* Location error */
+
+#error {
+    position: absolute;
+    inset: 0;
+
+    display: none;
+
+    background: white;
+
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+
+    text-align: center;
+    z-index: 50;
+}
+
+.wifi {
+    width: clamp(75px, 18vw, 130px);
+    height: clamp(75px, 18vw, 130px);
+    margin-bottom: clamp(18px, 3vw, 28px);
+}
+
+#errorText {
+    color: #c62828;
+    font-size: clamp(22px, 5vw, 42px);
+    font-weight: 600;
+    line-height: 1.2;
+}
+
+/* Small screens */
+
+@media (max-width: 450px) {
+    .coordinates {
+        font-size: 13px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<!-- Splash -->
+<div id="splash">
+
+    <svg class="logo"
+         viewBox="0 0 500 570"
+         xmlns="http://www.w3.org/2000/svg">
+
+        <circle cx="250" cy="225" r="150"
+                fill="white"
+                stroke="#14213d"
+                stroke-width="7"/>
+
+        <g stroke="#14213d"
+           stroke-width="5"
+           stroke-linecap="round">
+
+            <line x1="250" y1="70" x2="250" y2="88"/>
+            <line x1="405" y1="225" x2="387" y2="225"/>
+            <line x1="250" y1="380" x2="250" y2="362"/>
+            <line x1="95" y1="225" x2="113" y2="225"/>
+
+        </g>
+
+        <g fill="none"
+           stroke="#b7bec7"
+           stroke-width="2">
+
+            <ellipse cx="250" cy="285" rx="105" ry="35"/>
+            <ellipse cx="250" cy="285" rx="50" ry="35"/>
+
+            <path d="M145 285 Q250 250 355 285"/>
+            <path d="M150 300 Q250 330 350 300"/>
+            <path d="M250 250 Q215 285 250 320"/>
+            <path d="M250 250 Q285 285 250 320"/>
+
+        </g>
+
+        <path d="M250 125 L315 300 L250 260 L185 300 Z"
+              fill="#4da9ed"/>
+
+        <path d="M250 125 L315 300 L250 260 Z"
+              fill="#174f9c"/>
+
+        <path d="M250 55 L261 92 L250 108 L239 92 Z"
+              fill="#14213d"/>
+
+        <text x="250"
+              y="475"
+              text-anchor="middle"
+              font-family="Arial, Helvetica, sans-serif"
+              font-size="62"
+              font-weight="500"
+              letter-spacing="10"
+              fill="#14213d">H.I.D.E.A</text>
+
+    </svg>
+
+</div>
+
+
+<!-- Main app -->
+<div id="app">
+
+    <div class="coordinates">
+        <div id="latitude">--</div>
+        <div id="longitude">--</div>
+    </div>
+
+    <img
+        id="person"
+        class="person"
+        src="''' + image_data + r'''"
+        alt=""
+    >
+
+    <div class="direction" id="direction">--</div>
+
+    <div class="altitude">
+        <div class="altitude-label">ALT</div>
+        <div class="altitude-value" id="altitude">--</div>
+    </div>
+
+    <!-- Only appears when location fails -->
+    <div id="error">
+
+        <svg class="wifi"
+             viewBox="0 0 100 100"
+             xmlns="http://www.w3.org/2000/svg">
+
+            <path
+                d="M10 35
+                   Q50 5 90 35"
+                fill="none"
+                stroke="#d62828"
+                stroke-width="10"
+                stroke-linecap="round"/>
+
+            <path
+                d="M23 52
+                   Q50 30 77 52"
+                fill="none"
+                stroke="#d62828"
+                stroke-width="10"
+                stroke-linecap="round"/>
+
+            <path
+                d="M37 69
+                   Q50 58 63 69"
+                fill="none"
+                stroke="#d62828"
+                stroke-width="10"
+                stroke-linecap="round"/>
+
+            <circle
+                cx="50"
+                cy="84"
+                r="6"
+                fill="#d62828"/>
+
+            <line
+                x1="18"
+                y1="15"
+                x2="82"
+                y2="85"
+                stroke="#d62828"
+                stroke-width="9"
+                stroke-linecap="round"/>
+
+        </svg>
+
+        <div id="errorText">
+            Location unavailable
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+/* =========================
+   LOCATION
+========================= */
+
+function startGPS() {
+
+    if (!navigator.geolocation) {
+        showLocationError();
+        return;
+    }
+
+    navigator.geolocation.watchPosition(
+
+        function(position) {
+
+            const c = position.coords;
+
+            document.getElementById("latitude").textContent =
+                c.latitude.toFixed(6) + "°";
+
+            document.getElementById("longitude").textContent =
+                c.longitude.toFixed(6) + "°";
+
+            if (
+                c.altitude !== null &&
+                Number.isFinite(c.altitude)
+            ) {
+
+                document.getElementById("altitude").textContent =
+                    c.altitude.toFixed(1) + " m";
+
+            } else {
+
+                document.getElementById("altitude").textContent =
+                    "--";
+
+            }
+
+            document.getElementById("error").style.display =
+                "none";
+
+        },
+
+        function() {
+            showLocationError();
+        },
+
+        {
+            enableHighAccuracy: true,
+            maximumAge: 1000,
+            timeout: 10000
+        }
+
+    );
+}
+
+
+function showLocationError() {
+
+    document.getElementById("error").style.display =
+        "flex";
+
+}
+
+
+/* =========================
+   COMPASS
+========================= */
+
+function startCompass() {
+
+    if (
+        typeof DeviceOrientationEvent !== "undefined" &&
+        typeof DeviceOrientationEvent.requestPermission === "function"
+    ) {
+
+        DeviceOrientationEvent.requestPermission()
+
+        .then(function(permission) {
+
+            if (permission === "granted") {
+
+                window.addEventListener(
+                    "deviceorientation",
+                    handleCompass,
+                    true
+                );
+
+            }
+
+        })
+        .catch(function() {});
+
+    } else {
+
+        window.addEventListener(
+            "deviceorientationabsolute",
+            handleCompass,
+            true
+        );
+
+        window.addEventListener(
+            "deviceorientation",
+            handleCompass,
+            true
+        );
+
+    }
+
+}
+
+
+function handleCompass(event) {
+
+    let heading;
+
+    if (event.webkitCompassHeading !== undefined) {
+
+        heading = event.webkitCompassHeading;
+
+    } else if (event.alpha !== null) {
+
+        heading = 360 - event.alpha;
+
+    } else {
+
+        return;
+
+    }
+
+    heading = (heading + 360) % 360;
+
+    /*
+       The image itself starts rotated 180°.
+       The compass heading is added to that base rotation.
+    */
+
+    const rotation = heading + 180;
+
+    document.getElementById("person").style.transform =
+        "translate(-50%, -50%) rotate(" +
+        rotation +
+        "deg)";
+
+    document.getElementById("direction").textContent =
+        heading.toFixed(0) + "° " +
+        getDirection(heading);
+
+}
+
+
+function getDirection(degrees) {
+
+    if (degrees >= 337.5 || degrees < 22.5)
+        return "N";
+
+    if (degrees < 67.5)
+        return "NE";
+
+    if (degrees < 112.5)
+        return "E";
+
+    if (degrees < 157.5)
+        return "SE";
+
+    if (degrees < 202.5)
+        return "S";
+
+    if (degrees < 247.5)
+        return "SW";
+
+    if (degrees < 292.5)
+        return "W";
+
+    return "NW";
+
+}
+
+
+/* =========================
+   START
+========================= */
+
+startGPS();
+
+document.addEventListener(
+    "click",
+    startCompass,
+    { once: true }
+);
+
+document.addEventListener(
+    "touchstart",
+    startCompass,
+    { once: true }
+);
+
+</script>
+
+</body>
+</html>
+with open(out_path, "w", encoding="utf-8") as f:
+    f.write(code)
+
+print(f"Created self-contained H.I.D.E.A HTML: {out_path}")
+print("The supplied person image is embedded inside the HTML, so no separate image file is required.")
