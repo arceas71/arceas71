@@ -1,4 +1,5 @@
 ## Hi there 👋
+Unfortunetely I am very new to this whole thing so I have no idea what to do, if anyone is willing to guide me text me anywhere my username is the same. 
 
 <!--
 **arceas71/arceas71** is a ✨ _special_ ✨ repository because its `README.md` (this file) appears on your GitHub profile.
