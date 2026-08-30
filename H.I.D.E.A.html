@@ -17,7 +17,7 @@ viewport-fit=cover">
 <style>
 
 /* ==================================================
-   H.I.D.E.A. COLOUR SYSTEM
+   COLOUR SYSTEM
 ================================================== */
 
 :root {
@@ -648,7 +648,7 @@ body {
 
 
 /* ==================================================
-   COLOUR CHOOSER
+   COLOURS
 ================================================== */
 
 .colors {
@@ -796,6 +796,36 @@ body {
 
 
 /* ==================================================
+   PLAYER NAME
+================================================== */
+
+.player-name {
+
+    position: absolute;
+
+    left: 50%;
+
+    top: calc(50% - 91px);
+
+    transform:
+        translateX(-50%);
+
+    color:
+        var(--text);
+
+    font-size: 15px;
+
+    font-weight: 600;
+
+    white-space: nowrap;
+
+    text-align: center;
+
+    z-index: 10;
+}
+
+
+/* ==================================================
    COORDINATES
 ================================================== */
 
@@ -805,26 +835,25 @@ body {
 
     left: 50%;
 
-    top: 50%;
+    top: calc(50% - 58px);
 
     transform:
-        translate(-50%, -76px);
+        translateX(-50%);
 
     text-align: center;
 
     color:
         var(--text);
 
-    font-size: 14px;
+    font-size: 13px;
 
-    line-height: 1.65;
+    line-height: 1.5;
 
     font-weight: 500;
 
     white-space: nowrap;
 
-    transition:
-        color .25s ease;
+    z-index: 9;
 }
 
 
@@ -849,7 +878,7 @@ body {
 
 
 /* ==================================================
-   ACCURACY CIRCLE
+   ACCURACY
 ================================================== */
 
 .accuracy {
@@ -949,7 +978,7 @@ body {
 
 
 /* ==================================================
-   CENTRE DOT
+   DOT
 ================================================== */
 
 .dot {
@@ -981,36 +1010,6 @@ body {
         rgba(0,0,0,.22);
 
     z-index: 2;
-}
-
-
-/* ==================================================
-   USERNAME
-================================================== */
-
-.player-name {
-
-    position: absolute;
-
-    left: 50%;
-
-    top: calc(50% - 35px);
-
-    transform:
-        translate(-50%, -100%);
-
-    color:
-        var(--text);
-
-    font-size: 12px;
-
-    font-weight: 600;
-
-    white-space: nowrap;
-
-    text-align: center;
-
-    z-index: 10;
 }
 
 
@@ -1069,7 +1068,7 @@ body {
 
 
 /* ==================================================
-   ERROR SCREEN
+   ERROR
 ================================================== */
 
 #error {
@@ -1222,7 +1221,7 @@ body {
 
 
 <!-- ==================================================
-     SPLASH SCREEN
+     SPLASH
 ================================================== -->
 
 <div id="splash">
@@ -1233,8 +1232,6 @@ body {
     xmlns="http://www.w3.org/2000/svg"
 >
 
-
-<!-- GLOBE -->
 
 <g class="globe">
 
@@ -1249,8 +1246,6 @@ body {
 
 </g>
 
-
-<!-- GLOBE LINES -->
 
 <g
     class="globeLines"
@@ -1292,8 +1287,6 @@ body {
 </g>
 
 
-<!-- EAST -->
-
 <g
     class="cardinal east"
     stroke-width="5"
@@ -1309,8 +1302,6 @@ body {
 
 </g>
 
-
-<!-- SOUTH -->
 
 <g
     class="cardinal south"
@@ -1328,8 +1319,6 @@ body {
 </g>
 
 
-<!-- WEST -->
-
 <g
     class="cardinal west"
     stroke-width="5"
@@ -1345,8 +1334,6 @@ body {
 
 </g>
 
-
-<!-- NORTH ARROW -->
 
 <g class="navArrow">
 
@@ -1384,8 +1371,6 @@ body {
 
 </g>
 
-
-<!-- H.I.D.E.A. -->
 
 <g
     text-anchor="middle"
@@ -1543,8 +1528,9 @@ body {
 <div id="app">
 
 
-    <div class="player-name"
-         id="playerName">
+    <div
+        class="player-name"
+        id="playerName">
     </div>
 
 
@@ -1725,14 +1711,27 @@ const heading =
    LOAD SAVED USERNAME
 ================================================== */
 
-username.value =
+const savedUsername =
     localStorage.getItem(
         "hidea_username"
-    ) || "";
+    );
+
+
+if (savedUsername) {
+
+    username.value =
+        savedUsername;
+
+    playerName.textContent =
+        savedUsername;
+
+    setup.style.display =
+        "none";
+}
 
 
 /* ==================================================
-   APPLY COLOUR
+   APPLY SAVED COLOUR
 ================================================== */
 
 function applyColor() {
@@ -1752,10 +1751,12 @@ function applyColor() {
 
                 button.classList.toggle(
                     "selected",
+
                     button.dataset.color
-                    .toUpperCase()
-                    ===
-                    selectedColor.toUpperCase()
+                        .toUpperCase()
+                        ===
+                    selectedColor
+                        .toUpperCase()
                 );
 
             }
@@ -1828,7 +1829,7 @@ document
 
 
 /* ==================================================
-   START
+   START BUTTON
 ================================================== */
 
 document
@@ -1870,7 +1871,7 @@ document
 
 
 /* ==================================================
-   SHOW ERROR
+   LOCATION ERROR
 ================================================== */
 
 function showLocationError() {
@@ -1879,10 +1880,6 @@ function showLocationError() {
         "flex";
 }
 
-
-/* ==================================================
-   HIDE ERROR
-================================================== */
 
 function hideLocationError() {
 
@@ -1949,7 +1946,7 @@ function updateLocation(position) {
 
 
 /* ==================================================
-   GPS WATCH
+   LOCATION WATCH
 ================================================== */
 
 function startLocationWatch() {
@@ -2050,7 +2047,7 @@ function requestLocation() {
 
 
 /* ==================================================
-   OPEN ANDROID LOCATION SETTINGS
+   ANDROID LOCATION SETTINGS
 ================================================== */
 
 function openLocationSettings() {
@@ -2070,7 +2067,7 @@ function openLocationSettings() {
 
     }
 
-    catch (error) {
+    catch (e) {
 
         requestLocation();
 
@@ -2208,7 +2205,7 @@ function startCompass() {
 
 
 /* ==================================================
-   ALLOW LOCATION BUTTON
+   ALLOW LOCATION
 ================================================== */
 
 document
@@ -2224,7 +2221,7 @@ document
 
 
 /* ==================================================
-   SETTINGS BUTTON
+   SETTINGS
 ================================================== */
 
 document
@@ -2240,7 +2237,7 @@ document
 
 
 /* ==================================================
-   START COMPASS ON TOUCH
+   COMPASS TOUCH FALLBACK
 ================================================== */
 
 document.addEventListener(
@@ -2262,6 +2259,23 @@ document.addEventListener(
     }
 
 );
+
+
+/* ==================================================
+   AUTO START FOR RETURNING USERS
+================================================== */
+
+if (savedUsername) {
+
+    setTimeout(
+        function() {
+
+            requestLocation();
+
+        },
+        50
+    );
+}
 
 </script>
 
