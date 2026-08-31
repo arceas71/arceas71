@@ -5,34 +5,39 @@
 
 <meta charset="UTF-8">
 
-<meta
-    name="viewport"
-    content="width=device-width,
-             initial-scale=1,
-             maximum-scale=1,
-             user-scalable=no,
-             viewport-fit=cover">
+<meta name="viewport"
+content="width=device-width,
+initial-scale=1.0,
+maximum-scale=1.0,
+user-scalable=no,
+viewport-fit=cover">
 
 <title>H.I.D.E.A.</title>
-
 
 <style>
 
 /* ==================================================
-   THEME
+   H.I.D.E.A. COLOUR SYSTEM
 ================================================== */
 
 :root {
 
     --background: #D3D3D3;
-
     --primary: #282828;
+    --secondary: #282828;
+    --text: #282828;
+    --muted: #666666;
+    --globe-line: #8f8f8f;
+    --border: #aaaaaa;
+    --button-background: #D3D3D3;
 
-    --panel:
-        rgba(255,255,255,.72);
+    --blue: #4285f4;
+    --blue-light: #4da9ed;
+    --blue-dark: #174f9c;
 
-    --map:
-        #c7c7c7;
+    --error: #b51f1f;
+
+    --player-color: #4285f4;
 }
 
 
@@ -41,29 +46,35 @@
     :root {
 
         --background: #282828;
-
         --primary: #D3D3D3;
+        --secondary: #D3D3D3;
+        --text: #D3D3D3;
+        --muted: #999999;
+        --globe-line: #686868;
+        --border: #555555;
+        --button-background: #282828;
 
-        --panel:
-            rgba(40,40,40,.82);
+        --blue: #5b9df9;
+        --blue-light: #67b5f4;
+        --blue-dark: #2865b5;
 
-        --map:
-            #333333;
+        --error: #ff5c5c;
     }
 }
 
 
 /* ==================================================
-   RESET
+   BASE
 ================================================== */
 
 * {
 
-    box-sizing:
-        border-box;
+    box-sizing: border-box;
 
     -webkit-tap-highlight-color:
         transparent;
+
+    user-select: none;
 }
 
 
@@ -73,7 +84,6 @@ body {
     margin: 0;
 
     width: 100%;
-
     height: 100%;
 
     overflow: hidden;
@@ -82,12 +92,26 @@ body {
         var(--background);
 
     color:
-        var(--primary);
+        var(--text);
 
     font-family:
         Arial,
         Helvetica,
         sans-serif;
+
+    transition:
+        background .25s ease,
+        color .25s ease;
+}
+
+
+body {
+
+    padding:
+        env(safe-area-inset-top)
+        env(safe-area-inset-right)
+        env(safe-area-inset-bottom)
+        env(safe-area-inset-left);
 }
 
 
@@ -240,8 +264,7 @@ body {
 
     opacity: 0;
 
-    stroke-dasharray:
-        500;
+    stroke-dasharray: 500;
 
     animation:
         linesIn
@@ -441,21 +464,13 @@ body {
 
 
 .l1 { animation-delay: 1.45s; }
-
 .l2 { animation-delay: 1.58s; }
-
 .l3 { animation-delay: 1.71s; }
-
 .l4 { animation-delay: 1.84s; }
-
 .l5 { animation-delay: 1.97s; }
-
 .l6 { animation-delay: 2.10s; }
-
 .l7 { animation-delay: 2.23s; }
-
 .l8 { animation-delay: 2.36s; }
-
 .l9 { animation-delay: 2.49s; }
 
 
@@ -524,172 +539,566 @@ body {
 
     inset: 0;
 
-    display: flex;
-
-    flex-direction: column;
+    width: 100vw;
+    height: 100vh;
 
     background:
         var(--background);
 
     opacity: 0;
+
+    animation:
+        appIn
+        .7s
+        ease
+        4.85s
+        forwards;
+
+    transition:
+        background .25s ease;
 }
 
+
+@keyframes appIn {
+
+    to {
+
+        opacity: 1;
+    }
+}
+
+
+/* ==================================================
+   LIVE MAP (pans underneath the fixed centre marker
+   so it looks like YOU move as your GPS updates)
+================================================== */
 
 #map {
 
+    position: absolute;
+
+    inset: 0;
+
+    z-index: 0;
+
+    background:
+        var(--background);
+}
+
+
+/* mono-tone the tiles so the map matches the
+   grayscale H.I.D.E.A. look */
+#map .leaflet-tile-pane {
+
+    filter:
+        grayscale(1)
+        contrast(1.05)
+        brightness(1.02);
+}
+
+
+@media (prefers-color-scheme: dark) {
+
+    #map .leaflet-tile-pane {
+
+        filter:
+            grayscale(1)
+            contrast(1.05)
+            brightness(.55)
+            invert(1)
+            hue-rotate(180deg);
+    }
+}
+
+
+#app > *:not(#map) {
+
+    position: absolute;
+
+    z-index: 1;
+}
+
+
+.location-marker,
+.coordinates,
+.player-name,
+.altitude {
+
+    z-index: 2;
+}
+
+
+/* ==================================================
+   OTHER PLAYERS (rendered as Leaflet markers,
+   styled to match the local player's dot/heading)
+================================================== */
+
+.other-player {
+
     position: relative;
 
-    flex: 1;
+    width: 34px;
+    height: 34px;
 
-    overflow: hidden;
-
-    background:
-        var(--map);
+    transform:
+        translate(-50%, -50%);
 }
 
 
-/* ==================================================
-   MAP GRID
-================================================== */
-
-#map::before {
-
-    content: "";
+.other-player .op-dot {
 
     position: absolute;
 
-    inset: -100%;
+    left: 50%;
 
-    background-image:
+    top: 50%;
 
-        linear-gradient(
-            rgba(0,0,0,.07)
-            1px,
-            transparent 1px
-        ),
-
-        linear-gradient(
-            90deg,
-            rgba(0,0,0,.07)
-            1px,
-            transparent 1px
-        );
-
-    background-size:
-        55px 55px;
+    width: 11px;
+    height: 11px;
 
     transform:
-        rotate(-8deg);
+        translate(-50%, -50%);
 
-    pointer-events:
-        none;
-}
-
-
-/* ==================================================
-   PLAYER INFORMATION
-================================================== */
-
-#playerInfo {
-
-    position: absolute;
-
-    top:
-        calc(
-            env(safe-area-inset-top)
-            + 18px
-        );
-
-    left:
-        50%;
-
-    transform:
-        translateX(-50%);
-
-    z-index:
-        10;
-
-    min-width:
-        190px;
-
-    padding:
-        9px 15px;
-
-    border-radius:
-        14px;
+    border-radius: 50%;
 
     background:
-        var(--panel);
+        var(--op-color, var(--blue));
 
-    backdrop-filter:
-        blur(12px);
-
-    -webkit-backdrop-filter:
-        blur(12px);
-
-    text-align:
-        center;
+    border:
+        2px solid
+        var(--background);
 
     box-shadow:
-        0 5px 20px
-        rgba(0,0,0,.12);
+        0 1px 4px
+        rgba(0,0,0,.22);
 }
 
 
-#usernameDisplay {
+.other-player .op-name {
 
-    font-size:
-        16px;
+    position: absolute;
 
-    font-weight:
-        700;
+    left: 50%;
 
-    margin-bottom:
-        3px;
-}
+    top: -14px;
 
+    transform:
+        translate(-50%, -100%);
 
-#coordinates {
+    color:
+        var(--text);
 
-    font-size:
-        11px;
+    font-size: 11px;
 
-    opacity:
-        .72;
+    font-weight: 600;
 
-    white-space:
-        nowrap;
+    white-space: nowrap;
+
+    background:
+        color-mix(
+            in srgb,
+            var(--background) 78%,
+            transparent
+        );
+
+    padding: 1px 5px;
+
+    border-radius: 6px;
 }
 
 
 /* ==================================================
-   PLAYER
+   GAME CODE (join / create a shared session)
 ================================================== */
 
-#player {
+.gamecode-row {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 8px;
+
+    margin-bottom: 22px;
+}
+
+
+#gameCode {
+
+    width: 176px;
+
+    height: 44px;
+
+    border:
+        1px solid
+        var(--border);
+
+    border-radius: 11px;
+
+    outline: none;
+
+    background:
+        var(--button-background);
+
+    color:
+        var(--text);
+
+    text-align: center;
+
+    text-transform: uppercase;
+
+    letter-spacing: 2px;
+
+    font-size: 15px;
+}
+
+
+#newCodeButton {
+
+    height: 44px;
+
+    padding: 0 14px;
+
+    border: 1px solid var(--border);
+
+    border-radius: 11px;
+
+    background:
+        var(--button-background);
+
+    color:
+        var(--text);
+
+    font-size: 12px;
+
+    font-weight: 600;
+
+    cursor: pointer;
+}
+
+
+.gamecode-hint {
+
+    color:
+        var(--muted);
+
+    font-size: 11px;
+
+    margin-top: -14px;
+
+    margin-bottom: 22px;
+    text-align: center;
+    max-width: 280px;
+}
+
+
+/* ==================================================
+   SETUP
+================================================== */
+
+#setup {
+
+    position: fixed;
+
+    inset: 0;
+
+    z-index: 200;
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+
+    justify-content: center;
+
+    background:
+        var(--background);
+
+    transition:
+        background .25s ease;
+}
+
+
+.setup-title {
+
+    font-size: 29px;
+
+    font-weight: 600;
+
+    letter-spacing: 1px;
+
+    margin-bottom: 7px;
+}
+
+
+.setup-subtitle {
+
+    color:
+        var(--muted);
+
+    font-size: 13px;
+
+    margin-bottom: 25px;
+}
+
+
+#username {
+
+    width: 280px;
+
+    height: 48px;
+
+    border:
+        1px solid
+        var(--border);
+
+    border-radius: 11px;
+
+    outline: none;
+
+    background:
+        var(--button-background);
+
+    color:
+        var(--text);
+
+    text-align: center;
+
+    font-size: 16px;
+
+    margin-bottom: 22px;
+}
+
+
+/* ==================================================
+   COLOUR CHOOSER
+================================================== */
+
+.colors {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 12px;
+
+    margin-bottom: 25px;
+}
+
+
+.color {
+
+    width: 27px;
+    height: 27px;
+
+    padding: 0;
+
+    border-radius: 50%;
+
+    border:
+        2px solid
+        transparent;
+
+    cursor: pointer;
+}
+
+
+.color.selected {
+
+    border-color:
+        var(--text);
+
+    transform:
+        scale(1.12);
+}
+
+
+.color1 {
+    background: #4285f4;
+}
+
+.color2 {
+    background: #e53935;
+}
+
+.color3 {
+    background: #43a047;
+}
+
+.color4 {
+    background: #8e44ad;
+}
+
+.color5 {
+    background: #f39c12;
+}
+
+.color6 {
+    background: #00acc1;
+}
+
+
+.custom-color {
+
+    position: relative;
+
+    width: 27px;
+    height: 27px;
+
+    border-radius: 50%;
+
+    border:
+        2px solid
+        var(--muted);
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    color:
+        var(--text);
+
+    font-size: 20px;
+
+    cursor: pointer;
+}
+
+
+.custom-color input {
 
     position: absolute;
 
-    left:
-        50%;
+    inset: 0;
 
-    top:
-        50%;
+    width: 100%;
+    height: 100%;
 
-    width:
-        28px;
+    opacity: 0;
 
-    height:
-        40px;
+    cursor: pointer;
+}
+
+
+/* ==================================================
+   START BUTTON
+================================================== */
+
+#startButton {
+
+    width: 280px;
+
+    height: 48px;
+
+    border: none;
+
+    border-radius: 11px;
+
+    background:
+        var(--secondary);
+
+    color:
+        var(--background);
+
+    font-size: 15px;
+
+    font-weight: 600;
+
+    cursor: pointer;
+}
+
+
+#startButton:active {
 
     transform:
-        translate(-50%,-50%);
+        scale(.97);
+}
 
-    z-index:
-        8;
 
-    --playerColor:
-        #1976D2;
+/* ==================================================
+   COORDINATES
+================================================== */
+
+.coordinates {
+
+    position: absolute;
+
+    left: 50%;
+
+    top: 50%;
+
+    transform:
+        translate(-50%, -76px);
+
+    text-align: center;
+
+    color:
+        var(--text);
+
+    font-size: 14px;
+
+    line-height: 1.65;
+
+    font-weight: 500;
+
+    white-space: nowrap;
+
+    transition:
+        color .25s ease;
+}
+
+
+/* ==================================================
+   LOCATION MARKER
+================================================== */
+
+.location-marker {
+
+    position: absolute;
+
+    left: 50%;
+
+    top: 50%;
+
+    width: 56px;
+    height: 56px;
+
+    transform:
+        translate(-50%, -50%);
+}
+
+
+/* ==================================================
+   ACCURACY CIRCLE
+================================================== */
+
+.accuracy {
+
+    position: absolute;
+
+    inset: 0;
+
+    border-radius:
+        50%;
+
+    background:
+        color-mix(
+            in srgb,
+            var(--player-color) 6%,
+            transparent
+        );
+
+    border:
+        1px solid
+        color-mix(
+            in srgb,
+            var(--player-color) 15%,
+            transparent
+        );
 }
 
 
@@ -697,77 +1106,189 @@ body {
    EXPLORER ARROW
 ================================================== */
 
-#playerArrow {
+.heading {
 
     position: absolute;
 
-    left:
-        50%;
+    left: 50%;
 
-    top:
-        50%;
+    top: 3px;
 
-    width:
-        0;
-
-    height:
-        0;
+    width: 0;
+    height: 0;
 
     transform:
-        translate(-50%,-50%);
+        translateX(-50%);
+
+    transform-origin:
+        50% 50%;
 
     border-left:
-        7px solid transparent;
+        5px solid transparent;
 
     border-right:
-        7px solid transparent;
+        5px solid transparent;
 
     border-bottom:
-        25px solid
-        var(--playerColor);
+        18px solid
+        var(--player-color);
 
     filter:
         drop-shadow(
-            0 2px 3px
-            rgba(0,0,0,.25)
+            0 1px 2px
+            rgba(0,0,0,.15)
         );
+
+    transition:
+        transform .12s linear;
+}
+
+
+.heading::after {
+
+    content: "";
+
+    position: absolute;
+
+    left: 50%;
+
+    top: 6px;
+
+    width: 0;
+    height: 0;
+
+    transform:
+        translateX(-50%);
+
+    border-left:
+        1.5px solid transparent;
+
+    border-right:
+        1.5px solid transparent;
+
+    border-bottom:
+        7px solid
+        var(--background);
 }
 
 
 /* ==================================================
-   PLAYER DOT
+   CENTRE DOT
 ================================================== */
 
-#playerDot {
+.dot {
 
     position: absolute;
 
-    left:
-        50%;
+    left: 50%;
 
-    top:
-        50%;
+    top: 50%;
 
-    width:
-        6px;
-
-    height:
-        6px;
+    width: 11px;
+    height: 11px;
 
     transform:
-        translate(-50%,-50%);
+        translate(-50%, -50%);
 
     border-radius:
         50%;
 
     background:
-        var(--playerColor);
+        var(--player-color);
 
     border:
-        1.5px solid white;
+        2px solid
+        var(--background);
 
-    z-index:
-        2;
+    box-shadow:
+        0 1px 4px
+        rgba(0,0,0,.22);
+
+    z-index: 2;
+}
+
+
+/* ==================================================
+   USERNAME
+================================================== */
+
+.player-name {
+
+    position: absolute;
+
+    left: 50%;
+
+    top: calc(50% - 35px);
+
+    transform:
+        translate(-50%, -100%);
+
+    color:
+        var(--text);
+
+    font-size: 12px;
+
+    font-weight: 600;
+
+    white-space: nowrap;
+
+    text-align: center;
+
+    z-index: 10;
+}
+
+
+/* ==================================================
+   ALTITUDE
+================================================== */
+
+.altitude {
+
+    position: absolute;
+
+    top:
+        calc(
+            18px +
+            env(safe-area-inset-top)
+        );
+
+    right:
+        calc(
+            18px +
+            env(safe-area-inset-right)
+        );
+
+    text-align:
+        right;
+}
+
+
+.altitude-label {
+
+    font-size:
+        9px;
+
+    letter-spacing:
+        .9px;
+
+    color:
+        var(--muted);
+}
+
+
+.altitude-value {
+
+    margin-top:
+        2px;
+
+    font-size:
+        18px;
+
+    font-weight:
+        600;
+
+    color:
+        var(--secondary);
 }
 
 
@@ -775,17 +1296,15 @@ body {
    ERROR SCREEN
 ================================================== */
 
-#errorScreen {
+#error {
 
     position: fixed;
 
     inset: 0;
 
-    z-index:
-        500;
+    z-index: 500;
 
-    display:
-        none;
+    display: none;
 
     align-items:
         center;
@@ -796,178 +1315,143 @@ body {
     flex-direction:
         column;
 
-    padding:
-        30px;
+    background:
+        var(--background);
 
     text-align:
         center;
 
-    background:
-        var(--background);
-
-    color:
-        var(--primary);
+    padding:
+        30px;
 }
 
 
-#wifiIcon {
+.wifi {
 
-    font-size:
-        88px;
+    width:
+        96px;
 
-    line-height:
-        1;
-
-    color:
-        #e53935;
+    height:
+        96px;
 
     margin-bottom:
         22px;
-}
-
-
-#errorTitle {
-
-    font-size:
-        26px;
-
-    font-weight:
-        800;
-
-    margin-bottom:
-        10px;
 }
 
 
 #errorText {
 
-    max-width:
-        310px;
-
-    font-size:
-        15px;
-
-    line-height:
-        1.5;
-
-    opacity:
-        .75;
-
-    margin-bottom:
-        25px;
-}
-
-
-#errorButton {
-
-    border:
-        none;
-
-    padding:
-        14px 22px;
-
-    border-radius:
-        14px;
-
-    background:
-        var(--primary);
-
     color:
-        var(--background);
+        var(--error);
 
     font-size:
-        15px;
+        30px;
 
     font-weight:
-        700;
+        600;
+
+    margin-bottom:
+        26px;
 }
 
 
-/* ==================================================
-   COLOUR CONTROLS
-================================================== */
-
-#settings {
-
-    position: absolute;
-
-    bottom:
-        calc(
-            env(safe-area-inset-bottom)
-            + 18px
-        );
-
-    left:
-        50%;
-
-    transform:
-        translateX(-50%);
-
-    z-index:
-        20;
-
-    padding:
-        10px 14px;
-
-    border-radius:
-        16px;
-
-    background:
-        var(--panel);
-
-    backdrop-filter:
-        blur(12px);
-
-    -webkit-backdrop-filter:
-        blur(12px);
+.error-buttons {
 
     display:
         flex;
 
-    align-items:
-        center;
+    flex-direction:
+        column;
 
     gap:
-        9px;
+        12px;
+
+    width:
+        min(280px, 82vw);
 }
 
 
-.color {
+.error-button {
 
     width:
-        22px;
+        100%;
 
-    height:
-        22px;
-
-    border-radius:
-        50%;
-
-    border:
-        2px solid
-        rgba(255,255,255,.8);
-}
-
-
-#customColor {
-
-    width:
-        25px;
-
-    height:
-        25px;
-
-    border:
-        none;
+    min-height:
+        50px;
 
     padding:
-        0;
+        0 16px;
+
+    border-radius:
+        12px;
+
+    border:
+        1px solid
+        var(--border);
 
     background:
+        var(--button-background);
+
+    color:
+        var(--secondary);
+
+    font-size:
+        16px;
+
+    font-weight:
+        600;
+
+    cursor:
+        pointer;
+}
+
+
+.error-button.primary {
+
+    background:
+        var(--secondary);
+
+    color:
+        var(--background);
+
+    border:
         none;
+}
+
+
+#errorHelp {
+
+    margin-top:
+        17px;
+
+    max-width:
+        300px;
+
+    color:
+        var(--muted);
+
+    font-size:
+        12px;
+
+    line-height:
+        1.5;
 }
 
 </style>
+
+
+<!-- Leaflet (map tiles) -->
+<link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+>
+
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<!-- Firebase (shared multiplayer positions) -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 
 </head>
 
@@ -976,221 +1460,339 @@ body {
 
 
 <!-- ==================================================
-     SPLASH
+     SPLASH SCREEN
 ================================================== -->
 
 <div id="splash">
 
 <svg
     class="logo"
-    viewBox="0 0 500 500"
-    xmlns="http://www.w3.org/2000/svg">
+    viewBox="0 0 500 570"
+    xmlns="http://www.w3.org/2000/svg"
+>
 
 
-    <g
-        class="globe"
-        fill="none"
+<!-- GLOBE -->
+
+<g class="globe">
+
+    <circle
+        cx="250"
+        cy="225"
+        r="150"
+        fill="var(--background)"
         stroke="var(--primary)"
-        stroke-width="5">
+        stroke-width="7"
+    />
+
+</g>
 
 
-        <circle
-            cx="250"
-            cy="225"
-            r="105"/>
+<!-- GLOBE LINES -->
 
+<g
+    class="globeLines"
+    fill="none"
+    stroke="var(--globe-line)"
+    stroke-width="2"
+>
 
-        <g
-            class="globeLines"
-            stroke-width="1.5"
-            opacity=".55">
+    <ellipse
+        cx="250"
+        cy="285"
+        rx="105"
+        ry="35"
+    />
 
-
-            <ellipse
-                cx="250"
-                cy="225"
-                rx="105"
-                ry="25"/>
-
-
-            <ellipse
-                cx="250"
-                cy="225"
-                rx="42"
-                ry="105"/>
-
-
-            <ellipse
-                cx="250"
-                cy="225"
-                rx="18"
-                ry="105"/>
-
-
-        </g>
-
-
-        <line
-            class="cardinal"
-            x1="250"
-            y1="111"
-            x2="250"
-            y2="121"/>
-
-
-        <line
-            class="cardinal east"
-            x1="364"
-            y1="225"
-            x2="354"
-            y2="225"/>
-
-
-        <line
-            class="cardinal south"
-            x1="250"
-            y1="339"
-            x2="250"
-            y2="329"/>
-
-
-        <line
-            class="cardinal west"
-            x1="136"
-            y1="225"
-            x2="146"
-            y2="225"/>
-
-
-    </g>
-
+    <ellipse
+        cx="250"
+        cy="285"
+        rx="50"
+        ry="35"
+    />
 
     <path
-        class="cardinal"
+        d="M145 285 Q250 250 355 285"
+    />
+
+    <path
+        d="M150 300 Q250 330 350 300"
+    />
+
+    <path
+        d="M250 250 Q215 285 250 320"
+    />
+
+    <path
+        d="M250 250 Q285 285 250 320"
+    />
+
+</g>
+
+
+<!-- EAST -->
+
+<g
+    class="cardinal east"
+    stroke-width="5"
+    stroke-linecap="round"
+>
+
+    <line
+        x1="405"
+        y1="225"
+        x2="387"
+        y2="225"
+    />
+
+</g>
+
+
+<!-- SOUTH -->
+
+<g
+    class="cardinal south"
+    stroke-width="5"
+    stroke-linecap="round"
+>
+
+    <line
+        x1="250"
+        y1="380"
+        x2="250"
+        y2="362"
+    />
+
+</g>
+
+
+<!-- WEST -->
+
+<g
+    class="cardinal west"
+    stroke-width="5"
+    stroke-linecap="round"
+>
+
+    <line
+        x1="95"
+        y1="225"
+        x2="113"
+        y2="225"
+    />
+
+</g>
+
+
+<!-- NORTH ARROW -->
+
+<g class="navArrow">
+
+    <path
         d="
-        M250 92
-        L258 111
-        L250 106
-        L242 111
-        Z"
+        M250 125
+        L315 300
+        L250 260
+        L185 300
+        Z
+        "
+        fill="var(--blue-light)"
+    />
+
+    <path
+        d="
+        M250 125
+        L315 300
+        L250 260
+        Z
+        "
+        fill="var(--blue-dark)"
+    />
+
+    <path
+        d="
+        M250 55
+        L261 92
+        L250 108
+        L239 92
+        Z
+        "
         fill="var(--primary)"
-        stroke="none"/>
+    />
+
+</g>
 
 
-    <g class="navArrow">
+<!-- H.I.D.E.A. -->
 
-        <path
-            d="
-            M250 145
-            L214 285
-            L250 262
-            L286 285
-            Z"
-            fill="#4AA8F0"/>
-
-
-        <path
-            d="
-            M250 145
-            L250 262
-            L286 285
-            Z"
-            fill="#1668B5"/>
-
-    </g>
-
+<g
+    text-anchor="middle"
+    font-family="Arial, Helvetica, sans-serif"
+    font-size="62"
+    font-weight="500"
+>
 
     <text
         class="letter l1"
-        x="110"
-        y="410"
-        font-size="30"
-        text-anchor="middle">
-        H
-    </text>
-
+        x="95"
+        y="475"
+    >H</text>
 
     <text
         class="letter l2"
-        x="142"
-        y="410"
-        font-size="30"
-        text-anchor="middle">
-        .
-    </text>
-
+        x="135"
+        y="475"
+    >.</text>
 
     <text
         class="letter l3"
-        x="168"
-        y="410"
-        font-size="30"
-        text-anchor="middle">
-        I
-    </text>
-
+        x="165"
+        y="475"
+    >I</text>
 
     <text
         class="letter l4"
         x="195"
-        y="410"
-        font-size="30"
-        text-anchor="middle">
-        .
-    </text>
-
+        y="475"
+    >.</text>
 
     <text
         class="letter l5"
-        x="226"
-        y="410"
-        font-size="30"
-        text-anchor="middle">
-        D
-    </text>
-
+        x="235"
+        y="475"
+    >D</text>
 
     <text
         class="letter l6"
-        x="260"
-        y="410"
-        font-size="30"
-        text-anchor="middle">
-        .
-    </text>
-
+        x="285"
+        y="475"
+    >.</text>
 
     <text
         class="letter l7"
-        x="292"
-        y="410"
-        font-size="30"
-        text-anchor="middle">
-        E
-    </text>
-
+        x="325"
+        y="475"
+    >E</text>
 
     <text
         class="letter l8"
-        x="326"
-        y="410"
-        font-size="30"
-        text-anchor="middle">
-        .
-    </text>
-
+        x="370"
+        y="475"
+    >.</text>
 
     <text
         class="letter l9"
-        x="358"
-        y="410"
-        font-size="30"
-        text-anchor="middle">
-        A
-    </text>
+        x="410"
+        y="475"
+    >A</text>
 
+</g>
 
 </svg>
+
+</div>
+
+
+<!-- ==================================================
+     SETUP
+================================================== -->
+
+<div id="setup">
+
+    <div class="setup-title">
+        H.I.D.E.A.
+    </div>
+
+    <div class="setup-subtitle">
+        Choose your explorer
+    </div>
+
+
+    <input
+        id="username"
+        type="text"
+        maxlength="16"
+        placeholder="Username"
+        autocomplete="off"
+    >
+
+
+    <div class="gamecode-row">
+
+        <input
+            id="gameCode"
+            type="text"
+            maxlength="6"
+            placeholder="GAME CODE"
+            autocomplete="off"
+        >
+
+        <button id="newCodeButton">
+            NEW
+        </button>
+
+    </div>
+
+    <div class="gamecode-hint">
+        Share this code with friends so
+        they join the same map. Leave it
+        as-is to create a fresh game.
+    </div>
+
+
+    <div class="colors">
+
+        <button
+            class="color color1 selected"
+            data-color="#4285F4">
+        </button>
+
+        <button
+            class="color color2"
+            data-color="#E53935">
+        </button>
+
+        <button
+            class="color color3"
+            data-color="#43A047">
+        </button>
+
+        <button
+            class="color color4"
+            data-color="#8E44AD">
+        </button>
+
+        <button
+            class="color color5"
+            data-color="#F39C12">
+        </button>
+
+        <button
+            class="color color6"
+            data-color="#00ACC1">
+        </button>
+
+
+        <label
+            class="custom-color"
+            id="customColor">
+
+            +
+
+            <input
+                id="colorPicker"
+                type="color"
+                value="#4285F4"
+            >
+
+        </label>
+
+    </div>
+
+
+    <button id="startButton">
+        Continue
+    </button>
 
 </div>
 
@@ -1201,79 +1803,56 @@ body {
 
 <div id="app">
 
-    <div id="map">
+
+    <div id="map"></div>
 
 
-        <div id="playerInfo">
+    <div class="player-name"
+         id="playerName">
+    </div>
 
-            <div id="usernameDisplay">
-                Player
-            </div>
 
-            <div id="coordinates">
-                Waiting for location...
-            </div>
+    <div class="coordinates">
 
+        <div id="latitude">
+            --
         </div>
 
-
-        <div id="player">
-
-            <div id="playerArrow"></div>
-
-            <div id="playerDot"></div>
-
+        <div id="longitude">
+            --
         </div>
-
-
-        <div id="settings">
-
-
-            <div
-                class="color"
-                data-color="#1976D2"
-                style="background:#1976D2">
-            </div>
-
-
-            <div
-                class="color"
-                data-color="#E53935"
-                style="background:#E53935">
-            </div>
-
-
-            <div
-                class="color"
-                data-color="#43A047"
-                style="background:#43A047">
-            </div>
-
-
-            <div
-                class="color"
-                data-color="#FB8C00"
-                style="background:#FB8C00">
-            </div>
-
-
-            <div
-                class="color"
-                data-color="#8E24AA"
-                style="background:#8E24AA">
-            </div>
-
-
-            <input
-                id="customColor"
-                type="color"
-                value="#1976D2">
-
-
-        </div>
-
 
     </div>
+
+
+    <div class="location-marker">
+
+        <div class="accuracy"></div>
+
+        <div
+            class="heading"
+            id="heading">
+        </div>
+
+        <div class="dot"></div>
+
+    </div>
+
+
+    <div class="altitude">
+
+        <div class="altitude-label">
+            ALT
+        </div>
+
+        <div
+            class="altitude-value"
+            id="altitude">
+            --
+        </div>
+
+    </div>
+
 
 </div>
 
@@ -1282,28 +1861,86 @@ body {
      LOCATION ERROR
 ================================================== -->
 
-<div id="errorScreen">
+<div id="error">
 
 
-    <div id="wifiIcon">
-        ◔
-    </div>
+<svg
+    class="wifi"
+    viewBox="0 0 100 100"
+    xmlns="http://www.w3.org/2000/svg"
+>
+
+    <path
+        d="M10 35 Q50 5 90 35"
+        fill="none"
+        stroke="var(--error)"
+        stroke-width="10"
+        stroke-linecap="round"
+    />
+
+    <path
+        d="M23 52 Q50 30 77 52"
+        fill="none"
+        stroke="var(--error)"
+        stroke-width="10"
+        stroke-linecap="round"
+    />
+
+    <path
+        d="M37 69 Q50 58 63 69"
+        fill="none"
+        stroke="var(--error)"
+        stroke-width="10"
+        stroke-linecap="round"
+    />
+
+    <circle
+        cx="50"
+        cy="84"
+        r="6"
+        fill="var(--error)"
+    />
+
+    <line
+        x1="18"
+        y1="15"
+        x2="82"
+        y2="85"
+        stroke="var(--error)"
+        stroke-width="9"
+        stroke-linecap="round"
+    />
+
+</svg>
 
 
-    <div id="errorTitle">
-        Location unavailable
-    </div>
+<div id="errorText">
+    Location unavailable
+</div>
 
 
-    <div id="errorText">
-        H.I.D.E.A. needs your phone's
-        location to place you on the map.
-    </div>
+<div class="error-buttons">
 
+    <button
+        class="error-button primary"
+        id="allowButton">
+        Allow Location
+    </button>
 
-    <button id="errorButton">
+    <button
+        class="error-button"
+        id="settingsButton">
         Open Location Settings
     </button>
+
+</div>
+
+
+<div id="errorHelp">
+    Location permission is required
+    for H.I.D.E.A. to determine your
+    position.
+</div>
 
 
 </div>
@@ -1312,61 +1949,694 @@ body {
 <script>
 
 /* ==================================================
-   ELEMENTS
+   VARIABLES
 ================================================== */
 
-const splash =
-    document.getElementById("splash");
+let locationWatch = null;
 
-const app =
-    document.getElementById("app");
+let compassStarted = false;
 
-const player =
-    document.getElementById("player");
+let lastHeadingDeg = 0;
 
-const playerArrow =
-    document.getElementById("playerArrow");
+let selectedColor =
+    localStorage.getItem(
+        "hidea_color"
+    ) || "#4285F4";
 
-const coordinates =
-    document.getElementById("coordinates");
 
-const errorScreen =
-    document.getElementById("errorScreen");
+/* multiplayer state */
+
+let leafletMap = null;
+
+let mapReady = false;
+
+let othersLayer = {};
+
+let db = null;
+
+let playersRef = null;
+
+let myGameCode = "";
+
+
+const myUid =
+    localStorage.getItem("hidea_uid")
+    ||
+    (function() {
+
+        const id =
+            "p_" +
+            Math.random()
+                .toString(36)
+                .slice(2, 10);
+
+        localStorage.setItem(
+            "hidea_uid",
+            id
+        );
+
+        return id;
+
+    })();
 
 
 /* ==================================================
-   USERNAME
+   FIREBASE CONFIG
+   Replace with YOUR OWN Firebase project's config
+   (Firebase console > Project settings > General).
+   A free "Spark plan" project is enough.
 ================================================== */
 
-let username =
-    localStorage.getItem(
-        "hidea_username"
+const firebaseConfig = {
+
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_PROJECT.firebaseapp.com",
+    databaseURL: "https://YOUR_PROJECT-default-rtdb.firebaseio.com",
+    projectId: "YOUR_PROJECT",
+    appId: "YOUR_APP_ID"
+
+};
+
+
+try {
+
+    firebase.initializeApp(firebaseConfig);
+
+    db = firebase.database();
+
+}
+
+catch (e) {
+
+    console.warn(
+        "Firebase not configured yet — multiplayer disabled.",
+        e
     );
-
-
-if (!username) {
-
-    username =
-        "Player";
 
 }
 
 
-document
-.getElementById("usernameDisplay")
-.textContent =
-    username;
+/* ==================================================
+   ELEMENTS
+================================================== */
+
+const setup =
+    document.getElementById("setup");
+
+const app =
+    document.getElementById("app");
+
+const error =
+    document.getElementById("error");
+
+const username =
+    document.getElementById("username");
+
+const playerName =
+    document.getElementById("playerName");
+
+const heading =
+    document.getElementById("heading");
+
+const gameCodeInput =
+    document.getElementById("gameCode");
+
+const newCodeButton =
+    document.getElementById("newCodeButton");
 
 
 /* ==================================================
-   LOCATION
-   IMPORTANT:
-   THIS DOES NOT RUN DURING SPLASH.
+   LOAD SAVED USERNAME / GAME CODE
+================================================== */
+
+username.value =
+    localStorage.getItem(
+        "hidea_username"
+    ) || "";
+
+
+gameCodeInput.value =
+    localStorage.getItem(
+        "hidea_gamecode"
+    ) || makeGameCode();
+
+
+/* ==================================================
+   GAME CODE HELPERS
+================================================== */
+
+function makeGameCode() {
+
+    const chars =
+        "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+
+    let code = "";
+
+    for (let i = 0; i < 5; i++) {
+
+        code +=
+            chars[
+                Math.floor(
+                    Math.random() * chars.length
+                )
+            ];
+    }
+
+    return code;
+}
+
+
+newCodeButton.addEventListener(
+    "click",
+    function() {
+
+        gameCodeInput.value =
+            makeGameCode();
+
+    }
+);
+
+
+/* ==================================================
+   APPLY COLOUR
+================================================== */
+
+function applyColor() {
+
+    document.documentElement
+        .style
+        .setProperty(
+            "--player-color",
+            selectedColor
+        );
+
+
+    document
+        .querySelectorAll(".color")
+        .forEach(
+            button => {
+
+                button.classList.toggle(
+                    "selected",
+                    button.dataset.color
+                    .toUpperCase()
+                    ===
+                    selectedColor.toUpperCase()
+                );
+
+            }
+        );
+
+
+    document
+        .getElementById("customColor")
+        .style
+        .borderColor =
+            selectedColor;
+}
+
+
+applyColor();
+
+
+/* ==================================================
+   PRESET COLOURS
+================================================== */
+
+document
+    .querySelectorAll(".color")
+    .forEach(
+        button => {
+
+            button.addEventListener(
+                "click",
+                function() {
+
+                    selectedColor =
+                        this.dataset.color;
+
+                    localStorage.setItem(
+                        "hidea_color",
+                        selectedColor
+                    );
+
+                    applyColor();
+
+                }
+            );
+
+        }
+    );
+
+
+/* ==================================================
+   CUSTOM COLOUR
+================================================== */
+
+document
+    .getElementById("colorPicker")
+    .addEventListener(
+        "input",
+        function() {
+
+            selectedColor =
+                this.value.toUpperCase();
+
+            localStorage.setItem(
+                "hidea_color",
+                selectedColor
+            );
+
+            applyColor();
+
+        }
+    );
+
+
+/* ==================================================
+   START
+================================================== */
+
+document
+    .getElementById("startButton")
+    .addEventListener(
+        "click",
+        function() {
+
+            const name =
+                username.value.trim();
+
+
+            if (!name) {
+
+                username.focus();
+
+                return;
+            }
+
+
+            localStorage.setItem(
+                "hidea_username",
+                name
+            );
+
+
+            myGameCode =
+                (
+                    gameCodeInput.value.trim()
+                    ||
+                    makeGameCode()
+                )
+                .toUpperCase();
+
+            localStorage.setItem(
+                "hidea_gamecode",
+                myGameCode
+            );
+
+
+            playerName.textContent =
+                name;
+
+
+            setup.style.display =
+                "none";
+
+
+            joinGame();
+
+
+            requestLocation();
+
+        }
+    );
+
+
+/* ==================================================
+   SHOW ERROR
+================================================== */
+
+function showLocationError() {
+
+    error.style.display =
+        "flex";
+}
+
+
+/* ==================================================
+   HIDE ERROR
+================================================== */
+
+function hideLocationError() {
+
+    error.style.display =
+        "none";
+}
+
+
+/* ==================================================
+   UPDATE LOCATION
+================================================== */
+
+function updateLocation(position) {
+
+    const c =
+        position.coords;
+
+
+    document.getElementById(
+        "latitude"
+    ).textContent =
+
+        c.latitude.toFixed(6)
+        + "°";
+
+
+    document.getElementById(
+        "longitude"
+    ).textContent =
+
+        c.longitude.toFixed(6)
+        + "°";
+
+
+    if (
+        c.altitude !== null
+        &&
+        Number.isFinite(
+            c.altitude
+        )
+    ) {
+
+        document.getElementById(
+            "altitude"
+        ).textContent =
+
+            c.altitude.toFixed(1)
+            + " m";
+
+    }
+
+    else {
+
+        document.getElementById(
+            "altitude"
+        ).textContent =
+            "--";
+
+    }
+
+
+    hideLocationError();
+
+
+    /* ---- move/pan the live map so it looks
+       like the world scrolls under you ---- */
+
+    if (!mapReady) {
+
+        initMap(c.latitude, c.longitude);
+
+    }
+
+    else {
+
+        leafletMap.panTo(
+            [c.latitude, c.longitude],
+            { animate: true, duration: .4 }
+        );
+    }
+
+
+    /* ---- push my position to the shared game ---- */
+
+    sendMyPosition(c);
+}
+
+
+/* ==================================================
+   LIVE MAP INIT
+================================================== */
+
+function initMap(lat, lng) {
+
+    if (
+        typeof L === "undefined"
+        ||
+        !document.getElementById("map")
+    ) {
+
+        return;
+    }
+
+    leafletMap = L.map(
+        "map",
+        {
+            zoomControl: false,
+            attributionControl: false,
+            dragging: false,
+            scrollWheelZoom: false,
+            doubleClickZoom: false,
+            touchZoom: false,
+            boxZoom: false,
+            keyboard: false
+        }
+    ).setView([lat, lng], 18);
+
+    L.tileLayer(
+        "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+        { maxZoom: 19 }
+    ).addTo(leafletMap);
+
+    mapReady = true;
+}
+
+
+/* ==================================================
+   MULTIPLAYER — JOIN / SEND / RECEIVE
+================================================== */
+
+function joinGame() {
+
+    if (!db || !myGameCode) {
+
+        return;
+    }
+
+    playersRef =
+        db.ref(
+            "games/" + myGameCode + "/players"
+        );
+
+    const myRef =
+        playersRef.child(myUid);
+
+    /* remove me automatically if I close the tab */
+    myRef.onDisconnect().remove();
+
+    /* listen for everyone else's positions */
+    playersRef.on(
+        "value",
+        function(snapshot) {
+
+            renderOtherPlayers(
+                snapshot.val() || {}
+            );
+        }
+    );
+}
+
+
+function sendMyPosition(coords) {
+
+    if (!db || !myGameCode) {
+
+        return;
+    }
+
+    db.ref(
+        "games/" + myGameCode +
+        "/players/" + myUid
+    ).set({
+
+        name: playerName.textContent,
+        color: selectedColor,
+        lat: coords.latitude,
+        lng: coords.longitude,
+        heading: lastHeadingDeg,
+        updatedAt:
+            firebase.database.ServerValue
+                .TIMESTAMP
+
+    });
+}
+
+
+function renderOtherPlayers(players) {
+
+    if (!mapReady) {
+
+        return;
+    }
+
+    const staleAfter = 30000; // 30s
+    const now = Date.now();
+    const seen = {};
+
+    Object.keys(players).forEach(
+        function(uid) {
+
+            if (uid === myUid) {
+
+                return;
+            }
+
+            const p = players[uid];
+
+            if (
+                !p ||
+                typeof p.lat !== "number" ||
+                typeof p.lng !== "number"
+            ) {
+
+                return;
+            }
+
+            if (
+                p.updatedAt &&
+                (now - p.updatedAt) > staleAfter
+            ) {
+
+                return;
+            }
+
+            seen[uid] = true;
+
+            const html =
+                '<div class="other-player" style="--op-color:' +
+                (p.color || "#4285f4") +
+                '"><div class="op-name">' +
+                escapeHtml(p.name || "Explorer") +
+                '</div><div class="op-dot"></div></div>';
+
+            if (othersLayer[uid]) {
+
+                othersLayer[uid].setLatLng(
+                    [p.lat, p.lng]
+                );
+
+                othersLayer[uid]
+                    .setIcon(
+                        L.divIcon({
+                            html: html,
+                            className: "",
+                            iconSize: [34, 34]
+                        })
+                    );
+
+            }
+
+            else {
+
+                othersLayer[uid] =
+                    L.marker(
+                        [p.lat, p.lng],
+                        {
+                            icon: L.divIcon({
+                                html: html,
+                                className: "",
+                                iconSize: [34, 34]
+                            })
+                        }
+                    ).addTo(leafletMap);
+            }
+        }
+    );
+
+    /* drop markers for players who left / went stale */
+    Object.keys(othersLayer).forEach(
+        function(uid) {
+
+            if (!seen[uid]) {
+
+                leafletMap.removeLayer(
+                    othersLayer[uid]
+                );
+
+                delete othersLayer[uid];
+            }
+        }
+    );
+}
+
+
+function escapeHtml(str) {
+
+    const div =
+        document.createElement("div");
+
+    div.textContent = str;
+
+    return div.innerHTML;
+}
+
+
+/* ==================================================
+   GPS WATCH
+================================================== */
+
+function startLocationWatch() {
+
+    if (
+        locationWatch !== null
+    ) {
+
+        navigator.geolocation
+            .clearWatch(
+                locationWatch
+            );
+
+    }
+
+
+    locationWatch =
+        navigator.geolocation
+            .watchPosition(
+
+                updateLocation,
+
+                function() {
+
+                    showLocationError();
+
+                },
+
+                {
+
+                    enableHighAccuracy:
+                        true,
+
+                    maximumAge:
+                        1000,
+
+                    timeout:
+                        15000
+
+                }
+
+            );
+}
+
+
+/* ==================================================
+   REQUEST LOCATION
 ================================================== */
 
 function requestLocation() {
 
-    if (!navigator.geolocation) {
+    if (
+        !navigator.geolocation
+    ) {
 
         showLocationError();
 
@@ -1374,261 +2644,260 @@ function requestLocation() {
     }
 
 
-    navigator.geolocation.watchPosition(
+    navigator.geolocation
+        .getCurrentPosition(
 
-        function(position) {
+            function(position) {
 
-            const lat =
-                position.coords.latitude;
+                updateLocation(
+                    position
+                );
 
-            const lon =
-                position.coords.longitude;
+                startLocationWatch();
 
+                startCompass();
 
-            coordinates.textContent =
-                lat.toFixed(6) +
-                "°, " +
-                lon.toFixed(6) +
-                "°";
+            },
 
+            function() {
 
-            errorScreen.style.display =
-                "none";
+                showLocationError();
 
-        },
+            },
 
+            {
 
-        function(error) {
+                enableHighAccuracy:
+                    true,
 
-            showLocationError();
+                maximumAge:
+                    0,
 
-        },
+                timeout:
+                    15000
 
+            }
 
-        {
-
-            enableHighAccuracy:
-                true,
-
-            maximumAge:
-                1000,
-
-            timeout:
-                10000
-
-        }
-
-    );
-
+        );
 }
 
 
 /* ==================================================
-   LOCATION ERROR
+   OPEN ANDROID LOCATION SETTINGS
 ================================================== */
 
-function showLocationError() {
+function openLocationSettings() {
 
-    errorScreen.style.display =
-        "flex";
+    const intent =
+        "intent://settings/location" +
+        "#Intent;" +
+        "scheme=android-app;" +
+        "package=com.android.settings;" +
+        "end";
 
-}
 
-
-/* ==================================================
-   LOCATION SETTINGS
-================================================== */
-
-document
-.getElementById("errorButton")
-.addEventListener(
-    "click",
-    function() {
+    try {
 
         window.location.href =
-            "intent:#Intent;" +
-            "action=android.settings.LOCATION_SOURCE_SETTINGS;" +
-            "end";
+            intent;
 
     }
-);
 
-
-/* ==================================================
-   START APP AFTER SPLASH
-================================================== */
-
-setTimeout(
-
-    function() {
-
-        /*
-           Splash is now finished.
-        */
-
-        app.style.opacity =
-            "1";
-
-
-        /*
-           ONLY NOW do we ask for
-           location access.
-        */
+    catch (error) {
 
         requestLocation();
 
-    },
-
-    5000
-
-);
-
-
-/* ==================================================
-   PLAYER COLOUR
-================================================== */
-
-function setPlayerColor(color) {
-
-    player.style.setProperty(
-        "--playerColor",
-        color
-    );
-
-
-    localStorage.setItem(
-        "hidea_color",
-        color
-    );
-
+    }
 }
 
 
-const savedColor =
-    localStorage.getItem(
-        "hidea_color"
-    );
-
-
-if (savedColor) {
-
-    setPlayerColor(
-        savedColor
-    );
-
-}
-
-
-document
-.querySelectorAll(".color")
-.forEach(
-
-    function(button) {
-
-        button.addEventListener(
-            "click",
-            function() {
-
-                setPlayerColor(
-                    button.dataset.color
-                );
-
-            }
-        );
-
-    }
-
-);
-
-
-document
-.getElementById("customColor")
-.addEventListener(
-    "input",
-    function(event) {
-
-        setPlayerColor(
-            event.target.value
-        );
-
-    }
-);
-
-
 /* ==================================================
-   PHONE ORIENTATION
+   COMPASS
 ================================================== */
 
-function updateHeading(event) {
+function handleCompass(event) {
 
-    let heading =
-        null;
+    let direction;
 
 
     if (
-        typeof event.webkitCompassHeading
-        === "number"
+        event.webkitCompassHeading
+        !== undefined
     ) {
 
-        heading =
+        direction =
             event.webkitCompassHeading;
 
     }
 
-
     else if (
-        typeof event.alpha
-        === "number"
+        event.alpha !== null
     ) {
 
-        heading =
+        direction =
             360 - event.alpha;
 
     }
 
+    else {
 
-    if (heading === null)
         return;
 
+    }
 
-    playerArrow.style.transform =
-        "translate(-50%, -50%) " +
-        "rotate(" +
-        heading +
+
+    direction =
+        (direction + 360) % 360;
+
+
+    lastHeadingDeg = direction;
+
+
+    heading.style.transform =
+
+        "translateX(-50%) rotate("
+        +
+        direction
+        +
         "deg)";
-
 }
 
 
 /* ==================================================
-   ORIENTATION
+   START COMPASS
 ================================================== */
 
-function startOrientation() {
+function startCompass() {
 
-    window.addEventListener(
-        "deviceorientation",
-        updateHeading,
-        true
-    );
+    if (
+        compassStarted
+    ) {
 
+        return;
+    }
+
+
+    compassStarted = true;
+
+
+    if (
+
+        typeof DeviceOrientationEvent
+        !== "undefined"
+
+        &&
+
+        typeof DeviceOrientationEvent
+            .requestPermission
+        === "function"
+
+    ) {
+
+        DeviceOrientationEvent
+            .requestPermission()
+            .then(
+
+                function(permission) {
+
+                    if (
+                        permission ===
+                        "granted"
+                    ) {
+
+                        window
+                            .addEventListener(
+                                "deviceorientation",
+                                handleCompass,
+                                true
+                            );
+
+                    }
+
+                }
+
+            )
+            .catch(
+                function() {}
+            );
+
+    }
+
+    else {
+
+        window
+            .addEventListener(
+                "deviceorientationabsolute",
+                handleCompass,
+                true
+            );
+
+
+        window
+            .addEventListener(
+                "deviceorientation",
+                handleCompass,
+                true
+            );
+
+    }
 }
-
-
-startOrientation();
 
 
 /* ==================================================
-   SAVE COLOUR
+   ALLOW LOCATION BUTTON
 ================================================== */
 
-if (!savedColor) {
+document
+    .getElementById("allowButton")
+    .addEventListener(
+        "click",
+        function() {
 
-    setPlayerColor(
-        "#1976D2"
+            requestLocation();
+
+        }
     );
 
-}
+
+/* ==================================================
+   SETTINGS BUTTON
+================================================== */
+
+document
+    .getElementById("settingsButton")
+    .addEventListener(
+        "click",
+        function() {
+
+            openLocationSettings();
+
+        }
+    );
+
+
+/* ==================================================
+   START COMPASS ON TOUCH
+================================================== */
+
+document.addEventListener(
+
+    "touchstart",
+
+    function() {
+
+        startCompass();
+
+    },
+
+    {
+
+        once: true,
+
+        passive: true
+
+    }
+
+);
 
 </script>
 
