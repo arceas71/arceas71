@@ -14,6 +14,15 @@ viewport-fit=cover">
 
 <title>H.I.D.E.A.</title>
 
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link
+    href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=JetBrains
+
++Mono:wght@500;600&display=swap"
+    rel="stylesheet"
+>
+
 <style>
 
 /* ==================================================
@@ -38,6 +47,17 @@ viewport-fit=cover">
     --error: #b51f1f;
 
     --player-color: #4285f4;
+
+    --font-heading:
+        "Space Grotesk",
+        Arial,
+        Helvetica,
+        sans-serif;
+
+    --font-mono:
+        "JetBrains Mono",
+        "Courier New",
+        monospace;
 }
 
 
@@ -95,9 +115,7 @@ body {
         var(--text);
 
     font-family:
-        Arial,
-        Helvetica,
-        sans-serif;
+        var(--font-heading);
 
     transition:
         background .25s ease,
@@ -569,8 +587,48 @@ body {
 
 
 /* ==================================================
-   LIVE MAP (pans underneath the fixed centre marker
-   so it looks like YOU move as your GPS updates)
+   GRID BACKDROP (default — no network tile fetching,
+   just a panning grid that proves you're moving)
+================================================== */
+
+#grid {
+
+    position: absolute;
+
+    inset: 0;
+
+    z-index: 0;
+
+    background-color:
+        var(--background);
+
+    background-image:
+        linear-gradient(
+            var(--border) 1px,
+            transparent 1px
+        ),
+        linear-gradient(
+            90deg,
+            var(--border) 1px,
+            transparent 1px
+        );
+
+    background-size:
+        44px 44px;
+
+    background-position:
+        0px 0px;
+
+    opacity: .45;
+
+    transition:
+        opacity .2s ease;
+}
+
+
+/* ==================================================
+   LIVE MAP (optional — real OpenStreetMap tiles,
+   only fetched once the user switches it on)
 ================================================== */
 
 #map {
@@ -583,6 +641,20 @@ body {
 
     background:
         var(--background);
+
+    display: none;
+}
+
+
+#app.map-mode #map {
+
+    display: block;
+}
+
+
+#app.map-mode #grid {
+
+    display: none;
 }
 
 
@@ -611,7 +683,58 @@ body {
 }
 
 
-#app > *:not(#map) {
+/* ==================================================
+   MAP TOGGLE BUTTON
+================================================== */
+
+.map-toggle {
+
+    position: absolute;
+
+    top:
+        calc(
+            18px +
+            env(safe-area-inset-top)
+        );
+
+    left:
+        calc(
+            18px +
+            env(safe-area-inset-left)
+        );
+
+    z-index: 3;
+
+    height: 34px;
+
+    padding: 0 14px;
+
+    border-radius: 17px;
+
+    border:
+        1px solid
+        var(--border);
+
+    background:
+        var(--button-background);
+
+    color:
+        var(--text);
+
+    font-family:
+        var(--font-heading);
+
+    font-size: 11px;
+
+    font-weight: 600;
+
+    letter-spacing: .4px;
+
+    cursor: pointer;
+}
+
+
+#app > *:not(#map):not(#grid) {
 
     position: absolute;
 
@@ -622,7 +745,8 @@ body {
 .location-marker,
 .coordinates,
 .player-name,
-.altitude {
+.altitude,
+.map-toggle {
 
     z-index: 2;
 }
@@ -1032,16 +1156,19 @@ body {
     top: 50%;
 
     transform:
-        translate(-50%, -76px);
+        translate(-50%, -92px);
 
     text-align: center;
 
     color:
         var(--text);
 
-    font-size: 14px;
+    font-family:
+        var(--font-mono);
 
-    line-height: 1.65;
+    font-size: 13px;
+
+    line-height: 1.5;
 
     font-weight: 500;
 
@@ -1218,7 +1345,7 @@ body {
 
     left: 50%;
 
-    top: calc(50% - 35px);
+    top: calc(50% - 125px);
 
     transform:
         translate(-50%, -100%);
@@ -1226,9 +1353,14 @@ body {
     color:
         var(--text);
 
-    font-size: 12px;
+    font-family:
+        var(--font-heading);
+
+    font-size: 13px;
 
     font-weight: 600;
+
+    letter-spacing: .3px;
 
     white-space: nowrap;
 
@@ -1804,7 +1936,15 @@ body {
 <div id="app">
 
 
+    <div id="grid"></div>
+
     <div id="map"></div>
+
+    <button
+        class="map-toggle"
+        id="mapToggle">
+        SHOW MAP
+    </button>
 
 
     <div class="player-name"
@@ -1970,6 +2110,8 @@ let leafletMap = null;
 
 let mapReady = false;
 
+let mapModeOn = false;
+
 let othersLayer = {};
 
 let db = null;
@@ -1977,6 +2119,15 @@ let db = null;
 let playersRef = null;
 
 let myGameCode = "";
+
+
+/* grid-panning state (dead-reckoning, no network) */
+
+let gridOriginLat = null;
+
+let gridOriginLng = null;
+
+const GRID_PX_PER_METER = 3;
 
 
 const myUid =
@@ -2064,6 +2215,9 @@ const gameCodeInput =
 const newCodeButton =
     document.getElementById("newCodeButton");
 
+const mapToggle =
+    document.getElementById("mapToggle");
+
 
 /* ==================================================
    LOAD SAVED USERNAME / GAME CODE
@@ -2079,6 +2233,20 @@ gameCodeInput.value =
     localStorage.getItem(
         "hidea_gamecode"
     ) || makeGameCode();
+
+
+mapModeOn =
+    localStorage.getItem(
+        "hidea_mapmode"
+    ) === "1";
+
+app.classList.toggle(
+    "map-mode",
+    mapModeOn
+);
+
+mapToggle.textContent =
+    mapModeOn ? "HIDE MAP" : "SHOW MAP";
 
 
 /* ==================================================
@@ -2350,21 +2518,31 @@ function updateLocation(position) {
     hideLocationError();
 
 
-    /* ---- move/pan the live map so it looks
-       like the world scrolls under you ---- */
+    /* ---- move the backdrop so it looks like the
+       world scrolls under you. Grid mode needs no
+       network fetch at all; map mode (opt-in) uses
+       real tiles. ---- */
 
-    if (!mapReady) {
+    if (mapModeOn) {
 
-        initMap(c.latitude, c.longitude);
+        if (!mapReady) {
 
+            initMap(c.latitude, c.longitude);
+
+        }
+
+        else {
+
+            leafletMap.panTo(
+                [c.latitude, c.longitude],
+                { animate: true, duration: .4 }
+            );
+        }
     }
 
     else {
 
-        leafletMap.panTo(
-            [c.latitude, c.longitude],
-            { animate: true, duration: .4 }
-        );
+        panGrid(c.latitude, c.longitude);
     }
 
 
@@ -2372,6 +2550,125 @@ function updateLocation(position) {
 
     sendMyPosition(c);
 }
+
+
+/* ==================================================
+   GRID BACKDROP (default, no tile fetching)
+================================================== */
+
+function panGrid(lat, lng) {
+
+    const grid =
+        document.getElementById("grid");
+
+    if (!grid) {
+
+        return;
+    }
+
+    if (gridOriginLat === null) {
+
+        gridOriginLat = lat;
+
+        gridOriginLng = lng;
+
+        return;
+    }
+
+    const dx =
+        metersEastWest(
+            gridOriginLat,
+            gridOriginLng,
+            lng
+        );
+
+    const dy =
+        metersNorthSouth(
+            gridOriginLat,
+            lat
+        );
+
+    /* moving north/east should scroll the grid
+       south/west beneath the fixed centre dot */
+    const px =
+        -dx * GRID_PX_PER_METER;
+
+    const py =
+        dy * GRID_PX_PER_METER;
+
+    grid.style.backgroundPosition =
+        px + "px " + py + "px";
+}
+
+
+function metersEastWest(lat, lng1, lng2) {
+
+    const R = 6371000;
+
+    const rad =
+        lat * Math.PI / 180;
+
+    return (
+        (lng2 - lng1) * Math.PI / 180
+    ) * R * Math.cos(rad);
+}
+
+
+function metersNorthSouth(lat1, lat2) {
+
+    const R = 6371000;
+
+    return (
+        (lat2 - lat1) * Math.PI / 180
+    ) * R;
+}
+
+
+/* ==================================================
+   MAP TOGGLE (turns real tile fetching on/off)
+================================================== */
+
+function setMapMode(on) {
+
+    mapModeOn = on;
+
+    app.classList.toggle(
+        "map-mode",
+        on
+    );
+
+    mapToggle.textContent =
+        on ? "HIDE MAP" : "SHOW MAP";
+
+    localStorage.setItem(
+        "hidea_mapmode",
+        on ? "1" : "0"
+    );
+
+    if (on && !mapReady) {
+
+        const lat =
+            gridOriginLat;
+
+        const lng =
+            gridOriginLng;
+
+        if (lat !== null) {
+
+            initMap(lat, lng);
+        }
+    }
+}
+
+
+mapToggle.addEventListener(
+    "click",
+    function() {
+
+        setMapMode(!mapModeOn);
+
+    }
+);
 
 
 /* ==================================================
