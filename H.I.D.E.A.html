@@ -732,7 +732,73 @@ body {
 }
 
 
-#app > *:not(#map):not(#grid) {
+/* ==================================================
+   RECENTER BUTTON (appears once you've dragged
+   the map away from your live position)
+================================================== */
+
+.recenter-btn {
+
+    position: absolute;
+
+    top:
+        calc(
+            18px +
+            env(safe-area-inset-top)
+        );
+
+    left: 50%;
+
+    transform:
+        translateX(-50%)
+        scale(.6);
+
+    z-index: 3;
+
+    width: 34px;
+    height: 34px;
+
+    border-radius: 50%;
+
+    border:
+        1px solid
+        var(--border);
+
+    background:
+        var(--button-background);
+
+    color:
+        var(--blue);
+
+    font-size: 16px;
+
+    line-height: 1;
+
+    cursor: pointer;
+
+    opacity: 0;
+
+    pointer-events: none;
+
+    transition:
+        opacity .18s ease,
+        transform .18s ease;
+}
+
+
+.recenter-btn.visible {
+
+    opacity: 1;
+
+    pointer-events: auto;
+
+    transform:
+        translateX(-50%)
+        scale(1);
+}
+
+
+#app > *:not(#map):not(#grid):not(#gridPlayers) {
 
     position: absolute;
 
@@ -741,7 +807,6 @@ body {
 
 
 .location-marker,
-.coordinates,
 .player-name,
 .altitude,
 .map-toggle {
@@ -751,23 +816,24 @@ body {
 
 
 /* ==================================================
-   OTHER PLAYERS (rendered as Leaflet markers,
-   styled to match the local player's dot/heading)
+   AVATAR SYSTEM (shared visual language for every
+   player — self and everyone else — used on both
+   the grid backdrop and the real map)
 ================================================== */
 
-.other-player {
+.avatar-badge {
 
     position: relative;
 
-    width: 34px;
-    height: 34px;
+    width: 40px;
+    height: 40px;
 
     transform:
         translate(-50%, -50%);
 }
 
 
-.other-player .op-dot {
+.avatar-circle {
 
     position: absolute;
 
@@ -775,8 +841,8 @@ body {
 
     top: 50%;
 
-    width: 11px;
-    height: 11px;
+    width: 30px;
+    height: 30px;
 
     transform:
         translate(-50%, -50%);
@@ -784,31 +850,83 @@ body {
     border-radius: 50%;
 
     background:
-        var(--op-color, var(--blue));
+        var(--avatar-color, var(--blue));
 
     border:
-        2px solid
+        2.5px solid
         var(--background);
 
     box-shadow:
-        0 1px 4px
-        rgba(0,0,0,.22);
+        0 2px 6px
+        rgba(0,0,0,.25);
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    color: #fff;
+
+    font-family:
+        var(--font-heading);
+
+    font-weight: 700;
+
+    font-size: 12px;
+
+    letter-spacing: .2px;
 }
 
 
-.other-player .op-name {
+.avatar-pointer {
 
     position: absolute;
 
     left: 50%;
 
-    top: -14px;
+    top: -3px;
+
+    width: 0;
+    height: 0;
+
+    transform-origin:
+        50% 23px;
+
+    border-left:
+        4.5px solid transparent;
+
+    border-right:
+        4.5px solid transparent;
+
+    border-bottom:
+        10px solid
+        var(--avatar-color, var(--blue));
+
+    filter:
+        drop-shadow(
+            0 1px 1px
+            rgba(0,0,0,.2)
+        );
+}
+
+
+.avatar-name {
+
+    position: absolute;
+
+    left: 50%;
+
+    top: -6px;
 
     transform:
         translate(-50%, -100%);
 
     color:
         var(--text);
+
+    font-family:
+        var(--font-heading);
 
     font-size: 11px;
 
@@ -819,13 +937,37 @@ body {
     background:
         color-mix(
             in srgb,
-            var(--background) 78%,
+            var(--background) 80%,
             transparent
         );
 
-    padding: 1px 5px;
+    padding: 2px 7px;
 
-    border-radius: 6px;
+    border-radius: 7px;
+
+    box-shadow:
+        0 1px 3px
+        rgba(0,0,0,.12);
+}
+
+
+/* container for other players rendered directly
+   on the grid backdrop (non-map mode) */
+#gridPlayers {
+
+    position: absolute;
+
+    inset: 0;
+
+    z-index: 1;
+
+    pointer-events: none;
+}
+
+
+#gridPlayers .avatar-badge {
+
+    position: absolute;
 }
 
 
@@ -1142,43 +1284,8 @@ body {
 
 
 /* ==================================================
-   COORDINATES
-================================================== */
-
-.coordinates {
-
-    position: absolute;
-
-    left: 50%;
-
-    top: 50%;
-
-    transform:
-        translate(-50%, -92px);
-
-    text-align: center;
-
-    color:
-        var(--text);
-
-    font-family:
-        var(--font-mono);
-
-    font-size: 13px;
-
-    line-height: 1.5;
-
-    font-weight: 500;
-
-    white-space: nowrap;
-
-    transition:
-        color .25s ease;
-}
-
-
-/* ==================================================
-   LOCATION MARKER
+   LOCATION MARKER (self — uses the shared avatar
+   system: circle + initial, heading pointer, name)
 ================================================== */
 
 .location-marker {
@@ -1205,7 +1312,15 @@ body {
 
     position: absolute;
 
-    inset: 0;
+    left: 50%;
+
+    top: 50%;
+
+    width: 56px;
+    height: 56px;
+
+    transform:
+        translate(-50%, -50%);
 
     border-radius:
         50%;
@@ -1224,11 +1339,15 @@ body {
             var(--player-color) 15%,
             transparent
         );
+
+    transition:
+        width .3s ease,
+        height .3s ease;
 }
 
 
 /* ==================================================
-   EXPLORER ARROW
+   EXPLORER HEADING POINTER
 ================================================== */
 
 .heading {
@@ -1246,7 +1365,7 @@ body {
         translateX(-50%);
 
     transform-origin:
-        50% 50%;
+        50% 25px;
 
     border-left:
         5px solid transparent;
@@ -1255,7 +1374,7 @@ body {
         5px solid transparent;
 
     border-bottom:
-        18px solid
+        14px solid
         var(--player-color);
 
     filter:
@@ -1269,39 +1388,11 @@ body {
 }
 
 
-.heading::after {
-
-    content: "";
-
-    position: absolute;
-
-    left: 50%;
-
-    top: 6px;
-
-    width: 0;
-    height: 0;
-
-    transform:
-        translateX(-50%);
-
-    border-left:
-        1.5px solid transparent;
-
-    border-right:
-        1.5px solid transparent;
-
-    border-bottom:
-        7px solid
-        var(--background);
-}
-
-
 /* ==================================================
-   CENTRE DOT
+   SELF AVATAR CIRCLE
 ================================================== */
 
-.dot {
+.self-avatar {
 
     position: absolute;
 
@@ -1309,25 +1400,39 @@ body {
 
     top: 50%;
 
-    width: 11px;
-    height: 11px;
+    width: 30px;
+    height: 30px;
 
     transform:
         translate(-50%, -50%);
 
-    border-radius:
-        50%;
+    border-radius: 50%;
 
     background:
         var(--player-color);
 
     border:
-        2px solid
+        2.5px solid
         var(--background);
 
     box-shadow:
-        0 1px 4px
-        rgba(0,0,0,.22);
+        0 2px 6px
+        rgba(0,0,0,.25);
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    color: #fff;
+
+    font-family:
+        var(--font-heading);
+
+    font-weight: 700;
+
+    font-size: 12px;
 
     z-index: 2;
 }
@@ -1343,7 +1448,7 @@ body {
 
     left: 50%;
 
-    top: calc(50% - 125px);
+    top: calc(50% - 52px);
 
     transform:
         translate(-50%, -100%);
@@ -1362,9 +1467,95 @@ body {
 
     white-space: nowrap;
 
+    background:
+        color-mix(
+            in srgb,
+            var(--background) 80%,
+            transparent
+        );
+
+    padding: 2px 8px;
+
+    border-radius: 7px;
+
     text-align: center;
 
     z-index: 10;
+}
+
+
+/* ==================================================
+   GAME CODE BADGE (always visible so friends
+   know what to type in to join you)
+================================================== */
+
+.gamecode-badge {
+
+    position: absolute;
+
+    bottom:
+        calc(
+            22px +
+            env(safe-area-inset-bottom)
+        );
+
+    left: 50%;
+
+    transform:
+        translateX(-50%);
+
+    z-index: 3;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 7px;
+
+    height: 34px;
+
+    padding: 0 14px;
+
+    border-radius: 17px;
+
+    border:
+        1px solid
+        var(--border);
+
+    background:
+        var(--button-background);
+
+    cursor: pointer;
+}
+
+
+.gamecode-badge .gc-label {
+
+    font-family:
+        var(--font-heading);
+
+    font-size: 9px;
+
+    letter-spacing: .6px;
+
+    color:
+        var(--muted);
+}
+
+
+.gamecode-badge .gc-value {
+
+    font-family:
+        var(--font-mono);
+
+    font-size: 14px;
+
+    font-weight: 600;
+
+    letter-spacing: 1.5px;
+
+    color:
+        var(--text);
 }
 
 
@@ -1938,10 +2129,18 @@ body {
 
     <div id="map"></div>
 
+    <div id="gridPlayers"></div>
+
     <button
         class="map-toggle"
         id="mapToggle">
         SHOW MAP
+    </button>
+
+    <button
+        class="recenter-btn"
+        id="recenterBtn">
+        ◎
     </button>
 
 
@@ -1950,29 +2149,23 @@ body {
     </div>
 
 
-    <div class="coordinates">
-
-        <div id="latitude">
-            --
-        </div>
-
-        <div id="longitude">
-            --
-        </div>
-
+    <div
+        class="accuracy"
+        id="accuracyCircle">
     </div>
 
 
     <div class="location-marker">
-
-        <div class="accuracy"></div>
 
         <div
             class="heading"
             id="heading">
         </div>
 
-        <div class="dot"></div>
+        <div
+            class="self-avatar"
+            id="selfAvatar">
+        </div>
 
     </div>
 
@@ -1988,6 +2181,23 @@ body {
             id="altitude">
             --
         </div>
+
+    </div>
+
+
+    <div
+        class="gamecode-badge"
+        id="gameCodeBadge">
+
+        <span class="gc-label">
+            GAME CODE
+        </span>
+
+        <span
+            class="gc-value"
+            id="gameCodeValue">
+            ------
+        </span>
 
     </div>
 
@@ -2112,6 +2322,8 @@ let mapModeOn = false;
 
 let othersLayer = {};
 
+let othersGridEls = {};
+
 let db = null;
 
 let playersRef = null;
@@ -2126,6 +2338,19 @@ let gridOriginLat = null;
 let gridOriginLng = null;
 
 const GRID_PX_PER_METER = 3;
+
+
+/* live tracking used to place other players */
+
+let myLastLat = null;
+
+let myLastLng = null;
+
+let followMe = true;
+
+let lastPlayersSnapshot = {};
+
+let selfMapMarker = null;
 
 
 const myUid =
@@ -2150,10 +2375,7 @@ const myUid =
 
 
 /* ==================================================
-   FIREBASE CONFIG
-   Replace with YOUR OWN Firebase project's config
-   (Firebase console > Project settings > General).
-   A free "Spark plan" project is enough.
+   FIREBASE CONFIG (your H.I.D.E.A. project)
 ================================================== */
 
 const firebaseConfig = {
@@ -2162,7 +2384,10 @@ const firebaseConfig = {
     authDomain: "hidea-e453d.firebaseapp.com",
     databaseURL: "https://hidea-e453d-default-rtdb.asia-southeast1.firebasedatabase.app",
     projectId: "hidea-e453d",
+    storageBucket: "hidea-e453d.firebasestorage.app",
+    messagingSenderId: "1027814932968",
     appId: "1:1027814932968:web:d3ddd4db0f69293c31a45d"
+
 };
 
 
@@ -2214,6 +2439,21 @@ const newCodeButton =
 
 const mapToggle =
     document.getElementById("mapToggle");
+
+const recenterBtn =
+    document.getElementById("recenterBtn");
+
+const selfAvatar =
+    document.getElementById("selfAvatar");
+
+const gameCodeValue =
+    document.getElementById("gameCodeValue");
+
+const gameCodeBadge =
+    document.getElementById("gameCodeBadge");
+
+const gridPlayersEl =
+    document.getElementById("gridPlayers");
 
 
 /* ==================================================
@@ -2423,6 +2663,13 @@ document
             playerName.textContent =
                 name;
 
+            selfAvatar.textContent =
+                name.trim().charAt(0)
+                    .toUpperCase();
+
+            gameCodeValue.textContent =
+                myGameCode;
+
 
             setup.style.display =
                 "none";
@@ -2468,21 +2715,10 @@ function updateLocation(position) {
     const c =
         position.coords;
 
-
-    document.getElementById(
-        "latitude"
-    ).textContent =
-
-        c.latitude.toFixed(6)
-        + "°";
-
-
-    document.getElementById(
-        "longitude"
-    ).textContent =
-
-        c.longitude.toFixed(6)
-        + "°";
+    const rawAccuracy =
+        Number.isFinite(c.accuracy)
+            ? c.accuracy
+            : 30;
 
 
     if (
@@ -2515,6 +2751,27 @@ function updateLocation(position) {
     hideLocationError();
 
 
+    /* ---- reject / smooth the fix. Raw GPS fixes
+       jitter by several metres even standing still;
+       we filter that out instead of drawing every
+       raw sample. This can't beat your device's own
+       GPS hardware accuracy, but it stops the on-
+       screen jumpiness that isn't real movement. ---- */
+
+    const filtered =
+        filterPosition(
+            c.latitude,
+            c.longitude,
+            rawAccuracy
+        );
+
+    myLastLat = filtered.lat;
+
+    myLastLng = filtered.lng;
+
+    updateAccuracyCircle(rawAccuracy);
+
+
     /* ---- move the backdrop so it looks like the
        world scrolls under you. Grid mode needs no
        network fetch at all; map mode (opt-in) uses
@@ -2524,34 +2781,243 @@ function updateLocation(position) {
 
         if (!mapReady) {
 
-            initMap(c.latitude, c.longitude);
+            initMap(myLastLat, myLastLng);
+
+        }
+
+        else if (followMe) {
+
+            leafletMap.panTo(
+                [myLastLat, myLastLng],
+                { animate: true, duration: .4 }
+            );
+
+            hideSelfMapMarker();
 
         }
 
         else {
 
-            leafletMap.panTo(
-                [c.latitude, c.longitude],
-                { animate: true, duration: .4 }
+            /* they've dragged away — keep a real
+               marker on the map showing where they
+               actually are, since the fixed centre
+               dot no longer represents that */
+            showSelfMapMarker(
+                myLastLat,
+                myLastLng
             );
         }
     }
 
     else {
 
-        panGrid(c.latitude, c.longitude);
+        panGrid(myLastLat, myLastLng);
     }
 
 
-    /* ---- push my position to the shared game ---- */
+    /* ---- refresh everyone else's position on
+       screen using the coordinates we just got ---- */
 
-    sendMyPosition(c);
+    renderOtherPlayers(lastPlayersSnapshot);
+
+
+    /* ---- push my (smoothed) position to the
+       shared game, so other players see the same
+       jitter-free position we do ---- */
+
+    sendMyPosition({
+        latitude: myLastLat,
+        longitude: myLastLng
+    });
+}
+
+
+/* ==================================================
+   GPS SMOOTHING
+   Blends new fixes toward the previous position
+   instead of snapping to every raw sample, and
+   ignores fixes worse than 75m. The blend weight
+   depends on how confident the new fix is.
+================================================== */
+
+let filteredLat = null;
+
+let filteredLng = null;
+
+
+function filterPosition(lat, lng, accuracy) {
+
+    if (filteredLat === null) {
+
+        filteredLat = lat;
+
+        filteredLng = lng;
+
+        return { lat: lat, lng: lng };
+    }
+
+    /* a fix this bad (patchy signal, indoors, etc.)
+       tells us almost nothing — hold position */
+    if (accuracy > 75) {
+
+        return {
+            lat: filteredLat,
+            lng: filteredLng
+        };
+    }
+
+    const movedMeters =
+        Math.hypot(
+            metersEastWest(
+                filteredLat,
+                filteredLng,
+                lng
+            ),
+            metersNorthSouth(
+                filteredLat,
+                lat
+            )
+        );
+
+    /* GPS noise floor scales with reported accuracy —
+       treat tiny "movement" smaller than that as
+       standing still, not a real step */
+    const noiseFloor =
+        Math.max(accuracy * .5, 3);
+
+    if (movedMeters < noiseFloor) {
+
+        return {
+            lat: filteredLat,
+            lng: filteredLng
+        };
+    }
+
+    /* trust sharper fixes more; blend toward them
+       instead of teleporting straight to them */
+    const alpha =
+        accuracy < 10 ? .9 :
+        accuracy < 25 ? .6 :
+                        .3;
+
+    filteredLat +=
+        (lat - filteredLat) * alpha;
+
+    filteredLng +=
+        (lng - filteredLng) * alpha;
+
+    return {
+        lat: filteredLat,
+        lng: filteredLng
+    };
+}
+
+
+function updateAccuracyCircle(accuracy) {
+
+    const el =
+        document.getElementById(
+            "accuracyCircle"
+        );
+
+    if (!el) {
+
+        return;
+    }
+
+    const px =
+        Math.min(
+            Math.max(
+                accuracy *
+                2 *
+                GRID_PX_PER_METER,
+                40
+            ),
+            260
+        );
+
+    el.style.width = px + "px";
+
+    el.style.height = px + "px";
 }
 
 
 /* ==================================================
    GRID BACKDROP (default, no tile fetching)
 ================================================== */
+
+/* ==================================================
+   SELF MARKER ON THE REAL MAP
+   (only used once the person has dragged away
+   from "follow me" mode)
+================================================== */
+
+function showSelfMapMarker(lat, lng) {
+
+    document.querySelector(
+        ".location-marker"
+    ).style.visibility =
+        "hidden";
+
+    document.getElementById(
+        "playerName"
+    ).style.visibility =
+        "hidden";
+
+    const icon =
+        L.divIcon({
+            html: avatarHTML(
+                playerName.textContent,
+                selectedColor,
+                lastHeadingDeg
+            ),
+            className: "",
+            iconSize: [40, 40]
+        });
+
+    if (selfMapMarker) {
+
+        selfMapMarker.setLatLng(
+            [lat, lng]
+        );
+
+        selfMapMarker.setIcon(icon);
+
+    }
+
+    else {
+
+        selfMapMarker =
+            L.marker(
+                [lat, lng],
+                { icon: icon }
+            ).addTo(leafletMap);
+    }
+}
+
+
+function hideSelfMapMarker() {
+
+    document.querySelector(
+        ".location-marker"
+    ).style.visibility =
+        "visible";
+
+    document.getElementById(
+        "playerName"
+    ).style.visibility =
+        "visible";
+
+    if (selfMapMarker && leafletMap) {
+
+        leafletMap.removeLayer(
+            selfMapMarker
+        );
+
+        selfMapMarker = null;
+    }
+}
+
 
 function panGrid(lat, lng) {
 
@@ -2642,18 +3108,44 @@ function setMapMode(on) {
         on ? "1" : "0"
     );
 
-    if (on && !mapReady) {
 
-        const lat =
-            gridOriginLat;
+    /* grid mode has no concept of dragging away,
+       so always reset to "following" when we
+       leave the real map */
+    followMe = true;
 
-        const lng =
-            gridOriginLng;
+    recenterBtn.classList.remove(
+        "visible"
+    );
 
-        if (lat !== null) {
+    hideSelfMapMarker();
 
-            initMap(lat, lng);
+
+    if (on) {
+
+        if (
+            !mapReady &&
+            myLastLat !== null
+        ) {
+
+            initMap(myLastLat, myLastLng);
+
         }
+
+        else {
+
+            renderOtherPlayers(
+                lastPlayersSnapshot
+            );
+        }
+
+    }
+
+    else {
+
+        renderOtherPlayers(
+            lastPlayersSnapshot
+        );
     }
 }
 
@@ -2664,6 +3156,27 @@ mapToggle.addEventListener(
 
         setMapMode(!mapModeOn);
 
+    }
+);
+
+
+/* ==================================================
+   TAP GAME CODE TO COPY
+================================================== */
+
+gameCodeBadge.addEventListener(
+    "click",
+    function() {
+
+        if (
+            navigator.clipboard &&
+            navigator.clipboard.writeText
+        ) {
+
+            navigator.clipboard.writeText(
+                myGameCode
+            );
+        }
     }
 );
 
@@ -2686,24 +3199,77 @@ function initMap(lat, lng) {
     leafletMap = L.map(
         "map",
         {
-            zoomControl: false,
-            attributionControl: false,
-            dragging: false,
-            scrollWheelZoom: false,
-            doubleClickZoom: false,
-            touchZoom: false,
-            boxZoom: false,
-            keyboard: false
+            zoomControl: true,
+            attributionControl: true,
+            dragging: true,
+            scrollWheelZoom: true,
+            doubleClickZoom: true,
+            touchZoom: true,
+            boxZoom: true,
+            keyboard: true
         }
     ).setView([lat, lng], 18);
 
+    leafletMap.zoomControl.setPosition(
+        "bottomright"
+    );
+
     L.tileLayer(
         "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-        { maxZoom: 19 }
+        {
+            maxZoom: 19,
+            attribution:
+                "&copy; OpenStreetMap contributors"
+        }
     ).addTo(leafletMap);
 
+
+    /* if the person drags/zooms the map away from
+       their live position, drop out of follow mode
+       — same pattern as Google Maps' blue dot */
+    leafletMap.on(
+        "dragstart",
+        function() {
+
+            followMe = false;
+
+            recenterBtn.classList.add(
+                "visible"
+            );
+        }
+    );
+
     mapReady = true;
+
+    renderOtherPlayers(lastPlayersSnapshot);
 }
+
+
+recenterBtn.addEventListener(
+    "click",
+    function() {
+
+        followMe = true;
+
+        recenterBtn.classList.remove(
+            "visible"
+        );
+
+        hideSelfMapMarker();
+
+        if (
+            mapReady
+            &&
+            myLastLat !== null
+        ) {
+
+            leafletMap.panTo(
+                [myLastLat, myLastLng],
+                { animate: true }
+            );
+        }
+    }
+);
 
 
 /* ==================================================
@@ -2766,16 +3332,73 @@ function sendMyPosition(coords) {
 }
 
 
+/* ==================================================
+   SHARED AVATAR MARKUP
+   Same visual language everywhere a player (other
+   than "me while following") is rendered.
+================================================== */
+
+function avatarHTML(name, color, headingDeg) {
+
+    const initial =
+        (name || "Explorer")
+            .trim()
+            .charAt(0)
+            .toUpperCase();
+
+    const rotation =
+        typeof headingDeg === "number"
+            ? headingDeg
+            : 0;
+
+    return (
+        '<div class="avatar-badge" style="--avatar-color:' +
+        (color || "#4285f4") +
+        '">' +
+        '<div class="avatar-name">' +
+        escapeHtml(name || "Explorer") +
+        '</div>' +
+        '<div class="avatar-pointer" style="transform:rotate(' +
+        rotation +
+        'deg)"></div>' +
+        '<div class="avatar-circle">' +
+        escapeHtml(initial) +
+        '</div>' +
+        '</div>'
+    );
+}
+
+
+/* ==================================================
+   OTHER PLAYERS — DISPATCH (map vs grid rendering)
+================================================== */
+
 function renderOtherPlayers(players) {
 
-    if (!mapReady) {
+    lastPlayersSnapshot = players || {};
 
-        return;
+    if (mapModeOn) {
+
+        renderMapPlayers(lastPlayersSnapshot);
+
+        clearGridPlayers();
+
     }
+
+    else {
+
+        renderGridPlayers(lastPlayersSnapshot);
+
+        clearMapPlayers();
+    }
+}
+
+
+function livePlayerList(players) {
 
     const staleAfter = 30000; // 30s
     const now = Date.now();
-    const seen = {};
+    const list = [];
 
     Object.keys(players).forEach(
         function(uid) {
@@ -2804,50 +3427,66 @@ function renderOtherPlayers(players) {
                 return;
             }
 
-            seen[uid] = true;
+            list.push(
+                Object.assign({ uid: uid }, p)
+            );
+        }
+    );
 
-            const html =
-                '<div class="other-player" style="--op-color:' +
-                (p.color || "#4285f4") +
-                '"><div class="op-name">' +
-                escapeHtml(p.name || "Explorer") +
-                '</div><div class="op-dot"></div></div>';
+    return list;
+}
 
-            if (othersLayer[uid]) {
 
-                othersLayer[uid].setLatLng(
+/* ---- rendering on the real Leaflet map ---- */
+
+function renderMapPlayers(players) {
+
+    if (!mapReady) {
+
+        return;
+    }
+
+    const live = livePlayerList(players);
+    const seen = {};
+
+    live.forEach(
+        function(p) {
+
+            seen[p.uid] = true;
+
+            const icon =
+                L.divIcon({
+                    html: avatarHTML(
+                        p.name,
+                        p.color,
+                        p.heading
+                    ),
+                    className: "",
+                    iconSize: [40, 40]
+                });
+
+            if (othersLayer[p.uid]) {
+
+                othersLayer[p.uid].setLatLng(
                     [p.lat, p.lng]
                 );
 
-                othersLayer[uid]
-                    .setIcon(
-                        L.divIcon({
-                            html: html,
-                            className: "",
-                            iconSize: [34, 34]
-                        })
-                    );
+                othersLayer[p.uid]
+                    .setIcon(icon);
 
             }
 
             else {
 
-                othersLayer[uid] =
+                othersLayer[p.uid] =
                     L.marker(
                         [p.lat, p.lng],
-                        {
-                            icon: L.divIcon({
-                                html: html,
-                                className: "",
-                                iconSize: [34, 34]
-                            })
-                        }
+                        { icon: icon }
                     ).addTo(leafletMap);
             }
         }
     );
 
-    /* drop markers for players who left / went stale */
     Object.keys(othersLayer).forEach(
         function(uid) {
 
@@ -2861,6 +3500,141 @@ function renderOtherPlayers(players) {
             }
         }
     );
+}
+
+
+function clearMapPlayers() {
+
+    Object.keys(othersLayer).forEach(
+        function(uid) {
+
+            if (leafletMap) {
+
+                leafletMap.removeLayer(
+                    othersLayer[uid]
+                );
+            }
+        }
+    );
+
+    othersLayer = {};
+}
+
+
+/* ---- rendering on the grid backdrop, placed
+   relative to your own live position (no map,
+   no network fetch needed) ---- */
+
+function renderGridPlayers(players) {
+
+    if (
+        myLastLat === null ||
+        myLastLng === null
+    ) {
+
+        return;
+    }
+
+    const live = livePlayerList(players);
+    const seen = {};
+
+    live.forEach(
+        function(p) {
+
+            seen[p.uid] = true;
+
+            const dx =
+                metersEastWest(
+                    myLastLat,
+                    myLastLng,
+                    p.lng
+                );
+
+            const dy =
+                metersNorthSouth(
+                    myLastLat,
+                    p.lat
+                );
+
+            const px =
+                dx * GRID_PX_PER_METER;
+
+            const py =
+                -dy * GRID_PX_PER_METER;
+
+            let el = othersGridEls[p.uid];
+
+            if (!el) {
+
+                el =
+                    document.createElement(
+                        "div"
+                    );
+
+                el.className =
+                    "avatar-badge";
+
+                gridPlayersEl
+                    .appendChild(el);
+
+                othersGridEls[p.uid] = el;
+            }
+
+            el.style.left =
+                "calc(50% + " + px + "px)";
+
+            el.style.top =
+                "calc(50% + " + py + "px)";
+
+            el.style.setProperty(
+                "--avatar-color",
+                p.color || "#4285f4"
+            );
+
+            el.innerHTML =
+                '<div class="avatar-name">' +
+                escapeHtml(p.name || "Explorer") +
+                '</div>' +
+                '<div class="avatar-pointer" style="transform:rotate(' +
+                (typeof p.heading === "number"
+                    ? p.heading
+                    : 0) +
+                'deg)"></div>' +
+                '<div class="avatar-circle">' +
+                escapeHtml(
+                    (p.name || "Explorer")
+                        .trim()
+                        .charAt(0)
+                        .toUpperCase()
+                ) +
+                '</div>';
+        }
+    );
+
+    Object.keys(othersGridEls).forEach(
+        function(uid) {
+
+            if (!seen[uid]) {
+
+                othersGridEls[uid].remove();
+
+                delete othersGridEls[uid];
+            }
+        }
+    );
+}
+
+
+function clearGridPlayers() {
+
+    Object.keys(othersGridEls).forEach(
+        function(uid) {
+
+            othersGridEls[uid].remove();
+        }
+    );
+
+    othersGridEls = {};
 }
 
 
