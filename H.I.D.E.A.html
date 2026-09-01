@@ -17,7 +17,9 @@ viewport-fit=cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link
-    href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@500;600&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=JetBrains
+
++Mono:wght@500;600&display=swap"
     rel="stylesheet"
 >
 
@@ -714,7 +716,21 @@ body {
         var(--border);
 
     background:
-        var(--button-background);
+        color-mix(
+            in srgb,
+            var(--button-background) 80%,
+            transparent
+        );
+
+    backdrop-filter:
+        blur(10px);
+
+    -webkit-backdrop-filter:
+        blur(10px);
+
+    box-shadow:
+        0 3px 12px
+        rgba(0,0,0,.14);
 
     color:
         var(--text);
@@ -729,6 +745,16 @@ body {
     letter-spacing: .4px;
 
     cursor: pointer;
+
+    transition:
+        transform .12s ease;
+}
+
+
+.map-toggle:active {
+
+    transform:
+        scale(.95);
 }
 
 
@@ -766,7 +792,21 @@ body {
         var(--border);
 
     background:
-        var(--button-background);
+        color-mix(
+            in srgb,
+            var(--button-background) 80%,
+            transparent
+        );
+
+    backdrop-filter:
+        blur(10px);
+
+    -webkit-backdrop-filter:
+        blur(10px);
+
+    box-shadow:
+        0 3px 12px
+        rgba(0,0,0,.16);
 
     color:
         var(--blue);
@@ -995,7 +1035,7 @@ body {
 
 #gameCode {
 
-    width: 176px;
+    width: 140px;
 
     height: 44px;
 
@@ -1023,7 +1063,7 @@ body {
 }
 
 
-#newCodeButton {
+.rooms-btn {
 
     height: 44px;
 
@@ -1039,11 +1079,36 @@ body {
     color:
         var(--text);
 
-    font-size: 12px;
+    font-family:
+        var(--font-heading);
 
-    font-weight: 600;
+    font-size: 11px;
+
+    font-weight: 700;
+
+    letter-spacing: .3px;
 
     cursor: pointer;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 6px;
+
+    white-space: nowrap;
+
+    transition:
+        transform .12s ease;
+}
+
+
+.rooms-btn:active {
+
+    transform:
+        scale(.95);
 }
 
 
@@ -1423,7 +1488,19 @@ body {
 
     box-shadow:
         0 2px 6px
-        rgba(0,0,0,.25);
+        rgba(0,0,0,.25),
+        0 0 0 0
+        color-mix(
+            in srgb,
+            var(--player-color) 45%,
+            transparent
+        );
+
+    animation:
+        avatarPulse
+        2.4s
+        ease-out
+        infinite;
 
     display: flex;
 
@@ -1441,6 +1518,49 @@ body {
     font-size: 12px;
 
     z-index: 2;
+}
+
+
+@keyframes avatarPulse {
+
+    0% {
+
+        box-shadow:
+            0 2px 6px
+            rgba(0,0,0,.25),
+            0 0 0 0
+            color-mix(
+                in srgb,
+                var(--player-color) 45%,
+                transparent
+            );
+    }
+
+    70% {
+
+        box-shadow:
+            0 2px 6px
+            rgba(0,0,0,.25),
+            0 0 0 14px
+            color-mix(
+                in srgb,
+                var(--player-color) 0%,
+                transparent
+            );
+    }
+
+    100% {
+
+        box-shadow:
+            0 2px 6px
+            rgba(0,0,0,.25),
+            0 0 0 0
+            color-mix(
+                in srgb,
+                var(--player-color) 0%,
+                transparent
+            );
+    }
 }
 
 
@@ -1529,9 +1649,34 @@ body {
         var(--border);
 
     background:
-        var(--button-background);
+        color-mix(
+            in srgb,
+            var(--button-background) 80%,
+            transparent
+        );
+
+    backdrop-filter:
+        blur(10px);
+
+    -webkit-backdrop-filter:
+        blur(10px);
+
+    box-shadow:
+        0 3px 14px
+        rgba(0,0,0,.16);
 
     cursor: pointer;
+
+    transition:
+        transform .12s ease;
+}
+
+
+.gamecode-badge:active {
+
+    transform:
+        translateX(-50%)
+        scale(.96);
 }
 
 
@@ -1575,14 +1720,14 @@ body {
 
     top:
         calc(
-            18px +
+            60px +
             env(safe-area-inset-top)
         );
 
-    right:
+    left:
         calc(
             18px +
-            env(safe-area-inset-right)
+            env(safe-area-inset-left)
         );
 
     z-index: 3;
@@ -1612,6 +1757,12 @@ body {
     letter-spacing: .4px;
 
     cursor: pointer;
+
+    display: none;
+
+    align-items: center;
+
+    justify-content: center;
 }
 
 
@@ -1816,6 +1967,101 @@ body {
         var(--error);
 
     color: #fff;
+}
+
+
+.admin-room-row .arr-players {
+
+    width: 30px;
+
+    padding: 0;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    background:
+        var(--button-background);
+
+    border:
+        1px solid
+        var(--border);
+
+    color:
+        var(--text);
+}
+
+
+.arr-player-list {
+
+    flex-direction: column;
+
+    gap: 6px;
+
+    padding: 4px 12px 10px 12px;
+}
+
+
+.arr-player-row {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    padding: 7px 10px;
+
+    background:
+        color-mix(
+            in srgb,
+            var(--border) 25%,
+            transparent
+        );
+
+    border-radius: 9px;
+}
+
+
+.arr-player-name {
+
+    font-family:
+        var(--font-heading);
+
+    font-size: 12px;
+
+    font-weight: 600;
+
+    color:
+        var(--text);
+}
+
+
+.arr-kick {
+
+    height: 26px;
+
+    padding: 0 11px;
+
+    border-radius: 13px;
+
+    border: none;
+
+    background:
+        var(--error);
+
+    color: #fff;
+
+    font-family:
+        var(--font-heading);
+
+    font-size: 10px;
+
+    font-weight: 700;
+
+    cursor: pointer;
 }
 
 
@@ -2321,16 +2567,37 @@ body {
             autocomplete="off"
         >
 
-        <button id="newCodeButton">
-            CONTINUE
+        <button
+            id="newCodeButton"
+            class="rooms-btn"
+            title="Browse open rooms">
+
+            <svg
+                viewBox="0 0 24 24"
+                width="16"
+                height="16"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round">
+
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+
+            </svg>
+
+            ROOMS
+
         </button>
 
     </div>
 
     <div class="gamecode-hint">
-        Share this code with friends so
-        they join the same map. Leave it
-        as-is to create a fresh game.
+        Share this code with friends, or
+        tap ROOMS to browse open games.
     </div>
 
 
@@ -2672,6 +2939,8 @@ let isAdmin = false;
 
 let adminRoomsRef = null;
 
+let roomBrowserMode = "admin";
+
 
 const myUid =
     localStorage.getItem("hidea_uid")
@@ -2843,17 +3112,44 @@ function makeGameCode() {
 }
 
 
-/* the game-code field naturally makes people want
-   to tap the button right next to it to submit —
-   so that button now IS a continue shortcut */
+/* opens the public room browser — anyone can see
+   which games are open, before they even join one */
 newCodeButton.addEventListener(
     "click",
     function() {
 
-        document
-            .getElementById("startButton")
-            .click();
+        openRoomBrowser("public");
 
+    }
+);
+
+
+/* pressing Enter in either field submits, since
+   that's what people instinctively try */
+username.addEventListener(
+    "keydown",
+    function(e) {
+
+        if (e.key === "Enter") {
+
+            document
+                .getElementById("startButton")
+                .click();
+        }
+    }
+);
+
+
+gameCodeInput.addEventListener(
+    "keydown",
+    function(e) {
+
+        if (e.key === "Enter") {
+
+            document
+                .getElementById("startButton")
+                .click();
+        }
     }
 );
 
@@ -3313,6 +3609,11 @@ function showSelfMapMarker(lat, lng) {
     ).style.visibility =
         "hidden";
 
+    document.getElementById(
+        "accuracyCircle"
+    ).style.visibility =
+        "hidden";
+
     const icon =
         L.divIcon({
             html: avatarHTML(
@@ -3354,6 +3655,11 @@ function hideSelfMapMarker() {
 
     document.getElementById(
         "playerName"
+    ).style.visibility =
+        "visible";
+
+    document.getElementById(
+        "accuracyCircle"
     ).style.visibility =
         "visible";
 
@@ -3585,6 +3891,17 @@ function initMap(lat, lng) {
             recenterBtn.classList.add(
                 "visible"
             );
+
+            /* switch immediately using the last
+               known fix instead of waiting for the
+               next (possibly slow) GPS callback */
+            if (myLastLat !== null) {
+
+                showSelfMapMarker(
+                    myLastLat,
+                    myLastLng
+                );
+            }
         }
     );
 
@@ -3709,12 +4026,22 @@ function switchGame(newCode) {
    ADMIN PANEL
 ================================================== */
 
-function openAdminPanel() {
+function openRoomBrowser(mode) {
 
-    if (!isAdmin || !db) {
+    if (!db) {
 
         return;
     }
+
+    roomBrowserMode = mode;
+
+    document.querySelector(
+        "#adminPanel .admin-panel-header span"
+    ).textContent =
+
+        mode === "admin"
+            ? "Game Rooms (Admin)"
+            : "Open Game Rooms";
 
     adminPanel.classList.add("open");
 
@@ -3791,6 +4118,9 @@ function renderAdminRooms(games) {
             row.className =
                 "admin-room-row";
 
+            const isAdminMode =
+                roomBrowserMode === "admin";
+
             row.innerHTML =
 
                 '<div class="arr-info">' +
@@ -3803,8 +4133,22 @@ function renderAdminRooms(games) {
                 '</div>' +
                 '</div>' +
                 '<div class="arr-buttons">' +
+                '<button class="arr-players" title="See members">' +
+                '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" ' +
+                'stroke="currentColor" stroke-width="2" ' +
+                'stroke-linecap="round" stroke-linejoin="round">' +
+                '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>' +
+                '<circle cx="9" cy="7" r="4"/>' +
+                '<path d="M23 21v-2a4 4 0 0 0-3-3.87"/>' +
+                '<path d="M16 3.13a4 4 0 0 1 0 7.75"/>' +
+                '</svg>' +
+                '</button>' +
                 '<button class="arr-join">JOIN</button>' +
-                '<button class="arr-delete">DELETE</button>' +
+                (
+                    isAdminMode
+                        ? '<button class="arr-delete">DELETE</button>'
+                        : ""
+                ) +
                 '</div>';
 
             row.querySelector(
@@ -3813,35 +4157,132 @@ function renderAdminRooms(games) {
                 "click",
                 function() {
 
-                    switchGame(code);
+                    if (isAdminMode) {
 
-                    closeAdminPanel();
-                }
-            );
+                        switchGame(code);
 
-            row.querySelector(
-                ".arr-delete"
-            ).addEventListener(
-                "click",
-                function() {
+                        closeAdminPanel();
 
-                    if (
-                        confirm(
-                            "Delete room " +
-                            code +
-                            "? This removes it " +
-                            "for everyone in it."
-                        )
-                    ) {
+                    }
 
-                        db.ref(
-                            "games/" + code
-                        ).remove();
+                    else {
+
+                        /* not in a game yet — just
+                           fill the code in, let them
+                           review before continuing */
+                        gameCodeInput.value = code;
+
+                        closeAdminPanel();
                     }
                 }
             );
 
-            adminRoomList.appendChild(row);
+            if (isAdminMode) {
+
+                row.querySelector(
+                    ".arr-delete"
+                ).addEventListener(
+                    "click",
+                    function() {
+
+                        if (
+                            confirm(
+                                "Delete room " +
+                                code +
+                                "? This removes it " +
+                                "for everyone in it."
+                            )
+                        ) {
+
+                            db.ref(
+                                "games/" + code
+                            ).remove();
+                        }
+                    }
+                );
+            }
+
+
+            const playerBox =
+                document.createElement("div");
+
+            playerBox.className =
+                "arr-player-list";
+
+            playerBox.style.display =
+                "none";
+
+            Object.keys(players).forEach(
+                function(uid) {
+
+                    const p =
+                        players[uid] || {};
+
+                    const pRow =
+                        document.createElement(
+                            "div"
+                        );
+
+                    pRow.className =
+                        "arr-player-row";
+
+                    pRow.innerHTML =
+
+                        '<span class="arr-player-name">' +
+                        escapeHtml(
+                            p.name || "Explorer"
+                        ) +
+                        '</span>' +
+                        (
+                            isAdminMode
+                                ? '<button class="arr-kick">KICK</button>'
+                                : ""
+                        );
+
+                    if (isAdminMode) {
+
+                        pRow.querySelector(
+                            ".arr-kick"
+                        ).addEventListener(
+                            "click",
+                            function() {
+
+                                db.ref(
+                                    "games/" + code +
+                                    "/players/" + uid
+                                ).remove();
+                            }
+                        );
+                    }
+
+                    playerBox.appendChild(pRow);
+                }
+            );
+
+            row.querySelector(
+                ".arr-players"
+            ).addEventListener(
+                "click",
+                function() {
+
+                    playerBox.style.display =
+
+                        playerBox.style.display
+                        === "none"
+                            ? "flex"
+                            : "none";
+                }
+            );
+
+
+            const wrapper =
+                document.createElement("div");
+
+            wrapper.appendChild(row);
+
+            wrapper.appendChild(playerBox);
+
+            adminRoomList.appendChild(wrapper);
         }
     );
 }
@@ -3849,7 +4290,10 @@ function renderAdminRooms(games) {
 
 adminBtn.addEventListener(
     "click",
-    openAdminPanel
+    function() {
+
+        openRoomBrowser("admin");
+    }
 );
 
 
