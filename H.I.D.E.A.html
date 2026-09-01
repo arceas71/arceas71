@@ -751,14 +751,15 @@ body {
 
     transform:
         translateX(-50%)
-        scale(.6);
+        scale(.85);
 
     z-index: 3;
 
-    width: 34px;
     height: 34px;
 
-    border-radius: 50%;
+    padding: 0 16px;
+
+    border-radius: 17px;
 
     border:
         1px solid
@@ -770,9 +771,14 @@ body {
     color:
         var(--blue);
 
-    font-size: 16px;
+    font-family:
+        var(--font-heading);
 
-    line-height: 1;
+    font-size: 11px;
+
+    font-weight: 600;
+
+    letter-spacing: .4px;
 
     cursor: pointer;
 
@@ -1560,6 +1566,273 @@ body {
 
 
 /* ==================================================
+   ADMIN
+================================================== */
+
+.admin-btn {
+
+    position: absolute;
+
+    top:
+        calc(
+            18px +
+            env(safe-area-inset-top)
+        );
+
+    right:
+        calc(
+            18px +
+            env(safe-area-inset-right)
+        );
+
+    z-index: 3;
+
+    height: 34px;
+
+    padding: 0 14px;
+
+    border-radius: 17px;
+
+    border:
+        1px solid
+        var(--blue);
+
+    background:
+        var(--blue);
+
+    color: #fff;
+
+    font-family:
+        var(--font-heading);
+
+    font-size: 11px;
+
+    font-weight: 700;
+
+    letter-spacing: .4px;
+
+    cursor: pointer;
+}
+
+
+.admin-panel {
+
+    position: fixed;
+
+    inset: 0;
+
+    z-index: 600;
+
+    display: none;
+
+    align-items: flex-end;
+
+    justify-content: center;
+
+    background:
+        rgba(0,0,0,.4);
+}
+
+
+.admin-panel.open {
+
+    display: flex;
+}
+
+
+.admin-panel-inner {
+
+    width: 100%;
+
+    max-width: 480px;
+
+    max-height: 72vh;
+
+    background:
+        var(--background);
+
+    border-radius: 18px 18px 0 0;
+
+    padding: 16px 16px
+        calc(16px + env(safe-area-inset-bottom));
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 10px;
+}
+
+
+.admin-panel-header {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    font-family:
+        var(--font-heading);
+
+    font-size: 15px;
+
+    font-weight: 700;
+
+    color:
+        var(--text);
+}
+
+
+.admin-panel-header button {
+
+    width: 30px;
+    height: 30px;
+
+    border-radius: 50%;
+
+    border:
+        1px solid
+        var(--border);
+
+    background:
+        var(--button-background);
+
+    color:
+        var(--text);
+
+    font-size: 14px;
+
+    cursor: pointer;
+}
+
+
+.admin-room-list {
+
+    overflow-y: auto;
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 8px;
+}
+
+
+.admin-room-row {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    gap: 10px;
+
+    padding: 10px 12px;
+
+    border: 1px solid var(--border);
+
+    border-radius: 12px;
+}
+
+
+.admin-room-row .arr-info {
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 2px;
+}
+
+
+.admin-room-row .arr-code {
+
+    font-family:
+        var(--font-mono);
+
+    font-size: 14px;
+
+    font-weight: 700;
+
+    letter-spacing: 1px;
+
+    color:
+        var(--text);
+}
+
+
+.admin-room-row .arr-count {
+
+    font-size: 11px;
+
+    color:
+        var(--muted);
+}
+
+
+.admin-room-row .arr-buttons {
+
+    display: flex;
+
+    gap: 6px;
+}
+
+
+.admin-room-row button {
+
+    height: 30px;
+
+    padding: 0 12px;
+
+    border-radius: 15px;
+
+    border: none;
+
+    font-family:
+        var(--font-heading);
+
+    font-size: 11px;
+
+    font-weight: 700;
+
+    cursor: pointer;
+}
+
+
+.admin-room-row .arr-join {
+
+    background:
+        var(--blue);
+
+    color: #fff;
+}
+
+
+.admin-room-row .arr-delete {
+
+    background:
+        var(--error);
+
+    color: #fff;
+}
+
+
+.admin-room-empty {
+
+    color:
+        var(--muted);
+
+    font-size: 13px;
+
+    text-align: center;
+
+    padding: 20px 0;
+}
+
+
+/* ==================================================
    ALTITUDE
 ================================================== */
 
@@ -2049,7 +2322,7 @@ body {
         >
 
         <button id="newCodeButton">
-            NEW
+            CONTINUE
         </button>
 
     </div>
@@ -2140,7 +2413,7 @@ body {
     <button
         class="recenter-btn"
         id="recenterBtn">
-        ◎
+        RECENTER
     </button>
 
 
@@ -2201,6 +2474,44 @@ body {
 
     </div>
 
+
+    <button
+        class="admin-btn"
+        id="adminBtn"
+        style="display:none;">
+        ADMIN
+    </button>
+
+
+</div>
+
+
+<!-- ==================================================
+     ADMIN PANEL
+================================================== -->
+
+<div
+    id="adminPanel"
+    class="admin-panel">
+
+    <div class="admin-panel-inner">
+
+        <div class="admin-panel-header">
+
+            <span>Game Rooms</span>
+
+            <button id="adminCloseBtn">
+                ✕
+            </button>
+
+        </div>
+
+        <div
+            id="adminRoomList"
+            class="admin-room-list">
+        </div>
+
+    </div>
 
 </div>
 
@@ -2353,6 +2664,15 @@ let lastPlayersSnapshot = {};
 let selfMapMarker = null;
 
 
+/* admin */
+
+const ADMIN_KEY = "arceas@7118";
+
+let isAdmin = false;
+
+let adminRoomsRef = null;
+
+
 const myUid =
     localStorage.getItem("hidea_uid")
     ||
@@ -2455,6 +2775,18 @@ const gameCodeBadge =
 const gridPlayersEl =
     document.getElementById("gridPlayers");
 
+const adminBtn =
+    document.getElementById("adminBtn");
+
+const adminPanel =
+    document.getElementById("adminPanel");
+
+const adminCloseBtn =
+    document.getElementById("adminCloseBtn");
+
+const adminRoomList =
+    document.getElementById("adminRoomList");
+
 
 /* ==================================================
    LOAD SAVED USERNAME / GAME CODE
@@ -2511,12 +2843,16 @@ function makeGameCode() {
 }
 
 
+/* the game-code field naturally makes people want
+   to tap the button right next to it to submit —
+   so that button now IS a continue shortcut */
 newCodeButton.addEventListener(
     "click",
     function() {
 
-        gameCodeInput.value =
-            makeGameCode();
+        document
+            .getElementById("startButton")
+            .click();
 
     }
 );
@@ -2640,9 +2976,19 @@ document
             }
 
 
+            /* secret admin trigger — the raw string
+               is never shown anywhere, so it never
+               leaks to other players via the map */
+            isAdmin =
+                name === ADMIN_KEY;
+
+            const displayName =
+                isAdmin ? "Admin" : name;
+
+
             localStorage.setItem(
                 "hidea_username",
-                name
+                isAdmin ? "" : name
             );
 
 
@@ -2661,14 +3007,17 @@ document
 
 
             playerName.textContent =
-                name;
+                displayName;
 
             selfAvatar.textContent =
-                name.trim().charAt(0)
+                displayName.charAt(0)
                     .toUpperCase();
 
             gameCodeValue.textContent =
                 myGameCode;
+
+            adminBtn.style.display =
+                isAdmin ? "flex" : "none";
 
 
             setup.style.display =
@@ -3305,6 +3654,209 @@ function joinGame() {
         }
     );
 }
+
+
+/* ==================================================
+   SWITCH ROOMS (used by the admin "join" button —
+   leaves the current room cleanly and joins another
+   without restarting the whole app)
+================================================== */
+
+function switchGame(newCode) {
+
+    if (!db || newCode === myGameCode) {
+
+        return;
+    }
+
+    if (playersRef) {
+
+        playersRef.off();
+
+        db.ref(
+            "games/" + myGameCode +
+            "/players/" + myUid
+        ).remove();
+    }
+
+    clearMapPlayers();
+
+    clearGridPlayers();
+
+    myGameCode = newCode;
+
+    localStorage.setItem(
+        "hidea_gamecode",
+        myGameCode
+    );
+
+    gameCodeValue.textContent =
+        myGameCode;
+
+    joinGame();
+
+    if (myLastLat !== null) {
+
+        sendMyPosition({
+            latitude: myLastLat,
+            longitude: myLastLng
+        });
+    }
+}
+
+
+/* ==================================================
+   ADMIN PANEL
+================================================== */
+
+function openAdminPanel() {
+
+    if (!isAdmin || !db) {
+
+        return;
+    }
+
+    adminPanel.classList.add("open");
+
+    adminRoomsRef =
+        db.ref("games");
+
+    adminRoomsRef.on(
+        "value",
+        function(snapshot) {
+
+            renderAdminRooms(
+                snapshot.val() || {}
+            );
+        }
+    );
+}
+
+
+function closeAdminPanel() {
+
+    adminPanel.classList.remove("open");
+
+    if (adminRoomsRef) {
+
+        adminRoomsRef.off();
+
+        adminRoomsRef = null;
+    }
+}
+
+
+function renderAdminRooms(games) {
+
+    const codes =
+        Object.keys(games).filter(
+            function(code) {
+
+                const players =
+                    games[code].players || {};
+
+                return (
+                    Object.keys(players).length
+                    > 0
+                );
+            }
+        );
+
+
+    if (codes.length === 0) {
+
+        adminRoomList.innerHTML =
+            '<div class="admin-room-empty">' +
+            'No active game rooms right now.' +
+            '</div>';
+
+        return;
+    }
+
+
+    adminRoomList.innerHTML = "";
+
+    codes.forEach(
+        function(code) {
+
+            const players =
+                games[code].players || {};
+
+            const count =
+                Object.keys(players).length;
+
+            const row =
+                document.createElement("div");
+
+            row.className =
+                "admin-room-row";
+
+            row.innerHTML =
+
+                '<div class="arr-info">' +
+                '<div class="arr-code">' +
+                escapeHtml(code) +
+                '</div>' +
+                '<div class="arr-count">' +
+                count +
+                (count === 1 ? " player" : " players") +
+                '</div>' +
+                '</div>' +
+                '<div class="arr-buttons">' +
+                '<button class="arr-join">JOIN</button>' +
+                '<button class="arr-delete">DELETE</button>' +
+                '</div>';
+
+            row.querySelector(
+                ".arr-join"
+            ).addEventListener(
+                "click",
+                function() {
+
+                    switchGame(code);
+
+                    closeAdminPanel();
+                }
+            );
+
+            row.querySelector(
+                ".arr-delete"
+            ).addEventListener(
+                "click",
+                function() {
+
+                    if (
+                        confirm(
+                            "Delete room " +
+                            code +
+                            "? This removes it " +
+                            "for everyone in it."
+                        )
+                    ) {
+
+                        db.ref(
+                            "games/" + code
+                        ).remove();
+                    }
+                }
+            );
+
+            adminRoomList.appendChild(row);
+        }
+    );
+}
+
+
+adminBtn.addEventListener(
+    "click",
+    openAdminPanel
+);
+
+
+adminCloseBtn.addEventListener(
+    "click",
+    closeAdminPanel
+);
 
 
 function sendMyPosition(coords) {
