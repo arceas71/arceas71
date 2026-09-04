@@ -29,22 +29,24 @@ viewport-fit=cover">
 
 :root {
 
-    --background: #D3D3D3;
-    --primary: #282828;
-    --secondary: #282828;
-    --text: #282828;
-    --muted: #666666;
-    --globe-line: #8f8f8f;
-    --border: #aaaaaa;
-    --button-background: #D3D3D3;
+    --background: #070b0a;
+    --primary: #e8f5ee;
+    --secondary: #35e07a;
+    --text: #d6e6dd;
+    --muted: #6c8579;
+    --globe-line: #35473f;
+    --border: #1f3129;
+    --button-background: #0e1512;
 
-    --blue: #4285f4;
-    --blue-light: #4da9ed;
-    --blue-dark: #174f9c;
+    --blue: #35e07a;
+    --blue-light: #6dffab;
+    --blue-dark: #1c8f4c;
 
-    --error: #b51f1f;
+    --error: #ff4d4d;
+    --seeker-color: #ffb020;
+    --hider-color: #35e07a;
 
-    --player-color: #4285f4;
+    --player-color: #35e07a;
 
     --font-heading:
         "Space Grotesk",
@@ -59,24 +61,28 @@ viewport-fit=cover">
 }
 
 
+/* the splash screen keeps its exact original look —
+   colours pinned locally so the rest of the app's
+   theme can change freely without touching it */
+#splash {
+
+    --background: #D3D3D3;
+    --primary: #282828;
+    --globe-line: #8f8f8f;
+    --blue-light: #4da9ed;
+    --blue-dark: #174f9c;
+}
+
+
 @media (prefers-color-scheme: dark) {
 
-    :root {
+    #splash {
 
         --background: #282828;
         --primary: #D3D3D3;
-        --secondary: #D3D3D3;
-        --text: #D3D3D3;
-        --muted: #999999;
         --globe-line: #686868;
-        --border: #555555;
-        --button-background: #282828;
-
-        --blue: #5b9df9;
         --blue-light: #67b5f4;
         --blue-dark: #2865b5;
-
-        --error: #ff5c5c;
     }
 }
 
@@ -93,6 +99,92 @@ viewport-fit=cover">
         transparent;
 
     user-select: none;
+}
+
+
+/* ==================================================
+   TACTICAL HUD UTILITIES
+================================================== */
+
+.hud-frame {
+
+    position: relative;
+}
+
+
+.hud-frame::before,
+.hud-frame::after {
+
+    content: "";
+
+    position: absolute;
+
+    width: 10px;
+    height: 10px;
+
+    border:
+        1.5px solid
+        var(--blue);
+
+    opacity: .8;
+}
+
+
+.hud-frame::before {
+
+    top: -1px;
+    left: -1px;
+
+    border-right: none;
+    border-bottom: none;
+}
+
+
+.hud-frame::after {
+
+    bottom: -1px;
+    right: -1px;
+
+    border-left: none;
+    border-top: none;
+}
+
+
+.glow-text {
+
+    color:
+        var(--blue);
+
+    text-shadow:
+        0 0 8px
+        color-mix(
+            in srgb,
+            var(--blue) 65%,
+            transparent
+        );
+}
+
+
+.scanlines {
+
+    position: absolute;
+
+    inset: 0;
+
+    pointer-events: none;
+
+    background:
+        repeating-linear-gradient(
+            0deg,
+            rgba(0,0,0,.08) 0px,
+            rgba(0,0,0,.08) 1px,
+            transparent 1px,
+            transparent 3px
+        );
+
+    mix-blend-mode: overlay;
+
+    opacity: .5;
 }
 
 
@@ -656,28 +748,18 @@ body {
 }
 
 
-/* mono-tone the tiles so the map matches the
-   grayscale H.I.D.E.A. look */
+/* mono-tone + tint the tiles green so the map
+   matches the tactical/night-vision theme, always
+   dark regardless of system light/dark setting */
 #map .leaflet-tile-pane {
 
     filter:
-        grayscale(1)
-        contrast(1.05)
-        brightness(1.02);
-}
-
-
-@media (prefers-color-scheme: dark) {
-
-    #map .leaflet-tile-pane {
-
-        filter:
-            grayscale(1)
-            contrast(1.05)
-            brightness(.55)
-            invert(1)
-            hue-rotate(180deg);
-    }
+        grayscale(.3)
+        sepia(.6)
+        hue-rotate(70deg)
+        saturate(2.4)
+        brightness(.5)
+        contrast(1.15);
 }
 
 
@@ -1025,7 +1107,7 @@ body {
 
     align-items: center;
 
-    gap: 8px;
+    justify-content: center;
 
     margin-bottom: 22px;
 }
@@ -1033,7 +1115,7 @@ body {
 
 #gameCode {
 
-    width: 140px;
+    width: 280px;
 
     height: 44px;
 
@@ -1061,30 +1143,23 @@ body {
 }
 
 
-.rooms-btn {
+.rooms-link {
 
-    height: 44px;
+    margin-top: 14px;
 
-    padding: 0 14px;
+    background: none;
 
-    border: 1px solid var(--border);
-
-    border-radius: 11px;
-
-    background:
-        var(--button-background);
+    border: none;
 
     color:
-        var(--text);
+        var(--muted);
 
     font-family:
         var(--font-heading);
 
-    font-size: 11px;
+    font-size: 12px;
 
-    font-weight: 700;
-
-    letter-spacing: .3px;
+    font-weight: 600;
 
     cursor: pointer;
 
@@ -1096,17 +1171,13 @@ body {
 
     gap: 6px;
 
-    white-space: nowrap;
-
-    transition:
-        transform .12s ease;
+    padding: 6px;
 }
 
 
-.rooms-btn:active {
+.rooms-link:active {
 
-    transform:
-        scale(.95);
+    opacity: .6;
 }
 
 
@@ -1201,6 +1272,16 @@ body {
     font-size: 16px;
 
     margin-bottom: 22px;
+
+    transition:
+        border-color .2s ease;
+}
+
+
+#username.needs-nickname {
+
+    border-color:
+        var(--error);
 }
 
 
@@ -1800,6 +1881,12 @@ body {
     background:
         var(--background);
 
+    border:
+        1px solid
+        var(--border);
+
+    border-bottom: none;
+
     border-radius: 18px 18px 0 0;
 
     padding: 16px 16px
@@ -1810,6 +1897,10 @@ body {
     flex-direction: column;
 
     gap: 10px;
+
+    box-shadow:
+        0 -8px 30px
+        rgba(0,0,0,.5);
 }
 
 
@@ -1821,15 +1912,23 @@ body {
 
     justify-content: space-between;
 
+    padding-bottom: 10px;
+
+    border-bottom:
+        1px solid
+        var(--border);
+
     font-family:
         var(--font-heading);
 
-    font-size: 15px;
+    font-size: 13px;
 
     font-weight: 700;
 
+    letter-spacing: .6px;
+
     color:
-        var(--text);
+        var(--blue);
 }
 
 
@@ -2275,6 +2374,669 @@ body {
         1.5;
 }
 
+
+/* ==================================================
+   PHASE BANNER (role + phase + timer, in-app HUD)
+================================================== */
+
+.phase-banner {
+
+    position: absolute;
+
+    top:
+        calc(
+            100px +
+            env(safe-area-inset-top)
+        );
+
+    left: 50%;
+
+    transform: translateX(-50%);
+
+    z-index: 3;
+
+    display: none;
+
+    align-items: center;
+
+    gap: 10px;
+
+    height: 30px;
+
+    padding: 0 16px;
+
+    border-radius: 15px;
+
+    border:
+        1px solid
+        var(--border);
+
+    background:
+        color-mix(
+            in srgb,
+            var(--button-background) 82%,
+            transparent
+        );
+
+    backdrop-filter:
+        blur(10px);
+
+    font-family:
+        var(--font-mono);
+
+    font-size: 11px;
+
+    font-weight: 600;
+
+    letter-spacing: .6px;
+
+    white-space: nowrap;
+}
+
+
+.phase-banner.visible {
+
+    display: flex;
+}
+
+
+.phase-banner.role-seeker
+#phaseBannerRole {
+
+    color:
+        var(--seeker-color);
+}
+
+
+.phase-banner.role-hider
+#phaseBannerRole {
+
+    color:
+        var(--hider-color);
+}
+
+
+#phaseBannerTimer {
+
+    color:
+        var(--blue);
+}
+
+
+/* ==================================================
+   LOBBY
+================================================== */
+
+.lobby-panel {
+
+    position: fixed;
+
+    inset: 0;
+
+    z-index: 500;
+
+    display: none;
+
+    align-items: center;
+
+    justify-content: center;
+
+    background:
+        var(--background);
+
+    padding: 24px;
+}
+
+
+.lobby-panel.open {
+
+    display: flex;
+}
+
+
+.lobby-inner {
+
+    width: 100%;
+
+    max-width: 380px;
+
+    max-height: 84vh;
+
+    overflow-y: auto;
+
+    padding: 22px;
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+
+    gap: 14px;
+}
+
+
+.lobby-title {
+
+    font-family:
+        var(--font-heading);
+
+    font-size: 20px;
+
+    font-weight: 700;
+
+    letter-spacing: 1px;
+}
+
+
+.lobby-sub {
+
+    color:
+        var(--muted);
+
+    font-size: 12px;
+
+    text-align: center;
+}
+
+
+.lobby-roster {
+
+    width: 100%;
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 6px;
+}
+
+
+.lobby-roster-row {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 8px;
+
+    padding: 8px 10px;
+
+    border: 1px solid var(--border);
+
+    border-radius: 9px;
+}
+
+
+.lobby-roster-dot {
+
+    width: 10px;
+    height: 10px;
+
+    border-radius: 50%;
+
+    flex-shrink: 0;
+}
+
+
+.lobby-roster-name {
+
+    font-family:
+        var(--font-heading);
+
+    font-size: 13px;
+
+    font-weight: 600;
+
+    color:
+        var(--text);
+}
+
+
+.lobby-roster-host {
+
+    margin-left: auto;
+
+    font-size: 9px;
+
+    color:
+        var(--blue);
+
+    letter-spacing: .5px;
+}
+
+
+.lobby-host-controls {
+
+    width: 100%;
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 12px;
+
+    margin-top: 6px;
+}
+
+
+.lobby-setting {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    font-family:
+        var(--font-heading);
+
+    font-size: 10px;
+
+    letter-spacing: .5px;
+
+    color:
+        var(--muted);
+}
+
+
+.lobby-stepper {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 10px;
+
+    font-family:
+        var(--font-mono);
+
+    font-size: 13px;
+
+    font-weight: 600;
+
+    color:
+        var(--text);
+}
+
+
+.lobby-step-btn {
+
+    width: 26px;
+    height: 26px;
+
+    border-radius: 50%;
+
+    border: 1px solid var(--border);
+
+    background:
+        var(--button-background);
+
+    color:
+        var(--blue);
+
+    font-size: 15px;
+
+    line-height: 1;
+
+    cursor: pointer;
+}
+
+
+#startMissionBtn {
+
+    width: 100%;
+
+    height: 48px;
+
+    margin-top: 8px;
+
+    border: none;
+
+    border-radius: 11px;
+
+    background:
+        var(--blue);
+
+    color:
+        #05130a;
+
+    font-family:
+        var(--font-heading);
+
+    font-size: 14px;
+
+    font-weight: 700;
+
+    letter-spacing: .6px;
+
+    cursor: pointer;
+}
+
+
+/* ==================================================
+   HIDING BLACKOUT (seeker only)
+================================================== */
+
+.hide-blackout {
+
+    position: fixed;
+
+    inset: 0;
+
+    z-index: 550;
+
+    display: none;
+
+    align-items: center;
+
+    justify-content: center;
+
+    background: #000;
+}
+
+
+.hide-blackout.visible {
+
+    display: flex;
+}
+
+
+.blackout-inner {
+
+    text-align: center;
+}
+
+
+.blackout-title {
+
+    font-family:
+        var(--font-heading);
+
+    font-size: 22px;
+
+    font-weight: 700;
+
+    letter-spacing: 2px;
+}
+
+
+.blackout-timer {
+
+    margin-top: 18px;
+
+    font-family:
+        var(--font-mono);
+
+    font-size: 48px;
+
+    font-weight: 700;
+
+    color:
+        var(--text);
+}
+
+
+.blackout-sub {
+
+    margin-top: 14px;
+
+    color:
+        var(--muted);
+
+    font-size: 12px;
+}
+
+
+/* ==================================================
+   FOUND OVERLAY
+================================================== */
+
+.found-overlay {
+
+    position: fixed;
+
+    inset: 0;
+
+    z-index: 540;
+
+    display: none;
+
+    align-items: center;
+
+    justify-content: center;
+
+    background:
+        rgba(10, 4, 4, .92);
+}
+
+
+.found-overlay.visible {
+
+    display: flex;
+}
+
+
+.found-inner {
+
+    text-align: center;
+
+    padding: 24px;
+}
+
+
+.found-title {
+
+    font-family:
+        var(--font-heading);
+
+    font-size: 22px;
+
+    font-weight: 700;
+
+    letter-spacing: 1px;
+
+    color:
+        var(--error);
+
+    text-shadow:
+        0 0 10px
+        rgba(255,77,77,.5);
+}
+
+
+.found-sub {
+
+    margin-top: 12px;
+
+    color:
+        var(--muted);
+
+    font-size: 13px;
+}
+
+
+/* ==================================================
+   RESULTS
+================================================== */
+
+.results-panel {
+
+    position: fixed;
+
+    inset: 0;
+
+    z-index: 560;
+
+    display: none;
+
+    align-items: center;
+
+    justify-content: center;
+
+    background:
+        var(--background);
+
+    padding: 24px;
+}
+
+
+.results-panel.open {
+
+    display: flex;
+}
+
+
+.results-inner {
+
+    width: 100%;
+
+    max-width: 380px;
+
+    max-height: 84vh;
+
+    overflow-y: auto;
+
+    padding: 22px;
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+
+    gap: 14px;
+}
+
+
+.results-winner {
+
+    font-family:
+        var(--font-heading);
+
+    font-size: 20px;
+
+    font-weight: 700;
+
+    letter-spacing: 1px;
+
+    text-align: center;
+}
+
+
+.results-list {
+
+    width: 100%;
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 6px;
+}
+
+
+.results-row {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    padding: 8px 10px;
+
+    border: 1px solid var(--border);
+
+    border-radius: 9px;
+
+    font-family:
+        var(--font-mono);
+
+    font-size: 12px;
+}
+
+
+.results-row .rr-status-found {
+
+    color:
+        var(--error);
+}
+
+
+.results-row .rr-status-safe {
+
+    color:
+        var(--hider-color);
+}
+
+
+#playAgainBtn {
+
+    width: 100%;
+
+    height: 46px;
+
+    border: none;
+
+    border-radius: 11px;
+
+    background:
+        var(--blue);
+
+    color:
+        #05130a;
+
+    font-family:
+        var(--font-heading);
+
+    font-size: 13px;
+
+    font-weight: 700;
+
+    letter-spacing: .5px;
+
+    cursor: pointer;
+}
+
+
+.results-waiting {
+
+    color:
+        var(--muted);
+
+    font-size: 12px;
+
+    text-align: center;
+}
+
+
+.leave-game-btn {
+
+    width: 100%;
+
+    height: 42px;
+
+    border: 1px solid var(--border);
+
+    border-radius: 11px;
+
+    background:
+        var(--button-background);
+
+    color:
+        var(--muted);
+
+    font-family:
+        var(--font-heading);
+
+    font-size: 12px;
+
+    font-weight: 600;
+
+    cursor: pointer;
+}
+
 </style>
 
 
@@ -2565,37 +3327,11 @@ body {
             autocomplete="off"
         >
 
-        <button
-            id="newCodeButton"
-            class="rooms-btn"
-            title="Browse open rooms">
-
-            <svg
-                viewBox="0 0 24 24"
-                width="16"
-                height="16"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round">
-
-                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                <circle cx="9" cy="7" r="4"/>
-                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-
-            </svg>
-
-            ROOMS
-
-        </button>
-
     </div>
 
     <div class="gamecode-hint">
-        Share this code with friends, or
-        tap ROOMS to browse open games.
+        Leave it as-is to create a fresh
+        game, or type a friend's code.
     </div>
 
 
@@ -2653,6 +3389,32 @@ body {
         Continue
     </button>
 
+
+    <button
+        id="newCodeButton"
+        class="rooms-link">
+
+        <svg
+            viewBox="0 0 24 24"
+            width="14"
+            height="14"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round">
+
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+
+        </svg>
+
+        Browse open rooms
+
+    </button>
+
 </div>
 
 
@@ -2680,6 +3442,19 @@ body {
         id="recenterBtn">
         RECENTER
     </button>
+
+
+    <div
+        id="phaseBanner"
+        class="phase-banner">
+
+        <span id="phaseBannerRole"></span>
+
+        <span id="phaseBannerText"></span>
+
+        <span id="phaseBannerTimer"></span>
+
+    </div>
 
 
     <div class="player-name"
@@ -2747,6 +3522,219 @@ body {
         ADMIN
     </button>
 
+
+</div>
+
+
+<!-- ==================================================
+     LOBBY (waiting room before a mission starts)
+================================================== -->
+
+<div id="lobbyPanel" class="lobby-panel">
+
+    <div class="lobby-inner hud-frame">
+
+        <div class="lobby-title glow-text">
+            MISSION BRIEFING
+        </div>
+
+        <div class="lobby-sub" id="lobbySub">
+            Waiting for players…
+        </div>
+
+        <div
+            id="lobbyRoster"
+            class="lobby-roster">
+        </div>
+
+        <div
+            id="lobbyHostControls"
+            class="lobby-host-controls">
+
+            <div class="lobby-setting">
+
+                <span>HIDERS PER SEEKER</span>
+
+                <div class="lobby-stepper">
+
+                    <button
+                        class="lobby-step-btn"
+                        data-setting="hidersPerSeeker"
+                        data-dir="-1">
+                        −
+                    </button>
+
+                    <span id="valHidersPerSeeker">
+                        5
+                    </span>
+
+                    <button
+                        class="lobby-step-btn"
+                        data-setting="hidersPerSeeker"
+                        data-dir="1">
+                        +
+                    </button>
+
+                </div>
+
+            </div>
+
+            <div class="lobby-setting">
+
+                <span>HIDE TIME</span>
+
+                <div class="lobby-stepper">
+
+                    <button
+                        class="lobby-step-btn"
+                        data-setting="hideSeconds"
+                        data-dir="-1">
+                        −
+                    </button>
+
+                    <span id="valHideSeconds">
+                        45s
+                    </span>
+
+                    <button
+                        class="lobby-step-btn"
+                        data-setting="hideSeconds"
+                        data-dir="1">
+                        +
+                    </button>
+
+                </div>
+
+            </div>
+
+            <div class="lobby-setting">
+
+                <span>SEEK LIMIT</span>
+
+                <div class="lobby-stepper">
+
+                    <button
+                        class="lobby-step-btn"
+                        data-setting="seekSeconds"
+                        data-dir="-1">
+                        −
+                    </button>
+
+                    <span id="valSeekSeconds">
+                        Untimed
+                    </span>
+
+                    <button
+                        class="lobby-step-btn"
+                        data-setting="seekSeconds"
+                        data-dir="1">
+                        +
+                    </button>
+
+                </div>
+
+            </div>
+
+            <button id="startMissionBtn">
+                START MISSION
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- ==================================================
+     HIDING PHASE — SEEKER BLACKOUT
+================================================== -->
+
+<div id="hideBlackout" class="hide-blackout">
+
+    <div class="scanlines"></div>
+
+    <div class="blackout-inner">
+
+        <div class="blackout-title glow-text">
+            EYES CLOSED
+        </div>
+
+        <div
+            class="blackout-timer"
+            id="hideCountdown">
+            0:45
+        </div>
+
+        <div class="blackout-sub">
+            Hiders are getting into position…
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- ==================================================
+     FOUND OVERLAY (hider who's been tagged)
+================================================== -->
+
+<div id="foundOverlay" class="found-overlay">
+
+    <div class="found-inner">
+
+        <div class="found-title">
+            YOU'VE BEEN FOUND
+        </div>
+
+        <div
+            class="found-sub"
+            id="foundBySub">
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- ==================================================
+     RESULTS
+================================================== -->
+
+<div id="resultsPanel" class="results-panel">
+
+    <div class="results-inner hud-frame">
+
+        <div
+            class="results-winner glow-text"
+            id="resultsWinner">
+            MISSION COMPLETE
+        </div>
+
+        <div
+            id="resultsList"
+            class="results-list">
+        </div>
+
+        <button
+            id="playAgainBtn"
+            style="display:none;">
+            PLAY AGAIN
+        </button>
+
+        <div
+            id="resultsWaitingHost"
+            class="results-waiting">
+            Waiting for host to restart…
+        </div>
+
+        <button
+            id="leaveGameBtn"
+            class="leave-game-btn">
+            LEAVE ROOM
+        </button>
+
+    </div>
 
 </div>
 
@@ -2929,6 +3917,33 @@ let lastPlayersSnapshot = {};
 let selfMapMarker = null;
 
 
+/* HIDE & SEEK game state (synced from Firebase) */
+
+let gameRef = null;
+
+let currentGameState = "lobby";
+
+let currentGameSettings = {
+    hidersPerSeeker: 5,
+    hideSeconds: 45,
+    seekSeconds: 0
+};
+
+let currentHostUid = null;
+
+let currentStartedAt = null;
+
+let currentSeekStartedAt = null;
+
+let currentWinner = null;
+
+let myRole = null;
+
+let myFound = false;
+
+let gameTickInterval = null;
+
+
 /* admin */
 
 const ADMIN_KEY = "arceas@7118";
@@ -3053,6 +4068,75 @@ const adminCloseBtn =
 
 const adminRoomList =
     document.getElementById("adminRoomList");
+
+
+/* game-flow elements */
+
+const phaseBanner =
+    document.getElementById("phaseBanner");
+
+const phaseBannerRole =
+    document.getElementById("phaseBannerRole");
+
+const phaseBannerText =
+    document.getElementById("phaseBannerText");
+
+const phaseBannerTimer =
+    document.getElementById("phaseBannerTimer");
+
+const lobbyPanel =
+    document.getElementById("lobbyPanel");
+
+const lobbySub =
+    document.getElementById("lobbySub");
+
+const lobbyRoster =
+    document.getElementById("lobbyRoster");
+
+const lobbyHostControls =
+    document.getElementById("lobbyHostControls");
+
+const valHidersPerSeeker =
+    document.getElementById("valHidersPerSeeker");
+
+const valHideSeconds =
+    document.getElementById("valHideSeconds");
+
+const valSeekSeconds =
+    document.getElementById("valSeekSeconds");
+
+const startMissionBtn =
+    document.getElementById("startMissionBtn");
+
+const hideBlackout =
+    document.getElementById("hideBlackout");
+
+const hideCountdown =
+    document.getElementById("hideCountdown");
+
+const foundOverlay =
+    document.getElementById("foundOverlay");
+
+const foundBySub =
+    document.getElementById("foundBySub");
+
+const resultsPanel =
+    document.getElementById("resultsPanel");
+
+const resultsWinner =
+    document.getElementById("resultsWinner");
+
+const resultsList =
+    document.getElementById("resultsList");
+
+const playAgainBtn =
+    document.getElementById("playAgainBtn");
+
+const resultsWaitingHost =
+    document.getElementById("resultsWaitingHost");
+
+const leaveGameBtn =
+    document.getElementById("leaveGameBtn");
 
 
 /* ==================================================
@@ -3317,6 +4401,9 @@ document
             setup.style.display =
                 "none";
 
+            app.style.display =
+                "block";
+
 
             joinGame();
 
@@ -3413,6 +4500,8 @@ function updateLocation(position) {
     myLastLng = filtered.lng;
 
     updateAccuracyCircle(rawAccuracy);
+
+    checkProximity();
 
 
     /* ---- move the backdrop so it looks like the
@@ -3522,11 +4611,30 @@ function filterPosition(lat, lng, accuracy) {
             )
         );
 
+    /* a jump this big relative to the reported
+       accuracy doesn't make physical sense as a
+       single step — almost certainly a multipath
+       glitch, not real movement. Ignore it rather
+       than let it yank the marker around */
+    const outlierLimit =
+        Math.max(accuracy * 4, 60);
+
+    if (movedMeters > outlierLimit) {
+
+        return {
+            lat: filteredLat,
+            lng: filteredLng
+        };
+    }
+
     /* GPS noise floor scales with reported accuracy —
        treat tiny "movement" smaller than that as
-       standing still, not a real step */
+       standing still, not a real step. This is set
+       fairly conservative on purpose: better to lag
+       slightly behind real movement than to dance
+       around when you're not actually moving */
     const noiseFloor =
-        Math.max(accuracy * .5, 3);
+        Math.max(accuracy * .9, 5);
 
     if (movedMeters < noiseFloor) {
 
@@ -3536,12 +4644,13 @@ function filterPosition(lat, lng, accuracy) {
         };
     }
 
-    /* trust sharper fixes more; blend toward them
-       instead of teleporting straight to them */
+    /* trust sharper fixes more, but even a great
+       fix only nudges us part-way there — this is
+       what actually kills the jitter */
     const alpha =
-        accuracy < 10 ? .9 :
-        accuracy < 25 ? .6 :
-                        .3;
+        accuracy < 8  ? .28 :
+        accuracy < 20 ? .16 :
+                         .09;
 
     filteredLat +=
         (lat - filteredLat) * alpha;
@@ -3947,10 +5056,11 @@ function joinGame() {
         return;
     }
 
+    gameRef =
+        db.ref("games/" + myGameCode);
+
     playersRef =
-        db.ref(
-            "games/" + myGameCode + "/players"
-        );
+        gameRef.child("players");
 
     const myRef =
         playersRef.child(myUid);
@@ -3958,16 +5068,50 @@ function joinGame() {
     /* remove me automatically if I close the tab */
     myRef.onDisconnect().remove();
 
-    /* listen for everyone else's positions */
-    playersRef.on(
+    /* if this room doesn't exist yet, I'm creating
+       it — claim host and set default mission
+       settings. A transaction avoids two people
+       both thinking they're host if they join at
+       the same instant. */
+    gameRef.transaction(function(current) {
+
+        if (current === null) {
+
+            return {
+
+                hostUid: myUid,
+                state: "lobby",
+
+                settings: {
+                    hidersPerSeeker: 5,
+                    hideSeconds: 45,
+                    seekSeconds: 0
+                }
+            };
+        }
+
+        return current;
+    });
+
+
+    /* listen to the whole room — players, roles,
+       phase, timers, settings, all in one stream */
+    gameRef.on(
         "value",
         function(snapshot) {
 
-            renderOtherPlayers(
+            handleGameUpdate(
                 snapshot.val() || {}
             );
         }
     );
+
+
+    if (!gameTickInterval) {
+
+        gameTickInterval =
+            setInterval(gameTick, 1000);
+    }
 }
 
 
@@ -3984,9 +5128,9 @@ function switchGame(newCode) {
         return;
     }
 
-    if (playersRef) {
+    if (gameRef) {
 
-        playersRef.off();
+        gameRef.off();
 
         db.ref(
             "games/" + myGameCode +
@@ -3997,6 +5141,8 @@ function switchGame(newCode) {
     clearMapPlayers();
 
     clearGridPlayers();
+
+    resetLocalGameState();
 
     myGameCode = newCode;
 
@@ -4020,9 +5166,888 @@ function switchGame(newCode) {
 }
 
 
+function resetLocalGameState() {
+
+    currentGameState = "lobby";
+
+    currentHostUid = null;
+
+    currentStartedAt = null;
+
+    currentSeekStartedAt = null;
+
+    currentWinner = null;
+
+    myRole = null;
+
+    myFound = false;
+
+    lobbyPanel.classList.remove("open");
+
+    hideBlackout.classList.remove("visible");
+
+    foundOverlay.classList.remove("visible");
+
+    resultsPanel.classList.remove("open");
+
+    phaseBanner.classList.remove(
+        "visible", "role-seeker", "role-hider"
+    );
+}
+
+
+/* ==================================================
+   HIDE & SEEK — GAME FLOW
+================================================== */
+
+const FOUND_RADIUS_METERS = 10;
+
+
+function isHost() {
+
+    return (
+        currentHostUid !== null &&
+        myUid === currentHostUid
+    );
+}
+
+
+function handleGameUpdate(data) {
+
+    currentGameState = data.state || "lobby";
+
+    currentGameSettings =
+        data.settings || currentGameSettings;
+
+    currentHostUid = data.hostUid || null;
+
+    currentStartedAt = data.startedAt || null;
+
+    currentSeekStartedAt =
+        data.seekStartedAt || null;
+
+    currentWinner = data.winner || null;
+
+    const players = data.players || {};
+
+    const me = players[myUid] || {};
+
+    myRole = me.role || null;
+
+    myFound = !!me.found;
+
+
+    renderOtherPlayers(players);
+
+    checkProximity();
+
+
+    if (currentGameState === "lobby") {
+
+        renderLobby(players);
+
+        hideBlackout.classList.remove("visible");
+
+        foundOverlay.classList.remove("visible");
+
+        resultsPanel.classList.remove("open");
+
+        phaseBanner.classList.remove("visible");
+
+    }
+
+    else if (currentGameState === "hiding") {
+
+        lobbyPanel.classList.remove("open");
+
+        resultsPanel.classList.remove("open");
+
+        updatePhaseBanner(players);
+
+        if (myRole === "seeker") {
+
+            hideBlackout.classList.add("visible");
+
+            foundOverlay.classList.remove(
+                "visible"
+            );
+
+        }
+
+        else {
+
+            hideBlackout.classList.remove(
+                "visible"
+            );
+        }
+
+    }
+
+    else if (currentGameState === "seeking") {
+
+        lobbyPanel.classList.remove("open");
+
+        resultsPanel.classList.remove("open");
+
+        hideBlackout.classList.remove("visible");
+
+        updatePhaseBanner(players);
+
+        if (myRole === "hider" && myFound) {
+
+            const finder =
+                me.foundBy &&
+                players[me.foundBy];
+
+            foundBySub.textContent =
+                finder && finder.name
+                    ? "Found by " + finder.name
+                    : "Better luck next time.";
+
+            foundOverlay.classList.add(
+                "visible"
+            );
+
+        }
+
+        else {
+
+            foundOverlay.classList.remove(
+                "visible"
+            );
+        }
+
+    }
+
+    else if (currentGameState === "ended") {
+
+        hideBlackout.classList.remove("visible");
+
+        foundOverlay.classList.remove("visible");
+
+        lobbyPanel.classList.remove("open");
+
+        phaseBanner.classList.remove("visible");
+
+        renderResults(players);
+    }
+}
+
+
+/* ---- lobby ---- */
+
+function renderLobby(players) {
+
+    const uids = Object.keys(players);
+
+    lobbyPanel.classList.add("open");
+
+
+    lobbySub.textContent =
+
+        isHost()
+            ? "You're hosting. Set up the " +
+              "mission and start when ready."
+            : "Waiting for the host to start " +
+              "the mission…";
+
+
+    lobbyRoster.innerHTML = "";
+
+    uids.forEach(
+        function(uid) {
+
+            const p = players[uid] || {};
+
+            const row =
+                document.createElement("div");
+
+            row.className =
+                "lobby-roster-row";
+
+            row.innerHTML =
+
+                '<div class="lobby-roster-dot" ' +
+                'style="background:' +
+                (p.color || "#35e07a") +
+                '"></div>' +
+                '<span class="lobby-roster-name">' +
+                escapeHtml(p.name || "Explorer") +
+                '</span>' +
+                (
+                    uid === currentHostUid
+                        ? '<span class="lobby-roster-host">HOST</span>'
+                        : ""
+                );
+
+            lobbyRoster.appendChild(row);
+        }
+    );
+
+
+    valHidersPerSeeker.textContent =
+        currentGameSettings.hidersPerSeeker;
+
+    valHideSeconds.textContent =
+        currentGameSettings.hideSeconds + "s";
+
+    valSeekSeconds.textContent =
+
+        currentGameSettings.seekSeconds > 0
+            ? currentGameSettings.seekSeconds + "s"
+            : "Untimed";
+
+
+    lobbyHostControls.style.display =
+
+        isHost() ? "flex" : "none";
+}
+
+
+document.querySelectorAll(
+    ".lobby-step-btn"
+).forEach(
+    function(btn) {
+
+        btn.addEventListener(
+            "click",
+            function() {
+
+                if (!isHost() || !gameRef) {
+
+                    return;
+                }
+
+                const key =
+                    btn.dataset.setting;
+
+                const dir =
+                    parseInt(btn.dataset.dir, 10);
+
+                const step =
+
+                    key === "hidersPerSeeker"
+                        ? 1
+                        : 15;
+
+                const min =
+
+                    key === "hidersPerSeeker"
+                        ? 2
+                        : 0;
+
+                const max =
+
+                    key === "hidersPerSeeker"
+                        ? 10
+                        : 600;
+
+                let value =
+                    (
+                        currentGameSettings[key]
+                        || 0
+                    )
+                    + dir * step;
+
+                value =
+                    Math.max(
+                        min,
+                        Math.min(max, value)
+                    );
+
+                gameRef
+                    .child("settings/" + key)
+                    .set(value);
+            }
+        );
+    }
+);
+
+
+startMissionBtn.addEventListener(
+    "click",
+    startGame
+);
+
+
+function startGame() {
+
+    if (!isHost() || !gameRef) {
+
+        return;
+    }
+
+    const uids =
+        Object.keys(lastPlayersSnapshot);
+
+    if (uids.length < 2) {
+
+        alert(
+            "Need at least 2 players to " +
+            "start a mission."
+        );
+
+        return;
+    }
+
+    const ratio =
+        currentGameSettings.hidersPerSeeker
+        || 5;
+
+    const seekerCount =
+        Math.max(
+            1,
+            Math.floor(
+                uids.length / (ratio + 1)
+            )
+        );
+
+    const shuffled =
+        uids.slice().sort(
+            function() {
+
+                return Math.random() - .5;
+            }
+        );
+
+    const seekers =
+        shuffled.slice(0, seekerCount);
+
+
+    const updates = {};
+
+    uids.forEach(
+        function(uid) {
+
+            const role =
+
+                seekers.indexOf(uid) !== -1
+                    ? "seeker"
+                    : "hider";
+
+            updates["players/" + uid + "/role"] =
+                role;
+
+            updates["players/" + uid + "/found"] =
+                false;
+
+            updates[
+                "players/" + uid + "/foundAt"
+            ] = null;
+
+            updates[
+                "players/" + uid + "/foundBy"
+            ] = null;
+        }
+    );
+
+    updates.state = "hiding";
+
+    updates.startedAt =
+        firebase.database.ServerValue.TIMESTAMP;
+
+    updates.seekStartedAt = null;
+
+    updates.winner = null;
+
+    gameRef.update(updates);
+}
+
+
+/* ---- phase banner ---- */
+
+function updatePhaseBanner(players) {
+
+    phaseBanner.classList.add("visible");
+
+    phaseBanner.classList.remove(
+        "role-seeker", "role-hider"
+    );
+
+    phaseBanner.classList.add(
+        myRole === "seeker"
+            ? "role-seeker"
+            : "role-hider"
+    );
+
+    phaseBannerRole.textContent =
+
+        myRole === "seeker"
+            ? "SEEKER"
+            : "HIDER";
+
+
+    if (currentGameState === "hiding") {
+
+        phaseBannerText.textContent =
+
+            myRole === "seeker"
+                ? "· EYES CLOSED"
+                : "· HIDE!";
+
+    }
+
+    else if (currentGameState === "seeking") {
+
+        const hidersLeft =
+            Object.values(players).filter(
+                function(p) {
+
+                    return (
+                        p &&
+                        p.role === "hider" &&
+                        !p.found
+                    );
+                }
+            ).length;
+
+        phaseBannerText.textContent =
+
+            myRole === "seeker"
+                ? "· " + hidersLeft +
+                  " STILL HIDDEN"
+                : myFound
+                    ? "· YOU WERE FOUND"
+                    : "· STAY HIDDEN";
+    }
+}
+
+
+/* ---- proximity ("found") detection ---- */
+
+function checkProximity() {
+
+    if (
+        myRole !== "seeker" ||
+        currentGameState !== "seeking" ||
+        myLastLat === null ||
+        !db ||
+        !myGameCode
+    ) {
+
+        return;
+    }
+
+    Object.keys(lastPlayersSnapshot).forEach(
+        function(uid) {
+
+            if (uid === myUid) {
+
+                return;
+            }
+
+            const p = lastPlayersSnapshot[uid];
+
+            if (
+                !p ||
+                p.role !== "hider" ||
+                p.found ||
+                typeof p.lat !== "number" ||
+                typeof p.lng !== "number"
+            ) {
+
+                return;
+            }
+
+            const dist =
+                Math.hypot(
+                    metersEastWest(
+                        myLastLat,
+                        myLastLng,
+                        p.lng
+                    ),
+                    metersNorthSouth(
+                        myLastLat,
+                        p.lat
+                    )
+                );
+
+            if (dist <= FOUND_RADIUS_METERS) {
+
+                db.ref(
+                    "games/" + myGameCode +
+                    "/players/" + uid
+                ).update({
+
+                    found: true,
+
+                    foundAt:
+                        firebase.database
+                            .ServerValue
+                            .TIMESTAMP,
+
+                    foundBy: myUid
+                });
+            }
+        }
+    );
+}
+
+
+/* ---- timers & phase transitions (host-authoritative
+   to avoid every client racing to flip the same
+   switch) ---- */
+
+function gameTick() {
+
+    if (
+        !gameRef ||
+        currentGameState === "lobby" ||
+        currentGameState === "ended"
+    ) {
+
+        return;
+    }
+
+
+    if (
+        currentGameState === "hiding" &&
+        currentStartedAt &&
+        isHost()
+    ) {
+
+        const elapsed =
+            (Date.now() - currentStartedAt)
+            / 1000;
+
+        if (
+            elapsed >=
+            currentGameSettings.hideSeconds
+        ) {
+
+            gameRef.update({
+
+                state: "seeking",
+
+                seekStartedAt:
+                    firebase.database
+                        .ServerValue
+                        .TIMESTAMP
+            });
+        }
+    }
+
+
+    if (currentGameState === "seeking") {
+
+        const hiders =
+            Object.values(
+                lastPlayersSnapshot
+            ).filter(
+                function(p) {
+
+                    return p && p.role === "hider";
+                }
+            );
+
+        if (
+            hiders.length > 0 &&
+            hiders.every(
+                function(p) {
+
+                    return p.found;
+                }
+            )
+        ) {
+
+            endGame("seekers");
+
+        }
+
+        else if (
+            currentGameSettings.seekSeconds
+                > 0 &&
+            currentSeekStartedAt &&
+            isHost()
+        ) {
+
+            const elapsed =
+                (
+                    Date.now() -
+                    currentSeekStartedAt
+                ) / 1000;
+
+            if (
+                elapsed >=
+                currentGameSettings.seekSeconds
+            ) {
+
+                endGame("hiders");
+            }
+        }
+    }
+
+
+    updateTimerDisplay();
+}
+
+
+function endGame(winner) {
+
+    if (!gameRef) {
+
+        return;
+    }
+
+    gameRef.update({
+
+        state: "ended",
+        winner: winner
+    });
+}
+
+
+function updateTimerDisplay() {
+
+    if (currentGameState === "hiding") {
+
+        const remaining =
+            Math.max(
+                0,
+                Math.ceil(
+                    currentGameSettings
+                        .hideSeconds
+                    -
+                    (
+                        Date.now() -
+                        (currentStartedAt || Date.now())
+                    ) / 1000
+                )
+            );
+
+        const mm =
+            Math.floor(remaining / 60);
+
+        const ss =
+            String(remaining % 60)
+                .padStart(2, "0");
+
+        hideCountdown.textContent =
+            mm + ":" + ss;
+
+        phaseBannerTimer.textContent =
+            mm + ":" + ss;
+
+    }
+
+    else if (
+        currentGameState === "seeking" &&
+        currentGameSettings.seekSeconds > 0 &&
+        currentSeekStartedAt
+    ) {
+
+        const remaining =
+            Math.max(
+                0,
+                Math.ceil(
+                    currentGameSettings
+                        .seekSeconds
+                    -
+                    (
+                        Date.now() -
+                        currentSeekStartedAt
+                    ) / 1000
+                )
+            );
+
+        const mm =
+            Math.floor(remaining / 60);
+
+        const ss =
+            String(remaining % 60)
+                .padStart(2, "0");
+
+        phaseBannerTimer.textContent =
+            mm + ":" + ss;
+
+    }
+
+    else {
+
+        phaseBannerTimer.textContent = "";
+    }
+}
+
+
+/* ---- results ---- */
+
+function renderResults(players) {
+
+    resultsPanel.classList.add("open");
+
+    resultsWinner.textContent =
+
+        currentWinner === "seekers"
+            ? "SEEKERS WIN"
+            : "HIDERS WIN";
+
+
+    const hiders =
+        Object.keys(players).filter(
+            function(uid) {
+
+                return (
+                    players[uid] &&
+                    players[uid].role === "hider"
+                );
+            }
+        );
+
+    resultsList.innerHTML = "";
+
+    hiders.forEach(
+        function(uid) {
+
+            const p = players[uid];
+
+            const row =
+                document.createElement("div");
+
+            row.className = "results-row";
+
+            row.innerHTML =
+
+                '<span>' +
+                escapeHtml(p.name || "Explorer") +
+                '</span>' +
+                (
+                    p.found
+                        ? '<span class="rr-status-found">FOUND</span>'
+                        : '<span class="rr-status-safe">NEVER FOUND</span>'
+                );
+
+            resultsList.appendChild(row);
+        }
+    );
+
+
+    playAgainBtn.style.display =
+
+        isHost() ? "block" : "none";
+
+    resultsWaitingHost.style.display =
+
+        isHost() ? "none" : "block";
+}
+
+
+playAgainBtn.addEventListener(
+    "click",
+    function() {
+
+        if (!isHost() || !gameRef) {
+
+            return;
+        }
+
+        const uids =
+            Object.keys(lastPlayersSnapshot);
+
+        const updates = {};
+
+        uids.forEach(
+            function(uid) {
+
+                updates[
+                    "players/" + uid + "/role"
+                ] = null;
+
+                updates[
+                    "players/" + uid + "/found"
+                ] = null;
+
+                updates[
+                    "players/" + uid + "/foundAt"
+                ] = null;
+
+                updates[
+                    "players/" + uid + "/foundBy"
+                ] = null;
+            }
+        );
+
+        updates.state = "lobby";
+
+        updates.winner = null;
+
+        updates.startedAt = null;
+
+        updates.seekStartedAt = null;
+
+        gameRef.update(updates);
+    }
+);
+
+
+leaveGameBtn.addEventListener(
+    "click",
+    function() {
+
+        if (db && myGameCode) {
+
+            db.ref(
+                "games/" + myGameCode +
+                "/players/" + myUid
+            ).remove();
+        }
+
+        if (gameRef) {
+
+            gameRef.off();
+        }
+
+        resetLocalGameState();
+
+        clearMapPlayers();
+
+        clearGridPlayers();
+
+        app.style.display = "none";
+
+        setup.style.display = "flex";
+    }
+);
+
+
 /* ==================================================
    ADMIN PANEL
 ================================================== */
+
+function promptForNickname() {
+
+    username.focus();
+
+    username.classList.add(
+        "needs-nickname"
+    );
+
+    const originalPlaceholder =
+        username.placeholder;
+
+    username.placeholder =
+        "Type a nickname first!";
+
+    function reset() {
+
+        username.classList.remove(
+            "needs-nickname"
+        );
+
+        username.placeholder =
+            originalPlaceholder;
+
+        username.removeEventListener(
+            "input",
+            reset
+        );
+    }
+
+    username.addEventListener(
+        "input",
+        reset
+    );
+}
+
 
 function openRoomBrowser(mode) {
 
@@ -4165,12 +6190,30 @@ function renderAdminRooms(games) {
 
                     else {
 
-                        /* not in a game yet — just
-                           fill the code in, let them
-                           review before continuing */
                         gameCodeInput.value = code;
 
+                        const nickname =
+                            username.value.trim();
+
                         closeAdminPanel();
+
+                        if (nickname) {
+
+                            /* they already have a
+                               nickname — join right
+                               away, no extra tap */
+                            document
+                                .getElementById(
+                                    "startButton"
+                                )
+                                .click();
+
+                        }
+
+                        else {
+
+                            promptForNickname();
+                        }
                     }
                 }
             );
@@ -4370,6 +6413,25 @@ function avatarHTML(name, color, headingDeg) {
 function renderOtherPlayers(players) {
 
     lastPlayersSnapshot = players || {};
+
+    /* during an active mission nobody sees anyone
+       else's position — that's the whole point of
+       hide & seek. The data still flows in the
+       background so proximity detection works, it
+       just never gets drawn. Lobby and results
+       phases reveal everyone as before. */
+    const activePhase =
+        currentGameState === "hiding" ||
+        currentGameState === "seeking";
+
+    if (activePhase) {
+
+        clearMapPlayers();
+
+        clearGridPlayers();
+
+        return;
+    }
 
     if (mapModeOn) {
 
@@ -4679,7 +6741,7 @@ function startLocationWatch() {
                         true,
 
                     maximumAge:
-                        1000,
+                        2000,
 
                     timeout:
                         15000
