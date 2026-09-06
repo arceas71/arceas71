@@ -3,8 +3,7 @@ import numpy as np, matplotlib.pyplot as plt
 from matplotlib.animation import FFMpegWriter
 import zipfile, shutil, subprocess, textwrap, os
 
-outdir = Path("/mnt/data/game_of_life_life")
-outdir.mkdir(exist_ok=True)
+outdir = Path(".")
 mp4 = outdir / "LIFE_game_of_life.mp4"
 
 # 5x7 pixel font for L I F E
