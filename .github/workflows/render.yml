@@ -1,0 +1,31 @@
+name: Render Video Short
+
+on:
+  workflow_dispatch: # Allows manual trigger with a button
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install numpy scipy opencv-python-headless
+
+      - name: Generate MP4
+        run: |
+          python generate.py
+
+      - name: Upload Video Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: short-chaos-video
+          path: short_chaos.mp4
+          retention-days: 7
