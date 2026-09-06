@@ -27,4 +27,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: LIFE-game-of-life
-          path: LIFE_game_of_life.mp4
+          path: game_of_life.mp4
