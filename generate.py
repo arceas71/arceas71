@@ -9,7 +9,7 @@ DURATION = 15  # seconds
 TOTAL_FRAMES = FPS * DURATION
 
 # Tuned parameters: slowed down, fewer pendulums, no edge clipping
-N_PENDULUMS = 45          
+N_PENDULUMS = 25          
 SPEED_FACTOR = 0.5        
 TRAIL_FADE = 0.955        
 
@@ -45,7 +45,7 @@ trajectories = []
 
 base_angle = np.pi / 2
 for i in range(N_PENDULUMS):
-    th1 = base_angle + (i * 0.0003)
+    th1 = base_angle + (i * 0.001)
     th2 = base_angle
     sol = solve_ivp(derivatives, [0, DURATION], [th1, 0.0, th2, 0.0], t_eval=t_eval, rtol=1e-6)
     trajectories.append(sol.y)
