@@ -1,4 +1,4 @@
-name: Render Circle Escape Short
+name: Render Video Short
 
 on:
   workflow_dispatch:
@@ -10,7 +10,7 @@ jobs:
   render:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
+      - name: Check out repository
         uses: actions/checkout@v4
 
       - name: Set up Python
@@ -21,19 +21,27 @@ jobs:
       - name: Install dependencies and FFmpeg
         run: |
           sudo apt-get update && sudo apt-get install -y ffmpeg
-          pip install numpy opencv-python-headless
+          pip install numpy scipy opencv-python-headless matplotlib
 
-      - name: Run Simulation
+      - name: Run script
         run: |
-          python generate.py
+          python life_game.py
 
       - name: Transcode to H.264 MP4
         run: |
-          ffmpeg -y -i circle_escape.mp4 -c:v libx264 -pix_fmt yuv420p -movflags +faststart final_escape.mp4
+          # If your script outputs a raw mp4 or video, this converts it to playable web format
+          # If your life_game.py already produces 'final_chaos.mp4', you can adjust the filenames below
+          if [ -f circle_escape.mp4 ]; then
+            ffmpeg -y -i circle_escape.mp4 -c:v libx264 -pix_fmt yuv420p -movflags +faststart final_video.mp4
+          elif [ -f short_chaos.mp4 ]; then
+            ffmpeg -y -i short_chaos.mp4 -c:v libx264 -pix_fmt yuv420p -movflags +faststart final_video.mp4
+          fi
 
       - name: Publish Direct Release (No Zips)
         uses: softprops/action-gh-release@v2
+        if: always()
         with:
-          tag_name: latest-escape-render
-          name: "Circle Escape Render"
-          files: final_escape.mp4
+          tag_name: latest
+          name: "Latest Render"
+          files: |
+            *.mp4
