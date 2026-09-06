@@ -1,7 +1,10 @@
 name: Render Video Short
 
 on:
-  workflow_dispatch: # Allows manual trigger with a button
+  workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   render:
@@ -15,17 +18,22 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Install dependencies
+      - name: Install dependencies and FFmpeg
         run: |
+          sudo apt-get update && sudo apt-get install -y ffmpeg
           pip install numpy scipy opencv-python-headless
 
       - name: Generate MP4
         run: |
           python generate.py
 
-      - name: Upload Video Artifact
-        uses: actions/upload-artifact@v4
+      - name: Convert to web-compatible H.264
+        run: |
+          ffmpeg -y -i short_chaos.mp4 -c:v libx264 -pix_fmt yuv420p -movflags +faststart final_chaos.mp4
+
+      - name: Publish Direct MP4 Release
+        uses: softprops/action-gh-release@v2
         with:
-          name: short-chaos-video
-          path: short_chaos.mp4
-          retention-days: 7
+          tag_name: latest-render
+          name: "Latest Chaos Render"
+          files: final_chaos.mp4
