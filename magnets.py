@@ -1,187 +1,214 @@
-import os, textwrap, zipfile, math, random, subprocess, sys, shutil
 from pathlib import Path
+import numpy as np, matplotlib.pyplot as plt
+from matplotlib.animation import FFMpegWriter
+import zipfile, shutil, subprocess, textwrap, os
 
-root = Path("/mnt/data/magnet_simulation")
-root.mkdir(exist_ok=True)
+outdir = Path("/mnt/data/game_of_life_life")
+outdir.mkdir(exist_ok=True)
+mp4 = outdir / "LIFE_game_of_life.mp4"
 
-script = r'''import math
-import random
-from pathlib import Path
+# 5x7 pixel font for L I F E
+font = {
+    "L": [
+        "1000",
+        "1000",
+        "1000",
+        "1000",
+        "1000",
+        "1000",
+        "1111",
+    ],
+    "I": [
+        "111",
+        "010",
+        "010",
+        "010",
+        "010",
+        "010",
+        "111",
+    ],
+    "F": [
+        "1111",
+        "1000",
+        "1000",
+        "1110",
+        "1000",
+        "1000",
+        "1000",
+    ],
+    "E": [
+        "1111",
+        "1000",
+        "1000",
+        "1110",
+        "1000",
+        "1000",
+        "1111",
+    ],
+}
 
-import numpy as np
+def word_grid(word="LIFE", gap=1, scale=3):
+    rows = len(next(iter(font.values())))
+    parts = []
+    for ch in word:
+        arr = np.array([[int(c) for c in row] for row in font[ch]], dtype=np.uint8)
+        parts.append(arr)
+        parts.append(np.zeros((rows, gap), dtype=np.uint8))
+    base = np.concatenate(parts[:-1], axis=1)
+    return np.kron(base, np.ones((scale, scale), dtype=np.uint8))
+
+# Build a larger canvas and center LIFE.
+pattern = word_grid("LIFE", gap=2, scale=3)
+H, W = 80, 120
+grid = np.zeros((H, W), dtype=np.uint8)
+r0 = (H - pattern.shape[0]) // 2
+c0 = (W - pattern.shape[1]) // 2
+grid[r0:r0+pattern.shape[0], c0:c0+pattern.shape[1]] = pattern
+
+# Game of Life with a tiny deterministic "breathing room" perturbation
+# so the evolution is visually interesting while the starting word remains clear.
+rng = np.random.default_rng(42)
+grid = np.pad(grid, 1, mode="constant")
+
+def life_step(a):
+    n = (
+        a[:-2, :-2] + a[:-2, 1:-1] + a[:-2, 2:] +
+        a[1:-1, :-2]                 + a[1:-1, 2:] +
+        a[2:, :-2]  + a[2:, 1:-1]  + a[2:, 2:]
+    )
+    return (((a[1:-1, 1:-1] == 1) & ((n == 2) | (n == 3))) |
+            ((a[1:-1, 1:-1] == 0) & (n == 3))).astype(np.uint8)
+
+FPS = 30
+SECONDS = 10
+TOTAL = FPS * SECONDS
+
+fig, ax = plt.subplots(figsize=(6, 10), dpi=180)
+fig.patch.set_facecolor("#050505")
+ax.set_facecolor("#050505")
+ax.axis("off")
+ax.set_xlim(0, W)
+ax.set_ylim(H, 0)
+
+im = ax.imshow(grid, interpolation="nearest", aspect="equal")
+title = ax.text(
+    0.5, 0.965, "CONWAY'S GAME OF LIFE",
+    transform=ax.transAxes, ha="center", va="top",
+    fontsize=13, fontweight="bold", color="white"
+)
+label = ax.text(
+    0.5, 0.925, "STARTING WORD: LIFE",
+    transform=ax.transAxes, ha="center", va="top",
+    fontsize=9, color="white", alpha=0.8
+)
+gen_text = ax.text(
+    0.5, 0.035, "GENERATION 0",
+    transform=ax.transAxes, ha="center", va="bottom",
+    fontsize=9, color="white", alpha=0.75
+)
+
+writer = FFMpegWriter(
+    fps=FPS,
+    codec="libx264",
+    bitrate=6000,
+    extra_args=["-pix_fmt", "yuv420p", "-movflags", "+faststart"],
+    metadata={"title": "LIFE - Conway's Game of Life"}
+)
+
+current = grid.copy()
+with writer.saving(fig, str(mp4), dpi=180):
+    for frame in range(TOTAL):
+        # Hold the recognizable word briefly, then evolve.
+        if frame >= 45 and frame % 2 == 0:
+            current = np.pad(life_step(current), 1, mode="constant")
+            current = current[1:-1, 1:-1]
+            current = np.pad(current, 1, mode="constant")
+        im.set_data(current)
+        gen = max(0, (frame - 44) // 2)
+        gen_text.set_text(f"GENERATION {gen}")
+        writer.grab_frame()
+
+plt.close(fig)
+
+# Make a reusable script too.
+script = r'''import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.animation import FFMpegWriter
 
-# =========================
-# 100-Magnet Physics Video
-# =========================
-N = 100
-FPS = 60
+WORD = "LIFE"
+FPS = 30
 SECONDS = 10
-WIDTH, HEIGHT = 12.0, 7.0
+WIDTH, HEIGHT = 120, 80
 
-random.seed(7)
-np.random.seed(7)
+FONT = {
+"L":["1000","1000","1000","1000","1000","1000","1111"],
+"I":["111","010","010","010","010","010","111"],
+"F":["1111","1000","1000","1110","1000","1000","1000"],
+"E":["1111","1000","1000","1110","1000","1000","1111"],
+}
 
-# Physics tuning
-DT = 0.018
-SOFTENING = 0.18
-MAGNET_STRENGTH = 0.90
-ROTATION_STRENGTH = 0.045
-DAMPING = 0.985
-MAX_SPEED = 5.0
+def make_word(word, scale=3, gap=2):
+    pieces=[]
+    for ch in word:
+        a=np.array([[int(c) for c in row] for row in FONT[ch]],dtype=np.uint8)
+        pieces.append(a)
+        pieces.append(np.zeros((a.shape[0],gap),dtype=np.uint8))
+    base=np.concatenate(pieces[:-1],axis=1)
+    return np.kron(base,np.ones((scale,scale),dtype=np.uint8))
 
-# Each magnet has position, velocity and orientation.
-pos = np.column_stack([
-    np.random.uniform(1.0, WIDTH - 1.0, N),
-    np.random.uniform(0.8, HEIGHT - 0.8, N)
-])
-vel = np.random.normal(0, 0.35, (N, 2))
-angle = np.random.uniform(0, 2 * np.pi, N)
+def step(a):
+    n=(a[:-2,:-2]+a[:-2,1:-1]+a[:-2,2:]+
+       a[1:-1,:-2]+a[1:-1,2:]+
+       a[2:,:-2]+a[2:,1:-1]+a[2:,2:])
+    return (((a[1:-1,1:-1]==1)&((n==2)|(n==3)))|
+            ((a[1:-1,1:-1]==0)&(n==3))).astype(np.uint8)
 
-def step():
-    global pos, vel, angle
+pattern=make_word(WORD)
+grid=np.zeros((HEIGHT,WIDTH),dtype=np.uint8)
+r=(HEIGHT-pattern.shape[0])//2
+c=(WIDTH-pattern.shape[1])//2
+grid[r:r+pattern.shape[0],c:c+pattern.shape[1]]=pattern
+grid=np.pad(grid,1)
 
-    force = np.zeros_like(pos)
-    torque = np.zeros(N)
+fig,ax=plt.subplots(figsize=(6,10),dpi=180)
+fig.patch.set_facecolor("black")
+ax.set_facecolor("black")
+ax.axis("off")
+ax.set_xlim(0,WIDTH)
+ax.set_ylim(HEIGHT,0)
+im=ax.imshow(grid,interpolation="nearest",aspect="equal")
+ax.text(.5,.965,"CONWAY'S GAME OF LIFE",transform=ax.transAxes,
+        ha="center",va="top",fontsize=13,fontweight="bold",color="white")
+ax.text(.5,.925,f"STARTING WORD: {WORD}",transform=ax.transAxes,
+        ha="center",va="top",fontsize=9,color="white")
+gt=ax.text(.5,.035,"GENERATION 0",transform=ax.transAxes,
+           ha="center",va="bottom",fontsize=9,color="white")
 
-    # Pairwise magnetic interaction.
-    for i in range(N):
-        for j in range(i + 1, N):
-            d = pos[j] - pos[i]
-            r2 = float(np.dot(d, d)) + SOFTENING**2
-            r = math.sqrt(r2)
-            u = d / r
-
-            # Simple dipole-like interaction:
-            # nearby magnets strongly influence one another.
-            ai = angle[i]
-            aj = angle[j]
-            mi = np.array([math.cos(ai), math.sin(ai)])
-            mj = np.array([math.cos(aj), math.sin(aj)])
-
-            alignment = float(np.dot(mi, mj))
-            facing = float(np.dot(mi, u) * np.dot(mj, u))
-
-            # Attractive/repulsive radial component.
-            scalar = MAGNET_STRENGTH * (0.65 * alignment - 1.15 * facing) / r2
-            fij = scalar * u
-
-            force[i] += fij
-            force[j] -= fij
-
-            # Rotate magnets toward energetically favorable alignment.
-            cross_ij = mi[0] * mj[1] - mi[1] * mj[0]
-            torque[i] += ROTATION_STRENGTH * cross_ij / r2
-            torque[j] -= ROTATION_STRENGTH * cross_ij / r2
-
-    # Soft boundary force keeps the swarm on screen.
-    margin = 0.55
-    wall_k = 1.4
-    for axis, limit in [(0, WIDTH), (1, HEIGHT)]:
-        force[:, axis] += np.where(
-            pos[:, axis] < margin,
-            wall_k * (margin - pos[:, axis]),
-            0
-        )
-        force[:, axis] -= np.where(
-            pos[:, axis] > limit - margin,
-            wall_k * (pos[:, axis] - (limit - margin)),
-            0
-        )
-
-    vel += force * DT
-    speed = np.linalg.norm(vel, axis=1)
-    too_fast = speed > MAX_SPEED
-    vel[too_fast] *= (MAX_SPEED / speed[too_fast])[:, None]
-    vel *= DAMPING
-
-    pos += vel * DT
-    angle += torque * DT
-
-    # Small amount of angular damping.
-    angle %= 2 * np.pi
-
-def make_video(output="100_magnets.mp4"):
-    fig, ax = plt.subplots(figsize=(WIDTH, HEIGHT), dpi=100)
-    fig.patch.set_facecolor("#07090d")
-    ax.set_facecolor("#07090d")
-    ax.set_xlim(0, WIDTH)
-    ax.set_ylim(0, HEIGHT)
-    ax.set_aspect("equal")
-    ax.axis("off")
-
-    # Glow-like layers.
-    glow = ax.scatter(pos[:, 0], pos[:, 1], s=110, alpha=0.10, linewidths=0)
-    dots = ax.scatter(pos[:, 0], pos[:, 1], s=38, alpha=0.95, linewidths=0)
-
-    # Orientation lines.
-    lines = [ax.plot([], [], lw=1.4, alpha=0.95)[0] for _ in range(N)]
-
-    title = ax.text(
-        0.035, 0.94, "100 MAGNETS",
-        transform=ax.transAxes,
-        fontsize=18, fontweight="bold",
-        color="white", va="top"
-    )
-    subtitle = ax.text(
-        0.035, 0.885, "released simultaneously",
-        transform=ax.transAxes,
-        fontsize=10, color="#b9c0cc", va="top"
-    )
-
-    # Use the installed ffmpeg executable.
-    writer = FFMpegWriter(
-        fps=FPS,
-        metadata={"title": "100 Magnets Simulation"},
-        bitrate=7000,
-        codec="libx264",
-        extra_args=["-pix_fmt", "yuv420p", "-movflags", "+faststart"]
-    )
-
-    with writer.saving(fig, output, dpi=100):
-        for frame in range(FPS * SECONDS):
-            # A tiny jitter makes the final state feel alive without exploding.
-            if frame > FPS * 2:
-                vel += np.random.normal(0, 0.006, vel.shape)
-
-            step()
-
-            glow.set_offsets(pos)
-            dots.set_offsets(pos)
-
-            # Give each magnet a two-pole look.
-            for i, line in enumerate(lines):
-                dx = 0.16 * math.cos(angle[i])
-                dy = 0.16 * math.sin(angle[i])
-                line.set_data(
-                    [pos[i, 0] - dx, pos[i, 0] + dx],
-                    [pos[i, 1] - dy, pos[i, 1] + dy]
-                )
-
-            writer.grab_frame()
-
-    plt.close(fig)
-    print(f"Saved: {Path(output).resolve()}")
-
-if __name__ == "__main__":
-    make_video()
+writer=FFMpegWriter(fps=FPS,codec="libx264",bitrate=6000,
+                    extra_args=["-pix_fmt","yuv420p","-movflags","+faststart"])
+with writer.saving(fig,"LIFE_game_of_life.mp4",dpi=180):
+    for frame in range(FPS*SECONDS):
+        if frame>=45 and frame%2==0:
+            core=step(grid)
+            grid=np.pad(core,1)
+        im.set_data(grid)
+        gt.set_text(f"GENERATION {max(0,(frame-44)//2)}")
+        writer.grab_frame()
+plt.close(fig)
+print("Saved LIFE_game_of_life.mp4")
 '''
+(outdir / "life_game.py").write_text(script)
+(outdir / "requirements.txt").write_text("numpy\nmatplotlib\n")
+(outdir / "README.md").write_text(
+"""# LIFE — Conway's Game of Life\n\n"
+"Run `python life_game.py` after installing the requirements and FFmpeg.\n"
+"It renders a vertical 10-second MP4. Change `WORD` at the top to make another episode.\n"""
+)
 
-req = """numpy
-matplotlib
-"""
+zip_path = Path("/mnt/data/LIFE_game_of_life_project.zip")
+with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as z:
+    for p in outdir.iterdir():
+        z.write(p, arcname=p.name)
 
-readme = r'''# 100 Magnets Simulation
-
-Generates a 10-second, 60 FPS MP4 of 100 magnets interacting in a 2D physics-style simulation.
-
-## Requirements
-
-- Python 3.10+
-- FFmpeg installed and available on PATH
-
-Install Python packages:
-
-```bash
-pip install -r requirements.txt
+print(f"MP4: {mp4}")
+print(f"Project ZIP: {zip_path}")
