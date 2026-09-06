@@ -18,8 +18,7 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y ffmpeg
 
       - name: Install Python packages
-        run: pip install -r requirements.txt
-
+        run: pip install numpy matplotlib
       - name: Generate MP4
         run: python life_game.py
 
