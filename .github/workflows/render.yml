@@ -1,4 +1,4 @@
-name: Render Video Short
+name: Render Circle Escape Short
 
 on:
   workflow_dispatch:
@@ -10,7 +10,7 @@ jobs:
   render:
     runs-on: ubuntu-latest
     steps:
-      - name: Check out repo
+      - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Set up Python
@@ -21,19 +21,19 @@ jobs:
       - name: Install dependencies and FFmpeg
         run: |
           sudo apt-get update && sudo apt-get install -y ffmpeg
-          pip install numpy scipy opencv-python-headless
+          pip install numpy opencv-python-headless
 
-      - name: Simulate and Render
+      - name: Run Simulation
         run: |
           python generate.py
 
-      - name: Encode to H.264
+      - name: Transcode to H.264 MP4
         run: |
-          ffmpeg -y -i short_chaos.mp4 -c:v libx264 -pix_fmt yuv420p -movflags +faststart magnetic_gravity_short.mp4
+          ffmpeg -y -i circle_escape.mp4 -c:v libx264 -pix_fmt yuv420p -movflags +faststart final_escape.mp4
 
-      - name: Publish Direct Raw MP4 (No Zips)
+      - name: Publish Direct Release (No Zips)
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: latest
-          name: "Latest Magnetic Pendulum Render"
-          files: magnetic_gravity_short.mp4
+          tag_name: latest-escape-render
+          name: "Circle Escape Render"
+          files: final_escape.mp4
