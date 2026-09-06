@@ -10,7 +10,7 @@ jobs:
   render:
     runs-on: ubuntu-latest
     steps:
-      - name: Check out repository
+      - name: Check out repo
         uses: actions/checkout@v4
 
       - name: Set up Python
@@ -18,29 +18,22 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Install dependencies & FFmpeg
+      - name: Install dependencies and FFmpeg
         run: |
           sudo apt-get update && sudo apt-get install -y ffmpeg
           pip install numpy scipy opencv-python-headless
 
-      - name: Run Chaos Simulation
+      - name: Simulate and Render
         run: |
           python generate.py
 
-      - name: Transcode to H.264
+      - name: Encode to H.264
         run: |
-          ffmpeg -y -i short_chaos.mp4 -c:v libx264 -pix_fmt yuv420p -movflags +faststart final_chaos.mp4
+          ffmpeg -y -i short_chaos.mp4 -c:v libx264 -pix_fmt yuv420p -movflags +faststart magnetic_gravity_short.mp4
 
-      - name: Upload Direct MP4 Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: magnetic-chaos-short
-          path: final_chaos.mp4
-          retention-days: 7
-
-      - name: Publish Direct Release (Single-click MP4)
+      - name: Publish Direct Raw MP4 (No Zips)
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: latest-magnetic-render
-          name: "Magnetic Chaos Render"
-          files: final_chaos.mp4
+          tag_name: latest
+          name: "Latest Magnetic Pendulum Render"
+          files: magnetic_gravity_short.mp4
