@@ -27,4 +27,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: black_hole
-          path: black_hole.mp4
+          path: life_game.mp4
