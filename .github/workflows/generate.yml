@@ -26,5 +26,5 @@ jobs:
       - name: Upload MP4
         uses: actions/upload-artifact@v4
         with:
-          name: LIFE-game-of-life
+          name: black_hole
           path: black_hole.mp4
