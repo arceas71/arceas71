@@ -18,22 +18,29 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Install dependencies and FFmpeg
+      - name: Install dependencies & FFmpeg
         run: |
           sudo apt-get update && sudo apt-get install -y ffmpeg
           pip install numpy scipy opencv-python-headless
 
-      - name: Generate MP4
+      - name: Run Chaos Simulation
         run: |
           python generate.py
 
-      - name: Convert to web-compatible H.264
+      - name: Transcode to H.264
         run: |
           ffmpeg -y -i short_chaos.mp4 -c:v libx264 -pix_fmt yuv420p -movflags +faststart final_chaos.mp4
 
-      - name: Publish Direct MP4 Release
+      - name: Upload Direct MP4 Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: magnetic-chaos-short
+          path: final_chaos.mp4
+          retention-days: 7
+
+      - name: Publish Direct Release (Single-click MP4)
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: latest-render
-          name: "Latest Chaos Render"
+          tag_name: latest-magnetic-render
+          name: "Magnetic Chaos Render"
           files: final_chaos.mp4
