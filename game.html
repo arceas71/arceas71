@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CyberStrike 3D Battleground</title>
+  <title>CyberStrike: Wilderness Warfare</title>
 
-  <!-- External CDNs: Three.js and Firebase Compat -->
+  <!-- CDNs: Three.js and Firebase Compat -->
   <script 
 
 src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -20,7 +20,7 @@ compat.js"></script>
     * { box-sizing: border-box; user-select: none; }
     body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; 
 
-background: #060913; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-
+background: #87ceeb; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-
 
 serif; }
     #canvas-container { width: 100%; height: 100%; position: absolute; top: 0; left: 
@@ -33,7 +33,7 @@ serif; }
 transform: translate(-50%, -50%); pointer-events: none; }
     #crosshair::before, #crosshair::after { content: ''; position: absolute; 
 
-background: rgba(0, 255, 204, 0.9); }
+background: rgba(255, 255, 255, 0.95); box-shadow: 0 0 4px #000; }
     #crosshair::before { top: 4px; left: -8px; width: 26px; height: 2px; }
     #crosshair::after { top: -8px; left: 4px; width: 2px; height: 26px; }
 
@@ -44,132 +44,158 @@ events: none; }
     #stats-panel { position: absolute; bottom: 25px; left: 25px; display: flex; flex-
 
 direction: column; gap: 8px; }
-    .stat-bar { background: rgba(10, 15, 25, 0.85); border: 2px solid #00ffcc; 
+    .stat-bar { background: rgba(15, 20, 25, 0.85); border: 2px solid #57c757; 
 
-padding: 8px 16px; border-radius: 6px; color: #fff; font-size: 17px; font-weight: 
+padding: 8px 16px; border-radius: 6px; color: #fff; font-size: 16px; font-weight: 
 
-bold; letter-spacing: 1px; min-width: 170px; text-shadow: 0 0 8px rgba
-
-(0,255,204,0.6); }
+bold; min-width: 170px; text-shadow: 0 1px 4px rgba(0,0,0,0.8); }
 
     #weapon-bar { position: absolute; bottom: 25px; right: 25px; display: flex; gap: 
 
 8px; }
-    .weapon-slot { background: rgba(10, 15, 25, 0.85); border: 1px solid #444; 
+    .weapon-slot { background: rgba(15, 20, 25, 0.85); border: 1px solid #555; 
 
-color: #888; padding: 10px 14px; border-radius: 4px; font-size: 13px; font-weight: 
+color: #777; padding: 10px 14px; border-radius: 6px; font-size: 13px; font-weight: 
 
-bold; }
-    .weapon-slot.active { border-color: #00ffcc; color: #00ffcc; box-shadow: 0 0 
+bold; position: relative; }
+    .weapon-slot.unlocked { color: #ccc; border-color: #888; }
+    .weapon-slot.active { border-color: #57c757; color: #57c757; box-shadow: 0 0 
 
-10px rgba(0,255,204,0.4); transform: translateY(-4px); }
+12px rgba(87, 199, 87, 0.5); transform: translateY(-4px); }
+    .weapon-slot.locked::after { content: ' 🔒'; font-size: 10px; }
 
     #admin-tag { position: absolute; top: 85px; left: 50%; transform: translateX(-
 
-50%); background: linear-gradient(90deg, #ff9900, #ff0055); padding: 6px 18px; 
+50%); background: linear-gradient(90deg, #ff9900, #ffcc00); padding: 5px 18px; 
 
-border-radius: 20px; color: #fff; font-weight: 900; letter-spacing: 2px; font-size: 
+border-radius: 20px; color: #000; font-weight: 900; letter-spacing: 1px; font-size: 
 
-13px; display: none; box-shadow: 0 0 15px rgba(255,100,0,0.8); }
+13px; display: none; box-shadow: 0 0 15px rgba(255, 180, 0, 0.8); }
 
     #kill-log { position: absolute; top: 20px; right: 20px; display: flex; flex-direction: 
 
 column; gap: 5px; color: #fff; font-size: 13px; text-align: right; }
-    .log-item { background: rgba(0,0,0,0.65); padding: 4px 8px; border-radius: 3px; 
+    .log-item { background: rgba(0,0,0,0.7); padding: 5px 10px; border-radius: 4px; 
 
-border-left: 3px solid #00ffcc; }
+border-left: 3px solid #57c757; }
 
-    /* In-Game Username Prompt Overlay */
+    /* Floating Toast Alerts */
+    #loot-notification {
+      position: absolute;
+      top: 25%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(10, 15, 25, 0.9);
+      border: 2px solid #ffd700;
+      color: #ffd700;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 18px;
+      font-weight: bold;
+      letter-spacing: 1px;
+      box-shadow: 0 0 25px rgba(255, 215, 0, 0.5);
+      display: none;
+      pointer-events: none;
+      animation: pop 0.3s ease;
+    }
+
     #username-modal {
       position: absolute;
       top: 20px;
       left: 50%;
       transform: translateX(-50%);
-      background: rgba(12, 18, 30, 0.92);
-      border: 2px solid #00ffcc;
-      border-radius: 10px;
-      padding: 12px 24px;
-      box-shadow: 0 0 25px rgba(0, 255, 204, 0.4);
+      background: rgba(15, 25, 35, 0.94);
+      border: 2px solid #57c757;
+      border-radius: 8px;
+      padding: 10px 20px;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.6);
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 10px;
       z-index: 100;
-      backdrop-filter: blur(6px);
     }
-    #username-modal label { color: #00ffcc; font-size: 13px; font-weight: bold; 
+    #username-modal label { color: #57c757; font-size: 13px; font-weight: bold; }
+    #username-modal input { background: #0c131a; border: 1px solid #57c757; 
 
-letter-spacing: 1px; }
-    #username-modal input { background: #060913; border: 1px solid #00ffcc; 
+color: #fff; font-size: 14px; padding: 6px 12px; border-radius: 4px; outline: none; 
 
-color: #fff; font-size: 14px; padding: 7px 12px; border-radius: 5px; outline: none; 
+width: 140px; text-align: center; }
+    #username-modal button { background: #57c757; color: #000; border: none; 
 
-width: 150px; text-align: center; }
-    #username-modal button { background: #00ffcc; color: #000; border: none; 
+font-size: 13px; font-weight: bold; padding: 7px 14px; border-radius: 4px; cursor: 
 
-font-size: 13px; font-weight: bold; padding: 8px 16px; border-radius: 5px; cursor: 
-
-pointer; transition: 0.2s; }
-    #username-modal button:hover { background: #00cca3; box-shadow: 0 0 10px 
-
-rgba(0,255,204,0.6); }
+pointer; }
 
     #controls-hint {
       position: absolute;
       top: 20px;
       left: 20px;
-      background: rgba(0,0,0,0.65);
-      border: 1px solid rgba(0, 255, 204, 0.4);
+      background: rgba(10, 15, 20, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.2);
       border-radius: 6px;
       padding: 8px 12px;
-      color: #aaa;
+      color: #ddd;
       font-size: 12px;
-      line-height: 1.4;
+      line-height: 1.5;
       pointer-events: none;
     }
-    #controls-hint b { color: #00ffcc; }
+    #controls-hint b { color: #57c757; }
+
+    #perspective-indicator {
+      position: absolute;
+      bottom: 85px;
+      left: 25px;
+      background: rgba(0,0,0,0.6);
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      color: #aaa;
+    }
   </style>
 </head>
 <body>
-  <!-- 3D Canvas Anchor -->
   <div id="canvas-container"></div>
 
-  <!-- In-game Username Prompt -->
   <div id="username-modal">
     <label for="username-input">CALL-SIGN:</label>
     <input type="text" id="username-input" value="Player" maxlength="14">
     <button id="set-name-btn" type="button">CONFIRM</button>
   </div>
 
-  <!-- HUD Overlay -->
   <div id="hud">
     <div id="crosshair"></div>
-    <div id="admin-tag">⚡ ARCEAS ADMIN (ARROW KEYS + GODMODE) ⚡</div>
+    <div id="admin-tag">⭐ ADMIN: ARCEAS ⭐</div>
     
     <div id="controls-hint">
-      Controls: <span id="current-move-hint"><b>WASD</b></span> + 
+      Movement: <span id="current-move-hint"><b>WASD</b></span> | Jump: 
 
-<b>SPACE</b> (Jump)<br>
-      Weapons: <b>1-5</b> | Shoot: <b>Left Click</b> | Scope: <b>Right Click</b>
+<b>SPACE</b><br>
+      Perspective: <b>V</b> (Toggle 1st / 3rd Person)<br>
+      Looting: <b>E</b> or <b>Shoot Crates</b> to Break/Open<br>
+      Switch Gun: <b>1-5</b> | Reload: <b>R</b>
     </div>
 
+    <div id="perspective-indicator">CAMERA: FIRST-PERSON [V]</div>
+    <div id="loot-notification"></div>
+
     <div id="stats-panel">
-      <div class="stat-bar" id="health-display">HEALTH: 100</div>
+      <div class="stat-bar" id="health-display">HEALTH: 100 / 100</div>
       <div class="stat-bar" id="ammo-display">AMMO: 12 / 12</div>
     </div>
 
     <div id="weapon-bar">
-      <div class="weapon-slot active" id="slot-0">1: BLASTER</div>
-      <div class="weapon-slot" id="slot-1">2: RIFLE</div>
-      <div class="weapon-slot" id="slot-2">3: SHOTGUN</div>
-      <div class="weapon-slot" id="slot-3">4: RAILGUN</div>
-      <div class="weapon-slot" id="slot-4">5: ROCKET</div>
+      <div class="weapon-slot unlocked active" id="slot-0">1: PISTOL</div>
+      <div class="weapon-slot locked" id="slot-1">2: RIFLE</div>
+      <div class="weapon-slot locked" id="slot-2">3: SHOTGUN</div>
+      <div class="weapon-slot locked" id="slot-3">4: RAILGUN</div>
+      <div class="weapon-slot locked" id="slot-4">5: RPG</div>
     </div>
 
     <div id="kill-log"></div>
   </div>
 
   <script>
-    // --- 1. FIREBASE CONNECTION ---
+    // --- 1. FIREBASE CONNECTION & INITIALIZATION ---
     const firebaseConfig = {
       apiKey: "AIzaSyD47CV7A3CBN8WprDT190YBoja77HG6NJY",
       authDomain: "advait-bd3da.firebaseapp.com",
@@ -214,44 +240,58 @@ window.webkitAudioContext)();
         gain.connect(audioCtx.destination);
         const now = audioCtx.currentTime;
 
-        if (type === 'blaster') {
+        if (type === 'pistol') {
           osc.type = 'triangle';
-          osc.frequency.setValueAtTime(550, now);
-          osc.frequency.exponentialRampToValueAtTime(70, now + 0.12);
+          osc.frequency.setValueAtTime(500, now);
+          osc.frequency.exponentialRampToValueAtTime(80, now + 0.1);
           gain.gain.setValueAtTime(0.3, now);
-          gain.gain.linearRampToValueAtTime(0.01, now + 0.12);
-          osc.start(now); osc.stop(now + 0.12);
+          gain.gain.linearRampToValueAtTime(0.01, now + 0.1);
+          osc.start(now); osc.stop(now + 0.1);
         } else if (type === 'rifle') {
           osc.type = 'sawtooth';
-          osc.frequency.setValueAtTime(400, now);
-          osc.frequency.exponentialRampToValueAtTime(50, now + 0.08);
-          gain.gain.setValueAtTime(0.2, now);
+          osc.frequency.setValueAtTime(380, now);
+          osc.frequency.exponentialRampToValueAtTime(60, now + 0.08);
+          gain.gain.setValueAtTime(0.25, now);
           gain.gain.linearRampToValueAtTime(0.01, now + 0.08);
           osc.start(now); osc.stop(now + 0.08);
         } else if (type === 'shotgun') {
           osc.type = 'square';
-          osc.frequency.setValueAtTime(180, now);
-          osc.frequency.exponentialRampToValueAtTime(35, now + 0.22);
-          gain.gain.setValueAtTime(0.35, now);
+          osc.frequency.setValueAtTime(160, now);
+          osc.frequency.exponentialRampToValueAtTime(30, now + 0.22);
+          gain.gain.setValueAtTime(0.4, now);
           gain.gain.linearRampToValueAtTime(0.01, now + 0.22);
           osc.start(now); osc.stop(now + 0.22);
         } else if (type === 'railgun') {
           osc.type = 'sine';
-          osc.frequency.setValueAtTime(850, now);
-          osc.frequency.exponentialRampToValueAtTime(30, now + 0.35);
+          osc.frequency.setValueAtTime(800, now);
+          osc.frequency.exponentialRampToValueAtTime(40, now + 0.35);
           gain.gain.setValueAtTime(0.4, now);
           gain.gain.linearRampToValueAtTime(0.01, now + 0.35);
           osc.start(now); osc.stop(now + 0.35);
         } else if (type === 'rocket') {
           osc.type = 'sawtooth';
-          osc.frequency.setValueAtTime(120, now);
+          osc.frequency.setValueAtTime(130, now);
           osc.frequency.exponentialRampToValueAtTime(25, now + 0.5);
           gain.gain.setValueAtTime(0.5, now);
           gain.gain.linearRampToValueAtTime(0.01, now + 0.5);
           osc.start(now); osc.stop(now + 0.5);
+        } else if (type === 'wood_break') {
+          osc.type = 'square';
+          osc.frequency.setValueAtTime(100, now);
+          osc.frequency.linearRampToValueAtTime(20, now + 0.2);
+          gain.gain.setValueAtTime(0.4, now);
+          gain.gain.linearRampToValueAtTime(0.01, now + 0.2);
+          osc.start(now); osc.stop(now + 0.2);
+        } else if (type === 'loot') {
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(440, now);
+          osc.frequency.exponentialRampToValueAtTime(880, now + 0.25);
+          gain.gain.setValueAtTime(0.3, now);
+          gain.gain.linearRampToValueAtTime(0.01, now + 0.25);
+          osc.start(now); osc.stop(now + 0.25);
         } else if (type === 'hit') {
           osc.type = 'sine';
-          osc.frequency.setValueAtTime(1100, now);
+          osc.frequency.setValueAtTime(1000, now);
           gain.gain.setValueAtTime(0.2, now);
           gain.gain.linearRampToValueAtTime(0.01, now + 0.05);
           osc.start(now); osc.stop(now + 0.05);
@@ -259,188 +299,403 @@ window.webkitAudioContext)();
       } catch (e) {}
     }
 
-    // --- 3. PLAYER STATE & WEAPONS ---
-    let username = "Player";
-    let isAdmin = false;
-    let health = 100;
-    let maxHealth = 100;
-
+    // --- 3. WEAPONS & PROGRESSION ---
     const WEAPONS = [
-      { name: "BLASTER",   damage: 22, rate: 250,  mag: 12, maxAmmo: 12, auto: 
+      { name: "PISTOL",   damage: 22, rate: 260,  mag: 12, maxAmmo: 12, auto: 
 
-false, spread: 0.01 },
-      { name: "RIFLE",     damage: 15, rate: 110,  mag: 30, maxAmmo: 30, auto: 
+false, spread: 0.015, color: 0x444444 },
+      { name: "RIFLE",     damage: 16, rate: 110,  mag: 30, maxAmmo: 30, auto: 
 
-true,  spread: 0.035 },
-      { name: "SHOTGUN",   damage: 11, rate: 700,  mag: 8,  maxAmmo: 8,  auto: 
+true,  spread: 0.035, color: 0x3d4b3d },
+      { name: "SHOTGUN",   damage: 12, rate: 750,  mag: 8,  maxAmmo: 8,  auto: 
 
-false, pellets: 7, spread: 0.08 },
-      { name: "RAILGUN",   damage: 90, rate: 1100, mag: 4,  maxAmmo: 4,  auto: 
+false, pellets: 7, spread: 0.08, color: 0x5a3d28 },
+      { name: "RAILGUN",   damage: 95, rate: 1200, mag: 4,  maxAmmo: 4,  auto: 
 
-false, spread: 0.001 },
-      { name: "ROCKET",    damage: 85, rate: 1000, mag: 3,  maxAmmo: 3,  auto: 
+false, spread: 0.001, color: 0x2b3d5a },
+      { name: "RPG",       damage: 90, rate: 1100, mag: 3,  maxAmmo: 3,  auto: 
 
-false, projectile: true }
+false, projectile: true, color: 0x4a442d }
     ];
 
+    // Progression: Player starts ONLY with Weapon 0 (Pistol) unlocked!
+    const unlockedWeapons = [true, false, false, false, false];
     let currentWeaponIdx = 0;
     let ammoCounts = WEAPONS.map(w => w.mag);
     let lastShotTime = 0;
     let isFiring = false;
 
-    // --- 4. IMMEDIATE 3D SETUP ---
+    // Player State (Admin gets standard 100 HP & standard ammo)
+    let username = "Player";
+    let isAdmin = false;
+    let health = 100;
+    const maxHealth = 100;
+    let isThirdPerson = false;
+
+    // --- 4. 3D SCENE & REALISTIC LIGHTING ---
     const container = document.getElementById('canvas-container');
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x060913);
-    scene.fog = new THREE.FogExp2(0x060913, 0.015);
+    scene.background = new THREE.Color(0x87ceeb); // Sky blue
+    scene.fog = new THREE.FogExp2(0x87ceeb, 0.012);
 
     const camera = new THREE.PerspectiveCamera(75, window.innerWidth / 
 
 window.innerHeight, 0.1, 1000);
     camera.rotation.order = 'YXZ';
-    camera.position.set((Math.random() - 0.5) * 30, 1.8, (Math.random() - 0.5) * 
 
-30);
+    const playerPos = new THREE.Vector3((Math.random() - 0.5) * 40, 1.8, 
+
+(Math.random() - 0.5) * 40);
 
     const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     container.appendChild(renderer.domElement);
 
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
+    // Natural Sunlight & Ambient Lighting
+    const ambientLight = new THREE.AmbientLight(0xdff0d8, 0.65);
     scene.add(ambientLight);
 
-    const dirLight = new THREE.DirectionalLight(0x00e5ff, 1.2);
-    dirLight.position.set(30, 60, 20);
-    dirLight.castShadow = true;
-    scene.add(dirLight);
+    const sunLight = new THREE.DirectionalLight(0xfff4d6, 1.1);
+    sunLight.position.set(50, 80, 40);
+    sunLight.castShadow = true;
+    sunLight.shadow.mapSize.width = 2048;
+    sunLight.shadow.mapSize.height = 2048;
+    sunLight.shadow.camera.near = 0.5;
+    sunLight.shadow.camera.far = 250;
+    sunLight.shadow.camera.left = -90;
+    sunLight.shadow.camera.right = 90;
+    sunLight.shadow.camera.top = 90;
+    sunLight.shadow.camera.bottom = -90;
+    scene.add(sunLight);
 
-    // Floor & Grid
-    const floor = new THREE.Mesh(
-      new THREE.PlaneGeometry(160, 160),
-      new THREE.MeshStandardMaterial({ color: 0x111625, roughness: 0.8, 
+    // Realistic Grass Terrain
+    const terrainGeo = new THREE.PlaneGeometry(240, 240, 32, 32);
+    const terrainMat = new THREE.MeshStandardMaterial({
+      color: 0x477033, // Rich grass green
+      roughness: 0.9,
+      metalness: 0.05
+    });
+    const ground = new THREE.Mesh(terrainGeo, terrainMat);
+    ground.rotation.x = -Math.PI / 2;
+    ground.receiveShadow = true;
+    scene.add(ground);
 
-metalness: 0.2 })
-    );
-    floor.rotation.x = -Math.PI / 2;
-    floor.receiveShadow = true;
-    scene.add(floor);
+    // Dirt Path Accents
+    const pathGeo = new THREE.PlaneGeometry(12, 180);
+    const pathMat = new THREE.MeshStandardMaterial({ color: 0x735c40, 
 
-    const grid = new THREE.GridHelper(160, 40, 0x00ffcc, 0x1d273a);
-    grid.position.y = 0.01;
-    scene.add(grid);
+roughness: 0.95 });
+    const path = new THREE.Mesh(pathGeo, pathMat);
+    path.rotation.x = -Math.PI / 2;
+    path.position.y = 0.02;
+    scene.add(path);
 
-    // Arena Pillars & Bounds
-    function makeObstacle(x, z, w, h, d, color = 0x1a2640) {
-      const mesh = new THREE.Mesh(
-        new THREE.BoxGeometry(w, h, d),
-        new THREE.MeshStandardMaterial({ color, roughness: 0.4, metalness: 0.5 })
+    // --- 5. ENVIRONMENT: TREES, HOUSES & DESTROYABLE CRATES ---
+    const colliders = [];
+    const destroyables = []; // List of breakable objects
+
+    // Low-poly Pine Tree Generator
+    function createTree(x, z) {
+      const treeGroup = new THREE.Group();
+      // Trunk
+      const trunk = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.3, 0.45, 2.5, 7),
+        new THREE.MeshStandardMaterial({ color: 0x5a3d28, roughness: 0.9 })
       );
-      mesh.position.set(x, h / 2, z);
-      mesh.castShadow = true;
-      mesh.receiveShadow = true;
-      scene.add(mesh);
-    }
+      trunk.position.y = 1.25;
+      trunk.castShadow = true;
+      treeGroup.add(trunk);
 
-    makeObstacle(0, -80, 160, 8, 4, 0x0e1322);
-    makeObstacle(0, 80, 160, 8, 4, 0x0e1322);
-    makeObstacle(-80, 0, 4, 8, 160, 0x0e1322);
-    makeObstacle(80, 0, 4, 8, 160, 0x0e1322);
+      // Leaves (layered cones)
+      const leafMat = new THREE.MeshStandardMaterial({ color: 0x244f26, 
 
-    for (let i = -40; i <= 40; i += 25) {
-      for (let j = -40; j <= 40; j += 25) {
-        if (i === 0 && j === 0) continue;
-        makeObstacle(i, j, 4, 5, 4);
+roughness: 0.8 });
+      for (let i = 0; i < 3; i++) {
+        const cone = new THREE.Mesh(
+          new THREE.ConeGeometry(2.2 - i * 0.4, 2.4, 7),
+          leafMat
+        );
+        cone.position.y = 2.6 + i * 1.5;
+        cone.castShadow = true;
+        treeGroup.add(cone);
       }
+
+      treeGroup.position.set(x, 0, z);
+      scene.add(treeGroup);
+      colliders.push({ minX: x - 0.6, maxX: x + 0.6, minZ: z - 0.6, maxZ: z + 0.6 });
     }
 
-    // Gun Model
-    const gunGroup = new THREE.Group();
-    const gunBody = new THREE.Mesh(
-      new THREE.BoxGeometry(0.12, 0.15, 0.6),
-      new THREE.MeshStandardMaterial({ color: 0x222222, metalness: 0.8, 
+    // Populate Forest
+    for (let i = 0; i < 45; i++) {
+      const tx = (Math.random() - 0.5) * 190;
+      const tz = (Math.random() - 0.5) * 190;
+      if (Math.abs(tx) > 10 || Math.abs(tz) > 10) createTree(tx, tz);
+    }
 
-roughness: 0.2 })
+    // Realistic Wooden House Generator
+    function createHouse(x, z, rot = 0) {
+      const houseGroup = new THREE.Group();
+      const woodMat = new THREE.MeshStandardMaterial({ color: 0x825838, 
+
+roughness: 0.85 }); // Planks
+      const roofMat = new THREE.MeshStandardMaterial({ color: 0x4a2a1a, 
+
+roughness: 0.7 });  // Roof Tiles
+
+      // Walls
+      const walls = new THREE.Mesh(new THREE.BoxGeometry(10, 5, 8), 
+
+woodMat);
+      walls.position.y = 2.5;
+      walls.castShadow = true;
+      walls.receiveShadow = true;
+      houseGroup.add(walls);
+
+      // Door cutout indicator
+      const door = new THREE.Mesh(
+        new THREE.PlaneGeometry(2.2, 3.8),
+        new THREE.MeshBasicMaterial({ color: 0x15100c })
+      );
+      door.position.set(0, 1.9, 4.02);
+      houseGroup.add(door);
+
+      // Peaked Roof
+      const roof = new THREE.Mesh(new THREE.ConeGeometry(7.5, 3.5, 4), 
+
+roofMat);
+      roof.position.y = 6.5;
+      roof.rotation.y = Math.PI / 4;
+      roof.castShadow = true;
+      houseGroup.add(roof);
+
+      houseGroup.position.set(x, 0, z);
+      houseGroup.rotation.y = rot;
+      scene.add(houseGroup);
+
+      colliders.push({ minX: x - 5.5, maxX: x + 5.5, minZ: z - 4.5, maxZ: z + 4.5 });
+    }
+
+    createHouse(-30, -25, 0.2);
+    createHouse(35, 30, -0.4);
+    createHouse(-40, 45, 0.8);
+
+    // Destroyable Crates & Chests (Can be broken or opened to find weapons)
+    function spawnCrate(x, z, guaranteedWeapon = null) {
+      const crateGroup = new THREE.Group();
+      const crateMesh = new THREE.Mesh(
+        new THREE.BoxGeometry(1.6, 1.6, 1.6),
+        new THREE.MeshStandardMaterial({ color: 0xb5814c, roughness: 0.8, 
+
+metalness: 0.1 })
+      );
+      crateMesh.position.y = 0.8;
+      crateMesh.castShadow = true;
+      crateMesh.receiveShadow = true;
+      crateGroup.add(crateMesh);
+
+      // Metal straps detail
+      const band = new THREE.Mesh(
+        new THREE.BoxGeometry(1.64, 0.3, 1.64),
+        new THREE.MeshStandardMaterial({ color: 0x2b2b2b, metalness: 0.8, 
+
+roughness: 0.3 })
+      );
+      band.position.y = 0.8;
+      crateGroup.add(band);
+
+      crateGroup.position.set(x, 0, z);
+      scene.add(crateGroup);
+
+      destroyables.push({
+        group: crateGroup,
+        mesh: crateMesh,
+        x, z,
+        hp: 35,
+        maxHp: 35,
+        weaponDrop: guaranteedWeapon,
+        isOpened: false
+      });
+    }
+
+    // Place crates throughout the wilderness
+    spawnCrate(8, 6, 1);     // Crates containing weapons
+    spawnCrate(-15, -8, 2);
+    spawnCrate(20, -30, 3);
+    spawnCrate(-25, 30, 4);
+    spawnCrate(0, 25);
+    spawnCrate(-18, 12);
+    spawnCrate(30, -12);
+
+    // --- 6. LOCAL PLAYER MODELS (1ST & 3RD PERSON AVATAR) ---
+    // Gun Model for 1st person
+    const fpGunGroup = new THREE.Group();
+    const gunBody = new THREE.Mesh(
+      new THREE.BoxGeometry(0.12, 0.15, 0.55),
+      new THREE.MeshStandardMaterial({ color: 0x222, metalness: 0.8 })
     );
     const gunBarrel = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.03, 0.03, 0.4),
-      new THREE.MeshStandardMaterial({ color: 0x00ffcc, emissive: 0x004433 })
+      new THREE.CylinderGeometry(0.035, 0.035, 0.4),
+      new THREE.MeshStandardMaterial({ color: 0x444, metalness: 0.9 })
     );
     gunBarrel.rotation.x = Math.PI / 2;
-    gunBarrel.position.set(0, 0.04, -0.4);
-    gunGroup.add(gunBody, gunBarrel);
-    gunGroup.position.set(0.25, -0.25, -0.5);
-    camera.add(gunGroup);
+    gunBarrel.position.set(0, 0.04, -0.35);
+    fpGunGroup.add(gunBody, gunBarrel);
+    fpGunGroup.position.set(0.25, -0.25, -0.5);
+    camera.add(fpGunGroup);
     scene.add(camera);
 
-    // --- 5. IN-GAME USERNAME PROMPT LOGIC ---
-    function applyUsername() {
-      initAudio();
-      const input = document.getElementById('username-input').value.trim();
-      if (input) username = input;
+    // 3rd Person Character Model
+    const localThirdPersonAvatar = new THREE.Group();
+    const tpBody = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.45, 0.45, 1.7, 12),
+      new THREE.MeshStandardMaterial({ color: 0x2f4f4f, roughness: 0.4 })
+    );
+    tpBody.position.y = 0.85;
+    tpBody.castShadow = true;
+    localThirdPersonAvatar.add(tpBody);
 
-      if (username.toLowerCase() === 'arceas') {
-        isAdmin = true;
-        health = 500;
-        maxHealth = 500;
-        document.getElementById('admin-tag').style.display = 'block';
-        document.getElementById('current-move-hint').innerHTML = '<b>ARROW 
+    const tpHead = new THREE.Mesh(
+      new THREE.SphereGeometry(0.3, 12, 12),
+      new THREE.MeshStandardMaterial({ color: 0xd2b48c })
+    );
+    tpHead.position.y = 1.9;
+    localThirdPersonAvatar.add(tpHead);
+    localThirdPersonAvatar.visible = false;
+    scene.add(localThirdPersonAvatar);
 
-KEYS (Admin)</b>';
-      } else {
-        isAdmin = false;
-        health = 100;
-        maxHealth = 100;
-        document.getElementById('admin-tag').style.display = 'none';
-        document.getElementById('current-move-hint').innerHTML = '<b>WASD</b>';
-      }
+    // --- 7. DYNAMIC HEALTH BAR & NAMEPLATE GENERATOR ---
+    function generateBillboardCanvas(name, currentHp, fullHp, isUserAdmin) {
+      const canvas = document.createElement('canvas');
+      canvas.width = 256;
+      canvas.height = 96;
+      const ctx = canvas.getContext('2d');
 
-      // Hide the floating prompt modal
-      document.getElementById('username-modal').style.display = 'none';
-      renderer.domElement.requestPointerLock();
-      updateHUD();
+      ctx.clearRect(0, 0, 256, 96);
 
-      // Register or update in Firebase
-      if (db) {
-        if (!myPlayerRef) myPlayerRef = db.ref(`players/${localId}`);
-        myPlayerRef.set({
-          username,
-          isAdmin,
-          health,
-          x: camera.position.x,
-          y: camera.position.y,
-          z: camera.position.z,
-          rotY: camera.rotation.y
-        });
-        myPlayerRef.onDisconnect().remove();
-      }
+      // Name & Admin Badge
+      ctx.font = 'bold 24px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillStyle = isUserAdmin ? '#ffcc00' : '#ffffff';
+      ctx.strokeStyle = '#000000';
+      ctx.lineWidth = 4;
+      const displayName = (isUserAdmin ? '👑 ' : '') + name;
+      ctx.strokeText(displayName, 128, 30);
+      ctx.fillText(displayName, 128, 30);
+
+      // Background HP Bar
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+      ctx.fillRect(28, 44, 200, 18);
+
+      // Dynamic Fill HP Bar
+      const pct = Math.max(0, Math.min(1, currentHp / fullHp));
+      ctx.fillStyle = pct > 0.5 ? '#00e676' : (pct > 0.25 ? '#ffab00' : '#ff1744');
+      ctx.fillRect(30, 46, 196 * pct, 14);
+
+      // Border outline
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(28, 44, 200, 18);
+
+      return canvas;
     }
 
-    document.getElementById('set-name-btn').addEventListener('click', 
+    function updatePlayerNameplate(sprite, name, curHp, maxHp, isUserAdmin) {
+      const canvas = generateBillboardCanvas(name, curHp, maxHp, isUserAdmin);
+      sprite.material.map.dispose();
+      sprite.material.map = new THREE.CanvasTexture(canvas);
+      sprite.material.needsUpdate = true;
+    }
 
-applyUsername);
-    document.getElementById('username-input').addEventListener('keydown', (e) 
+    // --- 8. MULTIPLAYER REMOTE PLAYERS ---
+    const remotePlayers = {};
+    const remoteGroup = new THREE.Group();
+    scene.add(remoteGroup);
 
-=> {
-      if (e.key === 'Enter') applyUsername();
-    });
+    function createRemotePlayerMesh(info) {
+      const group = new THREE.Group();
 
-    // --- 6. CONTROLS & POINTER LOCK ---
+      // Avatar Mesh
+      const body = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.5, 0.5, 1.8, 12),
+        new THREE.MeshStandardMaterial({ color: info.isAdmin ? 0xffb703 : 
+
+0x2a9d8f, roughness: 0.3 })
+      );
+      body.position.y = 0.9;
+      body.castShadow = true;
+      group.add(body);
+
+      // Overhead Canvas Billboard (Name + HP Bar)
+      const canvas = generateBillboardCanvas(info.username, info.health, 100, 
+
+info.isAdmin);
+      const spriteMat = new THREE.SpriteMaterial({ map: new 
+
+THREE.CanvasTexture(canvas) });
+      const sprite = new THREE.Sprite(spriteMat);
+      sprite.position.y = 2.6;
+      sprite.scale.set(3.2, 1.2, 1);
+      group.add(sprite);
+
+      group.userData = {
+        hitMesh: body,
+        sprite,
+        username: info.username,
+        health: info.health,
+        isAdmin: info.isAdmin,
+        targetPos: new THREE.Vector3(),
+        targetRotY: 0
+      };
+      return group;
+    }
+
+    // --- 9. CONTROLS, KEYBOARD & PERSPECTIVE SWITCH ---
     const keys = {};
     const playerVelocity = new THREE.Vector3();
     let onGround = false;
 
     window.addEventListener('keydown', (e) => {
-      keys[e.key.toLowerCase()] = true;
-      if (['1','2','3','4','5'].includes(e.key)) selectWeapon(parseInt(e.key) - 1);
-      if (e.key.toLowerCase() === 'r') {
+      const key = e.key.toLowerCase();
+      keys[key] = true;
+
+      // Switch Perspective (V)
+      if (key === 'v') {
+        isThirdPerson = !isThirdPerson;
+        fpGunGroup.visible = !isThirdPerson;
+        localThirdPersonAvatar.visible = isThirdPerson;
+        document.getElementById('perspective-indicator').innerText = 
+          isThirdPerson ? "CAMERA: THIRD-PERSON [V]" : "CAMERA: FIRST-
+
+PERSON [V]";
+      }
+
+      // Interact with nearby crates (E)
+      if (key === 'e') {
+        openNearbyCrate();
+      }
+
+      // Weapon Switching (1 - 5)
+      if (['1','2','3','4','5'].includes(key)) {
+        const idx = parseInt(key) - 1;
+        if (unlockedWeapons[idx]) {
+          selectWeapon(idx);
+        } else {
+          showNotification("Locked! Open crates to find this weapon.");
+        }
+      }
+
+      // Reload (R)
+      if (key === 'r') {
         ammoCounts[currentWeaponIdx] = WEAPONS
 
 [currentWeaponIdx].maxAmmo;
         updateHUD();
       }
     });
+
     window.addEventListener('keyup', (e) => { keys[e.key.toLowerCase()] = false; 
 
 });
@@ -458,7 +713,7 @@ applyUsername);
     window.addEventListener('mousemove', (e) => {
       if (!isPointerLocked) return;
       camera.rotation.y -= e.movementX * 0.0022;
-      camera.rotation.x = Math.max(-Math.PI / 2.2, Math.min(Math.PI / 2.2, 
+      camera.rotation.x = Math.max(-Math.PI / 2.3, Math.min(Math.PI / 2.3, 
 
 camera.rotation.x - e.movementY * 0.0022));
     });
@@ -479,65 +734,64 @@ camera.rotation.x - e.movementY * 0.0022));
       document.querySelectorAll('.weapon-slot').forEach((slot, i) => {
         slot.classList.toggle('active', i === idx);
       });
-      gunBarrel.material.color.setHex(idx === 4 ? 0xff4400 : (idx === 3 ? 0x9900ff : 
-
-0x00ffcc));
+      gunBody.material.color.setHex(WEAPONS[idx].color);
       updateHUD();
     }
 
-    // --- 7. MULTIPLAYER ENTITIES ---
-    const remotePlayers = {};
-    const remoteGroup = new THREE.Group();
-    scene.add(remoteGroup);
-
-    function createPlayerMesh(info) {
-      const group = new THREE.Group();
-      const body = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.5, 0.5, 1.8, 12),
-        new THREE.MeshStandardMaterial({ color: info.isAdmin ? 0xffaa00 : 
-
-0x00a2ff, roughness: 0.3 })
-      );
-      body.position.y = 0.9;
-      body.castShadow = true;
-      group.add(body);
-
-      const canvas = document.createElement('canvas');
-      canvas.width = 256; canvas.height = 64;
-      const ctx = canvas.getContext('2d');
-      ctx.fillStyle = info.isAdmin ? '#ffaa00' : '#00ffcc';
-      ctx.font = 'bold 28px sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText((info.isAdmin ? '👑 ' : '') + info.username, 128, 40);
-
-      const tag = new THREE.Sprite(new THREE.SpriteMaterial({ map: new 
-
-THREE.CanvasTexture(canvas) }));
-      tag.position.y = 2.4;
-      tag.scale.set(3, 0.75, 1);
-      group.add(tag);
-
-      group.userData = { hitMesh: body, targetPos: new THREE.Vector3(), 
-
-targetRotY: 0 };
-      return group;
+    function showNotification(text) {
+      const el = document.getElementById('loot-notification');
+      el.innerText = text;
+      el.style.display = 'block';
+      clearTimeout(el.timer);
+      el.timer = setTimeout(() => { el.style.display = 'none'; }, 2500);
     }
 
-    const activeProjectiles = [];
-    function spawnRocket(startPos, dir, isLocal) {
-      const rocket = new THREE.Mesh(
-        new THREE.SphereGeometry(0.2, 8, 8),
-        new THREE.MeshBasicMaterial({ color: 0xff3300 })
-      );
-      rocket.position.copy(startPos);
-      scene.add(rocket);
-      activeProjectiles.push({ mesh: rocket, dir: dir.clone().multiplyScalar(0.9), life: 
+    // --- 10. CRATE BREAKING & WEAPON PROGRESSION ---
+    function openNearbyCrate() {
+      for (const crate of destroyables) {
+        if (!crate.isOpened && playerPos.distanceTo(new THREE.Vector3(crate.x, 
 
-120, isLocal });
+0.8, crate.z)) < 3.8) {
+          breakCrate(crate);
+          return;
+        }
+      }
     }
 
-    // --- 8. SHOOTING & DAMAGE ---
+    function breakCrate(crate) {
+      crate.isOpened = true;
+      playSound('wood_break');
+      scene.remove(crate.group);
+
+      // Unlock a locked weapon
+      let weaponToUnlock = crate.weaponDrop;
+      if (weaponToUnlock === null || unlockedWeapons[weaponToUnlock]) {
+        weaponToUnlock = unlockedWeapons.findIndex(unlocked => !unlocked);
+      }
+
+      if (weaponToUnlock !== -1 && !unlockedWeapons[weaponToUnlock]) {
+        unlockedWeapons[weaponToUnlock] = true;
+        const slot = document.getElementById(`slot-${weaponToUnlock}`);
+        slot.classList.remove('locked');
+        slot.classList.add('unlocked');
+        playSound('loot');
+        showNotification(`LOOTED: ${WEAPONS[weaponToUnlock].name}! Press 
+
+[${weaponToUnlock + 1}] to equip.`);
+        selectWeapon(weaponToUnlock);
+      } else {
+        showNotification("Looted Ammo Cache (+Full Reload)");
+        ammoCounts[currentWeaponIdx] = WEAPONS
+
+[currentWeaponIdx].maxAmmo;
+        updateHUD();
+      }
+    }
+
+    // --- 11. COMBAT & SHOOTING MECHANICS ---
     const raycaster = new THREE.Raycaster();
+    const activeProjectiles = [];
+
     function shoot() {
       const now = performance.now();
       const currentWep = WEAPONS[currentWeaponIdx];
@@ -545,11 +799,12 @@ targetRotY: 0 };
       if (ammoCounts[currentWeaponIdx] <= 0) return;
 
       lastShotTime = now;
-      if (!isAdmin) ammoCounts[currentWeaponIdx]--;
+      ammoCounts[currentWeaponIdx]--;
       updateHUD();
 
-      gunGroup.position.z += 0.08;
-      setTimeout(() => { gunGroup.position.z = -0.5; }, 80);
+      // Recoil
+      fpGunGroup.position.z += 0.08;
+      setTimeout(() => { fpGunGroup.position.z = -0.5; }, 80);
 
       playSound(currentWep.projectile ? 'rocket' : currentWep.name.toLowerCase
 
@@ -559,10 +814,18 @@ targetRotY: 0 };
       camera.getWorldDirection(forward);
 
       if (currentWep.projectile) {
-        const startPos = camera.position.clone().add(forward.clone().multiplyScalar
+        const startPos = playerPos.clone().add(new THREE.Vector3(0, 1.6, 0)).add
 
-(0.6));
-        spawnRocket(startPos, forward, true);
+(forward.clone().multiplyScalar(0.7));
+        const rocket = new THREE.Mesh(
+          new THREE.SphereGeometry(0.22, 8, 8),
+          new THREE.MeshBasicMaterial({ color: 0xff3300 })
+        );
+        rocket.position.copy(startPos);
+        scene.add(rocket);
+        activeProjectiles.push({ mesh: rocket, dir: forward.clone().multiplyScalar
+
+(1.0), life: 100, isLocal: true });
         return;
       }
 
@@ -574,18 +837,37 @@ targetRotY: 0 };
         shootDir.z += (Math.random() - 0.5) * currentWep.spread;
         shootDir.normalize();
 
-        raycaster.set(camera.position, shootDir);
+        raycaster.set(isThirdPerson ? camera.position : playerPos.clone().add(new 
+
+THREE.Vector3(0, 1.6, 0)), shootDir);
+
+        // Check Destroyable Crates
+        const crateMeshes = destroyables.filter(c => !c.isOpened).map(c => 
+
+c.mesh);
+        const crateHits = raycaster.intersectObjects(crateMeshes);
+        if (crateHits.length > 0) {
+          const hit = crateHits[0];
+          const targetCrate = destroyables.find(c => c.mesh === hit.object);
+          if (targetCrate) {
+            targetCrate.hp -= currentWep.damage;
+            playSound('hit');
+            if (targetCrate.hp <= 0) breakCrate(targetCrate);
+            continue;
+          }
+        }
+
+        // Check Players
         const hitMeshes = Object.values(remotePlayers).map(rp => 
 
 rp.userData.hitMesh);
         const hits = raycaster.intersectObjects(hitMeshes);
-
         if (hits.length > 0) {
           const hitMesh = hits[0].object;
           for (const [id, rPlayer] of Object.entries(remotePlayers)) {
             if (rPlayer.userData.hitMesh === hitMesh) {
               playSound('hit');
-              dealDamageTo(id, currentWep.damage * (isAdmin ? 2 : 1));
+              dealDamageTo(id, currentWep.damage);
               break;
             }
           }
@@ -618,28 +900,79 @@ rp.userData.hitMesh);
     function updateHUD() {
       document.getElementById('health-display').innerText = `HEALTH: 
 
-${Math.round(health)}`;
-      document.getElementById('ammo-display').innerText = `AMMO: ${isAdmin ? '∞' 
+${Math.round(health)} / ${maxHealth}`;
+      document.getElementById('ammo-display').innerText = `AMMO: 
 
-: ammoCounts[currentWeaponIdx]} / ${WEAPONS
+${ammoCounts[currentWeaponIdx]} / ${WEAPONS
 
 [currentWeaponIdx].maxAmmo}`;
     }
 
-    // --- 9. FIREBASE EVENT LISTENERS ---
+    // --- 12. USERNAME PROMPT & ADMIN PROFILE ---
+    function applyUsername() {
+      initAudio();
+      const input = document.getElementById('username-input').value.trim();
+      if (input) username = input;
+
+      // Admin verification for 'arceas'
+      // Strictly receives: Arrow Key controls & Admin tag. Standard 100 HP, 
+
+standard ammo.
+      if (username.toLowerCase() === 'arceas') {
+        isAdmin = true;
+        document.getElementById('admin-tag').style.display = 'block';
+        document.getElementById('current-move-hint').innerHTML = '<b>ARROW 
+
+KEYS (Admin)</b>';
+      } else {
+        isAdmin = false;
+        document.getElementById('admin-tag').style.display = 'none';
+        document.getElementById('current-move-hint').innerHTML = '<b>WASD</b>';
+      }
+
+      document.getElementById('username-modal').style.display = 'none';
+      renderer.domElement.requestPointerLock();
+      updateHUD();
+
+      if (db) {
+        if (!myPlayerRef) myPlayerRef = db.ref(`players/${localId}`);
+        myPlayerRef.set({
+          username,
+          isAdmin,
+          health,
+          x: playerPos.x,
+          y: playerPos.y,
+          z: playerPos.z,
+          rotY: camera.rotation.y
+        });
+        myPlayerRef.onDisconnect().remove();
+      }
+    }
+
+    document.getElementById('set-name-btn').addEventListener('click', 
+
+applyUsername);
+    document.getElementById('username-input').addEventListener('keydown', (e) 
+
+=> {
+      if (e.key === 'Enter') applyUsername();
+    });
+
+    // --- 13. FIREBASE SYNC LISTENERS ---
     if (db) {
       db.ref('players').on('value', (snapshot) => {
         const list = snapshot.val() || {};
         for (const [id, data] of Object.entries(list)) {
           if (id === localId) {
             if (data.health <= 0 && health > 0) {
+              // Local respawn
               health = maxHealth;
-              camera.position.set((Math.random() - 0.5) * 60, 1.8, (Math.random() - 
+              playerPos.set((Math.random() - 0.5) * 60, 1.8, (Math.random() - 0.5) * 
 
-0.5) * 60);
+60);
               if (myPlayerRef) myPlayerRef.update({ health: maxHealth, x: 
 
-camera.position.x, y: 1.8, z: camera.position.z });
+playerPos.x, y: 1.8, z: playerPos.z });
             } else {
               health = data.health;
             }
@@ -648,10 +981,22 @@ camera.position.x, y: 1.8, z: camera.position.z });
           }
 
           if (!remotePlayers[id]) {
-            const mesh = createPlayerMesh(data);
+            const mesh = createRemotePlayerMesh(data);
             remotePlayers[id] = mesh;
             remoteGroup.add(mesh);
           }
+
+          // Update overhead billboard if HP or Name changed
+          if (remotePlayers[id].userData.health !== data.health || remotePlayers
+
+[id].userData.username !== data.username) {
+            remotePlayers[id].userData.health = data.health;
+            remotePlayers[id].userData.username = data.username;
+            updatePlayerNameplate(remotePlayers[id].userData.sprite, 
+
+data.username, data.health, 100, data.isAdmin);
+          }
+
           remotePlayers[id].userData.targetPos.set(data.x, data.y - 0.9, data.z);
           remotePlayers[id].userData.targetRotY = data.rotY;
         }
@@ -664,20 +1009,20 @@ camera.position.x, y: 1.8, z: camera.position.z });
         }
       });
 
-      // Sync local player position 15x / second
+      // Position sync heartbeat
       setInterval(() => {
         if (myPlayerRef) {
           myPlayerRef.update({
-            x: Number(camera.position.x.toFixed(2)),
-            y: Number(camera.position.y.toFixed(2)),
-            z: Number(camera.position.z.toFixed(2)),
+            x: Number(playerPos.x.toFixed(2)),
+            y: Number(playerPos.y.toFixed(2)),
+            z: Number(playerPos.z.toFixed(2)),
             rotY: Number(camera.rotation.y.toFixed(2))
           });
         }
       }, 65);
     }
 
-    // --- 10. GAME ENGINE LOOP ---
+    // --- 14. MAIN ENGINE LOOP ---
     const clock = new THREE.Clock();
 
     function animate() {
@@ -686,29 +1031,27 @@ camera.position.x, y: 1.8, z: camera.position.z });
 
       if (isFiring && WEAPONS[currentWeaponIdx].auto) shoot();
 
-      // Controls Check
+      // Controls Resolution
       const moveInput = new THREE.Vector3();
       if (isAdmin) {
-        // Arceas must use ARROW KEYS
+        // Arceas Arrow Keys requirement
         if (keys['arrowup']) moveInput.z -= 1;
         if (keys['arrowdown']) moveInput.z += 1;
         if (keys['arrowleft']) moveInput.x -= 1;
         if (keys['arrowright']) moveInput.x += 1;
       } else {
-        // Standard players use WASD
+        // Standard WASD requirement
         if (keys['w']) moveInput.z -= 1;
         if (keys['s']) moveInput.z += 1;
         if (keys['a']) moveInput.x -= 1;
         if (keys['d']) moveInput.x += 1;
       }
 
-      // Jump (Space for all)
       if (keys[' '] && onGround) {
         playerVelocity.y = 8.5;
         onGround = false;
       }
 
-      // Movement vector relative to camera look
       moveInput.normalize();
       const moveVector = new THREE.Vector3();
       moveVector.x = moveInput.x * Math.cos(camera.rotation.y) + moveInput.z * 
@@ -718,42 +1061,75 @@ Math.sin(camera.rotation.y);
 
 Math.cos(camera.rotation.y);
 
-      const moveSpeed = isAdmin ? 16.0 : 11.0;
+      const moveSpeed = 12.0;
       playerVelocity.x = moveVector.x * moveSpeed;
       playerVelocity.z = moveVector.z * moveSpeed;
 
-      // Gravity & Grounding
+      // Gravity & Collision
       playerVelocity.y -= 22.0 * delta;
-      camera.position.x += playerVelocity.x * delta;
-      camera.position.z += playerVelocity.z * delta;
-      camera.position.y += playerVelocity.y * delta;
+      playerPos.x += playerVelocity.x * delta;
+      playerPos.z += playerVelocity.z * delta;
+      playerPos.y += playerVelocity.y * delta;
 
-      if (camera.position.y <= 1.8) {
-        camera.position.y = 1.8;
+      if (playerPos.y <= 1.8) {
+        playerPos.y = 1.8;
         playerVelocity.y = 0;
         onGround = true;
       }
 
-      camera.position.x = Math.max(-75, Math.min(75, camera.position.x));
-      camera.position.z = Math.max(-75, Math.min(75, camera.position.z));
+      // Map boundary clamps
+      playerPos.x = Math.max(-110, Math.min(110, playerPos.x));
+      playerPos.z = Math.max(-110, Math.min(110, playerPos.z));
 
-      // Interpolate remote players
+      // Perspective Camera Placement
+      if (isThirdPerson) {
+        localThirdPersonAvatar.position.set(playerPos.x, playerPos.y - 1.8, 
+
+playerPos.z);
+        localThirdPersonAvatar.rotation.y = camera.rotation.y;
+
+        // Camera trails behind player
+        const dist = 4.2;
+        camera.position.x = playerPos.x - Math.sin(camera.rotation.y) * dist * 
+
+Math.cos(camera.rotation.x);
+        camera.position.z = playerPos.z - Math.cos(camera.rotation.y) * dist * 
+
+Math.cos(camera.rotation.x);
+        camera.position.y = playerPos.y + 1.2 + Math.sin(camera.rotation.x) * dist;
+      } else {
+        camera.position.copy(playerPos);
+      }
+
+      // Remote Players Interpolation
       for (const id in remotePlayers) {
         const rp = remotePlayers[id];
-        rp.position.lerp(rp.userData.targetPos, 0.2);
+        rp.position.lerp(rp.userData.targetPos, 0.25);
         rp.rotation.y = rp.userData.targetRotY;
       }
 
-      // Rockets update
+      // Projectiles
       for (let i = activeProjectiles.length - 1; i >= 0; i--) {
         const p = activeProjectiles[i];
         p.mesh.position.add(p.dir);
         p.life--;
 
+        // Check Crate Hit with Rocket
+        for (const crate of destroyables) {
+          if (!crate.isOpened && p.mesh.position.distanceTo(new THREE.Vector3
+
+(crate.x, 0.8, crate.z)) < 2.0) {
+            breakCrate(crate);
+            p.life = 0;
+            break;
+          }
+        }
+
+        // Check Remote Player Hit
         if (p.isLocal) {
           for (const [id, rp] of Object.entries(remotePlayers)) {
-            if (p.mesh.position.distanceTo(rp.position) < 2.0) {
-              dealDamageTo(id, 85 * (isAdmin ? 2 : 1));
+            if (p.mesh.position.distanceTo(rp.position) < 2.2) {
+              dealDamageTo(id, 90);
               p.life = 0;
               break;
             }
@@ -777,7 +1153,6 @@ Math.cos(camera.rotation.y);
       renderer.setSize(window.innerWidth, window.innerHeight);
     });
 
-    // Auto-focus the input immediately
     document.getElementById('username-input').focus();
   </script>
 </body>
