@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CyberStrike 3D Multiplayer</title>
+  <style>
+    * { box-sizing: border-box; user-select: none; }
+    body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #000; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    #canvas-container { width: 100%; height: 100%; position: absolute; }
+    
+    /* HUD Elements */
+    #hud { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; display: none; }
+    #crosshair { position: absolute; top: 50%; left: 50%; width: 10px; height: 10px; transform: translate(-50%, -50%); }
+    #crosshair::before, #crosshair::after { content: ''; position: absolute; background: rgba(0, 255, 204, 0.9); }
+    #crosshair::before { top: 4px; left: -8px; width: 26px; height: 2px; }
+    #crosshair::after { top: -8px; left: 4px; width: 2px; height: 26px; }
+
+    #stats-panel { position: absolute; bottom: 25px; left: 25px; display: flex; flex-direction: column; gap: 8px; }
+    .stat-bar { background: rgba(10, 15, 25, 0.8); border: 2px solid #00ffcc; padding: 10px 18px; border-radius: 6px; color: #fff; font-size: 18px; font-weight: bold; letter-spacing: 1px; min-width: 180px; text-shadow: 0 0 8px rgba(0,255,204,0.6); }
+    
+    #weapon-bar { position: absolute; bottom: 25px; right: 25px; display: flex; gap: 8px; }
+    .weapon-slot { background: rgba(10, 15, 25, 0.8); border: 1px solid #444; color: #888; padding: 10px 14px; border-radius: 4px; font-size: 13px; font-weight: bold; }
+    .weapon-slot.active { border-color: #00ffcc; color: #00ffcc; box-shadow: 0 0 10px rgba(0,255,204,0.4); transform: translateY(-4px); }
+
+    #admin-tag { position: absolute; top: 20px; left: 50%; transform: translateX(-50%); background: linear-gradient(90deg, #ff9900, #ff0055); padding: 6px 18px; border-radius: 20px; color: #fff; font-weight: 900; letter-spacing: 2px; font-size: 14px; display: none; box-shadow: 0 0 15px rgba(255,100,0,0.8); }
+
+    #kill-log { position: absolute; top: 20px; right: 20px; display: flex; flex-direction: column; gap: 5px; color: #fff; font-size: 13px; text-align: right; }
+    .log-item { background: rgba(0,0,0,0.6); padding: 4px 8px; border-radius: 3px; border-left: 3px solid #00ffcc; }
+
+    /* Modal / Login overlay */
+    #overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle, rgba(15,20,35,0.92) 0%, rgba(5,5,10,0.98) 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 100; color: #fff; }
+    .dialog { background: rgba(20, 25, 40, 0.95); border: 2px solid #00ffcc; box-shadow: 0 0 30px rgba(0,255,204,0.3); border-radius: 12px; padding: 35px 45px; text-align: center; max-width: 420px; width: 90%; }
+    .dialog h1 { margin: 0 0 10px; font-size: 28px; color: #00ffcc; letter-spacing: 2px; }
+    .dialog p { color: #aaa; font-size: 13px; line-height: 1.5; margin-bottom: 25px; }
+    .dialog input { width: 100%; padding: 12px; background: #0a0f1d; border: 1px solid #00ffcc; color: #fff; font-size: 16px; border-radius: 6px; outline: none; margin-bottom: 20px; text-align: center; }
+    .dialog button { width: 100%; padding: 12px; background: #00ffcc; color: #000; border: none; font-size: 16px; font-weight: bold; border-radius: 6px; cursor: pointer; transition: 0.2s; }
+    .dialog button:hover { background: #00cca3; box-shadow: 0 0 15px rgba(0,255,204,0.6); }
+    #instructions-panel { margin-top: 15px; font-size: 11px; color: #777; text-align: left; }
+  </style>
+</head>
+<body>
+  <div id="canvas-container"></div>
+
+  <div id="hud">
+    <div id="crosshair"></div>
+    <div id="admin-tag">⚡ ARCEAS ADMIN ACTIVE (GODMODE) ⚡</div>
+    <div id="stats-panel">
+      <div class="stat-bar" id="health-display">HEALTH: 100</div>
+      <div class="stat-bar" id="ammo-display">AMMO: -- / --</div>
+    </div>
+    <div id="weapon-bar">
+      <div class="weapon-slot active" id="slot-0">1: BLASTER</div>
+      <div class="weapon-slot" id="slot-1">2: RIFLE</div>
+      <div class="weapon-slot" id="slot-2">3: SHOTGUN</div>
+      <div class="weapon-slot" id="slot-3">4: RAILGUN</div>
+      <div class="weapon-slot" id="slot-4">5: ROCKET</div>
+    </div>
+    <div id="kill-log"></div>
+  </div>
+
+  <div id="overlay">
+    <div class="dialog">
+      <h1>CYBERSTRIKE 3D</h1>
+      <p>Real-time multiplayer WebGL arena powered by Firebase.</p>
+      <input type="text" id="username-input" placeholder="Enter Call-sign..." maxlength="14" value="Player">
+      <button id="join-btn">ENTER BATTLEGROUND</button>
+      <div id="instructions-panel">
+        • Standard: <b>W, A, S, D</b> + <b>SPACE</b> to jump<br>
+        • Username 'arceas': <b>ARROW KEYS</b> + <b>SPACE</b> (Admin Godmode)<br>
+        • Weapons: <b>Keys 1 - 5</b> | Shoot: <b>Left Click</b> | Scope: <b>Right Click</b>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import * as THREE from 'https://esm.sh/three@0.170.0';
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
+    import { getDatabase, ref, set, onValue, onDisconnect, remove, update } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js';
+
+    // --- 1. FIREBASE CONFIGURATION ---
+    const firebaseConfig = {
+      apiKey: "AIzaSyD47CV7A3CBN8WprDT190YBoja77HG6NJY",
+      authDomain: "advait-bd3da.firebaseapp.com",
+      databaseURL: "https://advait-bd3da-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "advait-bd3da",
+      storageBucket: "advait-bd3da.firebasestorage.app",
+      messagingSenderId: "816232706393",
+      appId: "1:816232706393:web:5aaa150277498ce2591c48",
+      measurementId: "G-KQ1MNHH754"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const localId = 'user_' + Math.random().toString(36).substring(2, 9);
+    let myPlayerRef = null;
+
+    // --- 2. AUDIO SYNTHESIZER (WEB AUDIO API) ---
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    function playSound(type) {
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      const now = audioCtx.currentTime;
+
+      if (type === 'pistol') {
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(600, now);
+        osc.frequency.exponentialRampToValueAtTime(80, now + 0.12);
+        gain.gain.setValueAtTime(0.3, now);
+        gain.gain.linearRampToValueAtTime(0.01, now + 0.12);
+        osc.start(now); osc.stop(now + 0.12);
+      } else if (type === 'rifle') {
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(450, now);
+        osc.frequency.exponentialRampToValueAtTime(60, now + 0.08);
+        gain.gain.setValueAtTime(0.25, now);
+        gain.gain.linearRampToValueAtTime(0.01, now + 0.08);
+        osc.start(now); osc.stop(now + 0.08);
+      } else if (type === 'shotgun') {
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(200, now);
+        osc.frequency.exponentialRampToValueAtTime(40, now + 0.25);
+        gain.gain.setValueAtTime(0.4, now);
+        gain.gain.linearRampToValueAtTime(0.01, now + 0.25);
+        osc.start(now); osc.stop(now + 0.25);
+      } else if (type === 'sniper') {
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(900, now);
+        osc.frequency.exponentialRampToValueAtTime(40, now + 0.4);
+        gain.gain.setValueAtTime(0.5, now);
+        gain.gain.linearRampToValueAtTime(0.01, now + 0.4);
+        osc.start(now); osc.stop(now + 0.4);
+      } else if (type === 'rocket') {
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(150, now);
+        osc.frequency.exponentialRampToValueAtTime(30, now + 0.6);
+        gain.gain.setValueAtTime(0.6, now);
+        gain.gain.linearRampToValueAtTime(0.01, now + 0.6);
+        osc.start(now); osc.stop(now + 0.6);
+      } else if (type === 'hit') {
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(1200, now);
+        gain.gain.setValueAtTime(0.2, now);
+        gain.gain.linearRampToValueAtTime(0.01, now + 0.05);
+        osc.start(now); osc.stop(now + 0.05);
+      }
+    }
+
+    // --- 3. GAME CONSTANTS & WEAPONS DEFINITION ---
+    const WEAPONS = [
+      { name: "BLASTER",   damage: 22, rate: 250,  mag: 12, maxAmmo: 12, auto: false, spread: 0.01 },
+      { name: "RIFLE",     damage: 15, rate: 110,  mag: 30, maxAmmo: 30, auto: true,  spread: 0.035 },
+      { name: "SHOTGUN",   damage: 11, rate: 700,  mag: 8,  maxAmmo: 8,  auto: false, pellets: 7, spread: 0.08 },
+      { name: "RAILGUN",   damage: 90, rate: 1100, mag: 4,  maxAmmo: 4,  auto: false, spread: 0.001 },
+      { name: "ROCKET",    damage: 85, rate: 1000, mag: 3,  maxAmmo: 3,  auto: false, projectile: true }
+    ];
+
+    let currentWeaponIdx = 0;
+    let ammoCounts = WEAPONS.map(w => w.mag);
+    let lastShotTime = 0;
+    let isFiring = false;
+
+    let username = "Player";
+    let isAdmin = false;
+    let health = 100;
+    let maxHealth = 100;
+
+    // --- 4. GRAPHICS & SCENE SETUP ---
+    const container = document.getElementById('canvas-container');
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x060913);
+    scene.fog = new THREE.FogExp2(0x060913, 0.015);
+
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    camera.rotation.order = 'YXZ';
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.shadowMap.enabled = true;
+    container.appendChild(renderer.domElement);
+
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
+    scene.add(ambientLight);
+
+    const dirLight = new THREE.DirectionalLight(0x00e5ff, 1.2);
+    dirLight.position.set(30, 60, 20);
+    dirLight.castShadow = true;
+    scene.add(dirLight);
+
+    // Arena Floor and Obstacles
+    const floorGeo = new THREE.PlaneGeometry(160, 160);
+    const floorMat = new THREE.MeshStandardMaterial({ color: 0x111625, roughness: 0.8, metalness: 0.2 });
+    const floor = new THREE.Mesh(floorGeo, floorMat);
+    floor.rotation.x = -Math.PI / 2;
+    floor.receiveShadow = true;
+    scene.add(floor);
+
+    const grid = new THREE.GridHelper(160, 40, 0x00ffcc, 0x1d273a);
+    grid.position.y = 0.01;
+    scene.add(grid);
+
+    // Walls & Cover Pillars
+    const obstacles = [];
+    function makeObstacle(x, z, w, h, d, color = 0x1b233d) {
+      const mesh = new THREE.Mesh(
+        new THREE.BoxGeometry(w, h, d),
+        new THREE.MeshStandardMaterial({ color, roughness: 0.4, metalness: 0.5 })
+      );
+      mesh.position.set(x, h / 2, z);
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
+      scene.add(mesh);
+      obstacles.push({ minX: x - w / 2, maxX: x + w / 2, minZ: z - d / 2, maxZ: z + d / 2 });
+    }
+
+    // Outer boundaries
+    makeObstacle(0, -80, 160, 8, 4, 0x0e1322);
+    makeObstacle(0, 80, 160, 8, 4, 0x0e1322);
+    makeObstacle(-80, 0, 4, 8, 160, 0x0e1322);
+    makeObstacle(80, 0, 4, 8, 160, 0x0e1322);
+
+    // Inner Covers
+    for (let i = -40; i <= 40; i += 25) {
+      for (let j = -40; j <= 40; j += 25) {
+        if (i === 0 && j === 0) continue;
+        makeObstacle(i, j, 4, 5, 4, 0x1a2640);
+      }
+    }
+
+    // --- 5. FIRST PERSON GUN MODEL ---
+    const gunGroup = new THREE.Group();
+    const gunBody = new THREE.Mesh(
+      new THREE.BoxGeometry(0.12, 0.15, 0.6),
+      new THREE.MeshStandardMaterial({ color: 0x222, metalness: 0.8, roughness: 0.2 })
+    );
+    const gunBarrel = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.03, 0.03, 0.4),
+      new THREE.MeshStandardMaterial({ color: 0x00ffcc, emissive: 0x004433 })
+    );
+    gunBarrel.rotation.x = Math.PI / 2;
+    gunBarrel.position.set(0, 0.04, -0.4);
+    gunGroup.add(gunBody, gunBarrel);
+    gunGroup.position.set(0.25, -0.25, -0.5);
+    camera.add(gunGroup);
+    scene.add(camera);
+
+    // --- 6. PLAYER CONTROLS & PHYSICS ---
+    const keys = {};
+    const playerVelocity = new THREE.Vector3();
+    let onGround = false;
+
+    window.addEventListener('keydown', (e) => {
+      keys[e.key.toLowerCase()] = true;
+      if (['1','2','3','4','5'].includes(e.key)) {
+        selectWeapon(parseInt(e.key) - 1);
+      }
+      if (e.key.toLowerCase() === 'r') {
+        ammoCounts[currentWeaponIdx] = WEAPONS[currentWeaponIdx].maxAmmo;
+        updateHUD();
+      }
+    });
+    window.addEventListener('keyup', (e) => { keys[e.key.toLowerCase()] = false; });
+
+    let isPointerLocked = false;
+    renderer.domElement.addEventListener('click', () => {
+      if (!isPointerLocked && document.getElementById('overlay').style.display === 'none') {
+        renderer.domElement.requestPointerLock();
+      }
+    });
+
+    document.addEventListener('pointerlockchange', () => {
+      isPointerLocked = (document.pointerLockElement === renderer.domElement);
+    });
+
+    window.addEventListener('mousemove', (e) => {
+      if (!isPointerLocked) return;
+      const sens = 0.0022;
+      camera.rotation.y -= e.movementX * sens;
+      camera.rotation.x = Math.max(-Math.PI / 2.2, Math.min(Math.PI / 2.2, camera.rotation.x - e.movementY * sens));
+    });
+
+    window.addEventListener('mousedown', (e) => {
+      if (!isPointerLocked) return;
+      if (e.button === 0) { isFiring = true; shoot(); }
+      if (e.button === 2) { camera.fov = 35; camera.updateProjectionMatrix(); } // Scope
+    });
+
+    window.addEventListener('mouseup', (e) => {
+      if (e.button === 0) isFiring = false;
+      if (e.button === 2) { camera.fov = 75; camera.updateProjectionMatrix(); }
+    });
+
+    function selectWeapon(idx) {
+      currentWeaponIdx = idx;
+      document.querySelectorAll('.weapon-slot').forEach((slot, i) => {
+        slot.classList.toggle('active', i === idx);
+      });
+      gunBarrel.material.color.setHex(idx === 4 ? 0xff4400 : (idx === 3 ? 0x9900ff : 0x00ffcc));
+      updateHUD();
+    }
+
+    // --- 7. MULTIPLAYER ENTITY SYSTEM ---
+    const remotePlayers = {};
+    const remoteGroup = new THREE.Group();
+    scene.add(remoteGroup);
+
+    function createPlayerMesh(info) {
+      const group = new THREE.Group();
+      
+      // Avatar geometry
+      const body = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.5, 0.5, 1.8, 12),
+        new THREE.MeshStandardMaterial({ color: info.isAdmin ? 0xffaa00 : 0x00a2ff, roughness: 0.3 })
+      );
+      body.position.y = 0.9;
+      body.castShadow = true;
+      group.add(body);
+
+      // Nametag Canvas Billboard
+      const canvas = document.createElement('canvas');
+      canvas.width = 256; canvas.height = 64;
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = info.isAdmin ? '#ffaa00' : '#00ffcc';
+      ctx.font = 'bold 28px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText((info.isAdmin ? '👑 ' : '') + info.username, 128, 40);
+
+      const tagTex = new THREE.CanvasTexture(canvas);
+      const tag = new THREE.Sprite(new THREE.SpriteMaterial({ map: tagTex }));
+      tag.position.y = 2.4;
+      tag.scale.set(3, 0.75, 1);
+      group.add(tag);
+
+      group.userData = { hitMesh: body, targetPos: new THREE.Vector3(), targetRotY: 0 };
+      return group;
+    }
+
+    // Projectile Pool
+    const activeProjectiles = [];
+    function spawnRocket(startPos, dir, isLocal) {
+      const geo = new THREE.SphereGeometry(0.2, 8, 8);
+      const mat = new THREE.MeshBasicMaterial({ color: 0xff3300 });
+      const rocket = new THREE.Mesh(geo, mat);
+      rocket.position.copy(startPos);
+      scene.add(rocket);
+      activeProjectiles.push({ mesh: rocket, dir: dir.clone().multiplyScalar(0.9), life: 120, isLocal });
+    }
+
+    // --- 8. SHOOTING & COMBAT LOGIC ---
+    const raycaster = new THREE.Raycaster();
+    function shoot() {
+      const now = performance.now();
+      const currentWep = WEAPONS[currentWeaponIdx];
+      if (now - lastShotTime < currentWep.rate) return;
+      if (ammoCounts[currentWeaponIdx] <= 0) return;
+
+      lastShotTime = now;
+      if (!isAdmin) ammoCounts[currentWeaponIdx]--;
+      updateHUD();
+
+      // Recoil kick animation
+      gunGroup.position.z += 0.08;
+      setTimeout(() => { gunGroup.position.z = -0.5; }, 80);
+
+      playSound(currentWep.projectile ? 'rocket' : currentWep.name.toLowerCase());
+
+      const forward = new THREE.Vector3();
+      camera.getWorldDirection(forward);
+
+      if (currentWep.projectile) {
+        const startPos = camera.position.clone().add(forward.clone().multiplyScalar(0.6));
+        spawnRocket(startPos, forward, true);
+        return;
+      }
+
+      const pelletCount = currentWep.pellets || 1;
+      for (let p = 0; p < pelletCount; p++) {
+        const shootDir = forward.clone();
+        shootDir.x += (Math.random() - 0.5) * currentWep.spread;
+        shootDir.y += (Math.random() - 0.5) * currentWep.spread;
+        shootDir.z += (Math.random() - 0.5) * currentWep.spread;
+        shootDir.normalize();
+
+        raycaster.set(camera.position, shootDir);
+        const playerHitMeshes = Object.values(remotePlayers).map(rp => rp.userData.hitMesh);
+        const hits = raycaster.intersectObjects(playerHitMeshes);
+
+        if (hits.length > 0) {
+          const hitMesh = hits[0].object;
+          for (const [id, rPlayer] of Object.entries(remotePlayers)) {
+            if (rPlayer.userData.hitMesh === hitMesh) {
+              playSound('hit');
+              dealDamageTo(id, currentWep.damage * (isAdmin ? 2 : 1));
+              break;
+            }
+          }
+        }
+      }
+    }
+
+    function dealDamageTo(targetId, dmg) {
+      const targetRef = ref(db, `players/${targetId}`);
+      onValue(targetRef, (snapshot) => {
+        const data = snapshot.val();
+        if (data && data.health > 0) {
+          const newHp = Math.max(0, data.health - dmg);
+          update(targetRef, { health: newHp });
+          if (newHp === 0) logKill(username, data.username);
+        }
+      }, { onlyOnce: true });
+    }
+
+    function logKill(killer, victim) {
+      const item = document.createElement('div');
+      item.className = 'log-item';
+      item.innerHTML = `<b>${killer}</b> eliminated <b>${victim}</b>`;
+      const log = document.getElementById('kill-log');
+      log.appendChild(item);
+      setTimeout(() => item.remove(), 4500);
+    }
+
+    function updateHUD() {
+      document.getElementById('health-display').innerText = `HEALTH: ${Math.round(health)}`;
+      document.getElementById('ammo-display').innerText = `AMMO: ${isAdmin ? '∞' : ammoCounts[currentWeaponIdx]} / ${WEAPONS[currentWeaponIdx].maxAmmo}`;
+    }
+
+    // --- 9. JOIN & NETWORK SYNC ---
+    document.getElementById('join-btn').addEventListener('click', () => {
+      const inputVal = document.getElementById('username-input').value.trim();
+      if (inputVal) username = inputVal;
+
+      if (username.toLowerCase() === 'arceas') {
+        isAdmin = true;
+        health = 500;
+        maxHealth = 500;
+        document.getElementById('admin-tag').style.display = 'block';
+      }
+
+      document.getElementById('overlay').style.display = 'none';
+      document.getElementById('hud').style.display = 'block';
+      renderer.domElement.requestPointerLock();
+
+      camera.position.set((Math.random() - 0.5) * 40, 1.8, (Math.random() - 0.5) * 40);
+
+      // Join Firebase
+      myPlayerRef = ref(db, `players/${localId}`);
+      set(myPlayerRef, {
+        username,
+        isAdmin,
+        health,
+        x: camera.position.x,
+        y: camera.position.y,
+        z: camera.position.z,
+        rotY: camera.rotation.y
+      });
+      onDisconnect(myPlayerRef).remove();
+
+      // Listen for other players
+      onValue(ref(db, 'players'), (snapshot) => {
+        const list = snapshot.val() || {};
+        // Sync & add
+        for (const [id, data] of Object.entries(list)) {
+          if (id === localId) {
+            if (data.health <= 0 && health > 0) {
+              // Local Player Died
+              health = maxHealth;
+              camera.position.set((Math.random() - 0.5) * 60, 1.8, (Math.random() - 0.5) * 60);
+              update(myPlayerRef, { health: maxHealth, x: camera.position.x, y: 1.8, z: camera.position.z });
+            } else {
+              health = data.health;
+            }
+            updateHUD();
+            continue;
+          }
+
+          if (!remotePlayers[id]) {
+            const mesh = createPlayerMesh(data);
+            remotePlayers[id] = mesh;
+            remoteGroup.add(mesh);
+          }
+          remotePlayers[id].userData.targetPos.set(data.x, data.y - 0.9, data.z);
+          remotePlayers[id].userData.targetRotY = data.rotY;
+        }
+
+        // Clean up disconnected
+        for (const id of Object.keys(remotePlayers)) {
+          if (!list[id]) {
+            remoteGroup.remove(remotePlayers[id]);
+            delete remotePlayers[id];
+          }
+        }
+      });
+
+      // Network send loop (15 times / second)
+      setInterval(() => {
+        if (myPlayerRef) {
+          update(myPlayerRef, {
+            x: Number(camera.position.x.toFixed(2)),
+            y: Number(camera.position.y.toFixed(2)),
+            z: Number(camera.position.z.toFixed(2)),
+            rotY: Number(camera.rotation.y.toFixed(2))
+          });
+        }
+      }, 65);
+    });
+
+    // --- 10. MAIN ENGINE LOOP ---
+    const clock = new THREE.Clock();
+
+    function animate() {
+      requestAnimationFrame(animate);
+      const delta = Math.min(clock.getDelta(), 0.1);
+
+      if (isFiring && WEAPONS[currentWeaponIdx].auto) {
+        shoot();
+      }
+
+      // Movement Calculations
+      const moveInput = new THREE.Vector3();
+      if (isAdmin) {
+        // Strict requirement: User 'arceas' MUST use Arrow Keys
+        if (keys['arrowup']) moveInput.z -= 1;
+        if (keys['arrowdown']) moveInput.z += 1;
+        if (keys['arrowleft']) moveInput.x -= 1;
+        if (keys['arrowright']) moveInput.x += 1;
+      } else {
+        // Standard players use WASD
+        if (keys['w']) moveInput.z -= 1;
+        if (keys['s']) moveInput.z += 1;
+        if (keys['a']) moveInput.x -= 1;
+        if (keys['d']) moveInput.x += 1;
+      }
+
+      // Space for Jump (all players)
+      if (keys[' '] && onGround) {
+        playerVelocity.y = 8.5;
+        onGround = false;
+      }
+
+      // Orient movement relative to camera direction
+      moveInput.normalize();
+      const moveVector = new THREE.Vector3();
+      moveVector.x = moveInput.x * Math.cos(camera.rotation.y) + moveInput.z * Math.sin(camera.rotation.y);
+      moveVector.z = -moveInput.x * Math.sin(camera.rotation.y) + moveInput.z * Math.cos(camera.rotation.y);
+
+      const moveSpeed = isAdmin ? 16.0 : 11.0;
+      playerVelocity.x = moveVector.x * moveSpeed;
+      playerVelocity.z = moveVector.z * moveSpeed;
+
+      // Gravity & Ground Collision
+      playerVelocity.y -= 22.0 * delta;
+      camera.position.x += playerVelocity.x * delta;
+      camera.position.z += playerVelocity.z * delta;
+      camera.position.y += playerVelocity.y * delta;
+
+      if (camera.position.y <= 1.8) {
+        camera.position.y = 1.8;
+        playerVelocity.y = 0;
+        onGround = true;
+      }
+
+      // Boundary clamp
+      camera.position.x = Math.max(-75, Math.min(75, camera.position.x));
+      camera.position.z = Math.max(-75, Math.min(75, camera.position.z));
+
+      // Interpolate Remote Players
+      for (const id in remotePlayers) {
+        const rp = remotePlayers[id];
+        rp.position.lerp(rp.userData.targetPos, 0.2);
+        rp.rotation.y = rp.userData.targetRotY;
+      }
+
+      // Projectiles update
+      for (let i = activeProjectiles.length - 1; i >= 0; i--) {
+        const p = activeProjectiles[i];
+        p.mesh.position.add(p.dir);
+        p.life--;
+
+        // Collision check for local rockets
+        if (p.isLocal) {
+          for (const [id, rp] of Object.entries(remotePlayers)) {
+            if (p.mesh.position.distanceTo(rp.position) < 2.0) {
+              dealDamageTo(id, 85 * (isAdmin ? 2 : 1));
+              p.life = 0;
+              break;
+            }
+          }
+        }
+
+        if (p.life <= 0) {
+          scene.remove(p.mesh);
+          activeProjectiles.splice(i, 1);
+        }
+      }
+
+      renderer.render(scene, camera);
+    }
+
+    animate();
+
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+  </script>
+</body>
+</html>
