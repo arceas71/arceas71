@@ -65,7 +65,6 @@
     margin: 0 auto;
   }
 
-  /* Centered Screen Architecture */
   .screen {
     display: none;
     flex-direction: column;
@@ -86,7 +85,6 @@
     width: 100%;
   }
 
-  /* Typography */
   .brand-block {
     text-align: center;
     margin-bottom: 28px;
@@ -112,7 +110,6 @@
     font-weight: 500;
   }
 
-  /* Action Cards */
   .menu-actions {
     display: flex;
     flex-direction: column;
@@ -207,7 +204,6 @@
   }
   .btn-ghost:hover { color: var(--text); background: rgba(255, 255, 255, 0.04); }
 
-  /* Input & Selectors */
   .field-wrap { display: flex; flex-direction: column; gap: 8px; text-align: left; }
   .field-label { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); }
   .text-input {
@@ -267,6 +263,15 @@
     padding: 2px 7px;
     border-radius: 999px;
     letter-spacing: 0.06em;
+  }
+  .spectator-tag {
+    background: rgba(56, 189, 248, 0.2);
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 999px;
   }
 
   .back-link {
@@ -365,13 +370,21 @@
   }
   .room-title { font-weight: 700; font-size: 14.5px; }
   .room-status { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+  
+  .room-actions { display: flex; gap: 8px; align-items: center; }
   .room-btn {
     appearance: none; border: none; background: var(--brand); color: #fff;
-    font-family: inherit; font-size: 12.5px; font-weight: 700; padding: 8px 16px;
+    font-family: inherit; font-size: 12.5px; font-weight: 700; padding: 8px 14px;
     border-radius: var(--radius-sm); cursor: pointer; transition: all 0.15s ease;
   }
   .room-btn:hover { background: #4f46e5; }
   .room-btn:disabled { background: rgba(255,255,255,0.06); color: var(--text-dim); cursor: not-allowed; }
+  .room-btn.watch-btn {
+    background: rgba(56, 189, 248, 0.12);
+    border: 1px solid rgba(56, 189, 248, 0.3);
+    color: var(--accent);
+  }
+  .room-btn.watch-btn:hover { background: rgba(56, 189, 248, 0.24); }
 
   .admin-panel-wrap {
     margin-top: 14px; padding: 14px; border-radius: var(--radius-md);
@@ -489,6 +502,67 @@
     z-index: 100; box-shadow: 0 10px 30px rgba(0,0,0,0.6);
   }
   #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* Chat Floating Controls & Drawer */
+  .chat-fab {
+    position: fixed; bottom: 18px; right: 18px;
+    width: 44px; height: 44px; border-radius: 50%;
+    background: var(--brand); color: #fff; border: 1px solid rgba(255,255,255,0.22);
+    display: none; align-items: center; justify-content: center;
+    cursor: pointer; z-index: 45; box-shadow: 0 8px 24px var(--brand-glow);
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .chat-fab:active { transform: scale(0.92); }
+  .chat-fab svg { width: 20px; height: 20px; fill: currentColor; }
+  .chat-badge {
+    position: absolute; top: -2px; right: -2px;
+    background: var(--p0); color: #fff; font-size: 10px; font-weight: 800;
+    width: 18px; height: 18px; border-radius: 50%; display: none; align-items: center; justify-content: center;
+    border: 2px solid var(--bg-base);
+  }
+
+  .chat-panel {
+    position: fixed; bottom: 72px; right: 18px;
+    width: min(340px, calc(100vw - 36px)); height: 380px; max-height: 52vh;
+    background: rgba(12, 15, 23, 0.94); backdrop-filter: blur(20px);
+    border: 1px solid var(--line); border-radius: var(--radius-lg);
+    display: none; flex-direction: column; z-index: 46;
+    box-shadow: 0 20px 48px rgba(0, 0, 0, 0.75);
+    overflow: hidden; animation: chatPop 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  @keyframes chatPop { from { opacity: 0; transform: translateY(14px) scale(0.96); } to { opacity: 1; transform: translateY(0) scale(1); } }
+
+  .chat-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 16px; border-bottom: 1px solid var(--line); background: rgba(255,255,255,0.02);
+  }
+  .chat-header-title { font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+  .chat-close-btn { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 16px; }
+
+  .chat-messages {
+    flex: 1; padding: 12px 14px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px;
+  }
+  .chat-msg {
+    display: flex; flex-direction: column; max-width: 90%; font-size: 12.5px;
+    line-height: 1.4; padding: 8px 12px; border-radius: 12px;
+  }
+  .chat-msg.mine { align-self: flex-end; background: rgba(99, 102, 241, 0.25); border: 1px solid rgba(99, 102, 241, 0.35); }
+  .chat-msg.theirs { align-self: flex-start; background: rgba(255,255,255,0.05); border: 1px solid var(--line); }
+  .chat-sender { font-size: 10.5px; font-weight: 700; margin-bottom: 2px; display: flex; align-items: center; gap: 6px; }
+  .chat-sender .spectator-chip { color: var(--accent); font-size: 9.5px; text-transform: uppercase; }
+
+  .chat-input-bar {
+    display: flex; gap: 8px; padding: 10px 12px; border-top: 1px solid var(--line); background: rgba(0,0,0,0.25);
+  }
+  .chat-input {
+    flex: 1; background: var(--bg-surface); border: 1px solid var(--line);
+    border-radius: 999px; padding: 8px 14px; font-family: inherit; font-size: 12.5px; color: #fff; outline: none;
+  }
+  .chat-input:focus { border-color: var(--brand); }
+  .chat-send-btn {
+    background: var(--brand); border: none; color: #fff; border-radius: 999px;
+    padding: 0 14px; font-family: inherit; font-size: 12px; font-weight: 700; cursor: pointer;
+  }
 </style>
 </head>
 <body>
@@ -535,7 +609,7 @@
         <button class="nav-btn" id="btn-goto-online">
           <div>
             <span class="title">Online Arenas</span>
-            <span class="sub">4 persistent live battle rooms</span>
+            <span class="sub">4 live rooms with chat &amp; spectate</span>
           </div>
           <div class="arrow">&#8250;</div>
         </button>
@@ -552,7 +626,7 @@
     <div class="screen-centered">
       <div class="glass-card">
         <div class="field-wrap">
-          <label class="field-label">username</label>
+          <label class="field-label">Pilot Identification</label>
           <input class="text-input" id="username-input" maxlength="16" placeholder="Your name" autocomplete="off">
         </div>
         <button class="nav-btn primary" id="btn-username-continue" style="margin-top: 16px; justify-content: center;">
@@ -607,10 +681,10 @@
     <div class="screen-centered">
       <div class="lobby-card">
         <div class="lobby-code" id="lobby-code">ROOM1</div>
-        <div class="lobby-meta">5×5 Synchronized Battlefield</div>
+        <div class="lobby-meta" id="lobby-submeta">5×5 Synchronized Battlefield</div>
       </div>
 
-      <div class="field-label" id="lobby-status-label" style="margin-bottom: 8px; width: 100%;">Standby for players…</div>
+      <div class="field-label" id="lobby-status-label" style="margin-bottom: 8px; width: 100%;">Standby for Pilots…</div>
       <ul class="lobby-player-list" id="lobby-players"></ul>
 
       <button class="nav-btn primary" id="btn-start-online" style="justify-content: center; display: none; width: 100%; margin-top: 16px;">
@@ -635,6 +709,27 @@
 
 </div>
 
+<!-- CHAT FAB & DRAWER -->
+<div class="chat-fab" id="chat-fab" title="Open Room Chat">
+  <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"/></svg>
+  <span class="chat-badge" id="chat-unread-badge">0</span>
+</div>
+
+<div class="chat-panel" id="chat-panel">
+  <div class="chat-header">
+    <div class="chat-header-title">
+      <span>Room Comms</span>
+      <span style="font-size:11px; color:var(--text-muted);" id="chat-room-name">ROOM</span>
+    </div>
+    <button class="chat-close-btn" id="btn-close-chat">✕</button>
+  </div>
+  <div class="chat-messages" id="chat-messages"></div>
+  <div class="chat-input-bar">
+    <input class="chat-input" id="chat-input" placeholder="Type transmission..." maxlength="80" autocomplete="off">
+    <button class="chat-send-btn" id="btn-send-chat">Send</button>
+  </div>
+</div>
+
 <!-- RULES MODAL -->
 <div class="modal-overlay hidden" id="modal-rules">
   <div class="modal-box">
@@ -643,6 +738,7 @@
       <p style="margin-bottom: 8px;">• <strong>Round 1 Opening:</strong> Deploy 3 orbs onto <em>any</em> unoccupied cell on the 5×5 grid.</p>
       <p style="margin-bottom: 8px;">• <strong>Subsequent Turns:</strong> You can <strong>ONLY</strong> place orbs into cells you already own!</p>
       <p style="margin-bottom: 8px;">• <strong>Chain Reaction:</strong> When a cell hits <strong>4 orbs</strong>, it explodes, firing orbs into adjacent neighbors and converting them to your color.</p>
+      <p style="margin-bottom: 8px;">• <strong>Spectators:</strong> Join full or ongoing games anytime to chat and watch without interfering.</p>
       <p>• Eliminate rival colors to dominate the board.</p>
     </div>
     <button class="nav-btn primary" id="btn-close-rules" style="margin-top: 18px; justify-content: center; width: 100%;">
@@ -671,7 +767,7 @@
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getDatabase, ref, set, onValue, update } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+import { getDatabase, ref, set, onValue, update, push } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAo7S0xCK5dpxg2mqpxsydRNVE37yK7ixM",
@@ -732,10 +828,12 @@ const state = {
   pendingMode: null,
   username: '',
   isAdmin: false,
+  isSpectator: false,
   rows: BOARD_SIZE.rows,
   cols: BOARD_SIZE.cols,
   numPlayers: 2,
   players: [],
+  spectators: {},
   grid: [],
   currentPlayerIndex: 0,
   myIndex: 0,
@@ -747,6 +845,7 @@ const state = {
   roomCode: null,
   isHost: false,
   unsub: null,
+  chatUnsub: null,
   lastAppliedTurnCount: -1,
   turnCount: 0,
   cellSize: 44,
@@ -776,6 +875,14 @@ function showScreen(id) {
   if (target) target.classList.add('active');
   if (id !== 'screen-game') clearTurnTint();
   if (id === 'screen-game') requestAnimationFrame(() => resizeCanvas());
+
+  const chatFab = document.getElementById('chat-fab');
+  if (state.mode === 'online' && (id === 'screen-lobby' || id === 'screen-game')) {
+    chatFab.style.display = 'flex';
+  } else {
+    chatFab.style.display = 'none';
+    closeChatPanel();
+  }
 }
 
 function toast(msg) {
@@ -1105,13 +1212,18 @@ function renderHeader(gridOverride) {
 
     const label = document.createElement('span');
     let name = p.name || PLAYER_NAMES_DEFAULT[p.idx];
-    if (state.mode === 'online' && p.idx === state.myIndex) name += ' (You)';
+    if (state.mode === 'online' && p.idx === state.myIndex && !state.isSpectator) name += ' (You)';
     label.textContent = `${name} : ${total}`;
     chip.appendChild(label);
     header.appendChild(chip);
   });
 
-  document.getElementById('footer-room-chip').textContent = state.mode === 'online' ? ('Arena ' + state.roomCode) : 'Pass & Play';
+  const specCount = state.spectators ? Object.keys(state.spectators).length : 0;
+  const specText = specCount > 0 ? ` · 👁️ ${specCount}` : '';
+
+  document.getElementById('footer-room-chip').innerHTML = state.mode === 'online' 
+    ? (state.isSpectator ? `<span class="spectator-tag">SPECTATING</span> ${state.roomCode}${specText}` : `Arena ${state.roomCode}${specText}`) 
+    : 'Pass & Play';
 
   if (state.status === 'playing' && state.players[state.currentPlayerIndex]) {
     applyTurnTint(PALETTE[state.currentPlayerIndex]);
@@ -1207,6 +1319,10 @@ canvas.addEventListener('click', (e) => {
 });
 
 function handleCellTap(idx) {
+  if (state.isSpectator) {
+    toast("Spectators can only watch the match");
+    return;
+  }
   if (state.mode === 'online' && state.myIndex !== state.currentPlayerIndex) {
     toast("Wait for your turn");
     return;
@@ -1261,18 +1377,19 @@ function showGameOver() {
     dot.style.boxShadow = `0 0 20px ${PALETTE[state.winner]}`;
     const winnerName = (state.players[state.winner] && state.players[state.winner].name) || PLAYER_NAMES_DEFAULT[state.winner];
     title.textContent = `${winnerName} Victorious`;
-    sub.textContent = (state.mode === 'online' && state.winner === state.myIndex) ? 'Total sector conquest confirmed.' : 'Rival forces eliminated.';
+    sub.textContent = (state.mode === 'online' && state.winner === state.myIndex && !state.isSpectator) ? 'Total sector conquest confirmed.' : 'Rival forces eliminated.';
   } else {
     dot.style.background = '#666';
     title.textContent = 'Stalemate';
     sub.textContent = 'No forces remain.';
   }
-  document.getElementById('btn-rematch').style.display = (state.mode === 'online' && !state.isHost) ? 'none' : 'flex';
+  document.getElementById('btn-rematch').style.display = (state.mode === 'online' && (!state.isHost || state.isSpectator)) ? 'none' : 'flex';
   openModal('modal-gameover');
 }
 
 function startOfflineGame(numPlayers, rows, cols) {
   state.mode = 'offline';
+  state.isSpectator = false;
   state.numPlayers = numPlayers;
   state.rows = 5;
   state.cols = 5;
@@ -1295,7 +1412,102 @@ function startOfflineGame(numPlayers, rows, cols) {
   requestAnimationFrame(() => resizeCanvas());
 }
 
-/* ==================== FIREBASE BACKEND ==================== */
+/* ==================== CHAT SYSTEM ==================== */
+
+let unreadMessagesCount = 0;
+const chatFab = document.getElementById('chat-fab');
+const chatPanel = document.getElementById('chat-panel');
+const chatBadge = document.getElementById('chat-unread-badge');
+const chatInput = document.getElementById('chat-input');
+const chatMessagesContainer = document.getElementById('chat-messages');
+
+chatFab.onclick = () => {
+  if (chatPanel.style.display === 'flex') {
+    closeChatPanel();
+  } else {
+    openChatPanel();
+  }
+};
+document.getElementById('btn-close-chat').onclick = closeChatPanel;
+
+function openChatPanel() {
+  chatPanel.style.display = 'flex';
+  unreadMessagesCount = 0;
+  chatBadge.style.display = 'none';
+  chatBadge.textContent = '0';
+  document.getElementById('chat-room-name').textContent = state.roomCode || '';
+  chatMessagesContainer.scrollTop = chatMessagesContainer.scrollHeight;
+  setTimeout(() => chatInput.focus(), 100);
+}
+
+function closeChatPanel() {
+  chatPanel.style.display = 'none';
+}
+
+function sendChatMessage() {
+  const text = (chatInput.value || '').trim().slice(0, 80);
+  if (!text || !state.roomCode) return;
+  chatInput.value = '';
+
+  const msgPayload = {
+    sender: state.username,
+    uid: myId,
+    text,
+    playerIdx: state.isSpectator ? -1 : state.myIndex,
+    isSpectator: state.isSpectator,
+    ts: Date.now()
+  };
+
+  push(ref(db, `rooms/${state.roomCode}/chat`), msgPayload);
+}
+document.getElementById('btn-send-chat').onclick = sendChatMessage;
+chatInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') sendChatMessage(); });
+
+function listenToChat(code) {
+  if (state.chatUnsub) { state.chatUnsub(); state.chatUnsub = null; }
+  chatMessagesContainer.innerHTML = '';
+  unreadMessagesCount = 0;
+  chatBadge.style.display = 'none';
+
+  const chatRef = ref(db, `rooms/${code}/chat`);
+  state.chatUnsub = onValue(chatRef, (snap) => {
+    const data = snap.val();
+    if (!data) return;
+    renderChatMessages(data);
+  });
+}
+
+function renderChatMessages(chatObj) {
+  chatMessagesContainer.innerHTML = '';
+  const list = Object.values(chatObj).sort((a, b) => (a.ts || 0) - (b.ts || 0));
+
+  list.forEach(msg => {
+    const isMine = msg.uid === myId;
+    const msgEl = document.createElement('div');
+    msgEl.className = `chat-msg ${isMine ? 'mine' : 'theirs'}`;
+
+    const senderColor = msg.playerIdx >= 0 && PALETTE[msg.playerIdx] ? PALETTE[msg.playerIdx] : '#38bdf8';
+    const specTag = msg.isSpectator ? '<span class="spectator-chip">[Spec]</span> ' : '';
+
+    msgEl.innerHTML = `
+      <div class="chat-sender" style="color:${senderColor};">
+        ${specTag}${escapeHtml(msg.sender)}
+      </div>
+      <div class="chat-text">${escapeHtml(msg.text)}</div>
+    `;
+    chatMessagesContainer.appendChild(msgEl);
+  });
+
+  chatMessagesContainer.scrollTop = chatMessagesContainer.scrollHeight;
+
+  if (chatPanel.style.display !== 'flex' && list.length > 0) {
+    unreadMessagesCount++;
+    chatBadge.style.display = 'flex';
+    chatBadge.textContent = unreadMessagesCount > 9 ? '9+' : unreadMessagesCount;
+  }
+}
+
+/* ==================== FIREBASE BACKEND & SPECTATING ==================== */
 
 function flattenGridForDB(grid) {
   const obj = {};
@@ -1325,7 +1537,9 @@ function freshRoomObject(code) {
     movesMade: { 0: 0, 1: 0, 2: 0, 3: 0 },
     eliminated: { 0: false, 1: false, 2: false, 3: false },
     grid: flattenGridForDB(makeEmptyGrid(25)),
-    players: {}
+    players: {},
+    spectators: {},
+    chat: {}
   };
 }
 
@@ -1356,20 +1570,27 @@ function renderPublicRooms() {
 
     const pCount = data && data.players ? Object.keys(data.players).length : 0;
     const isPlaying = data && data.status === 'playing';
+    const specCount = data && data.spectators ? Object.keys(data.spectators).length : 0;
+
+    let statusText = isPlaying ? 'Battle In Progress' : `${pCount}/4 Pilots Ready`;
+    if (specCount > 0) statusText += ` · 👁️ ${specCount}`;
 
     card.innerHTML = `
       <div class="room-meta">
         <div class="room-id-box">${idx + 1}</div>
         <div>
           <div class="room-title">${code}</div>
-          <div class="room-status">${isPlaying ? 'Battle In Progress' : `${pCount}/4 Players Ready`}</div>
+          <div class="room-status">${statusText}</div>
         </div>
       </div>
-      <button class="room-btn" ${isPlaying || pCount >= 4 ? 'disabled' : ''}>Connect</button>
+      <div class="room-actions">
+        <button class="room-btn join-btn" ${isPlaying || pCount >= 4 ? 'disabled' : ''}>Join</button>
+        <button class="room-btn watch-btn">Watch</button>
+      </div>
     `;
 
-    const btn = card.querySelector('.room-btn');
-    btn.onclick = () => joinRoom(code, state.username);
+    card.querySelector('.join-btn').onclick = () => joinRoom(code, state.username);
+    card.querySelector('.watch-btn').onclick = () => spectateRoom(code, state.username);
     container.appendChild(card);
   });
 
@@ -1388,13 +1609,16 @@ function renderAdminPanel() {
   ADMIN_ROOMS.forEach(code => {
     const data = adminRoomsData[code];
     const pCount = data && data.players ? Object.keys(data.players).length : 0;
+    const specCount = data && data.spectators ? Object.keys(data.spectators).length : 0;
 
     const row = document.createElement('div');
     row.className = 'admin-row';
     row.innerHTML = `
       <div>
         <b style="font-size:13px;">${code}</b>
-        <span style="font-size:11px; color:var(--text-muted); margin-left:8px;">${data ? `${data.status} · ${pCount}p` : 'Uninitialized'}</span>
+        <span style="font-size:11px; color:var(--text-muted); margin-left:8px;">
+          ${data ? `${data.status} · ${pCount}p · ${specCount}s` : 'Uninitialized'}
+        </span>
       </div>
       <div style="display:flex; gap:6px;">
         <button class="admin-btn" id="adm-join-${code}">Force Join</button>
@@ -1423,21 +1647,54 @@ function joinRoom(code, name) {
     let mySlot = Object.keys(players).find(k => k === myId);
 
     if (!mySlot && Object.keys(players).length >= 4 && data.status !== 'lobby') {
-      toast('Sector capacity reached');
+      toast('Sector capacity reached — Joining as Spectator');
+      spectateRoom(code, name);
       return;
     }
 
     const assignedIdx = mySlot ? players[mySlot].idx : Object.keys(players).length;
     const isHost = data.hostId === myId || Object.keys(players).length === 0;
 
+    state.isSpectator = false;
     const updates = {};
     updates[`players/${myId}`] = { name: name || 'Player', idx: assignedIdx, connected: true };
+    updates[`spectators/${myId}`] = null;
     if (isHost) updates['hostId'] = myId;
 
     update(roomRef, updates).then(() => {
       unsubscribePublicRooms();
       subscribeRoom(code);
+      listenToChat(code);
       showScreen('screen-lobby');
+    });
+  }, { onlyOnce: true });
+}
+
+function spectateRoom(code, name) {
+  const roomRef = ref(db, 'rooms/' + code);
+  onValue(roomRef, (snap) => {
+    let data = snap.val();
+    if (!data) {
+      data = freshRoomObject(code);
+      set(roomRef, data);
+    }
+    state.isSpectator = true;
+    state.myIndex = -1;
+
+    update(ref(db, `rooms/${code}/spectators/${myId}`), {
+      name: name || 'Spectator',
+      joinedAt: Date.now()
+    }).then(() => {
+      unsubscribePublicRooms();
+      subscribeRoom(code);
+      listenToChat(code);
+
+      if (data.status === 'playing') {
+        showScreen('screen-game');
+      } else {
+        showScreen('screen-lobby');
+      }
+      toast("Spectating arena in real-time");
     });
   }, { onlyOnce: true });
 }
@@ -1459,7 +1716,8 @@ function handleRoomUpdate(data) {
   state.rows = 5;
   state.cols = 5;
   state.numPlayers = data.numPlayers || 4;
-  state.isHost = (data.hostId === myId);
+  state.spectators = data.spectators || {};
+  state.isHost = !state.isSpectator && (data.hostId === myId);
 
   const playersObj = data.players || {};
   state.players = Object.keys(playersObj).map(uid => ({
@@ -1467,7 +1725,9 @@ function handleRoomUpdate(data) {
   })).sort((a, b) => a.idx - b.idx);
 
   const me = playersObj[myId];
-  state.myIndex = me ? me.idx : -1;
+  if (!state.isSpectator) {
+    state.myIndex = me ? me.idx : -1;
+  }
 
   if (data.status === 'lobby') {
     renderLobby(data);
@@ -1518,6 +1778,11 @@ function renderLobby(data) {
     `;
     list.appendChild(li);
   });
+
+  const specCount = Object.keys(state.spectators || {}).length;
+  document.getElementById('lobby-submeta').innerHTML = state.isSpectator
+    ? '<span class="spectator-tag">SPECTATOR MODE</span>'
+    : `5×5 Synchronized Battlefield${specCount > 0 ? ` · 👁️ ${specCount} Watching` : ''}`;
 
   document.getElementById('lobby-status-label').textContent = `${entries.length} / 4 Combatants Linked`;
   const startBtn = document.getElementById('btn-start-online');
@@ -1572,11 +1837,17 @@ async function resetRoomForRematch() {
 }
 
 function leaveRoom() {
+  if (state.roomCode && state.isSpectator) {
+    set(ref(db, `rooms/${state.roomCode}/spectators/${myId}`), null);
+  }
   if (state.unsub) { state.unsub(); state.unsub = null; }
+  if (state.chatUnsub) { state.chatUnsub(); state.chatUnsub = null; }
   state.mode = null;
   state.roomCode = null;
   state.status = 'idle';
   state.isHost = false;
+  state.isSpectator = false;
+  closeChatPanel();
 }
 </script>
 </body>
