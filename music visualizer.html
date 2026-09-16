@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, 
+
+maximum-scale=1.0, user-scalable=no">
+    <title>Centered Neon Mega City Visualizer</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains
+
++Mono:wght@400;700&family=Inter:wght@400;600&display=swap');
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #020202;
+            color: #ffffff;
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+            touch-action: manipulation;
+        }
+
+        #canvas {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 1;
+        }
+
+        /* --- FLOATING DOCK UI --- */
+        .dock {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+            
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            
+            background: rgba(12, 12, 18, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 50px;
+            padding: 10px 18px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.9);
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+
+        .dock.hidden {
+            opacity: 0;
+            pointer-events: none;
+            transform: translate(-50%, 40px);
+        }
+
+        input[type="file"] { display: none; }
+        .icon-btn {
+            display: flex; justify-content: center; align-items: center;
+            width: 36px; height: 36px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 50%; cursor: pointer;
+            transition: all 0.2s; border: none; outline: none;
+            flex-shrink: 0;
+        }
+        .icon-btn:hover { background: rgba(255, 255, 255, 0.15); }
+        .icon-btn svg { width: 16px; height: 16px; fill: white; }
+
+        .record-btn svg { fill: #ff0055; transition: 0.3s; }
+        .record-btn:hover { background: rgba(255, 0, 85, 0.2); }
+        .record-btn.recording {
+            background: rgba(255, 0, 85, 0.3);
+            animation: pulse-red 1.5s infinite;
+        }
+        .record-btn.recording svg { fill: #ff0033; }
+
+        @keyframes pulse-red {
+            0% { box-shadow: 0 0 0 0 rgba(255, 0, 85, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(255, 0, 85, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 0, 85, 0); }
+        }
+
+        .track-info {
+            display: flex; flex-direction: column; justify-content: center;
+            width: 110px; border-left: 1px solid rgba(255,255,255,0.15);
+            border-right: 1px solid rgba(255,255,255,0.15);
+            padding: 0 10px;
+        }
+        .track-title { 
+            font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 
+
+700;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #fff;
+        }
+        .track-status { font-size: 8px; color: #00ffcc; text-transform: uppercase; 
+
+letter-spacing: 1px; margin-top: 2px;}
+
+        .play-btn {
+            background: linear-gradient(135deg, #00ffcc, #ff007f); border: none;
+            width: 38px; height: 38px; border-radius: 50%;
+            display: flex; justify-content: center; align-items: center;
+            cursor: pointer; transition: 0.2s; box-shadow: 0 4px 15px rgba(0, 255, 
+
+204, 0.3);
+            flex-shrink: 0;
+        }
+        .play-btn svg { width: 14px; height: 14px; fill: #000; margin-left: 2px;}
+
+        .timeline-container { display: flex; align-items: center; gap: 8px; }
+        .time { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: 
+
+#aaa; min-width: 30px; text-align: center; }
+        
+        input[type="range"] {
+            -webkit-appearance: none; appearance: none;
+            width: 70px; height: 4px;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 2px; outline: none; cursor: pointer;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none; appearance: none;
+            width: 10px; height: 10px; border-radius: 50%; background: #00ffcc;
+        }
+
+        .hint {
+            position: absolute; top: -25px; left: 50%; transform: translateX(-50%);
+            font-family: 'JetBrains Mono', monospace; font-size: 9px; color: #666;
+            white-space: nowrap; font-weight: 600; letter-spacing: 1px;
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="canvas"></canvas>
+
+    <div class="dock" id="dock">
+        <div class="hint">SPACE or TAP SCREEN TO HIDE UI</div>
+        
+        <label for="audio-upload" class="icon-btn" title="Load Audio File">
+            <svg viewBox="0 0 24 24"><path d="M9 16h6v-6h4l-7-7-7 7h4zm-4 
+
+2h14v2H5z"/></svg>
+        </label>
+        <input type="file" id="audio-upload" accept="audio/*">
+        
+        <button class="icon-btn record-btn" id="record-btn" title="Record Video">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/></svg>
+        </button>
+        
+        <div class="track-info">
+            <div class="track-title" id="track-name">NO TRACK</div>
+            <div class="track-status" id="track-status">READY</div>
+        </div>
+
+        <button class="play-btn" id="play-btn">
+            <svg id="play-icon" viewBox="0 0 24 24"><path d="M8 5v14l11-
+
+7z"/></svg>
+            <svg id="pause-icon" viewBox="0 0 24 24" style="display:none; 
+
+margin:0;"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+        </button>
+
+        <div class="timeline-container">
+            <span class="time" id="current-time">0:00</span>
+            <input type="range" id="seek-bar" value="0" max="100">
+            <span class="time" id="duration">0:00</span>
+        </div>
+    </div>
+
+    <audio id="audio" style="display: none;"></audio>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d', { alpha: false });
+        const dock = document.getElementById('dock');
+        const audio = document.getElementById('audio');
+        const fileInput = document.getElementById('audio-upload');
+        const trackName = document.getElementById('track-name');
+        const trackStatus = document.getElementById('track-status');
+        const playBtn = document.getElementById('play-btn');
+        const playIcon = document.getElementById('play-icon');
+        const pauseIcon = document.getElementById('pause-icon');
+        const seekBar = document.getElementById('seek-bar');
+        const currentTimeEl = document.getElementById('current-time');
+        const durationEl = document.getElementById('duration');
+        const recordBtn = document.getElementById('record-btn');
+
+        let cw, ch, centerX, centerY;
+        function resize() {
+            cw = canvas.width = window.innerWidth;
+            ch = canvas.height = window.innerHeight;
+            centerX = cw / 2;
+            centerY = ch / 2; // EXACT CENTER OF THE SCREEN
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        // 1. SPACEBAR TOGGLE (Desktop)
+        window.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') {
+                e.preventDefault(); 
+                dock.classList.toggle('hidden');
+            }
+        });
+
+        // 2. TAP/CLICK BACKGROUND TOGGLE (Mobile / Phone Friendly)
+        // If you tap anywhere outside the dock, it toggles the UI visibility
+        canvas.addEventListener('pointerdown', (e) => {
+            dock.classList.toggle('hidden');
+        });
+
+        function formatTime(s) {
+            if (isNaN(s)) return "0:00";
+            const min = Math.floor(s / 60);
+            const sec = Math.floor(s % 60);
+            return `${min}:${sec < 10 ? '0' : ''}${sec}`;
+        }
+
+        playBtn.addEventListener('click', (e) => {
+            e.stopPropagation(); // Prevent canvas background click from triggering
+            if (audio.paused && audio.src) {
+                audio.play();
+                playIcon.style.display = 'none';
+                pauseIcon.style.display = 'block';
+                trackStatus.textContent = isRecording ? 'REC' : 'PLAY';
+                trackStatus.style.color = isRecording ? '#ff0055' : '#00ffcc';
+            } else if (!audio.paused) {
+                audio.pause();
+                playIcon.style.display = 'block';
+                pauseIcon.style.display = 'none';
+                trackStatus.textContent = 'PAUSE';
+                trackStatus.style.color = '#888';
+            }
+        });
+
+        audio.addEventListener('timeupdate', () => {
+            currentTimeEl.textContent = formatTime(audio.currentTime);
+            if (audio.duration) seekBar.value = (audio.currentTime / audio.duration) * 
+
+100;
+        });
+
+        audio.addEventListener('loadedmetadata', () => {
+            durationEl.textContent = formatTime(audio.duration);
+        });
+
+        audio.addEventListener('ended', () => {
+            playIcon.style.display = 'block';
+            pauseIcon.style.display = 'none';
+            trackStatus.textContent = 'END';
+            trackStatus.style.color = '#888';
+            dock.classList.remove('hidden'); 
+            if (isRecording) stopRecording();
+        });
+
+        seekBar.addEventListener('input', () => {
+            if (audio.duration) audio.currentTime = (seekBar.value / 100) * 
+
+audio.duration;
+        });
+
+        // --- AUDIO & RECORDING SETUP ---
+        let audioContext, analyser, dataArray;
+        let isWebAudioInitialized = false;
+        let mediaRecorder;
+        let recordedChunks = [];
+        let isRecording = false;
+        let streamDestination; 
+
+        fileInput.addEventListener('change', function() {
+            const file = this.files[0];
+            if (!file) return;
+            trackName.textContent = file.name;
+            audio.src = URL.createObjectURL(file);
+            audio.load();
+            playIcon.style.display = 'block';
+            pauseIcon.style.display = 'none';
+            trackStatus.textContent = 'READY';
+            trackStatus.style.color = '#00ffcc';
+            initWebAudio();
+        });
+
+        function initWebAudio() {
+            if (isWebAudioInitialized) return;
+            isWebAudioInitialized = true;
+
+            audioContext = new (window.AudioContext || 
+
+window.webkitAudioContext)();
+            analyser = audioContext.createAnalyser();
+            analyser.smoothingTimeConstant = 0.85; 
+            analyser.fftSize = 512; 
+            
+            const source = audioContext.createMediaElementSource(audio);
+            streamDestination = audioContext.createMediaStreamDestination();
+            
+            source.connect(analyser);
+            analyser.connect(audioContext.destination); 
+            analyser.connect(streamDestination); 
+
+            dataArray = new Uint8Array(analyser.frequencyBinCount);
+            init3DGrid();
+            renderLoop();
+        }
+
+        recordBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (!isWebAudioInitialized) { alert("Please load an audio file first!"); return; }
+            if (isRecording) stopRecording();
+            else startRecording();
+        });
+
+        function startRecording() {
+            recordedChunks = [];
+            const canvasStream = canvas.captureStream(60);
+            const audioStream = streamDestination.stream;
+            const combinedStream = new MediaStream
+
+([...canvasStream.getVideoTracks(), ...audioStream.getAudioTracks()]);
+
+            let options = { mimeType: 'video/webm; codecs=vp9' };
+            if (!MediaRecorder.isTypeSupported(options.mimeType)) options = { 
+
+mimeType: 'video/webm' }; 
+
+            mediaRecorder = new MediaRecorder(combinedStream, options);
+            mediaRecorder.ondataavailable = (e) => { if (e.data.size > 0) 
+
+recordedChunks.push(e.data); };
+            mediaRecorder.onstop = exportVideo;
+
+            mediaRecorder.start();
+            isRecording = true;
+            recordBtn.classList.add('recording');
+            trackStatus.textContent = 'REC';
+            trackStatus.style.color = '#ff0055';
+            dock.classList.add('hidden');
+        }
+
+        function stopRecording() {
+            if(mediaRecorder && mediaRecorder.state !== "inactive") 
+
+mediaRecorder.stop();
+            isRecording = false;
+            recordBtn.classList.remove('recording');
+            trackStatus.textContent = 'SAVING';
+            trackStatus.style.color = '#ffff00';
+            dock.classList.remove('hidden');
+        }
+
+        function exportVideo() {
+            const blob = new Blob(recordedChunks, { type: 'video/webm' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = url;
+            a.download = `Neon_City_${Math.floor(Date.now() / 1000)}.webm`;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+            trackStatus.textContent = 'DONE';
+            trackStatus.style.color = '#00ffcc';
+        }
+
+        // --- CENTERED NEON MEGA-CITY ENGINE ---
+        const gridSize = 34; 
+        const maxDist = Math.sqrt(Math.pow(gridSize/2, 2) * 2);
+        let blocks = [];
+        let rotationAngle = 0;
+
+        function init3DGrid() {
+            blocks = [];
+            const offset = gridSize / 2;
+            for (let x = 0; x < gridSize; x++) {
+                for (let y = 0; y < gridSize; y++) {
+                    const cx = x - offset;
+                    const cy = y - offset;
+                    const dist = Math.sqrt(cx*cx + cy*cy);
+                    
+                    blocks.push({
+                        cx: cx, cy: cy, dist: dist,
+                        freqIndex: Math.floor((dist / maxDist) * 110) 
+                    });
+                }
+            }
+        }
+
+        function renderLoop() {
+            requestAnimationFrame(renderLoop);
+            if(analyser) analyser.getByteFrequencyData(dataArray);
+
+            ctx.fillStyle = '#020202';
+            ctx.fillRect(0, 0, cw, ch);
+
+            if (!dataArray) return;
+
+            let bassSum = 0;
+            for (let i = 0; i < 6; i++) bassSum += dataArray[i];
+            const bassAvg = bassSum / 6;
+
+            rotationAngle += 0.0015 + (bassAvg * 0.00003);
+            const cameraZoom = 1 + (bassAvg * 0.0015);
+
+            const baseScale = (Math.min(cw, ch) / 95) * cameraZoom; 
+            const tileW = baseScale + (bassAvg * 0.006);
+            const tileH = tileW * 0.5; 
+            const colorTime = Date.now() / 30;
+
+            const renderList = [];
+
+            for (let i = 0; i < blocks.length; i++) {
+                let b = blocks[i];
+                let amp = dataArray[b.freqIndex] || 0;
+                let zHeight = (amp / 255) * (baseScale * 14) + (tileH * 0.5); 
+
+                let rx = b.cx * Math.cos(rotationAngle) - b.cy * Math.sin(rotationAngle);
+                let ry = b.cx * Math.sin(rotationAngle) + b.cy * Math.cos(rotationAngle);
+
+                let depth = rx + ry;
+                renderList.push({ rx: rx, ry: ry, zHeight: zHeight, depth: depth, dist: 
+
+b.dist, amp: amp });
+            }
+
+            renderList.sort((a, b) => a.depth - b.depth);
+
+            ctx.lineJoin = "round";
+
+            for (let i = 0; i < renderList.length; i++) {
+                let b = renderList[i];
+                let screenX = centerX + (b.rx - b.ry) * tileW;
+                // Perfectly aligned using centerY so it sits right in the middle of the 
+
+phone screen
+                let screenY = centerY + (b.rx + b.ry) * tileH - b.zHeight;
+
+                const hue = (colorTime + b.dist * 10) % 360;
+                const lumBoost = (b.zHeight / (baseScale * 14)) * 40;
+                let baseScreenY = centerY + (b.rx + b.ry) * tileH;
+
+                // RIGHT FACE
+                ctx.fillStyle = `hsl(${hue}, 80%, ${20 + lumBoost * 0.5}%)`;
+                ctx.beginPath();
+                ctx.moveTo(screenX, screenY + tileH);
+                ctx.lineTo(screenX + tileW, screenY);
+                ctx.lineTo(screenX + tileW, baseScreenY);
+                ctx.lineTo(screenX, baseScreenY + tileH);
+                ctx.closePath();
+                ctx.fill();
+
+                // LEFT FACE
+                ctx.fillStyle = `hsl(${hue}, 80%, ${10 + lumBoost * 0.3}%)`;
+                ctx.beginPath();
+                ctx.moveTo(screenX, screenY + tileH);
+                ctx.lineTo(screenX - tileW, screenY);
+                ctx.lineTo(screenX - tileW, baseScreenY);
+                ctx.lineTo(screenX, baseScreenY + tileH);
+                ctx.closePath();
+                ctx.fill();
+
+                // TOP FACE
+                ctx.fillStyle = `hsl(${hue}, 90%, ${40 + lumBoost}%)`;
+                ctx.beginPath();
+                ctx.moveTo(screenX, screenY - tileH);
+                ctx.lineTo(screenX + tileW, screenY);
+                ctx.lineTo(screenX, screenY + tileH);
+                ctx.lineTo(screenX - tileW, screenY);
+                ctx.closePath();
+                ctx.fill();
+                
+                ctx.strokeStyle = `hsl(${hue}, 100%, ${70 + lumBoost}%)`;
+                ctx.lineWidth = 0.8;
+                ctx.stroke();
+            }
+        }
+
+        document.body.addEventListener('click', () => {
+            if (audioContext && audioContext.state === 'suspended') 
+
+audioContext.resume();
+        });
+    </script>
+</body>
+</html>
