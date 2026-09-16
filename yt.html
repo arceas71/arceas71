@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Infinite Hallway - 10s Loop</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: #000;
+            font-family: 'Courier New', Courier, monospace;
+        }
+        #canvas-container {
+            width: 100vw;
+            height: 100vh;
+            display: block;
+        }
+        #loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #ff0055;
+            font-size: 24px;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            pointer-events: none;
+            transition: opacity 1s ease-out;
+            z-index: 10;
+        }
+        #info {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 12px;
+            pointer-events: none;
+            z-index: 10;
+        }
+    </style>
+    <!-- Load Three.js Globally (Bypasses local file:// CORS restrictions) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+<body>
+    <div id="loading">Generating Infinite Geometry...</div>
+    <div id="canvas-container"></div>
+    <div id="info">10.0s Seamless Loop | Procedural Generation</div>
+
+    <script>
+        // ==========================================
+        // 1. SCENE SETUP & CONSTANTS
+        // ==========================================
+        const LOOP_DURATION = 10.0; 
+        const HALLWAY_SPEED = 20.0; 
+        const SEGMENT_LENGTH = 40.0; 
+        const HALLWAY_WIDTH = 12.0;
+        const HALLWAY_HEIGHT = 10.0;
+        
+        const container = document.getElementById('canvas-container');
+        const scene = new THREE.Scene();
+        
+        // Deep, oppressive fog for the infinite effect
+        scene.background = new THREE.Color(0x050508);
+        scene.fog = new THREE.FogExp2(0x050508, 0.025);
+
+        const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 150);
+        camera.position.set(0, 5, 12); 
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        container.appendChild(renderer.domElement);
+
+        // ==========================================
+        // 2. PROCEDURAL TEXTURE GENERATION
+        // ==========================================
+        function createWoodTexture() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 512;
+            canvas.height = 512;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#3a2318';
+            ctx.fillRect(0, 0, 512, 512);
+            for (let i = 0; i < 400; i++) {
+                ctx.beginPath();
+                ctx.moveTo(Math.random() * 512, 0);
+                ctx.bezierCurveTo(
+                    Math.random() * 512, 170,
+                    Math.random() * 512, 340,
+                    Math.random() * 512, 512
+                );
+                ctx.strokeStyle = `rgba(30, 15, 10, ${Math.random() * 0.1})`;
+                ctx.lineWidth = Math.random() * 5 + 1;
+                ctx.stroke();
+            }
+            const tex = new THREE.CanvasTexture(canvas);
+            tex.wrapS = THREE.RepeatWrapping;
+            tex.wrapT = THREE.RepeatWrapping;
+            return tex;
+        }
+
+        function createWallpaperTexture() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 256;
+            canvas.height = 256;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#1a1a24'; 
+            ctx.fillRect(0, 0, 256, 256);
+            ctx.strokeStyle = '#2a2a35';
+            ctx.lineWidth = 2;
+            for (let x = -50; x < 300; x += 32) {
+                for (let y = -50; y < 300; y += 32) {
+                    ctx.beginPath();
+                    ctx.moveTo(x + 16, y);
+                    ctx.lineTo(x + 32, y + 16);
+                    ctx.lineTo(x + 16, y + 32);
+                    ctx.lineTo(x, y + 16);
+                    ctx.closePath();
+                    ctx.stroke();
+                }
+            }
+            const tex = new THREE.CanvasTexture(canvas);
+            tex.wrapS = THREE.RepeatWrapping;
+            tex.wrapT = THREE.RepeatWrapping;
+            return tex;
+        }
+
+        function createCarpetTexture() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 512;
+            canvas.height = 512;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#4a0e17'; 
+            ctx.fillRect(0, 0, 512, 512);
+            const imgData = ctx.getImageData(0, 0, 512, 512);
+            for (let i = 0; i < imgData.data.length; i += 4) {
+                const noise = (Math.random() - 0.5) * 40;
+                imgData.data[i] = Math.max(0, Math.min(255, imgData.data[i] + noise));
+                imgData.data[i+1] = Math.max(0, Math.min(255, imgData.data[i+1] + noise));
+                imgData.data[i+2] = Math.max(0, Math.min(255, imgData.data[i+2] + noise));
+            }
+            ctx.putImageData(imgData, 0, 0);
+            
+            ctx.strokeStyle = '#b87333'; 
+            ctx.lineWidth = 4;
+            for(let i=0; i<512; i+=64) {
+                ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i+128, 512); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(i, 512); ctx.lineTo(i+128, 0); ctx.stroke();
+            }
+
+            const tex = new THREE.CanvasTexture(canvas);
+            tex.wrapS = THREE.RepeatWrapping;
+            tex.wrapT = THREE.RepeatWrapping;
+            tex.repeat.set(2, 4);
+            return tex;
+        }
+
+        const woodMaterial = new THREE.MeshStandardMaterial({ map: createWoodTexture(), roughness: 0.8 });
+        const wallMaterial = new THREE.MeshStandardMaterial({ map: createWallpaperTexture(), roughness: 0.9 });
+        const floorMaterial = new THREE.MeshStandardMaterial({ map: createCarpetTexture(), roughness: 1.0 });
+        const ceilingMaterial = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.5 });
+        const metalMaterial = new THREE.MeshStandardMaterial({ color: 0xffd700, metalness: 0.8, roughness: 0.2 });
+
+        // ==========================================
+        // 3. THE MAN (PROCEDURAL CHARACTER RIG)
+        // ==========================================
+        class Man {
+            constructor() {
+                this.group = new THREE.Group();
+                
+                const skinMat = new THREE.MeshStandardMaterial({ color: 0xdbac98, roughness: 0.6 });
+                const suitMat = new THREE.MeshStandardMaterial({ color: 0x1a1a1a, roughness: 0.8 });
+                const shoeMat = new THREE.MeshStandardMaterial({ color: 0x0a0a0a, roughness: 0.3 });
+
+                this.torso = new THREE.Mesh(new THREE.BoxGeometry(2, 2.5, 1), suitMat);
+                this.torso.position.y = 4.5;
+                this.torso.castShadow = true;
+                this.group.add(this.torso);
+
+                this.neck = new THREE.Group();
+                this.neck.position.y = 1.3;
+                this.torso.add(this.neck);
+
+                this.head = new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.5, 1.2), skinMat);
+                this.head.position.y = 0.75;
+                this.head.castShadow = true;
+                this.neck.add(this.head);
+
+                this.leftLeg = this.createLimb(0.8, 2, suitMat, shoeMat, true);
+                this.leftLeg.position.set(-0.6, -1.25, 0);
+                this.torso.add(this.leftLeg);
+
+                this.rightLeg = this.createLimb(0.8, 2, suitMat, shoeMat, true);
+                this.rightLeg.position.set(0.6, -1.25, 0);
+                this.torso.add(this.rightLeg);
+
+                this.leftArm = this.createLimb(0.6, 1.8, suitMat, skinMat, false);
+                this.leftArm.position.set(-1.4, 1.0, 0);
+                this.torso.add(this.leftArm);
+
+                this.rightArm = this.createLimb(0.6, 1.8, suitMat, skinMat, false);
+                this.rightArm.position.set(1.4, 1.0, 0);
+                this.torso.add(this.rightArm);
+
+                scene.add(this.group);
+            }
+
+            createLimb(width, length, topMat, botMat, isLeg) {
+                const pivot = new THREE.Group();
+                const upper = new THREE.Mesh(new THREE.BoxGeometry(width, length, width), topMat);
+                upper.position.y = -length / 2;
+                upper.castShadow = true;
+                pivot.add(upper);
+
+                const joint = new THREE.Group();
+                joint.position.y = -length;
+                pivot.add(joint);
+
+                const lowerLength = isLeg ? length * 1.1 : length * 0.9;
+                const lower = new THREE.Mesh(new THREE.BoxGeometry(width * 0.9, lowerLength, width * 0.9), topMat);
+                lower.position.y = -lowerLength / 2;
+                lower.castShadow = true;
+                joint.add(lower);
+
+                const extremity = new THREE.Mesh(
+                    new THREE.BoxGeometry(width, isLeg ? 0.4 : 0.6, isLeg ? width * 1.5 : width), 
+                    botMat
+                );
+                extremity.position.set(0, -lowerLength / 2 - (isLeg ? 0.2 : 0.3), isLeg ? 0.2 : 0);
+                extremity.castShadow = true;
+                lower.add(extremity);
+
+                return { pivot, joint, lower };
+            }
+
+            update(progress) {
+                const walkCycles = 15;
+                const walkTheta = progress * Math.PI * 2 * walkCycles;
+
+                const legSwing = Math.sin(walkTheta) * 0.7;
+                const armSwing = Math.sin(walkTheta) * 0.6;
+                const kneeBendL = Math.max(0, Math.sin(walkTheta - Math.PI/2)) * 1.2;
+                const kneeBendR = Math.max(0, Math.sin(walkTheta + Math.PI/2)) * 1.2;
+                
+                this.leftLeg.pivot.rotation.x = legSwing;
+                this.leftLeg.joint.rotation.x = kneeBendL;
+                this.rightLeg.pivot.rotation.x = -legSwing;
+                this.rightLeg.joint.rotation.x = kneeBendR;
+
+                this.leftArm.pivot.rotation.x = -armSwing;
+                this.leftArm.joint.rotation.x = -0.2 + Math.abs(Math.cos(walkTheta)) * -0.2;
+                this.rightArm.pivot.rotation.x = armSwing;
+                this.rightArm.joint.rotation.x = -0.2 + Math.abs(Math.sin(walkTheta)) * -0.2;
+
+                this.torso.position.y = 4.8 + Math.abs(Math.sin(walkTheta * 2)) * 0.2;
+                this.torso.rotation.z = Math.sin(walkTheta) * 0.05;
+                this.torso.rotation.y = Math.sin(walkTheta) * -0.1;
+
+                const lookY = Math.sin(progress * Math.PI * 2 * 3) * 1.2; 
+                const lookX = Math.sin(progress * Math.PI * 2 * 4) * 0.4;
+                const headBob = Math.sin(walkTheta * 2) * 0.05;
+
+                this.neck.rotation.y = lookY;
+                this.neck.rotation.x = lookX + headBob;
+                this.neck.rotation.z = Math.sin(progress * Math.PI * 2 * 2) * 0.2;
+            }
+        }
+
+        const man = new Man();
+        man.group.position.z = 2; 
+
+        // ==========================================
+        // 4. INFINITE HALLWAY GENERATOR
+        // ==========================================
+        class HallwaySegment {
+            constructor(zOffset) {
+                this.group = new THREE.Group();
+                this.group.position.z = zOffset;
+
+                const floor = new THREE.Mesh(new THREE.PlaneGeometry(HALLWAY_WIDTH, SEGMENT_LENGTH), floorMaterial);
+                floor.rotation.x = -Math.PI / 2;
+                floor.receiveShadow = true;
+                this.group.add(floor);
+
+                const ceiling = new THREE.Mesh(new THREE.PlaneGeometry(HALLWAY_WIDTH, SEGMENT_LENGTH), ceilingMaterial);
+                ceiling.rotation.x = Math.PI / 2;
+                ceiling.position.y = HALLWAY_HEIGHT;
+                this.group.add(ceiling);
+
+                this.createWall(-HALLWAY_WIDTH / 2, true);
+                this.createWall(HALLWAY_WIDTH / 2, false);
+
+                scene.add(this.group);
+            }
+
+            createWall(xPos, isLeft) {
+                const wall = new THREE.Mesh(new THREE.PlaneGeometry(SEGMENT_LENGTH, HALLWAY_HEIGHT), wallMaterial);
+                wall.position.x = xPos;
+                wall.position.y = HALLWAY_HEIGHT / 2;
+                wall.rotation.y = isLeft ? Math.PI / 2 : -Math.PI / 2;
+                wall.receiveShadow = true;
+                this.group.add(wall);
+
+                const baseboard = new THREE.Mesh(new THREE.BoxGeometry(SEGMENT_LENGTH, 0.8, 0.2), woodMaterial);
+                baseboard.position.set(xPos + (isLeft ? 0.1 : -0.1), 0.4, 0);
+                baseboard.rotation.y = isLeft ? Math.PI / 2 : -Math.PI / 2;
+                this.group.add(baseboard);
+
+                const molding = new THREE.Mesh(new THREE.BoxGeometry(SEGMENT_LENGTH, 0.5, 0.3), woodMaterial);
+                molding.position.set(xPos + (isLeft ? 0.15 : -0.15), HALLWAY_HEIGHT - 0.25, 0);
+                molding.rotation.y = isLeft ? Math.PI / 2 : -Math.PI / 2;
+                this.group.add(molding);
+
+                const doorsPerSegment = 3;
+                const spacing = SEGMENT_LENGTH / doorsPerSegment;
+                
+                for (let i = 0; i < doorsPerSegment; i++) {
+                    const zPos = -SEGMENT_LENGTH/2 + (spacing / 2) + (i * spacing);
+                    this.createDoor(xPos, zPos, isLeft);
+                }
+            }
+
+            createDoor(xPos, zPos, isLeft) {
+                const doorWidth = 3;
+                const doorHeight = 7;
+                const depthOffset = isLeft ? 0.05 : -0.05;
+
+                const frameGeo = new THREE.BoxGeometry(doorWidth + 0.4, doorHeight + 0.2, 0.4);
+                const frame = new THREE.Mesh(frameGeo, woodMaterial);
+                frame.position.set(xPos + depthOffset, doorHeight / 2, zPos);
+                frame.rotation.y = isLeft ? Math.PI / 2 : -Math.PI / 2;
+                this.group.add(frame);
+
+                const doorGeo = new THREE.BoxGeometry(doorWidth, doorHeight, 0.2);
+                const door = new THREE.Mesh(doorGeo, woodMaterial);
+                door.position.set(xPos + (isLeft ? 0.15 : -0.15), doorHeight / 2, zPos);
+                door.rotation.y = isLeft ? Math.PI / 2 : -Math.PI / 2;
+                this.group.add(door);
+
+                const knob = new THREE.Mesh(new THREE.SphereGeometry(0.15, 16, 16), metalMaterial);
+                const knobX = xPos + (isLeft ? 0.3 : -0.3);
+                const knobZ = zPos + (isLeft ? -1 : 1); 
+                knob.position.set(knobX, doorHeight / 2, knobZ);
+                this.group.add(knob);
+                
+                const lightFixture = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.2, 0.6), metalMaterial);
+                lightFixture.position.set(xPos + depthOffset, doorHeight + 1.0, zPos);
+                lightFixture.rotation.y = isLeft ? Math.PI / 2 : -Math.PI / 2;
+                this.group.add(lightFixture);
+                
+                const pointLight = new THREE.PointLight(0xffaa55, 0.8, 15);
+                pointLight.position.set(xPos + (isLeft? 1 : -1), doorHeight + 0.8, zPos);
+                this.group.add(pointLight);
+                
+                const bulb = new THREE.Mesh(new THREE.SphereGeometry(0.15), new THREE.MeshBasicMaterial({color: 0xffffee}));
+                bulb.position.copy(pointLight.position);
+                this.group.add(bulb);
+            }
+
+            update(distanceMoved) {
+                this.group.position.z += distanceMoved;
+            }
+        }
+
+        const numSegments = 6;
+        const segments = [];
+        for (let i = 0; i < numSegments; i++) {
+            segments.push(new HallwaySegment(-i * SEGMENT_LENGTH));
+        }
+
+        // ==========================================
+        // 5. GLOBAL LIGHTING
+        // ==========================================
+        const ambientLight = new THREE.AmbientLight(0x202025, 0.4);
+        scene.add(ambientLight);
+
+        const spotLight = new THREE.SpotLight(0xaabbff, 2.0);
+        spotLight.position.set(0, 8, 15);
+        spotLight.target = man.torso;
+        spotLight.angle = Math.PI / 4;
+        spotLight.penumbra = 0.5;
+        spotLight.castShadow = true;
+        spotLight.shadow.mapSize.width = 1024;
+        spotLight.shadow.mapSize.height = 1024;
+        scene.add(spotLight);
+
+        // ==========================================
+        // 6. ANIMATION & RENDER LOOP
+        // ==========================================
+        document.getElementById('loading').style.opacity = '0';
+
+        window.addEventListener('resize', onWindowResize, false);
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        let lastTime = performance.now();
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            const currentTime = performance.now();
+            const deltaTime = (currentTime - lastTime) / 1000.0;
+            lastTime = currentTime;
+
+            const loopTime = (currentTime / 1000.0) % LOOP_DURATION;
+            const progress = loopTime / LOOP_DURATION;
+
+            man.update(progress);
+
+            const moveDistance = HALLWAY_SPEED * deltaTime;
+            
+            segments.forEach(segment => {
+                segment.update(moveDistance);
+                if (segment.group.position.z > SEGMENT_LENGTH) {
+                    segment.group.position.z -= (numSegments * SEGMENT_LENGTH);
+                }
+            });
+
+            const walkCycles = 15;
+            const walkTheta = progress * Math.PI * 2 * walkCycles;
+            camera.position.y = 5 + Math.sin(walkTheta * 2) * 0.1;
+            camera.position.x = Math.sin(walkTheta) * 0.1;
+            camera.lookAt(man.head.position.x, man.head.position.y + 1, man.head.position.z - 5);
+
+            renderer.render(scene, camera);
+        }
+
+        animate();
+    </script>
+</body>
+</html>
