@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#000000">
-<title>AXIS • Training</title>
+<title>AXIS</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Sora:wght@500;600;700;800&display=swap" rel="stylesheet">
@@ -234,11 +234,7 @@ function progress(key){
   if (p) { total = p.ex.length * SETS_PER_EX; p.ex.forEach((_,i) => done += exSets(key,i).filter(Boolean).length); }
   return { done, total };
 }
-const isDayComplete = k => {
-  if ((saved.pushupSets?.[k] || 0) < PUSH_SETS) return false;
-  const p = progress(k);
-  return p.done >= p.total;
-};
+const isDayComplete = k => (saved.pushupSets?.[k] || 0) >= PUSH_SETS;
 
 const t0 = performance.now();
 let splashGone = false;
