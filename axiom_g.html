@@ -66,17 +66,14 @@
             background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
         }
         
-        /* Reduced Motion */
         @media (prefers-reduced-motion: reduce) {
             * { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
         }
         
-        /* Custom Scrollbar */
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
         
-        /* View transitions */
         .view-section { display: none; }
         .view-section.active { display: block; animation: riseIn 0.4s ease forwards; }
     </style>
@@ -99,7 +96,7 @@
         <div class="glow-line w-48 mt-6 animate-blur-in opacity-50"></div>
     </div>
 
-    <!-- Application Wrapper (Revealed after splash) -->
+    <!-- Application Wrapper -->
     <div id="app-container" class="flex w-full min-h-screen opacity-0 hidden">
         
         <!-- Sidebar Navigation -->
@@ -150,7 +147,7 @@
                     <div id="today-progress-bar" class="h-full bg-white/40 transition-all duration-700 w-0"></div>
                 </div>
 
-                <div id="today-habits-container" class="space-y-3">
+                <div id="today-habits-container" class="space-y-4">
                     <!-- Dynamic Checklist -->
                 </div>
                 
@@ -257,16 +254,16 @@
     </div>
 
     <!-- Habit Modal -->
-    <div id="habit-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm hidden opacity-0 transition-opacity">
-        <div class="glass-panel w-full max-w-md p-6 rounded-2xl mx-4 transform scale-95 transition-transform duration-300" id="habit-modal-content">
+    <div id="habit-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm hidden opacity-0 transition-opacity p-4">
+        <div class="glass-panel w-full max-w-md p-6 rounded-2xl mx-auto transform scale-95 transition-transform duration-300 max-h-[90vh] overflow-y-auto" id="habit-modal-content">
             <h3 class="text-xl text-white font-medium mb-6" id="modal-title">Create Habit</h3>
             
             <input type="hidden" id="habit-id">
             
-            <div class="space-y-4">
+            <div class="space-y-5">
                 <div>
                     <label class="block text-xs text-zinc-400 mb-1">Habit Name</label>
-                    <input type="text" id="habit-name" class="w-full glass-input p-3 rounded-lg text-sm" placeholder="e.g., Read 20 pages" autocomplete="off">
+                    <input type="text" id="habit-name" class="w-full glass-input p-3 rounded-lg text-sm" placeholder="e.g., 50 Push-ups, Study Physics, Drink 2L water" autocomplete="off">
                 </div>
                 
                 <div>
@@ -280,6 +277,31 @@
                         <option value="Uncategorized">Uncategorized</option>
                     </select>
                 </div>
+
+                <div>
+                    <label class="block text-xs text-zinc-400 mb-1">Format</label>
+                    <select id="habit-format" onchange="toggleFormatFields()" class="w-full glass-input p-3 rounded-lg text-sm appearance-none cursor-pointer">
+                        <option value="boolean">Simple Check (Yes / No)</option>
+                        <option value="numeric">Quantity / Target</option>
+                    </select>
+                </div>
+                
+                <div id="numeric-fields" class="hidden space-y-4 pt-2 border-t border-white/5">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs text-zinc-400 mb-1">Daily Target</label>
+                            <input type="number" id="habit-target" class="w-full glass-input p-3 rounded-lg text-sm" placeholder="e.g., 50">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-zinc-400 mb-1">Unit</label>
+                            <input type="text" id="habit-unit" class="w-full glass-input p-3 rounded-lg text-sm" placeholder="e.g., reps, mins, ml">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs text-zinc-400 mb-1">Quick Add Amount (Button Step)</label>
+                        <input type="number" id="habit-step" class="w-full glass-input p-3 rounded-lg text-sm" placeholder="e.g., 10">
+                    </div>
+                </div>
             </div>
 
             <div class="flex gap-3 mt-8">
@@ -290,7 +312,7 @@
     </div>
 
     <script>
-        // --- 1. FIREBASE CONFIGURATION (Reused as requested) ---
+        // --- 1. FIREBASE CONFIGURATION ---
         const firebaseConfig = {
             apiKey: "AIzaSyD47CV7A3CBN8WprDT190YBoja77HG6NJY",
             authDomain: "advait-bd3da.firebaseapp.com",
@@ -299,17 +321,13 @@
             storageBucket: "advait-bd3da.firebasestorage.app",
             messagingSenderId: "816232706393",
             appId: "1:816232706393:web:5aaa150277498ce2591c48"
-            // Analytics deliberately omitted
         };
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.database();
 
         // --- 2. DATA ARCHITECTURE & STATE ---
-        let appData = {
-            habits: [], // { id, name, category, created }
-            logs: {}    // { "YYYY-MM-DD": { completed: [id1, id2], scores: { Health: 50... } } }
-        };
+        let appData = { habits: [], logs: {} };
         let currentUser = null;
         let syncTimeout = null;
         const categories = ["Health", "Studies", "Career", "Finances", "Relationships"];
@@ -317,28 +335,29 @@
 
         const getTodayStr = () => {
             const d = new Date();
-            // Format strictly as YYYY-MM-DD in local time
             return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
         };
         let currentDay = getTodayStr();
 
+        function getLog() {
+            if (!appData.logs[currentDay]) appData.logs[currentDay] = { completed: [], scores: {}, progress: {} };
+            if (!appData.logs[currentDay].progress) appData.logs[currentDay].progress = {};
+            if (!appData.logs[currentDay].completed) appData.logs[currentDay].completed = [];
+            return appData.logs[currentDay];
+        }
+
         // --- 3. SPLASH SCREEN LOGIC ---
         window.addEventListener('DOMContentLoaded', () => {
             lucide.createIcons();
-            
             const splash = document.getElementById('splash');
             const app = document.getElementById('app-container');
             
-            // Respect reduced motion
-            const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-            
-            if (prefersReduced) {
+            if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
                 splash.style.display = 'none';
                 app.classList.remove('hidden', 'opacity-0');
                 app.classList.add('opacity-100');
                 initializeApp();
             } else {
-                // Cinematic Sequence
                 setTimeout(() => {
                     splash.style.animation = 'fadeOut 1s cubic-bezier(0.5, 0, 0.2, 1) forwards';
                     setTimeout(() => {
@@ -347,7 +366,7 @@
                         app.classList.add('animate-rise-in');
                         initializeApp();
                     }, 1000);
-                }, 2500); // 2.5s reveal + 1s fade
+                }, 2500);
             }
         });
 
@@ -373,13 +392,12 @@
             if (!currentUser) return;
             updateSyncUI('Pending...');
             clearTimeout(syncTimeout);
-            syncTimeout = setTimeout(syncToCloud, 700); // Debounce
+            syncTimeout = setTimeout(syncToCloud, 700);
         }
 
         async function syncToCloud() {
             if (!currentUser) return;
             try {
-                // CRITICAL REQUIREMENT: Strict isolated path
                 const userRef = db.ref(`/axiom_app_data/users/${currentUser.uid}/axiom`);
                 await userRef.set({
                     habits: appData.habits,
@@ -403,26 +421,19 @@
         auth.onAuthStateChanged(async (user) => {
             currentUser = user;
             if (user) {
-                // Check Cloud for existing data
                 updateSyncUI('Checking cloud...');
                 try {
                     const snap = await db.ref(`/axiom_app_data/users/${user.uid}/axiom`).once('value');
                     const cloudData = snap.val();
-                    
                     if (cloudData) {
-                        // Cloud data exists, overwrite local (last-write-wins simplified)
                         appData.habits = cloudData.habits || [];
                         appData.logs = cloudData.logs || {};
                         localStorage.setItem('axiom_data', JSON.stringify(appData));
                         updateSyncUI('Synced to cloud', true);
                     } else {
-                        // First time login, push local data up
                         await syncToCloud();
                     }
-                } catch(e) {
-                    console.error("Cloud fetch error:", e);
-                    updateSyncUI('Offline Mode');
-                }
+                } catch(e) { updateSyncUI('Offline Mode'); }
             } else {
                 updateSyncUI('Local Data Only');
             }
@@ -432,25 +443,18 @@
 
         async function handleLogin() {
             const provider = new firebase.auth.GoogleAuthProvider();
-            try {
-                await auth.signInWithPopup(provider);
-            } catch (error) {
-                if(error.code === 'auth/unauthorized-domain') {
-                    alert("Authentication Error: This domain is not authorized. Please add your domain in Firebase Console -> Authentication -> Settings -> Authorized domains.");
-                } else if(error.code === 'auth/popup-blocked') {
-                    auth.signInWithRedirect(provider); // Fallback
-                } else {
-                    alert("Login failed: " + error.message);
-                }
+            try { await auth.signInWithPopup(provider); } 
+            catch (error) {
+                if(error.code === 'auth/unauthorized-domain') alert("Domain not authorized in Firebase Console.");
+                else if(error.code === 'auth/popup-blocked') auth.signInWithRedirect(provider);
+                else alert("Login failed: " + error.message);
             }
         }
 
-        function handleLogout() {
-            auth.signOut();
-        }
+        function handleLogout() { auth.signOut(); }
 
         function clearLocalData() {
-            if(confirm("Are you sure? This removes local data. If logged in, cloud data will reload upon refresh.")) {
+            if(confirm("Wipe local data? (If logged in, cloud data restores on refresh)")) {
                 localStorage.removeItem('axiom_data');
                 appData = { habits: [], logs: {} };
                 updateUI();
@@ -466,39 +470,78 @@
             categories.forEach(cat => {
                 const catHabits = appData.habits.filter(h => h.category === cat);
                 if (catHabits.length === 0) {
-                    scores[cat] = 5; // Neutral baseline
+                    scores[cat] = 5;
                 } else {
                     const completedInCat = catHabits.filter(h => completedIds.includes(h.id)).length;
-                    scores[cat] = Math.round((completedInCat / catHabits.length) * 100);
-                    // Ensure it doesn't hit zero for aesthetic graph rendering
-                    if(scores[cat] < 5) scores[cat] = 5; 
+                    scores[cat] = Math.max(5, Math.round((completedInCat / catHabits.length) * 100));
                 }
             });
 
-            // Save calculated scores for history snapshot
-            if (!appData.logs[dateStr]) appData.logs[dateStr] = { completed: [] };
+            if (!appData.logs[dateStr]) appData.logs[dateStr] = { completed: [], progress: {} };
             appData.logs[dateStr].scores = scores;
             return scores;
         }
 
         function toggleHabit(habitId) {
-            if (!appData.logs[currentDay]) {
-                appData.logs[currentDay] = { completed: [], scores: {} };
-            }
+            const habit = appData.habits.find(h => h.id === habitId);
+            const log = getLog();
             
-            let completed = appData.logs[currentDay].completed || [];
-            if (completed.includes(habitId)) {
-                completed = completed.filter(id => id !== habitId);
+            if (habit.format === 'numeric') {
+                const isCompleted = log.completed.includes(habitId);
+                if (isCompleted) {
+                    log.progress[habitId] = 0; // Reset
+                    log.completed = log.completed.filter(id => id !== habitId);
+                } else {
+                    log.progress[habitId] = habit.target; // Max out
+                    if(!log.completed.includes(habitId)) log.completed.push(habitId);
+                }
             } else {
-                completed.push(habitId);
+                if (log.completed.includes(habitId)) {
+                    log.completed = log.completed.filter(id => id !== habitId);
+                } else {
+                    log.completed.push(habitId);
+                }
             }
             
-            appData.logs[currentDay].completed = completed;
-            calculateScores(currentDay); // Recalculate immediately
+            calculateScores(currentDay);
+            saveLocalData();
+        }
+
+        function updateProgress(habitId, amount, event) {
+            if (event) event.stopPropagation();
+            const habit = appData.habits.find(h => h.id === habitId);
+            const log = getLog();
+            
+            let current = log.progress[habitId] || 0;
+            
+            // Catch up logic if it was marked complete via the main toggle button
+            if (log.completed.includes(habitId) && current < habit.target) {
+                current = habit.target;
+            }
+            
+            current += amount;
+            if (current < 0) current = 0;
+            
+            log.progress[habitId] = current;
+            
+            if (current >= habit.target) {
+                if (!log.completed.includes(habitId)) log.completed.push(habitId);
+            } else {
+                log.completed = log.completed.filter(id => id !== habitId);
+            }
+            
+            calculateScores(currentDay);
             saveLocalData();
         }
 
         // Modal Logic
+        function toggleFormatFields() {
+            const format = document.getElementById('habit-format').value;
+            const numericFields = document.getElementById('numeric-fields');
+            if (format === 'numeric') numericFields.classList.remove('hidden');
+            else numericFields.classList.add('hidden');
+        }
+
         function openHabitModal(id = null) {
             const modal = document.getElementById('habit-modal');
             const content = document.getElementById('habit-modal-content');
@@ -510,10 +553,20 @@
                 const habit = appData.habits.find(h => h.id === id);
                 document.getElementById('habit-name').value = habit.name;
                 document.getElementById('habit-category').value = habit.category;
+                document.getElementById('habit-format').value = habit.format || 'boolean';
+                document.getElementById('habit-target').value = habit.target || '';
+                document.getElementById('habit-unit').value = habit.unit || '';
+                document.getElementById('habit-step').value = habit.step || '';
             } else {
                 document.getElementById('habit-name').value = '';
                 document.getElementById('habit-category').value = 'Health';
+                document.getElementById('habit-format').value = 'boolean';
+                document.getElementById('habit-target').value = '';
+                document.getElementById('habit-unit').value = '';
+                document.getElementById('habit-step').value = '';
             }
+            
+            toggleFormatFields();
             
             modal.classList.remove('hidden');
             setTimeout(() => {
@@ -525,7 +578,6 @@
         function closeHabitModal() {
             const modal = document.getElementById('habit-modal');
             const content = document.getElementById('habit-modal-content');
-            
             modal.classList.add('opacity-0');
             content.classList.add('scale-95');
             setTimeout(() => modal.classList.add('hidden'), 300);
@@ -535,23 +587,36 @@
             const id = document.getElementById('habit-id').value;
             const name = document.getElementById('habit-name').value.trim();
             const category = document.getElementById('habit-category').value;
+            const format = document.getElementById('habit-format').value;
+            const target = parseInt(document.getElementById('habit-target').value) || 1;
+            const unit = document.getElementById('habit-unit').value.trim();
+            const step = parseInt(document.getElementById('habit-step').value) || 1;
             
             if (!name) return alert("Habit name is required.");
 
+            const newHabit = {
+                id: id || Date.now().toString(),
+                name, category, format,
+                target: format === 'numeric' ? target : null,
+                unit: format === 'numeric' ? unit : null,
+                step: format === 'numeric' ? step : null,
+                created: id ? appData.habits.find(h => h.id === id).created : currentDay
+            };
+
             if (id) {
                 const idx = appData.habits.findIndex(h => h.id === id);
-                appData.habits[idx] = { ...appData.habits[idx], name, category };
+                appData.habits[idx] = newHabit;
             } else {
-                appData.habits.push({ id: Date.now().toString(), name, category, created: currentDay });
+                appData.habits.push(newHabit);
             }
             
-            calculateScores(currentDay); // Recalculate scores with new structure
+            calculateScores(currentDay);
             saveLocalData();
             closeHabitModal();
         }
 
         function deleteHabit(id) {
-            if(confirm("Delete this habit? History will be preserved but it won't appear today.")) {
+            if(confirm("Delete this habit? History will be preserved.")) {
                 appData.habits = appData.habits.filter(h => h.id !== id);
                 calculateScores(currentDay);
                 saveLocalData();
@@ -562,11 +627,9 @@
         function initializeApp() {
             loadLocalData();
             
-            // Set Date formatting
             const options = { weekday: 'long', month: 'long', day: 'numeric' };
             document.getElementById('date-display').innerText = new Date().toLocaleDateString('en-US', options);
             
-            // Initialize Chart.js
             const ctx = document.getElementById('balanceChart').getContext('2d');
             Chart.defaults.color = 'rgba(255,255,255,0.4)';
             Chart.defaults.font.family = 'Inter';
@@ -598,7 +661,6 @@
                     animation: { duration: 500 }
                 }
             });
-
             updateUI();
         }
 
@@ -612,10 +674,9 @@
         function renderToday() {
             const container = document.getElementById('today-habits-container');
             const emptyState = document.getElementById('today-empty-state');
-            const log = appData.logs[currentDay] || { completed: [] };
+            const log = getLog();
             const completed = log.completed || [];
             
-            // Greeting Name
             const greeting = document.getElementById('greeting-display');
             if (currentUser && currentUser.displayName) {
                 greeting.innerText = `Good morning, ${currentUser.displayName.split(' ')[0]}.`;
@@ -635,17 +696,42 @@
             let html = '';
             
             appData.habits.forEach(habit => {
-                const isChecked = completed.includes(habit.id);
+                const isCompleted = completed.includes(habit.id);
+                let current = log.progress[habit.id] || 0;
+                
+                if (isCompleted && habit.format === 'numeric' && current < habit.target) {
+                    current = habit.target;
+                }
+                
+                let percent = 0;
+                if (habit.format === 'numeric') {
+                    percent = Math.min((current / habit.target) * 100, 100);
+                }
+
                 html += `
-                    <div class="glass-panel p-4 rounded-xl flex items-center justify-between hover:bg-white/5 transition cursor-pointer" onclick="toggleHabit('${habit.id}')">
-                        <div class="flex items-center gap-4">
-                            <div class="w-6 h-6 rounded-full border border-white/30 flex items-center justify-center transition-colors ${isChecked ? 'bg-white text-black border-white' : 'bg-transparent text-transparent'}">
-                                <i data-lucide="check" class="w-3 h-3"></i>
+                    <div class="glass-panel p-0 rounded-xl relative overflow-hidden group cursor-pointer hover:bg-white/5 transition" onclick="toggleHabit('${habit.id}')">
+                        ${habit.format === 'numeric' ? `<div class="absolute left-0 top-0 bottom-0 bg-white/10 transition-all duration-500 ease-out" style="width: ${percent}%"></div>` : ''}
+                        
+                        <div class="p-4 relative z-10 flex items-center justify-between">
+                            <div class="flex items-center gap-4">
+                                <div class="w-6 h-6 rounded-full border border-white/30 flex items-center justify-center transition-colors ${isCompleted ? 'bg-white text-black border-white' : 'bg-transparent text-transparent'}">
+                                    <i data-lucide="check" class="w-3 h-3"></i>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-medium ${isCompleted ? 'text-zinc-500 line-through' : 'text-zinc-200'}">${habit.name}</p>
+                                    <div class="text-[10px] text-zinc-500 uppercase tracking-wider flex items-center gap-2 mt-0.5">
+                                        <span>${habit.category}</span>
+                                        ${habit.format === 'numeric' ? `<span class="text-zinc-400 lowercase">• ${current} / ${habit.target}${habit.unit}</span>` : ''}
+                                    </div>
+                                </div>
                             </div>
-                            <div>
-                                <p class="text-sm font-medium ${isChecked ? 'text-zinc-500 line-through' : 'text-zinc-200'}">${habit.name}</p>
-                                <p class="text-[10px] text-zinc-500 uppercase tracking-wider">${habit.category}</p>
+                            
+                            ${habit.format === 'numeric' ? `
+                            <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <button onclick="updateProgress('${habit.id}', -${habit.step || 1}, event)" class="w-8 h-8 flex items-center justify-center rounded-lg bg-black/40 hover:bg-black/60 text-zinc-400 transition">-</button>
+                                <button onclick="updateProgress('${habit.id}',${habit.step || 1}, event)" class="w-8 h-8 flex items-center justify-center rounded-lg bg-white/10 hover:bg-white/20 text-white transition tooltip" title="+${habit.step || 1}">+</button>
                             </div>
+                            ` : ''}
                         </div>
                     </div>
                 `;
@@ -670,7 +756,10 @@
                     <div class="glass-panel p-4 rounded-xl flex items-center justify-between group">
                         <div>
                             <p class="text-sm font-medium text-zinc-200">${habit.name}</p>
-                            <p class="text-[10px] text-zinc-500 uppercase tracking-wider">${habit.category}</p>
+                            <p class="text-[10px] text-zinc-500 uppercase tracking-wider mt-0.5">
+                                ${habit.category} 
+                                ${habit.format === 'numeric' ? `• Target: ${habit.target}${habit.unit}` : ''}
+                            </p>
                         </div>
                         <div class="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                             <button onclick="openHabitModal('${habit.id}')" class="p-2 hover:bg-white/10 rounded-lg text-zinc-400"><i data-lucide="edit-2" class="w-4 h-4"></i></button>
@@ -739,7 +828,7 @@
                 document.getElementById('settings-user-name').innerText = currentUser.displayName || 'AXIOM User';
                 document.getElementById('settings-user-email').innerText = currentUser.email;
                 accountName.innerText = currentUser.displayName ? currentUser.displayName.split(' ')[0] : 'Account';
-                accountIcon.setAttribute('data-lucide', 'cloud-check'); // Change icon to cloud
+                accountIcon.setAttribute('data-lucide', 'cloud-check');
             } else {
                 signedOutDiv.classList.remove('hidden');
                 signedInDiv.classList.add('hidden');
@@ -755,7 +844,6 @@
                 if(el) el.innerText = statusText;
             });
             
-            // Visual feedback
             const accountChip = document.getElementById('account-chip');
             if(isSuccess === true) {
                 accountChip.classList.add('bg-green-500/10');
