@@ -326,14 +326,14 @@ var BASE=5; // display baseline (1-100 scale) for areas that have no habits yet
 var DIMS=[{k:'health',n:'Health',c:'#9ec9c1'},{k:'studies',n:'Studies',c:'#a9b8e6'},{k:'career',n:'Career',c:'#d8c79f'},{k:'finances',n:'Finances',c:'#b4d29b'},{k:'relationships',n:'Relationships',c:'#dba9bf'}];
 var UNC={k:'uncategorized',n:'Uncategorized',c:'#9097a2'};
 var CATS=DIMS.concat([UNC]),DIM={};CATS.forEach(function(d){DIM[d.k]=d});
-var VIEWS=[['today','Today'],['habits','Habits'],['analytics','Analytics'],['balance','Life Balance'],['settings','Settings']];
+var VIEWS=[['today','Today'],['habits','Habits'],['analytics','Analytics'],['balance','Life Balance'],['profile','Profile']];
 var SAMPLE_IDS={h1:1,h2:1,h3:1,h4:1,h5:1,h6:1,h7:1,h8:1,h9:1};
 var I={
  today:'<path d="M12 3v2M12 19v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M3 12h2M19 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4"/><circle cx="12" cy="12" r="4"/>',
  habits:'<path d="M9 6h11M9 12h11M9 18h11"/><path d="m3.5 6 1.3 1.3L7 5M3.5 12l1.3 1.3L7 11M3.5 18l1.3 1.3L7 17"/>',
  analytics:'<path d="M4 20V10M10 20V4M16 20v-8M22 20H2"/>',
  balance:'<path d="m12 3 8.5 6.2-3.2 10H6.7l-3.2-10L12 3Z"/><path d="M12 3v8l-5.3 8.2M12 11l5.3 8.2M12 11l8.5-1.8M12 11 3.5 9.2" opacity=".5"/>',
- settings:'<path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/>',
+ profile:'<circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/>',
  plus:'<path d="M12 5v14M5 12h14"/>',minus:'<path d="M5 12h14"/>',
  edit:'<path d="M4 20h4L19 9l-4-4L4 16v4Z"/>',
  up:'<path d="m6 15 6-6 6 6"/>',down:'<path d="m6 9 6 6 6-6"/>',
@@ -347,6 +347,7 @@ function $$(s,r){return Array.prototype.slice.call((r||document).querySelectorAl
 function esc(s){return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
 function fmt(n){return Number.isInteger(n)?String(n):String(Math.round(n*10)/10)}
 function pc(n){return Math.round(n*100)}
+function pct1(p){return String(Math.round(p*1000)/10)}
 function pad(n){return (n<10?'0':'')+n}
 function dk(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())}
 function pd(k){var p=k.split('-').map(Number);return new Date(p[0],p[1]-1,p[2])}
@@ -359,6 +360,7 @@ function shortDate(k){return pd(k).toLocaleDateString(undefined,{day:'numeric',m
 function uid(){return 'h'+Date.now().toString(36)+Math.floor(Math.random()*1e5).toString(36)}
 function listOf(x){return Array.isArray(x)?x.filter(Boolean):(x&&typeof x==='object'?Object.keys(x).map(function(k){return x[k]}):[])}
 function num(x,d){if(x===null||x===undefined||x==='')return d;x=Number(x);return isFinite(x)?x:d}
+function rangeNum(x,lo,hi){x=num(x,null);return (x!==null&&x>=lo&&x<=hi)?Math.round(x*10)/10:null}
 function isKey(k){return typeof k==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(k)}
 
 /* =====================================================================
@@ -368,7 +370,7 @@ function isKey(k){return typeof k==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(k)}
            meta:{owner,dirty,base,collapsed,intro}}   (meta never leaves this device)
    ===================================================================== */
 var memOnly=false;
-function emptyState(owner){return {v:VERSION,habits:[],log:{},history:[],savings:[],settings:{name:''},updatedAt:0,meta:{owner:owner||null,dirty:false,base:0,collapsed:false,intro:true,copyAsked:false}}}
+function emptyState(owner){return {v:VERSION,habits:[],log:{},history:[],savings:[],settings:{name:'',height:null,weight:null},updatedAt:0,meta:{owner:owner||null,dirty:false,base:0,collapsed:false,intro:true,copyAsked:false}}}
 function isBlank(s){return !s.habits.length&&!s.history.length&&!s.savings.length&&!Object.keys(s.log).length}
 
 /* Validate and migrate any incoming object (old local data, cloud data, imports). Never throws. */
@@ -416,7 +418,7 @@ function normalise(raw){
   s.savings=demo?[]:listOf(o.savings).map(function(x){
     if(!x||!isKey(x.date))return null;var a=num(x.amount,0);return a>0?{date:x.date,amount:a}:null;
   }).filter(Boolean);
-  s.settings={name:String(oldSet.name||'').slice(0,30)};
+  s.settings={name:String(oldSet.name||'').slice(0,30),height:rangeNum(oldSet.height,50,260),weight:rangeNum(oldSet.weight,20,400)};
   s.updatedAt=num(o.updatedAt,0);
   if(o.scores&&typeof o.scores==='object'&&!o.legacy)s.legacy={scores:o.scores}; // old manual sliders are kept, no longer used
   else if(o.legacy)s.legacy=o.legacy;
@@ -426,7 +428,7 @@ function normalise(raw){
     intro:m.intro!==undefined?!!m.intro:oldSet.intro!==false,copyAsked:!!m.copyAsked};
   return s;
 }
-function exportable(st){return {v:VERSION,habits:st.habits,log:st.log,history:st.history,savings:st.savings,settings:{name:st.settings.name},updatedAt:st.updatedAt}}
+function exportable(st){return {v:VERSION,habits:st.habits,log:st.log,history:st.history,savings:st.savings,settings:{name:st.settings.name,height:st.settings.height,weight:st.settings.weight},updatedAt:st.updatedAt}}
 function persist(){try{localStorage.setItem(S.meta.owner?ACC+S.meta.owner:KEY,JSON.stringify(S));memOnly=false}catch(e){memOnly=true}}  // device store = KEY, account cache = ACC+uid
 function loadLocal(){
   var txt=null,raw=null;
@@ -453,13 +455,14 @@ if(S.meta.owner){ // an earlier build kept account data in the device slot: keep
    ===================================================================== */
 function val(h,k){return (S.log[k]||{})[h.id]||0}
 function done(h,k){return val(h,k)>=h.target}
+function prog(h,k){return Math.min(1,val(h,k)/h.target)}   // partial credit: 1 of 8 glasses = 12.5%
 function active(k){return S.habits.filter(function(h){return h.created<=k})}
-function dayStat(k){var a=active(k);if(!a.length)return null;var d=a.filter(function(h){return done(h,k)}).length;return {d:d,n:a.length,p:d/a.length}}
+function dayStat(k){var a=active(k);if(!a.length)return null;var d=0;a.forEach(function(h){d+=prog(h,k)});return {d:d,n:a.length,p:d/a.length}}
 function dayPct(k){var s=dayStat(k);return s?s.p:null}
 function agg(days,end,filter){
   var d=0,n=0;
   for(var i=0;i<days;i++){var k=addDays(end,-i);
-    S.habits.forEach(function(h){if(h.created<=k&&(!filter||filter(h))){n++;if(done(h,k))d++}});}
+    S.habits.forEach(function(h){if(h.created<=k&&(!filter||filter(h))){n++;d+=prog(h,k)}});}
   return {d:d,n:n,p:n?d/n:null};
 }
 function avgPct(days,end){return agg(days,end||todayK()).p}
@@ -489,7 +492,7 @@ function snapVal(h,k){var v=h.scores[k];return (v===null||v===undefined)?null:(h
    UI STATE
    ===================================================================== */
 var ui={view:'today',date:todayK(),range:7,brange:7,dims:{health:1,studies:1,career:1,finances:1,relationships:1},modal:null,confirm:'',wipe:null,lastView:'',force:false};
-function routeFromHash(){var h=(location.hash||'').replace('#','');return VIEWS.some(function(v){return v[0]===h})?h:'today'}
+function routeFromHash(){var h=(location.hash||'').replace('#','');if(h==='settings')h='profile';return VIEWS.some(function(v){return v[0]===h})?h:'today'}
 ui.view=routeFromHash();
 function toast(m){var t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(function(){t.classList.remove('on')},2800)}
 
@@ -553,10 +556,10 @@ function ring(p){
    ===================================================================== */
 function vToday(){
   var k=ui.date,t=todayK(),isT=k===t,hs=active(k),total=hs.length;
-  var dn=hs.filter(function(h){return done(h,k)}).length,p=total?dn/total:0;
+  var dn=hs.filter(function(h){return done(h,k)}).length,p=0;hs.forEach(function(h){p+=prog(h,k)});p=total?p/total:0;
   var hr=new Date().getHours(),g=hr<5?'Still up':hr<12?'Good morning':hr<18?'Good afternoon':'Good evening';
   var nm=S.settings.name?', '+esc(S.settings.name):'';
-  var head='<div class="head"><div><p class="eyebrow">'+esc(longDate(k))+'</p><h1 class="title">'+(isT?g+nm:'Looking back')+'</h1>'+(S.settings.name?'':'<p class="sub" style="margin-top:6px">Add your name in <a href="#settings" style="color:var(--silver)">Settings</a> to personalise this.</p>')+'</div>'+
+  var head='<div class="head"><div><p class="eyebrow">'+esc(longDate(k))+'</p><h1 class="title">'+(isT?g+nm:'Looking back')+'</h1>'+(S.settings.name?'':'<p class="sub" style="margin-top:6px">Add your name in your <a href="#profile" style="color:var(--silver)">Profile</a> to personalise this.</p>')+'</div>'+
    '<div class="dnav"><button class="icon" data-act="day-prev" aria-label="Previous day">'+ic('left',17)+'</button>'+(isT?'':'<button class="btn sm ghost" data-act="day-today">Back to today</button>')+'<button class="icon" data-act="day-next" aria-label="Next day"'+(isT?' disabled':'')+'>'+ic('right',17)+'</button></div></div>';
   if(!S.habits.length)return head+'<div class="panel empty"><b>Start with one habit</b><span>A habit is something you want to do each day, like drinking water, studying or going to the gym. Give each one a life area and AXIOM scores your balance from what you complete.</span><button class="btn" data-act="add">'+ic('plus',16)+' Add your first habit</button></div>';
   if(!total)return head+'<div class="panel empty"><b>Nothing was tracked on this day</b><span>Habits count from the day you create them.</span><button class="btn" data-act="day-today">Back to today</button></div>';
@@ -569,7 +572,7 @@ function vToday(){
      (isC?'<div class="stepper"><button class="icon" data-act="dec" data-id="'+h.id+'" aria-label="Remove one from '+esc(h.name)+'">'+ic('minus',16)+'</button><output aria-live="polite">'+fmt(v)+' / '+fmt(h.target)+'<br><small style="color:var(--mute);font-weight:400">'+esc(h.unit)+'</small></output><button class="icon" data-act="inc" data-id="'+h.id+'" aria-label="Add one to '+esc(h.name)+'">'+ic('plus',16)+'</button></div>':'')+'</li>';
   }).join('');
   return head+'<div class="grid g-today"><div class="stack">'+
-   '<section class="panel"><div class="ringwrap">'+ring(p)+'<div class="ringnum"><b>'+pc(p)+'%</b><small>complete</small></div><div class="facts"><div class="fact"><b>'+dn+' of '+total+'</b><span>habits done</span></div><div class="fact"><b>'+(best?best+(best===1?' day':' days'):'–')+'</b><span>best current streak</span></div></div></div></section>'+
+   '<section class="panel"><div class="ringwrap">'+ring(p)+'<div class="ringnum"><b>'+pct1(p)+'%</b><small>complete</small></div><div class="facts"><div class="fact"><b>'+dn+' of '+total+'</b><span>habits done</span></div><div class="fact"><b>'+(best?best+(best===1?' day':' days'):'–')+'</b><span>best current streak</span></div></div></div></section>'+
    '<section class="panel"><div class="phead"><h2 class="h2">This week</h2></div><div class="week">'+week+'</div></section></div>'+
    '<section class="panel"><div class="phead"><h2 class="h2">Checklist</h2><button class="btn sm" data-act="add">'+ic('plus',15)+' Add habit</button></div><ul class="list">'+rows+'</ul></section></div>';
 }
@@ -606,7 +609,7 @@ function vBalance(){
   var n=ui.brange,b=balance(n),scored=DIMS.filter(function(d){return b[d.k].score!==null});
   var head='<div class="head"><div><p class="eyebrow">Calculated from your habits</p><h1 class="title">Life Balance</h1></div><div class="seg" role="group" aria-label="Scoring period"><button aria-pressed="'+(n===7)+'" data-act="brange" data-id="7">Week</button><button aria-pressed="'+(n===30)+'" data-act="brange" data-id="30">Month</button></div></div>';
   var areas=DIMS.map(function(d){var a=b[d.k];
-    return '<div class="area"><div class="top"><span style="color:'+d.c+'">'+d.n+'</span>'+(a.score===null?'<b class="off">Not scored</b>':'<b>'+a.score+'/100</b>')+'</div><div class="bar">'+(a.score===null?'':'<i data-w="'+a.score+'" style="width:0;background:'+d.c+'"></i>')+'</div><small>'+(a.score===null?'No habits in this area yet.':a.d+' of '+a.n+' check-ins done')+'</small></div>'}).join('');
+    return '<div class="area"><div class="top"><span style="color:'+d.c+'">'+d.n+'</span>'+(a.score===null?'<b class="off">Not scored</b>':'<b>'+a.score+'/100</b>')+'</div><div class="bar">'+(a.score===null?'':'<i data-w="'+a.score+'" style="width:0;background:'+d.c+'"></i>')+'</div><small>'+(a.score===null?'No habits in this area yet.':fmt(Math.round(a.d*10)/10)+' of '+a.n+' check-ins done')+'</small></div>'}).join('');
   var snaps=S.history.filter(function(h){return h.range===n}),trend;
   if(snaps.length<2)trend='<div class="note">Save a snapshot now and another later. A trend appears once you have two '+(n===7?'weekly':'monthly')+' snapshots.</div>';
   else{
@@ -631,16 +634,24 @@ function wipeBlock(kind){
   return h+'<div class="wipebox"><label for="wipe-text">Type DELETE to confirm. This cannot be undone.</label><input id="wipe-text" autocomplete="off" autocapitalize="characters" spellcheck="false"><div class="inline" style="margin-top:10px"><button class="btn sm danger" id="wipe-go" data-act="wipe-go" disabled>'+(isD?'Delete device data':'Delete account data')+'</button><button class="btn sm ghost" data-act="wipe-cancel">Cancel</button></div><div class="err" id="wipeerr"></div></div></div>';
 }
 
-function vSettings(){
+function bmiLine(){
+  var h=S.settings.height,w=S.settings.weight;
+  if(!h||!w)return '<p class="sub" style="margin-top:6px">Add both height and weight to see your BMI.</p>';
+  var b=w/((h/100)*(h/100));
+  return '<div class="mrow" style="margin-top:6px"><span>BMI</span><b>'+(Math.round(b*10)/10)+'</b></div><p class="sub">A rough guide only, not medical advice.</p>';
+}
+function vProfile(){
   var bks=getBackups();
   var bk=bks.length?'<section class="panel"><h2 class="h2" style="margin-bottom:6px">Saved copies</h2><p class="sub" style="margin-bottom:10px">When AXIOM replaces your data, the old version is kept here on this device.</p>'+bks.map(function(x,i){return '<div class="snap"><span>'+esc(x.label)+'<br><span class="sub">'+esc(new Date(x.at).toLocaleString())+' · '+x.data.habits.length+' habits</span></span><button class="btn sm ghost" data-act="restore" data-id="'+i+'">Restore</button></div>'}).join('')+'</section>':'';
-  return '<div class="head"><div><p class="eyebrow">Preferences</p><h1 class="title">Settings</h1></div></div><div class="grid g2" style="align-items:start"><div class="stack">'+
-   '<section class="panel" id="acctpanel">'+acctPanel()+'</section>'+
-   '<section class="panel"><h2 class="h2" style="margin-bottom:14px">Preferences</h2><form id="nameform" novalidate><div class="field"><label for="nm">Your name</label><input id="nm" maxlength="30" value="'+esc(S.settings.name)+'" placeholder="Used in your greeting"><div class="err" id="nmerr"></div></div><button class="btn sm" type="submit">Save name</button></form>'+
-   '<div class="inline" style="justify-content:space-between;margin-top:20px"><label for="introset">Play the intro when AXIOM opens</label><input type="checkbox" id="introset" '+(S.meta.intro?'checked':'')+' style="width:20px;height:20px;accent-color:#c9ced6"></div></section></div><div class="stack">'+
-   '<section class="panel"><h2 class="h2" style="margin-bottom:14px">Backup</h2><div class="field"><label for="exp">Export. Copy and keep this text.</label><textarea id="exp" readonly>'+esc(JSON.stringify(exportable(S)))+'</textarea></div><button class="btn sm" data-act="copyexp">Copy backup</button>'+
-   '<div class="field" style="margin-top:22px"><label for="imp">Import. Paste a backup here.</label><textarea id="imp" placeholder="Paste exported text"></textarea><div class="err" id="imperr"></div></div><button class="btn sm" data-act="import">Restore from backup</button></section>'+bk+
-   '<section class="panel"><h2 class="h2" style="margin-bottom:6px">Delete data</h2><p class="sub" style="margin-bottom:6px">Each delete is separate and asks you to type DELETE first.</p>'+wipeBlock('device')+wipeBlock('account')+'</section></div></div>';
+  var st=S.settings;
+  return '<div class="head"><div><p class="eyebrow">You</p><h1 class="title">Profile</h1></div></div>'+
+   '<section class="panel"><form id="profform" novalidate><div class="field"><label for="nm">Name</label><input id="nm" maxlength="30" value="'+esc(st.name)+'" placeholder="Used in your greeting" autocomplete="off"><div class="err" id="nmerr"></div></div>'+
+   '<div class="fgrid"><div class="field"><label for="ht">Height (cm)</label><input id="ht" type="number" inputmode="decimal" min="50" max="260" step="any" value="'+(st.height===null?'':esc(st.height))+'"><div class="err" id="hterr"></div></div><div class="field"><label for="wt">Weight (kg)</label><input id="wt" type="number" inputmode="decimal" min="20" max="400" step="any" value="'+(st.weight===null?'':esc(st.weight))+'"><div class="err" id="wterr"></div></div></div>'+
+   '<button class="btn" type="submit">Save profile</button></form>'+bmiLine()+'</section>'+
+   '<div style="margin:36px 0 16px"><p class="eyebrow">Preferences and data</p><h2 class="title" style="font-size:30px;margin-top:4px">Settings</h2></div>'+
+   '<div class="grid g2" style="align-items:start"><div class="stack"><section class="panel" id="acctpanel">'+acctPanel()+'</section>'+
+   '<section class="panel"><h2 class="h2" style="margin-bottom:14px">Preferences</h2><div class="inline" style="justify-content:space-between"><label for="introset">Play the intro when AXIOM opens</label><input type="checkbox" id="introset" '+(S.meta.intro?'checked':'')+' style="width:20px;height:20px;accent-color:#c9ced6"></div></section>'+bk+'</div>'+
+   '<div class="stack"><section class="panel"><h2 class="h2" style="margin-bottom:6px">Delete data</h2><p class="sub" style="margin-bottom:6px">Each delete is separate and asks you to type DELETE first.</p>'+wipeBlock('device')+wipeBlock('account')+'</section></div></div>';
 }
 
 /* modals */
@@ -798,7 +809,7 @@ function shortStatus(){
 function acctSide(){
   if(cloud.user){
     var n=cloud.user.displayName||cloud.user.email||'You';
-    return '<button type="button" class="acctb" data-act="nav" data-id="settings" aria-label="Account: '+esc(n)+', '+esc(shortStatus())+'"><i class="av">'+esc(n.charAt(0).toUpperCase())+'</i><span class="lbl"><b>'+esc(n.split(' ')[0])+'</b><small>'+esc(shortStatus())+'</small></span></button>';
+    return '<button type="button" class="acctb" data-act="nav" data-id="profile" aria-label="Account: '+esc(n)+', '+esc(shortStatus())+'"><i class="av">'+esc(n.charAt(0).toUpperCase())+'</i><span class="lbl"><b>'+esc(n.split(' ')[0])+'</b><small>'+esc(shortStatus())+'</small></span></button>';
   }
   return '<button type="button" class="acctb" data-act="signin" aria-label="Sign in with Google"><i class="av">G</i><span class="lbl"><b>Sign in</b><small>'+(cloud.mode==='ready'?'with Google':'This device only')+'</small></span></button>';
 }
@@ -850,7 +861,7 @@ function renderNav(){
 function render(){
   var changed=ui.lastView!==ui.view||ui.force;ui.force=false;
   var ae=document.activeElement,fa=ae&&ae.dataset&&ae.dataset.act?ae.dataset.act:null,fi=ae&&ae.dataset?ae.dataset.id:null;
-  var fn={today:vToday,habits:vHabits,analytics:vAnalytics,balance:vBalance,settings:vSettings}[ui.view];
+  var fn={today:vToday,habits:vHabits,analytics:vAnalytics,balance:vBalance,profile:vProfile}[ui.view];
   $('#view').innerHTML='<div class="'+(changed?'enter anim':'')+'">'+fn()+'</div>';
   ui.lastView=ui.view;renderNav();renderAccount();
   var go=function(){$$('[data-w]').forEach(function(e){e.style.width=e.dataset.w+'%'});$$('[data-h]').forEach(function(e){e.style.height=e.dataset.h+'%'});$$('[data-dash]').forEach(function(e){e.setAttribute('stroke-dasharray',e.dataset.dash)})};
@@ -913,12 +924,6 @@ document.addEventListener('click',function(ev){
      if(dev&&u){var pm=S.meta;S=normalise(dev);S.meta={owner:u.uid,dirty:true,base:0,collapsed:pm.collapsed,intro:pm.intro,copyAsked:true};S.updatedAt=Date.now();ui.modal=null;renderModal();persist();ui.force=true;render();cloudPush(true);toast('Copied to your account')}
      break;
    case 'copy-no':S.meta.copyAsked=true;persist();ui.modal=null;renderModal();break;
-   case 'copyexp':var ta=$('#exp'),ok=function(){toast('Backup copied')},no=function(){ta.focus();ta.select();toast('Selected. Use your keyboard to copy.')};
-     try{navigator.clipboard.writeText(ta.value).then(ok,no)}catch(e){no()}break;
-   case 'import':
-     try{var o=JSON.parse($('#imp').value);if(!o||typeof o!=='object'||!(Array.isArray(o.habits)||(o.habits&&typeof o.habits==='object'))||typeof o.log!=='object')throw 0;
-       var n2=normalise(o),m=S.meta;addBackup('Before importing a backup',S);S=n2;S.meta=m;commit();toast('Backup restored')}
-     catch(e){$('#imperr').textContent='That text is not a valid AXIOM backup. Copy the whole export and try again.'}break;
    case 'restore':var bs=getBackups(),bk=bs[+id];if(bk){addBackup('Before restoring a saved copy',S);var m2=S.meta;S=normalise(bk.data);S.meta=m2;commit();toast('Saved copy restored')}break;
    case 'wipe':ui.wipe=id;render();var wi=$('#wipe-text');if(wi)wi.focus();break;
    case 'wipe-cancel':ui.wipe=null;render();break;
@@ -943,9 +948,15 @@ document.addEventListener('submit',function(ev){
     if(ui.modal.id){var hh=S.habits.filter(function(x){return x.id===ui.modal.id})[0];Object.assign(hh,rec);toast('Habit updated')}
     else{rec.id=uid();rec.created=todayK();S.habits.push(rec);toast('Habit added')}
     ui.modal=null;ui.confirm='';renderModal();commit();
-  }else if(f==='nameform'){
-    var nn=$('#nm').value.trim();if(nn.length>30){$('#nmerr').textContent='Keep it under 30 characters.';return}
-    S.settings.name=nn;commit();toast('Name saved');
+  }else if(f==='profform'){
+    var nn=$('#nm').value.trim(),hv=$('#ht').value.trim(),wv=$('#wt').value.trim(),pe={},hn=null,wn=null;
+    if(nn.length>30)pe.nm='Keep it under 30 characters.';
+    if(hv!==''){hn=Number(hv);if(!(hn>=50&&hn<=260))pe.ht='Enter a height between 50 and 260 cm.'}
+    if(wv!==''){wn=Number(wv);if(!(wn>=20&&wn<=400))pe.wt='Enter a weight between 20 and 400 kg.'}
+    $('#nmerr').textContent=pe.nm||'';$('#hterr').textContent=pe.ht||'';$('#wterr').textContent=pe.wt||'';
+    if(pe.nm||pe.ht||pe.wt)return;
+    S.settings.name=nn;S.settings.height=hn===null?null:Math.round(hn*10)/10;S.settings.weight=wn===null?null:Math.round(wn*10)/10;
+    commit();toast('Profile saved');
   }
 });
 document.addEventListener('change',function(ev){
