@@ -50,7 +50,7 @@
         }
     </script>
 
-    <!-- Style Overrides for Premium Glassmorphism -->
+    <!-- Style Overrides -->
     <style>
         body { 
             background-color: #030303; 
@@ -141,14 +141,14 @@
     <!-- Application Wrapper -->
     <div id="app-container" class="flex w-full min-h-screen opacity-0 hidden">
         
-        <!-- Sidebar Navigation -->
-        <nav class="w-full md:w-64 glass-panel md:min-h-screen flex flex-col justify-between p-6 z-40 relative md:fixed border-r border-b-0 md:border-b border-white/5">
+        <!-- Sidebar Navigation (Fixed height for desktop) -->
+        <nav class="w-full md:w-64 glass-panel md:fixed md:inset-y-0 md:left-0 flex flex-col justify-between p-6 z-40 border-r border-b-0 md:border-b-0 border-white/5">
             <div>
                 <h2 class="font-display text-2xl tracking-[0.2em] silver-text mb-12 hidden md:block">AXIOM</h2>
                 <div class="flex md:flex-col gap-2 overflow-x-auto md:overflow-visible no-scrollbar pb-2 md:pb-0">
                     <button onclick="nav('today')" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-zinc-500 hover:text-white hover:bg-white/5 transition-all text-sm font-medium" data-target="today"><i data-lucide="sun"></i> Today</button>
-                    <button onclick="nav('habits')" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-zinc-500 hover:text-white hover:bg-white/5 transition-all text-sm font-medium" data-target="habits"><i data-lucide="list-todo"></i> Habits</button>
-                    <button onclick="nav('balance')" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-zinc-500 hover:text-white hover:bg-white/5 transition-all text-sm font-medium" data-target="balance"><i data-lucide="hexagon"></i> Balance</button>
+                    <button onclick="nav('habits')" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-zinc-500 hover:text-white hover:bg-white/5 transition-all text-sm font-medium" data-target="habits"><i data-lucide="list-todo"></i> Routines</button>
+                    <button onclick="nav('balance')" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-zinc-500 hover:text-white hover:bg-white/5 transition-all text-sm font-medium" data-target="balance"><i data-lucide="line-chart"></i> Analytics</button>
                     <button onclick="nav('settings')" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-zinc-500 hover:text-white hover:bg-white/5 transition-all text-sm font-medium" data-target="settings"><i data-lucide="settings"></i> Settings</button>
                 </div>
             </div>
@@ -167,7 +167,7 @@
         </nav>
 
         <!-- Main Content Area -->
-        <main class="flex-1 md:ml-64 p-6 md:p-12 lg:px-24 max-w-7xl mx-auto w-full pb-24 md:pb-12">
+        <main class="flex-1 md:ml-64 p-6 md:p-12 lg:px-24 max-w-7xl mx-auto w-full pb-24 md:pb-12 min-h-screen">
             
             <!-- TODAY VIEW -->
             <section id="view-today" class="view-section active">
@@ -217,33 +217,59 @@
                 <div id="habits-list" class="space-y-3"></div>
             </section>
 
-            <!-- BALANCE VIEW -->
+            <!-- BALANCE / ANALYTICS VIEW -->
             <section id="view-balance" class="view-section">
                 <header class="mb-10">
-                    <h2 class="text-3xl md:text-4xl font-display font-light silver-text mb-2">Life Alignment</h2>
-                    <p class="text-zinc-500 text-sm">Real-time analysis of your personal dimensions based on fractional routine completion.</p>
+                    <h2 class="text-3xl md:text-4xl font-display font-light silver-text mb-2">Analytics & Alignment</h2>
+                    <p class="text-zinc-500 text-sm">Real-time analysis of your personal dimensions and physical metrics.</p>
                 </header>
                 
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <div class="lg:col-span-2 glass-panel p-8 rounded-3xl flex items-center justify-center relative overflow-hidden min-h-[450px]">
+                <!-- TOP SECTION: Radar & Overall Alignment -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+                    <div class="lg:col-span-2 glass-panel p-8 rounded-3xl flex items-center justify-center relative overflow-hidden min-h-[400px]">
                         <div class="absolute inset-0 bg-grid opacity-30 pointer-events-none"></div>
                         <div class="absolute inset-6 rounded-full border border-white/[0.03] pointer-events-none"></div>
                         <div class="absolute inset-12 rounded-full border border-white/[0.02] pointer-events-none"></div>
-                        <div class="relative z-10 w-full max-w-[400px]">
+                        <div class="relative z-10 w-full max-w-[350px]">
                             <canvas id="balanceChart"></canvas>
                         </div>
                     </div>
                     
                     <div class="flex flex-col gap-6">
-                        <div class="glass-panel p-6 rounded-3xl relative overflow-hidden flex flex-col justify-center text-center h-48">
+                        <div class="glass-panel p-6 rounded-3xl relative overflow-hidden flex flex-col justify-center text-center h-40">
                             <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-zinc-800 via-white to-zinc-800"></div>
-                            <p class="text-zinc-500 text-xs uppercase tracking-[0.2em] font-medium mb-3">Overall Score</p>
-                            <h3 class="text-6xl font-display font-light silver-text tracking-tight" id="overall-score">0</h3>
-                            <p class="text-xs text-zinc-400 mt-4 leading-relaxed px-2" id="balance-insight">Gathering data to determine your alignment.</p>
+                            <p class="text-zinc-500 text-xs uppercase tracking-[0.2em] font-medium mb-2">Overall Score</p>
+                            <h3 class="text-5xl font-display font-light silver-text tracking-tight" id="overall-score">0</h3>
+                            <p class="text-[11px] text-zinc-400 mt-3 leading-relaxed px-2" id="balance-insight">Gathering data to determine your alignment.</p>
                         </div>
-                        <div class="glass-panel p-6 rounded-3xl flex-1 flex flex-col">
-                            <h3 class="text-xs font-medium text-zinc-500 uppercase tracking-[0.1em] mb-6 border-b border-white/5 pb-4">Dimension Metrics</h3>
-                            <div id="category-scores" class="space-y-5 flex-1 justify-center flex flex-col"></div>
+                        <div class="glass-panel p-6 rounded-3xl flex-1 flex flex-col justify-center">
+                            <h3 class="text-xs font-medium text-zinc-500 uppercase tracking-[0.1em] mb-4 border-b border-white/5 pb-3">Dimension Metrics</h3>
+                            <div id="category-scores" class="space-y-4"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- BOTTOM SECTION: Vitals History -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Weight Chart -->
+                    <div class="glass-panel p-6 rounded-3xl flex flex-col h-[300px]">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-white font-medium text-sm flex items-center gap-2"><i data-lucide="activity" class="w-4 h-4 text-zinc-400"></i> Weight History</h3>
+                            <span class="text-xs text-zinc-500 bg-black/40 px-2 py-1 rounded" id="current-weight-display">--</span>
+                        </div>
+                        <div class="flex-1 relative w-full h-full">
+                            <canvas id="weightChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Height Chart -->
+                    <div class="glass-panel p-6 rounded-3xl flex flex-col h-[300px]">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-white font-medium text-sm flex items-center gap-2"><i data-lucide="ruler" class="w-4 h-4 text-zinc-400"></i> Height History</h3>
+                            <span class="text-xs text-zinc-500 bg-black/40 px-2 py-1 rounded" id="current-height-display">--</span>
+                        </div>
+                        <div class="flex-1 relative w-full h-full">
+                            <canvas id="heightChart"></canvas>
                         </div>
                     </div>
                 </div>
@@ -265,25 +291,40 @@
                         </div>
                         <h3 class="text-white font-medium mb-6 flex items-center gap-2 text-lg"><i data-lucide="user" class="w-5 h-5 text-zinc-400"></i> Profile & Vitals</h3>
                         
-                        <div class="space-y-5 max-w-md relative z-10">
+                        <div class="space-y-6 max-w-xl relative z-10">
                             <div>
                                 <label class="block text-xs font-medium tracking-wide text-zinc-400 uppercase mb-2">Custom Display Name</label>
                                 <input type="text" id="profile-username" class="w-full glass-input p-3.5 rounded-xl text-sm" placeholder="How should AXIOM address you?">
                             </div>
                             
-                            <div class="grid grid-cols-2 gap-4">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <!-- Weight Input -->
                                 <div>
-                                    <label class="block text-xs font-medium tracking-wide text-zinc-400 uppercase mb-2">Height</label>
-                                    <input type="text" id="profile-height" class="w-full glass-input p-3.5 rounded-xl text-sm" placeholder="e.g., 180 cm / 5'11&quot;">
+                                    <label class="block text-xs font-medium tracking-wide text-zinc-400 uppercase mb-2">Weight Tracker</label>
+                                    <div class="flex gap-2">
+                                        <input type="number" step="0.1" id="profile-weight-val" class="w-full glass-input p-3.5 rounded-xl text-sm" placeholder="e.g., 75.5">
+                                        <select id="profile-weight-unit" class="w-24 glass-input p-3.5 rounded-xl text-sm appearance-none cursor-pointer text-center">
+                                            <option value="kg">kg</option>
+                                            <option value="lbs">lbs</option>
+                                        </select>
+                                    </div>
                                 </div>
+                                
+                                <!-- Height Input -->
                                 <div>
-                                    <label class="block text-xs font-medium tracking-wide text-zinc-400 uppercase mb-2">Weight</label>
-                                    <input type="text" id="profile-weight" class="w-full glass-input p-3.5 rounded-xl text-sm" placeholder="e.g., 75 kg / 165 lbs">
+                                    <label class="block text-xs font-medium tracking-wide text-zinc-400 uppercase mb-2">Height Tracker</label>
+                                    <div class="flex gap-2">
+                                        <input type="number" step="0.1" id="profile-height-val" class="w-full glass-input p-3.5 rounded-xl text-sm" placeholder="e.g., 180">
+                                        <select id="profile-height-unit" class="w-24 glass-input p-3.5 rounded-xl text-sm appearance-none cursor-pointer text-center">
+                                            <option value="cm">cm</option>
+                                            <option value="in">in</option>
+                                        </select>
+                                    </div>
                                 </div>
                             </div>
                             
                             <button onclick="saveProfile()" class="bg-white/10 hover:bg-white/20 border border-white/5 text-white px-5 py-2.5 rounded-xl text-sm font-medium transition mt-2 flex items-center gap-2">
-                                <i data-lucide="save" class="w-4 h-4"></i> Save Profile
+                                <i data-lucide="save" class="w-4 h-4"></i> Save Profile Data
                             </button>
                         </div>
                     </div>
@@ -413,12 +454,16 @@
         let appData = { 
             habits: [], 
             logs: {},
-            profile: { username: '', height: '', weight: '' }
+            profile: { username: '', height: { val: '', unit: 'cm' }, weight: { val: '', unit: 'kg' } },
+            vitalsHistory: { height: {}, weight: {} }
         };
+        
         let currentUser = null;
         let syncTimeout = null;
         const categories = ["Health", "Studies", "Career", "Finances", "Relationships"];
         let radarChart = null;
+        let chartWeight = null;
+        let chartHeight = null;
 
         const getTodayStr = () => {
             const d = new Date();
@@ -465,7 +510,12 @@
                     const parsed = JSON.parse(saved);
                     appData.habits = Array.isArray(parsed.habits) ? parsed.habits : [];
                     appData.logs = typeof parsed.logs === 'object' && parsed.logs !== null ? parsed.logs : {};
-                    appData.profile = parsed.profile || { username: '', height: '', weight: '' };
+                    
+                    appData.profile = parsed.profile || { username: '', height: {val:'', unit:'cm'}, weight: {val:'', unit:'kg'} };
+                    if(typeof appData.profile.height === 'string') appData.profile.height = {val: appData.profile.height, unit: 'cm'};
+                    if(typeof appData.profile.weight === 'string') appData.profile.weight = {val: appData.profile.weight, unit: 'kg'};
+                    
+                    appData.vitalsHistory = parsed.vitalsHistory || { height: {}, weight: {} };
                 } catch(e) { console.error("Error loading local data", e); }
             }
         }
@@ -491,6 +541,7 @@
                     habits: appData.habits,
                     logs: appData.logs,
                     profile: appData.profile,
+                    vitalsHistory: appData.vitalsHistory,
                     lastUpdated: firebase.database.ServerValue.TIMESTAMP
                 });
                 updateSyncUI('System Synced', true);
@@ -518,7 +569,8 @@
                     if (cloudData) {
                         appData.habits = cloudData.habits || [];
                         appData.logs = cloudData.logs || {};
-                        appData.profile = cloudData.profile || { username: '', height: '', weight: '' };
+                        appData.profile = cloudData.profile || { username: '', height: {val:'', unit:'cm'}, weight: {val:'', unit:'kg'} };
+                        appData.vitalsHistory = cloudData.vitalsHistory || { height: {}, weight: {} };
                         localStorage.setItem('axiom_data', JSON.stringify(appData));
                         updateSyncUI('System Synced', true);
                     } else {
@@ -546,12 +598,15 @@
         function handleLogout() { auth.signOut(); }
 
         function clearLocalData() {
+            // Re-added the prompt check
             if(confirm("Wipe local database? Data will restore from cloud on next login if previously synced.")) {
                 localStorage.removeItem('axiom_data');
-                appData = { habits: [], logs: {}, profile: { username: '', height: '', weight: '' } };
+                appData = { habits: [], logs: {}, profile: { username: '', height: {val:'', unit:'cm'}, weight: {val:'', unit:'kg'} }, vitalsHistory: {height: {}, weight: {}} };
+                
                 document.getElementById('profile-username').value = '';
-                document.getElementById('profile-height').value = '';
-                document.getElementById('profile-weight').value = '';
+                document.getElementById('profile-height-val').value = '';
+                document.getElementById('profile-weight-val').value = '';
+                
                 updateUI();
             }
         }
@@ -566,13 +621,12 @@
                     updateSyncUI('Wiping Cloud Data...', false);
                     await db.ref(`/axiom_app_data/users/${currentUser.uid}/axiom`).remove();
                     
-                    // Clear locally as well to ensure a clean slate
                     localStorage.removeItem('axiom_data');
-                    appData = { habits: [], logs: {}, profile: { username: '', height: '', weight: '' } };
+                    appData = { habits: [], logs: {}, profile: { username: '', height: {val:'', unit:'cm'}, weight: {val:'', unit:'kg'} }, vitalsHistory: {height: {}, weight: {}} };
                     
                     document.getElementById('profile-username').value = '';
-                    document.getElementById('profile-height').value = '';
-                    document.getElementById('profile-weight').value = '';
+                    document.getElementById('profile-height-val').value = '';
+                    document.getElementById('profile-weight-val').value = '';
                     
                     updateUI();
                     updateSyncUI('Cloud Data Destroyed', false);
@@ -586,15 +640,23 @@
         }
 
         function saveProfile() {
+            const hVal = document.getElementById('profile-height-val').value.trim();
+            const hUnit = document.getElementById('profile-height-unit').value;
+            const wVal = document.getElementById('profile-weight-val').value.trim();
+            const wUnit = document.getElementById('profile-weight-unit').value;
+            
             appData.profile.username = document.getElementById('profile-username').value.trim();
-            appData.profile.height = document.getElementById('profile-height').value.trim();
-            appData.profile.weight = document.getElementById('profile-weight').value.trim();
+            appData.profile.height = { val: hVal, unit: hUnit };
+            appData.profile.weight = { val: wVal, unit: wUnit };
+            
+            if(hVal) appData.vitalsHistory.height[currentDay] = parseFloat(hVal);
+            if(wVal) appData.vitalsHistory.weight[currentDay] = parseFloat(wVal);
+
             saveLocalData();
             
-            // Visual feedback for save button
             const btn = event.currentTarget;
             const originalHTML = btn.innerHTML;
-            btn.innerHTML = `<i data-lucide="check" class="w-4 h-4"></i> Saved`;
+            btn.innerHTML = `<i data-lucide="check" class="w-4 h-4"></i> Saved Data`;
             btn.classList.add('bg-green-500/20', 'text-green-400', 'border-green-500/30');
             lucide.createIcons();
             
@@ -628,7 +690,6 @@
                     catHabits.forEach(habit => {
                         totalFraction += getHabitFraction(habit, log);
                     });
-                    
                     scores[cat] = Math.max(5, Math.round((totalFraction / catHabits.length) * 100));
                 }
             });
@@ -682,7 +743,6 @@
             }
         }
 
-        // Modal Logic
         function toggleFormatFields() {
             const format = document.getElementById('habit-format').value;
             const numericFields = document.getElementById('numeric-fields');
@@ -767,17 +827,18 @@
             }
         }
 
-        // --- 7. UI RENDERING ---
+        // --- 7. UI RENDERING & CHARTS ---
         function initializeApp() {
             loadLocalData();
             
             const options = { weekday: 'long', month: 'long', day: 'numeric' };
             document.getElementById('date-display').innerText = new Date().toLocaleDateString('en-US', options);
             
-            const ctx = document.getElementById('balanceChart').getContext('2d');
             Chart.defaults.color = 'rgba(255,255,255,0.4)';
             Chart.defaults.font.family = 'Inter';
-            radarChart = new Chart(ctx, {
+            
+            const ctxRadar = document.getElementById('balanceChart').getContext('2d');
+            radarChart = new Chart(ctxRadar, {
                 type: 'radar',
                 data: {
                     labels: categories,
@@ -805,23 +866,44 @@
                         }
                     },
                     plugins: { legend: { display: false }, tooltip: { enabled: false } },
-                    animation: { duration: 800, easing: 'easeOutQuart' }
+                    animation: { duration: 800, easing: 'easeOutQuart' },
+                    maintainAspectRatio: false
                 }
             });
+
+            const ctxWeight = document.getElementById('weightChart').getContext('2d');
+            chartWeight = new Chart(ctxWeight, {
+                type: 'line',
+                data: { labels: [], datasets: [{ label: 'Weight', data: [], borderColor: '#fff', backgroundColor: 'rgba(255,255,255,0.1)', borderWidth: 2, tension: 0.4, fill: true, pointRadius: 3 }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { display: true, border: {display: false}, grid: {color: 'rgba(255,255,255,0.05)'} } } }
+            });
+
+            const ctxHeight = document.getElementById('heightChart').getContext('2d');
+            chartHeight = new Chart(ctxHeight, {
+                type: 'line',
+                data: { labels: [], datasets: [{ label: 'Height', data: [], borderColor: '#fff', backgroundColor: 'rgba(255,255,255,0.1)', borderWidth: 2, tension: 0.4, fill: true, pointRadius: 3 }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { display: true, border: {display: false}, grid: {color: 'rgba(255,255,255,0.05)'} } } }
+            });
+
             updateUI();
         }
 
         function updateUI() {
-            // Update Profile Inputs in Settings
             if (appData.profile) {
                 document.getElementById('profile-username').value = appData.profile.username || '';
-                document.getElementById('profile-height').value = appData.profile.height || '';
-                document.getElementById('profile-weight').value = appData.profile.weight || '';
+                if(appData.profile.height) {
+                    document.getElementById('profile-height-val').value = appData.profile.height.val || '';
+                    document.getElementById('profile-height-unit').value = appData.profile.height.unit || 'cm';
+                }
+                if(appData.profile.weight) {
+                    document.getElementById('profile-weight-val').value = appData.profile.weight.val || '';
+                    document.getElementById('profile-weight-unit').value = appData.profile.weight.unit || 'kg';
+                }
             }
 
             renderToday();
             renderHabits();
-            renderBalance();
+            renderBalanceAndAnalytics();
             lucide.createIcons();
         }
 
@@ -830,7 +912,6 @@
             const emptyState = document.getElementById('today-empty-state');
             const log = getLog();
             
-            // Priority: Custom Username > Google First Name > Generic
             let displayName = "Good morning.";
             if (appData.profile && appData.profile.username) {
                 displayName = `Good morning, ${appData.profile.username}.`;
@@ -922,7 +1003,7 @@
             list.innerHTML = html;
         }
 
-        function renderBalance() {
+        function renderBalanceAndAnalytics() {
             const scores = calculateScores(currentDay);
             const dataArr = categories.map(c => scores[c]);
             
@@ -967,13 +1048,45 @@
                             <span class="text-zinc-300 text-sm font-medium tracking-wide">${cat}</span>
                             <span class="text-zinc-500 text-xs font-display tracking-widest">${score}/100</span>
                         </div>
-                        <div class="w-full bg-black/60 h-2 rounded-full overflow-hidden border border-white/5 shadow-inner">
+                        <div class="w-full bg-black/60 h-1.5 rounded-full overflow-hidden border border-white/5 shadow-inner">
                             <div class="h-full bg-gradient-to-r from-zinc-600 to-white rounded-full transition-all duration-1000 ease-out" style="width: ${width}%"></div>
                         </div>
                     </div>
                 `;
             });
             scoreContainer.innerHTML = html;
+
+            if (!appData.vitalsHistory) appData.vitalsHistory = { height: {}, weight: {} };
+            
+            const wDates = Object.keys(appData.vitalsHistory.weight).sort();
+            const wData = wDates.map(date => appData.vitalsHistory.weight[date]);
+            const wUnit = appData.profile?.weight?.unit || 'kg';
+            
+            if (wDates.length > 0) {
+                chartWeight.data.labels = wDates;
+                chartWeight.data.datasets[0].data = wData;
+                document.getElementById('current-weight-display').innerText = `${wData[wData.length-1]} ${wUnit}`;
+            } else {
+                chartWeight.data.labels = [];
+                chartWeight.data.datasets[0].data = [];
+                document.getElementById('current-weight-display').innerText = `-- ${wUnit}`;
+            }
+            chartWeight.update();
+
+            const hDates = Object.keys(appData.vitalsHistory.height).sort();
+            const hData = hDates.map(date => appData.vitalsHistory.height[date]);
+            const hUnit = appData.profile?.height?.unit || 'cm';
+            
+            if (hDates.length > 0) {
+                chartHeight.data.labels = hDates;
+                chartHeight.data.datasets[0].data = hData;
+                document.getElementById('current-height-display').innerText = `${hData[hData.length-1]} ${hUnit}`;
+            } else {
+                chartHeight.data.labels = [];
+                chartHeight.data.datasets[0].data = [];
+                document.getElementById('current-height-display').innerText = `-- ${hUnit}`;
+            }
+            chartHeight.update();
         }
 
         // --- 8. NAVIGATION & ACCOUNT UI ---
@@ -990,6 +1103,12 @@
                     btn.classList.add('text-zinc-500');
                 }
             });
+            
+            if(viewId === 'balance') {
+                if(radarChart) radarChart.resize();
+                if(chartWeight) chartWeight.resize();
+                if(chartHeight) chartHeight.resize();
+            }
         }
 
         function updateAccountUI() {
@@ -1002,7 +1121,6 @@
                 signedOutDiv.classList.add('hidden');
                 signedInDiv.classList.remove('hidden');
                 
-                // Show Custom Name in Settings if it exists, otherwise fallback to Google Name
                 const displayInSettings = (appData.profile && appData.profile.username) ? 
                                            appData.profile.username : 
                                            (currentUser.displayName || 'AXIOM User');
