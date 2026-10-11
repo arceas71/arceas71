@@ -246,16 +246,11 @@ h1,h2,h3,p{margin:0}
 @keyframes glow{from{opacity:0;transform:scale(.85)}to{opacity:1;transform:none}}
 #splash.out{opacity:0;visibility:hidden;pointer-events:none}
 .vig{position:absolute;inset:0;background:radial-gradient(75% 65% at 50% 50%,transparent 30%,rgba(0,0,0,.85))}
-.streak{position:absolute;left:0;width:100%;height:1px;opacity:0;background:linear-gradient(90deg,transparent,rgba(230,234,242,.85),transparent);animation:sweep 2.1s cubic-bezier(.5,.1,.3,1) forwards}
-.s1{top:46%;animation-delay:.2s}.s2{top:56%;animation-delay:.75s}
-@keyframes sweep{0%{transform:translateX(-60%) scaleX(.4);opacity:0}35%{opacity:.85}100%{transform:translateX(60%) scaleX(1);opacity:0}}
 .splashc{position:relative;text-align:center;padding:0 16px;transition:opacity .6s ease,transform .8s ease,filter .6s ease}
 #splash.out .splashc{opacity:0;transform:scale(1.07);filter:blur(5px)}
 .wm{display:flex;justify-content:center;font:400 clamp(34px,8.5vw,64px)/1 var(--display);letter-spacing:.26em;padding-left:.26em;color:#e6e9ee}
 .wm span{opacity:0;filter:blur(16px);transform:translateY(12px) scale(1.08);animation:letter 1.2s cubic-bezier(.2,.7,.2,1) forwards;animation-delay:calc(.55s + var(--i)*.13s)}
 @keyframes letter{to{opacity:1;filter:blur(0);transform:none}}
-.rule{display:block;height:1px;width:min(64vw,300px);margin:24px auto 0;background:linear-gradient(90deg,transparent,rgba(224,229,238,.85),transparent);transform:scaleX(0);animation:rule 1.1s cubic-bezier(.6,.1,.2,1) 1.55s forwards}
-@keyframes rule{to{transform:scaleX(1)}}
 
 /* phone nav */
 @media (max-width:760px){
@@ -275,6 +270,9 @@ h1,h2,h3,p{margin:0}
   *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
   .fog{animation:none}
 }
+.unitrow{display:flex;gap:8px}
+.unitrow input{min-width:0;flex:1}
+.field .unitrow select{width:auto;flex:none}
 .wipe{display:grid;gap:6px;padding:14px 0;border-bottom:1px solid var(--line)}
 .wipe:last-child{border-bottom:0;padding-bottom:0}
 .wipebox{margin-top:6px;border:1px solid rgba(217,154,154,.35);border-radius:14px;padding:12px;background:rgba(217,154,154,.05)}
@@ -288,10 +286,8 @@ h1,h2,h3,p{margin:0}
 
 <div id="splash" aria-hidden="true">
   <div class="vig"></div>
-  <div class="streak s1"></div><div class="streak s2"></div>
   <div class="splashc">
     <div class="wm"><span style="--i:0">A</span><span style="--i:1">X</span><span style="--i:2">I</span><span style="--i:3">O</span><span style="--i:4">M</span></div>
-    <i class="rule"></i>
   </div>
 </div>
 
@@ -360,7 +356,7 @@ function shortDate(k){return pd(k).toLocaleDateString(undefined,{day:'numeric',m
 function uid(){return 'h'+Date.now().toString(36)+Math.floor(Math.random()*1e5).toString(36)}
 function listOf(x){return Array.isArray(x)?x.filter(Boolean):(x&&typeof x==='object'?Object.keys(x).map(function(k){return x[k]}):[])}
 function num(x,d){if(x===null||x===undefined||x==='')return d;x=Number(x);return isFinite(x)?x:d}
-function rangeNum(x,lo,hi){x=num(x,null);return (x!==null&&x>=lo&&x<=hi)?Math.round(x*10)/10:null}
+function rangeNum(x,lo,hi){x=num(x,null);return (x!==null&&x>=lo&&x<=hi)?Math.round(x*100)/100:null}
 function isKey(k){return typeof k==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(k)}
 
 /* =====================================================================
@@ -370,7 +366,7 @@ function isKey(k){return typeof k==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(k)}
            meta:{owner,dirty,base,collapsed,intro}}   (meta never leaves this device)
    ===================================================================== */
 var memOnly=false;
-function emptyState(owner){return {v:VERSION,habits:[],log:{},history:[],savings:[],settings:{name:'',height:null,weight:null},updatedAt:0,meta:{owner:owner||null,dirty:false,base:0,collapsed:false,intro:true,copyAsked:false}}}
+function emptyState(owner){return {v:VERSION,habits:[],log:{},history:[],savings:[],settings:{name:'',height:null,weight:null,hu:'cm',wu:'kg'},updatedAt:0,meta:{owner:owner||null,dirty:false,base:0,collapsed:false,intro:true,copyAsked:false}}}
 function isBlank(s){return !s.habits.length&&!s.history.length&&!s.savings.length&&!Object.keys(s.log).length}
 
 /* Validate and migrate any incoming object (old local data, cloud data, imports). Never throws. */
@@ -418,7 +414,7 @@ function normalise(raw){
   s.savings=demo?[]:listOf(o.savings).map(function(x){
     if(!x||!isKey(x.date))return null;var a=num(x.amount,0);return a>0?{date:x.date,amount:a}:null;
   }).filter(Boolean);
-  s.settings={name:String(oldSet.name||'').slice(0,30),height:rangeNum(oldSet.height,50,260),weight:rangeNum(oldSet.weight,20,400)};
+  s.settings={name:String(oldSet.name||'').slice(0,30),height:rangeNum(oldSet.height,50,260),weight:rangeNum(oldSet.weight,20,400),hu:oldSet.hu==='ft'?'ft':'cm',wu:oldSet.wu==='lb'?'lb':'kg'};
   s.updatedAt=num(o.updatedAt,0);
   if(o.scores&&typeof o.scores==='object'&&!o.legacy)s.legacy={scores:o.scores}; // old manual sliders are kept, no longer used
   else if(o.legacy)s.legacy=o.legacy;
@@ -428,7 +424,7 @@ function normalise(raw){
     intro:m.intro!==undefined?!!m.intro:oldSet.intro!==false,copyAsked:!!m.copyAsked};
   return s;
 }
-function exportable(st){return {v:VERSION,habits:st.habits,log:st.log,history:st.history,savings:st.savings,settings:{name:st.settings.name,height:st.settings.height,weight:st.settings.weight},updatedAt:st.updatedAt}}
+function exportable(st){return {v:VERSION,habits:st.habits,log:st.log,history:st.history,savings:st.savings,settings:{name:st.settings.name,height:st.settings.height,weight:st.settings.weight,hu:st.settings.hu,wu:st.settings.wu},updatedAt:st.updatedAt}}
 function persist(){try{localStorage.setItem(S.meta.owner?ACC+S.meta.owner:KEY,JSON.stringify(S));memOnly=false}catch(e){memOnly=true}}  // device store = KEY, account cache = ACC+uid
 function loadLocal(){
   var txt=null,raw=null;
@@ -634,6 +630,13 @@ function wipeBlock(kind){
   return h+'<div class="wipebox"><label for="wipe-text">Type DELETE to confirm. This cannot be undone.</label><input id="wipe-text" autocomplete="off" autocapitalize="characters" spellcheck="false"><div class="inline" style="margin-top:10px"><button class="btn sm danger" id="wipe-go" data-act="wipe-go" disabled>'+(isD?'Delete device data':'Delete account data')+'</button><button class="btn sm ghost" data-act="wipe-cancel">Cancel</button></div><div class="err" id="wipeerr"></div></div></div>';
 }
 
+function showH(){
+  var h=S.settings.height;if(h===null)return {a:'',b:''};
+  if(S.settings.hu==='cm')return {a:String(Math.round(h*10)/10),b:''};
+  var ti=h/2.54,f=Math.floor(ti/12),i=Math.round((ti-f*12)*10)/10;if(i>=12){f++;i=0}
+  return {a:String(f),b:String(i)};
+}
+function showW(){var w=S.settings.weight;if(w===null)return '';return String(Math.round((S.settings.wu==='lb'?w*2.20462:w)*10)/10)}
 function bmiLine(){
   var h=S.settings.height,w=S.settings.weight;
   if(!h||!w)return '<p class="sub" style="margin-top:6px">Add both height and weight to see your BMI.</p>';
@@ -646,7 +649,8 @@ function vProfile(){
   var st=S.settings;
   return '<div class="head"><div><p class="eyebrow">You</p><h1 class="title">Profile</h1></div></div>'+
    '<section class="panel"><form id="profform" novalidate><div class="field"><label for="nm">Name</label><input id="nm" maxlength="30" value="'+esc(st.name)+'" placeholder="Used in your greeting" autocomplete="off"><div class="err" id="nmerr"></div></div>'+
-   '<div class="fgrid"><div class="field"><label for="ht">Height (cm)</label><input id="ht" type="number" inputmode="decimal" min="50" max="260" step="any" value="'+(st.height===null?'':esc(st.height))+'"><div class="err" id="hterr"></div></div><div class="field"><label for="wt">Weight (kg)</label><input id="wt" type="number" inputmode="decimal" min="20" max="400" step="any" value="'+(st.weight===null?'':esc(st.weight))+'"><div class="err" id="wterr"></div></div></div>'+
+   '<div class="fgrid"><div class="field"><label for="ht">Height</label><div class="unitrow">'+(st.hu==='cm'?'<input id="ht" type="number" inputmode="decimal" step="any" value="'+esc(showH().a)+'">':'<input id="ht" type="number" inputmode="numeric" step="1" placeholder="ft" aria-label="Feet" value="'+esc(showH().a)+'"><input id="hi" type="number" inputmode="decimal" step="any" placeholder="in" aria-label="Inches" value="'+esc(showH().b)+'">')+'<select id="hu" aria-label="Height unit"><option value="cm"'+(st.hu==='cm'?' selected':'')+'>cm</option><option value="ft"'+(st.hu==='ft'?' selected':'')+'>ft + in</option></select></div><div class="err" id="hterr"></div></div>'+
+   '<div class="field"><label for="wt">Weight</label><div class="unitrow"><input id="wt" type="number" inputmode="decimal" step="any" value="'+esc(showW())+'"><select id="wu" aria-label="Weight unit"><option value="kg"'+(st.wu==='kg'?' selected':'')+'>kg</option><option value="lb"'+(st.wu==='lb'?' selected':'')+'>lb</option></select></div><div class="err" id="wterr"></div></div></div>'+
    '<button class="btn" type="submit">Save profile</button></form>'+bmiLine()+'</section>'+
    '<div style="margin:36px 0 16px"><p class="eyebrow">Preferences and data</p><h2 class="title" style="font-size:30px;margin-top:4px">Settings</h2></div>'+
    '<div class="grid g2" style="align-items:start"><div class="stack"><section class="panel" id="acctpanel">'+acctPanel()+'</section>'+
@@ -949,13 +953,19 @@ document.addEventListener('submit',function(ev){
     else{rec.id=uid();rec.created=todayK();S.habits.push(rec);toast('Habit added')}
     ui.modal=null;ui.confirm='';renderModal();commit();
   }else if(f==='profform'){
-    var nn=$('#nm').value.trim(),hv=$('#ht').value.trim(),wv=$('#wt').value.trim(),pe={},hn=null,wn=null;
+    var nn=$('#nm').value.trim(),pe={},hn=null,wn=null,hu=S.settings.hu,wu=S.settings.wu;
     if(nn.length>30)pe.nm='Keep it under 30 characters.';
-    if(hv!==''){hn=Number(hv);if(!(hn>=50&&hn<=260))pe.ht='Enter a height between 50 and 260 cm.'}
-    if(wv!==''){wn=Number(wv);if(!(wn>=20&&wn<=400))pe.wt='Enter a weight between 20 and 400 kg.'}
+    var hv=$('#ht').value.trim();
+    if(hu==='cm'){if(hv!==''){hn=Number(hv);if(!(hn>=50&&hn<=260))pe.ht='Enter a height between 50 and 260 cm.'}}
+    else{var iv=$('#hi').value.trim();
+      if(hv!==''||iv!==''){var ft=Number(hv===''?0:hv),inch=Number(iv===''?0:iv);hn=(ft*12+inch)*2.54;
+        if(!(ft>=0&&inch>=0&&hn>=50&&hn<=260))pe.ht='Enter a height between 1 ft 8 in and 8 ft 6 in.'}}
+    var wv=$('#wt').value.trim();
+    if(wv!==''){var wnum=Number(wv);wn=wu==='kg'?wnum:wnum/2.20462;
+      if(!(wnum>0&&wn>=20&&wn<=400))pe.wt=wu==='kg'?'Enter a weight between 20 and 400 kg.':'Enter a weight between 45 and 880 lb.'}
     $('#nmerr').textContent=pe.nm||'';$('#hterr').textContent=pe.ht||'';$('#wterr').textContent=pe.wt||'';
     if(pe.nm||pe.ht||pe.wt)return;
-    S.settings.name=nn;S.settings.height=hn===null?null:Math.round(hn*10)/10;S.settings.weight=wn===null?null:Math.round(wn*10)/10;
+    S.settings.name=nn;S.settings.height=hn===null?null:Math.round(hn*100)/100;S.settings.weight=wn===null?null:Math.round(wn*100)/100;
     commit();toast('Profile saved');
   }
 });
@@ -963,6 +973,7 @@ document.addEventListener('change',function(ev){
   var t=ev.target;
   if(t.id==='f-type'){$('#countfields').hidden=t.value!=='count'}
   else if(t.id==='introset'){S.meta.intro=t.checked;persist()}
+  else if(t.id==='hu'||t.id==='wu'){S.settings[t.id]=t.value;commit()}
 });
 document.addEventListener('input',function(ev){
   var t=ev.target;
