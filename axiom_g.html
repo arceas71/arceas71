@@ -20,7 +20,8 @@
                         'fade-out': 'fadeOut 1.2s cubic-bezier(0.5, 0, 0.2, 1) forwards',
                         'rise-in': 'riseIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards',
                         'scan': 'scan 3s ease-in-out infinite',
-                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite'
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'fade-in-up': 'fadeInUp 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards'
                     },
                     keyframes: {
                         blurIn: {
@@ -38,6 +39,10 @@
                         scan: {
                             '0%, 100%': { transform: 'translateY(-100px)', opacity: '0' },
                             '50%': { transform: 'translateY(100px)', opacity: '1' }
+                        },
+                        fadeInUp: {
+                            '0%': { opacity: '0', transform: 'translateY(10px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' }
                         }
                     }
                 }
@@ -116,11 +121,26 @@
 
     <!-- Cinematic Splash Screen -->
     <div id="splash" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#030303] pointer-events-none overflow-hidden">
+        <!-- Deep Background Elements -->
         <div class="absolute inset-0 bg-grid"></div>
-        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-white/[0.03] rounded-full blur-[100px] animate-pulse-slow"></div>
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-white/[0.02] rounded-full blur-[120px] animate-pulse-slow"></div>
+        
+        <!-- HUD Calibration Corners -->
+        <div class="absolute top-12 left-12 w-12 h-12 border-t-2 border-l-2 border-white/[0.15] opacity-0 animate-fade-in-up" style="animation-delay: 0.3s;"></div>
+        <div class="absolute top-12 right-12 w-12 h-12 border-t-2 border-r-2 border-white/[0.15] opacity-0 animate-fade-in-up" style="animation-delay: 0.3s;"></div>
+        <div class="absolute bottom-12 left-12 w-12 h-12 border-b-2 border-l-2 border-white/[0.15] opacity-0 animate-fade-in-up" style="animation-delay: 0.3s;"></div>
+        <div class="absolute bottom-12 right-12 w-12 h-12 border-b-2 border-r-2 border-white/[0.15] opacity-0 animate-fade-in-up" style="animation-delay: 0.3s;"></div>
+
+        <!-- Typography & Tagline -->
         <div class="relative z-10 flex flex-col items-center">
             <h1 class="font-display text-5xl md:text-7xl font-light silver-text animate-blur-in ml-4">AXIOM</h1>
-            <div class="absolute top-1/2 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-white/30 to-transparent animate-scan mix-blend-overlay"></div>
+            
+            <p class="text-[10px] md:text-xs text-zinc-500 tracking-[0.5em] md:tracking-[0.8em] uppercase opacity-0 animate-fade-in-up mt-4 md:mt-6 ml-2 font-medium">
+                Live by design
+            </p>
+            
+            <!-- Scanning Light -->
+            <div class="absolute top-[40%] left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-white/30 to-transparent animate-scan mix-blend-overlay"></div>
         </div>
     </div>
 
@@ -389,6 +409,7 @@
                 app.classList.add('opacity-100');
                 initializeApp();
             } else {
+                // Increased wait time slightly to enjoy the staggered tagline fade-in
                 setTimeout(() => {
                     splash.style.animation = 'fadeOut 1.2s cubic-bezier(0.5, 0, 0.2, 1) forwards';
                     setTimeout(() => {
@@ -397,7 +418,7 @@
                         app.classList.add('animate-rise-in');
                         initializeApp();
                     }, 1200);
-                }, 2800);
+                }, 3200);
             }
         });
 
@@ -493,18 +514,15 @@
         }
 
         // --- 6. FRACTIONAL SCORING LOGIC ---
-        // Calculate the fractional completion of a specific habit
         function getHabitFraction(habit, log) {
             if (habit.format === 'numeric') {
                 const current = log.progress[habit.id] || 0;
-                // e.g. 1 out of 8 glasses = 0.125
                 return Math.min(current / habit.target, 1);
             } else {
                 return log.completed.includes(habit.id) ? 1 : 0;
             }
         }
 
-        // Calculate scores based on the *fraction* of tasks completed
         function calculateScores(dateStr) {
             const log = appData.logs[dateStr] || { completed: [], progress: {} };
             let scores = {};
@@ -512,14 +530,13 @@
             categories.forEach(cat => {
                 const catHabits = appData.habits.filter(h => h.category === cat);
                 if (catHabits.length === 0) {
-                    scores[cat] = 5; // Baseline if no habits exist in category
+                    scores[cat] = 5; 
                 } else {
                     let totalFraction = 0;
                     catHabits.forEach(habit => {
                         totalFraction += getHabitFraction(habit, log);
                     });
                     
-                    // The category score is the average of the fractions (x100)
                     scores[cat] = Math.max(5, Math.round((totalFraction / catHabits.length) * 100));
                 }
             });
@@ -557,11 +574,9 @@
             const log = getLog();
             
             if (habit.format === 'numeric') {
-                // If it's already full, reset it to 0
                 if (log.progress[habitId] >= habit.target) {
                     updateProgress(habitId, -habit.target, null);
                 } else {
-                    // Otherwise just increment by 1
                     updateProgress(habitId, 1, null);
                 }
             } else {
@@ -733,8 +748,6 @@
 
             emptyState.classList.add('hidden');
             let html = '';
-            
-            // Calculate total daily progress fraction
             let totalFractionSum = 0;
 
             appData.habits.forEach(habit => {
@@ -775,7 +788,6 @@
             });
             container.innerHTML = html;
 
-            // Overall Daily Percentage is now fractional!
             const overallDailyPercentage = Math.round((totalFractionSum / appData.habits.length) * 100) || 0;
             document.getElementById('today-percentage').innerText = `${overallDailyPercentage}%`;
             document.getElementById('today-progress-bar').style.width = `${overallDailyPercentage}%`;
