@@ -3,379 +3,294 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AXIOM | Live by design</title>
+    <title>AXIOM</title>
     
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@200;400;600&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
-    
     <script>
         tailwind.config = {
             theme: {
                 extend: {
-                    fontFamily: {
-                        sans: ['Inter', 'system-ui', 'sans-serif'],
-                    },
-                    colors: {
-                        zinc: {
-                            950: '#09090b',
-                            900: '#18181b',
-                            800: '#27272a',
-                            700: '#3f3f46',
-                            600: '#52525b',
-                            500: '#71717a',
-                            400: '#a1a1aa',
-                            300: '#d4d4d8',
-                            200: '#e4e4e7',
-                            100: '#f4f4f5',
-                        }
-                    },
+                    fontFamily: { sans: ['Inter', 'sans-serif'], display: ['Outfit', 'sans-serif'] },
+                    colors: { glass: 'rgba(20, 20, 22, 0.65)' },
                     animation: {
-                        'spin-slow': 'spin 10s linear infinite',
-                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'blur-in': 'blurIn 2s cubic-bezier(0.2, 0.8, 0.2, 1) forwards',
+                        'fade-out': 'fadeOut 1s cubic-bezier(0.5, 0, 0.2, 1) forwards',
+                        'rise-in': 'riseIn 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards'
+                    },
+                    keyframes: {
+                        blurIn: {
+                            '0%': { filter: 'blur(12px)', opacity: '0', transform: 'scale(0.95)' },
+                            '100%': { filter: 'blur(0)', opacity: '1', transform: 'scale(1)' }
+                        },
+                        fadeOut: {
+                            '0%': { opacity: '1', transform: 'scale(1)' },
+                            '100%': { opacity: '0', transform: 'scale(1.05)', visibility: 'hidden' }
+                        },
+                        riseIn: {
+                            '0%': { opacity: '0', transform: 'translateY(20px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' }
+                        }
                     }
                 }
             }
         }
     </script>
 
+    <!-- Style Overrides for Glassmorphism -->
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500&display=swap');
-        
-        body {
-            background-color: #09090b;
-            color: #e4e4e7;
-            -webkit-font-smoothing: antialiased;
-            overflow-x: hidden;
-        }
-
-        /* Smoky Glassmorphism Utilities */
+        body { background-color: #050505; color: #e5e7eb; overflow-x: hidden; }
         .glass-panel {
-            background: rgba(24, 24, 27, 0.4);
+            background: rgba(25, 25, 25, 0.4);
             backdrop-filter: blur(16px);
             -webkit-backdrop-filter: blur(16px);
             border: 1px solid rgba(255, 255, 255, 0.08);
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
-            position: relative;
-            overflow: hidden;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+        }
+        .glass-input {
+            background: rgba(10, 10, 10, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #fff;
+        }
+        .glass-input:focus { border-color: rgba(255, 255, 255, 0.3); outline: none; }
+        .silver-text {
+            background: linear-gradient(180deg, #FFFFFF 0%, #A0A0A0 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .glow-line {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
         }
         
-        .glass-panel::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 1px;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+        /* Reduced Motion */
+        @media (prefers-reduced-motion: reduce) {
+            * { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
         }
-
+        
         /* Custom Scrollbar */
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: #52525b; }
-
-        /* Range Slider Styling */
-        input[type=range] {
-            -webkit-appearance: none;
-            width: 100%;
-            background: transparent;
-        }
-        input[type=range]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            height: 16px;
-            width: 16px;
-            border-radius: 50%;
-            background: #e4e4e7;
-            cursor: pointer;
-            margin-top: -6px;
-            box-shadow: 0 0 10px rgba(255,255,255,0.5);
-        }
-        input[type=range]::-webkit-slider-runnable-track {
-            width: 100%;
-            height: 4px;
-            cursor: pointer;
-            background: #3f3f46;
-            border-radius: 2px;
-        }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
         
-        /* View Transitions */
-        @keyframes fadeInUp {
-            0% { opacity: 0; transform: translateY(20px); }
-            100% { opacity: 1; transform: translateY(0); }
-        }
-        .view-section {
-            display: none;
-            opacity: 0;
-            transition: opacity 0.5s ease-in-out;
-        }
-        .view-section.active {
-            display: block;
-            opacity: 1;
-            animation: fadeInUp 0.6s ease-out forwards;
-        }
-
-        /* SVG Circular Progress */
-        .progress-ring__circle {
-            transition: stroke-dashoffset 0.8s cubic-bezier(0.16, 1, 0.3, 1);
-            transform: rotate(-90deg);
-            transform-origin: 50% 50%;
-        }
+        /* View transitions */
+        .view-section { display: none; }
+        .view-section.active { display: block; animation: riseIn 0.4s ease forwards; }
     </style>
+
+    <!-- Icons & Charts -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 </head>
-<body class="selection:bg-zinc-700 selection:text-white h-screen flex overflow-hidden">
+<body class="antialiased min-h-screen flex flex-col md:flex-row">
 
-    <div class="fixed inset-0 pointer-events-none z-0">
-        <div class="absolute top-[-10%] left-[-10%] w-[40vw] h-[40vw] bg-zinc-600/10 rounded-full blur-[120px] animate-pulse-slow"></div>
-        <div class="absolute bottom-[-20%] right-[-10%] w-[50vw] h-[50vw] bg-zinc-500/5 rounded-full blur-[150px]"></div>
+    <!-- Cinematic Splash Screen -->
+    <div id="splash" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#050505] pointer-events-none">
+        <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.03)_0%,transparent_60%)]"></div>
+        <h1 class="font-display text-5xl md:text-7xl tracking-[0.3em] font-light silver-text animate-blur-in">AXIOM</h1>
+        <div class="glow-line w-48 mt-6 animate-blur-in opacity-50"></div>
     </div>
 
-    <div id="login-screen" class="fixed inset-0 z-[60] flex flex-col items-center justify-center bg-zinc-950 transition-opacity duration-700">
-        <div class="absolute inset-0 overflow-hidden pointer-events-none">
-            <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-zinc-600/10 rounded-full blur-[100px] animate-pulse"></div>
-        </div>
+    <!-- Application Wrapper (Revealed after splash) -->
+    <div id="app-container" class="flex w-full min-h-screen opacity-0 hidden">
         
-        <div class="glass-panel rounded-3xl p-10 max-w-md w-full mx-4 relative z-10 flex flex-col items-center text-center transform transition-all duration-700 translate-y-0">
-            <i data-lucide="hexagon" class="w-12 h-12 text-zinc-300 mb-6" stroke-width="1.5"></i>
-            <h1 class="text-4xl font-extralight tracking-[0.2em] text-zinc-100 mb-2">AXIOM</h1>
-            <p class="text-zinc-500 tracking-widest text-xs uppercase mb-10">Live by design</p>
-            
-            <button onclick="window.loginWithGoogle()" class="w-full bg-zinc-100 text-zinc-950 hover:bg-white px-6 py-4 rounded-xl font-medium transition-all duration-300 flex items-center justify-center gap-3 shadow-[0_0_20px_rgba(255,255,255,0.1)] hover:shadow-[0_0_30px_rgba(255,255,255,0.2)]">
-                <svg class="w-5 h-5" viewBox="0 0 24 24">
-                    <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-                    <path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-                    <path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
-                    <path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
-                </svg>
-                Sign in with Google
-            </button>
-            <p class="text-zinc-600 text-xs mt-6">Secure authentication via Firebase</p>
-        </div>
-    </div>
-
-    <div id="splash-screen" class="fixed inset-0 z-50 hidden flex-col items-center justify-center bg-zinc-950 transition-opacity duration-1000">
-        <div class="absolute inset-0 overflow-hidden pointer-events-none">
-            <div class="absolute top-1/3 left-1/4 w-96 h-96 bg-white/5 rounded-full blur-[100px] animate-pulse"></div>
-        </div>
-        
-        <div id="splash-content" class="relative z-10 flex flex-col items-center transform transition-all duration-1000 translate-y-8 opacity-0">
-            <i data-lucide="hexagon" class="w-16 h-16 text-zinc-300 mb-6 animate-spin-slow" stroke-width="1"></i>
-            <h1 class="text-6xl md:text-8xl font-extralight tracking-[0.3em] text-transparent bg-clip-text bg-gradient-to-b from-white to-zinc-500 mb-4 ml-4">
-                AXIOM
-            </h1>
-            <p class="text-zinc-500 tracking-[0.5em] text-sm uppercase">Live by design</p>
-        </div>
-
-        <button onclick="window.skipSplash()" class="absolute bottom-12 right-12 text-zinc-600 hover:text-zinc-300 transition-colors flex items-center gap-2 text-sm tracking-wider uppercase z-20">
-            Skip sequence <i data-lucide="chevron-right" class="w-4 h-4"></i>
-        </button>
-    </div>
-
-    <div id="app-container" class="relative z-10 flex w-full h-full opacity-0 pointer-events-none transition-opacity duration-1000 hidden">
-        
-        <!-- Desktop Sidebar -->
-        <aside class="hidden md:flex flex-col w-64 border-r border-white/5 bg-black/20 backdrop-blur-md h-full z-20">
-            <div class="p-6 pb-0 flex items-center gap-3 mb-10">
-                <i data-lucide="hexagon" class="w-8 h-8 text-zinc-200" stroke-width="1.5"></i>
-                <span class="text-2xl font-light tracking-[0.2em] text-zinc-100">AXIOM</span>
-            </div>
-
-            <!-- User Profile Inject -->
-            <div class="px-6 mb-8 flex items-center gap-3">
-                <img id="sidebar-user-avatar" src="" alt="Profile" class="w-10 h-10 rounded-full border border-white/10 object-cover" onerror="this.src='https://placehold.co/40x40/18181b/e4e4e7?text=U'">
-                <div class="flex flex-col overflow-hidden">
-                    <span id="sidebar-user-name" class="text-sm text-zinc-200 truncate">Commander</span>
-                    <span class="text-[10px] text-zinc-500 uppercase tracking-widest">Active</span>
+        <!-- Sidebar Navigation -->
+        <nav class="w-full md:w-64 glass-panel md:min-h-screen flex flex-col justify-between p-6 z-40 relative md:fixed border-r border-b-0 md:border-b border-white/10">
+            <div>
+                <h2 class="font-display text-2xl tracking-[0.2em] silver-text mb-12 hidden md:block">AXIOM</h2>
+                <div class="flex md:flex-col gap-2 overflow-x-auto md:overflow-visible no-scrollbar pb-2 md:pb-0">
+                    <button onclick="nav('today')" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-zinc-400 hover:text-white hover:bg-white/5 transition-all text-sm font-medium" data-target="today"><i data-lucide="sun"></i> Today</button>
+                    <button onclick="nav('habits')" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-zinc-400 hover:text-white hover:bg-white/5 transition-all text-sm font-medium" data-target="habits"><i data-lucide="list-todo"></i> Habits</button>
+                    <button onclick="nav('balance')" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-zinc-400 hover:text-white hover:bg-white/5 transition-all text-sm font-medium" data-target="balance"><i data-lucide="hexagon"></i> Balance</button>
+                    <button onclick="nav('settings')" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-zinc-400 hover:text-white hover:bg-white/5 transition-all text-sm font-medium" data-target="settings"><i data-lucide="settings"></i> Settings</button>
                 </div>
             </div>
             
-            <nav class="space-y-2 flex-1 px-4" id="nav-desktop">
-                <!-- Nav items generated by JS -->
-            </nav>
-            
-            <div class="mt-auto p-6 border-t border-white/5">
-                <button onclick="window.logoutUser()" class="w-full flex items-center gap-3 text-zinc-500 hover:text-red-400 transition-colors text-sm tracking-wide">
-                    <i data-lucide="log-out" class="w-4 h-4"></i> Sign Out
-                </button>
-            </div>
-        </aside>
-
-        <!-- Mobile Bottom Nav -->
-        <nav class="md:hidden fixed bottom-0 left-0 w-full bg-zinc-950/90 backdrop-blur-xl border-t border-white/10 z-40 p-4 pb-safe">
-            <div class="flex justify-between items-center max-w-md mx-auto" id="nav-mobile">
-                <!-- Nav items generated by JS -->
+            <!-- Account Chip -->
+            <div class="hidden md:block mt-auto pt-6 border-t border-white/10">
+                <div id="account-chip" class="flex items-center gap-3 px-2 cursor-pointer hover:bg-white/5 p-2 rounded-xl transition" onclick="nav('settings')">
+                    <div class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center border border-white/20">
+                        <i data-lucide="user" class="w-4 h-4 text-zinc-400" id="account-icon"></i>
+                    </div>
+                    <div class="flex-1 truncate">
+                        <p class="text-xs font-medium text-zinc-200 truncate" id="account-name">Sign In</p>
+                        <p class="text-[10px] text-zinc-500" id="sync-status">Local Data Only</p>
+                    </div>
+                </div>
             </div>
         </nav>
 
         <!-- Main Content Area -->
-        <main class="flex-1 relative overflow-y-auto h-full pb-24 md:pb-0 z-10">
-            <!-- Mobile Header Profile -->
-            <header class="md:hidden flex items-center justify-between p-6 border-b border-white/5">
-                <div class="flex items-center gap-2">
-                    <i data-lucide="hexagon" class="w-6 h-6 text-zinc-200"></i>
-                    <span class="text-lg font-light tracking-widest text-zinc-100">AXIOM</span>
+        <main class="flex-1 md:ml-64 p-6 md:p-12 lg:px-24 max-w-7xl mx-auto w-full pb-24 md:pb-12">
+            
+            <!-- TODAY VIEW -->
+            <section id="view-today" class="view-section active">
+                <header class="mb-12">
+                    <p class="text-sm text-zinc-400 font-medium tracking-wider uppercase mb-2" id="date-display"></p>
+                    <h2 class="text-3xl md:text-4xl font-display font-light silver-text" id="greeting-display">Good morning.</h2>
+                </header>
+
+                <div class="glass-panel p-6 rounded-2xl mb-8 flex items-center justify-between">
+                    <div>
+                        <h3 class="text-lg font-medium text-white mb-1">Daily Progress</h3>
+                        <p class="text-sm text-zinc-400">Complete your routines to build your balance.</p>
+                    </div>
+                    <div class="text-3xl font-display text-white" id="today-percentage">0%</div>
                 </div>
-                <img id="mobile-user-avatar" src="" alt="Profile" class="w-8 h-8 rounded-full border border-white/10">
-            </header>
 
-            <div class="max-w-6xl mx-auto p-6 md:p-12" id="views-container">
+                <div class="w-full bg-white/5 h-1 rounded-full mb-10 overflow-hidden">
+                    <div id="today-progress-bar" class="h-full bg-white/40 transition-all duration-700 w-0"></div>
+                </div>
+
+                <div id="today-habits-container" class="space-y-3">
+                    <!-- Dynamic Checklist -->
+                </div>
                 
-                <div id="view-dashboard" class="view-section active space-y-8">
-                    <header class="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 gap-4">
-                        <div>
-                            <h1 class="text-4xl font-light text-zinc-100 tracking-tight">Good <span id="greeting-time">day</span>.</h1>
-                            <p class="text-zinc-400 mt-2 tracking-wide" id="current-date"></p>
-                        </div>
-                    </header>
+                <div id="today-empty-state" class="hidden text-center py-12 glass-panel rounded-2xl border-dashed border-white/20">
+                    <i data-lucide="leaf" class="w-12 h-12 text-zinc-600 mx-auto mb-4"></i>
+                    <h3 class="text-zinc-300 font-medium mb-2">No habits configured</h3>
+                    <p class="text-zinc-500 text-sm mb-6">Start building your routines in the Habits tab.</p>
+                    <button onclick="nav('habits')" class="bg-white/10 hover:bg-white/20 text-white px-6 py-2 rounded-full text-sm transition">Add Habit</button>
+                </div>
+            </section>
 
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <!-- Circular Progress Card -->
-                        <div class="glass-panel rounded-2xl p-6 flex flex-col items-center justify-center py-10">
-                            <h3 class="text-zinc-400 text-sm uppercase tracking-widest mb-6">Daily Protocol</h3>
-                            <div class="relative flex items-center justify-center w-40 h-40">
-                                <svg class="w-full h-full" viewBox="0 0 120 120">
-                                    <circle class="text-zinc-800" stroke-width="8" stroke="currentColor" fill="transparent" r="52" cx="60" cy="60" />
-                                    <circle id="progress-circle" class="text-zinc-200 progress-ring__circle" stroke-width="8" stroke-linecap="round" stroke="currentColor" fill="transparent" r="52" cx="60" cy="60" stroke-dasharray="326.72" stroke-dashoffset="326.72" />
-                                </svg>
-                                <div class="absolute flex flex-col items-center justify-center text-center">
-                                    <span class="text-3xl font-light text-white" id="progress-text">0%</span>
+            <!-- HABITS VIEW -->
+            <section id="view-habits" class="view-section">
+                <header class="mb-8 flex justify-between items-end">
+                    <div>
+                        <h2 class="text-3xl font-display font-light silver-text mb-2">Habits</h2>
+                        <p class="text-zinc-400 text-sm">Design your routines.</p>
+                    </div>
+                    <button onclick="openHabitModal()" class="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-lg text-sm transition flex items-center gap-2">
+                        <i data-lucide="plus" class="w-4 h-4"></i> Add Habit
+                    </button>
+                </header>
+
+                <div id="habits-list" class="space-y-3">
+                    <!-- Dynamic Habit Management List -->
+                </div>
+            </section>
+
+            <!-- BALANCE VIEW -->
+            <section id="view-balance" class="view-section">
+                <header class="mb-8">
+                    <h2 class="text-3xl font-display font-light silver-text mb-2">Life Balance</h2>
+                    <p class="text-zinc-400 text-sm">Automatically calculated based on your daily habit completion.</p>
+                </header>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div class="glass-panel p-8 rounded-3xl flex items-center justify-center">
+                        <canvas id="balanceChart" width="400" height="400"></canvas>
+                    </div>
+                    
+                    <div class="flex flex-col gap-4">
+                        <div class="glass-panel p-6 rounded-2xl">
+                            <h3 class="text-lg font-medium text-white mb-4">Category Scores (Today)</h3>
+                            <div id="category-scores" class="space-y-4">
+                                <!-- Dynamic Scores -->
+                            </div>
+                            <p class="mt-6 text-xs text-zinc-500">Categories with no active habits default to a neutral baseline (5/100).</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SETTINGS VIEW -->
+            <section id="view-settings" class="view-section">
+                <header class="mb-8">
+                    <h2 class="text-3xl font-display font-light silver-text mb-2">Settings</h2>
+                    <p class="text-zinc-400 text-sm">Application configuration and account management.</p>
+                </header>
+
+                <div class="glass-panel rounded-2xl overflow-hidden mb-8">
+                    <div class="p-6 border-b border-white/10">
+                        <h3 class="text-white font-medium mb-4 flex items-center gap-2"><i data-lucide="cloud"></i> Account & Sync</h3>
+                        
+                        <div id="auth-signed-out" class="space-y-4">
+                            <p class="text-sm text-zinc-400">Sign in with Google to securely back up your AXIOM data to the cloud.</p>
+                            <button onclick="handleLogin()" class="bg-white text-black px-6 py-2.5 rounded-lg text-sm font-medium transition hover:bg-zinc-200 flex items-center gap-3">
+                                Sign in with Google
+                            </button>
+                        </div>
+
+                        <div id="auth-signed-in" class="hidden space-y-4">
+                            <div class="flex items-center gap-4 mb-6">
+                                <div class="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center border border-white/20">
+                                    <i data-lucide="user-check" class="text-zinc-300"></i>
+                                </div>
+                                <div>
+                                    <p class="text-white font-medium" id="settings-user-name">User Name</p>
+                                    <p class="text-xs text-zinc-400" id="settings-user-email">email@example.com</p>
                                 </div>
                             </div>
-                            <p class="mt-6 text-zinc-300 font-light" id="progress-subtext">0 of 0 routines initialized</p>
-                        </div>
-
-                        <!-- Active Directives List -->
-                        <div class="md:col-span-2 space-y-4">
-                            <h3 class="text-zinc-400 text-sm uppercase tracking-widest mb-4 px-2">Active Directives</h3>
-                            <div id="dashboard-habits-list" class="space-y-3">
-                                <!-- Populated by JS -->
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="view-habits" class="view-section space-y-8">
-                    <div class="mb-8">
-                        <h2 class="text-3xl font-light tracking-wide text-zinc-100 flex items-center gap-3">
-                            <i data-lucide="target" class="w-6 h-6 text-zinc-400"></i> Protocol Management
-                        </h2>
-                        <p class="text-zinc-500 mt-1 text-sm uppercase tracking-widest">Configure daily routines</p>
-                    </div>
-
-                    <div class="glass-panel rounded-2xl p-6 mb-8 bg-black/50">
-                        <form id="add-habit-form" class="flex flex-col md:flex-row gap-4">
-                            <input type="text" id="new-habit-name" placeholder="New directive..." required
-                                class="flex-1 bg-zinc-900/50 border border-white/10 rounded-lg px-4 py-3 text-zinc-200 placeholder-zinc-600 focus:outline-none focus:border-white/30 transition-colors" />
-                            <select id="new-habit-cat" class="bg-zinc-900/50 border border-white/10 rounded-lg px-4 py-3 text-zinc-300 focus:outline-none focus:border-white/30">
-                                <option value="Health">Health</option>
-                                <option value="Studies">Studies</option>
-                                <option value="Career">Career</option>
-                                <option value="Finances">Finances</option>
-                                <option value="Relationships">Relationships</option>
-                                <option value="Other">Other</option>
-                            </select>
-                            <button type="submit" class="bg-zinc-200 text-black px-6 py-3 rounded-lg font-medium hover:bg-white transition-colors flex items-center justify-center gap-2">
-                                <i data-lucide="plus" class="w-5 h-5"></i> Add
-                            </button>
-                        </form>
-                    </div>
-
-                    <div id="all-habits-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        <!-- Populated by JS -->
-                    </div>
-                </div>
-
-                <div id="view-balance" class="view-section space-y-8">
-                    <div class="mb-8">
-                        <h2 class="text-3xl font-light tracking-wide text-zinc-100 flex items-center gap-3">
-                            <i data-lucide="hexagon" class="w-6 h-6 text-zinc-400"></i> Life Balance Matrix
-                        </h2>
-                        <p class="text-zinc-500 mt-1 text-sm uppercase tracking-widest">Self-assessment & equilibrium</p>
-                    </div>
-
-                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                        <div class="glass-panel rounded-2xl p-6 h-[400px] flex items-center justify-center">
-                            <canvas id="balanceChart"></canvas>
-                        </div>
-
-                        <div class="glass-panel rounded-2xl p-6 flex flex-col justify-center space-y-6" id="balance-sliders">
-                            <h3 class="text-zinc-400 text-sm uppercase tracking-widest mb-2">Adjust Parameters</h3>
-                            <!-- Sliders populated by JS -->
-                        </div>
-                    </div>
-                </div>
-
-                <div id="view-analytics" class="view-section space-y-8">
-                    <div class="mb-8">
-                        <h2 class="text-3xl font-light tracking-wide text-zinc-100 flex items-center gap-3">
-                            <i data-lucide="trending-up" class="w-6 h-6 text-zinc-400"></i> System Telemetry
-                        </h2>
-                        <p class="text-zinc-500 mt-1 text-sm uppercase tracking-widest">Historical performance data</p>
-                    </div>
-
-                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                        <div class="glass-panel rounded-2xl p-6 h-[350px] flex flex-col">
-                            <h3 class="text-zinc-400 text-xs uppercase tracking-widest mb-4">Weekly Execution Rate (%)</h3>
-                            <div class="flex-1 relative w-full h-full">
-                                <canvas id="lineChart"></canvas>
-                            </div>
-                        </div>
-
-                        <div class="glass-panel rounded-2xl p-6 h-[350px] flex flex-col">
-                            <h3 class="text-zinc-400 text-xs uppercase tracking-widest mb-4">Category Distribution Focus</h3>
-                            <div class="flex-1 relative w-full h-full">
-                                <canvas id="barChart"></canvas>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="view-settings" class="view-section space-y-8 max-w-2xl">
-                    <div class="mb-8">
-                        <h2 class="text-3xl font-light tracking-wide text-zinc-100 flex items-center gap-3">
-                            <i data-lucide="settings" class="w-6 h-6 text-zinc-400"></i> System Preferences
-                        </h2>
-                        <p class="text-zinc-500 mt-1 text-sm uppercase tracking-widest">Configuration & overrides</p>
-                    </div>
-
-                    <div class="glass-panel rounded-2xl p-6 space-y-6">
-                        <div class="pt-2 border-t border-white/5">
-                            <label class="block text-zinc-400 text-sm tracking-wider uppercase mb-4 text-red-400/80">Account Control</label>
                             
-                            <button onclick="window.logoutUser()" class="bg-zinc-900/50 border border-zinc-700 text-zinc-300 px-6 py-3 rounded-lg font-medium hover:bg-zinc-800 transition-colors w-full md:w-auto mb-4 mr-2">
-                                Sign Out
-                            </button>
+                            <div class="flex items-center justify-between p-4 bg-black/40 rounded-xl border border-white/5">
+                                <div>
+                                    <p class="text-sm text-white">Synchronization</p>
+                                    <p class="text-xs text-zinc-400" id="detailed-sync-status">All changes saved to cloud.</p>
+                                </div>
+                                <div class="flex gap-2">
+                                    <button onclick="forceSync()" class="p-2 bg-white/10 rounded-lg hover:bg-white/20 text-white transition tooltip" title="Save Now"><i data-lucide="refresh-cw" class="w-4 h-4"></i></button>
+                                </div>
+                            </div>
 
-                            <button id="btn-reset" class="bg-red-950/30 border border-red-900/50 text-red-400 px-6 py-3 rounded-lg font-medium hover:bg-red-900/40 transition-colors w-full md:w-auto">
-                                Factory Reset Data
-                            </button>
-                            <p class="text-zinc-600 text-xs mt-3">Clears all habits, history, and configuration stored in the cloud. Cannot be undone.</p>
+                            <button onclick="handleLogout()" class="text-red-400 hover:text-red-300 text-sm font-medium transition px-2 py-1">Sign Out</button>
                         </div>
                     </div>
+                    
+                    <div class="p-6">
+                        <h3 class="text-white font-medium mb-4 flex items-center gap-2"><i data-lucide="hard-drive"></i> Local Data</h3>
+                        <p class="text-sm text-zinc-400 mb-4">Wiping data will clear this device. If synced to the cloud, data will restore on next login.</p>
+                        <button onclick="clearLocalData()" class="bg-red-500/10 text-red-500 border border-red-500/20 px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-red-500/20 transition">Wipe Local Data</button>
+                    </div>
                 </div>
-
-            </div>
+            </section>
         </main>
     </div>
 
-    <div id="custom-modal" class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/60 backdrop-blur-sm opacity-0 transition-opacity duration-300">
-        <div class="glass-panel rounded-2xl p-6 max-w-sm w-full mx-4 transform scale-95 transition-transform duration-300" id="custom-modal-content">
-            <h3 class="text-xl font-light text-zinc-100 mb-2" id="modal-title">Confirm Action</h3>
-            <p class="text-zinc-400 text-sm mb-6" id="modal-message">Are you sure?</p>
-            <div class="flex justify-end gap-3">
-                <button id="modal-cancel" class="px-4 py-2 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors">Cancel</button>
-                <button id="modal-confirm" class="px-4 py-2 rounded-lg bg-red-900/50 text-red-200 hover:bg-red-800/60 transition-colors">Confirm</button>
+    <!-- Habit Modal -->
+    <div id="habit-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm hidden opacity-0 transition-opacity">
+        <div class="glass-panel w-full max-w-md p-6 rounded-2xl mx-4 transform scale-95 transition-transform duration-300" id="habit-modal-content">
+            <h3 class="text-xl text-white font-medium mb-6" id="modal-title">Create Habit</h3>
+            
+            <input type="hidden" id="habit-id">
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs text-zinc-400 mb-1">Habit Name</label>
+                    <input type="text" id="habit-name" class="w-full glass-input p-3 rounded-lg text-sm" placeholder="e.g., Read 20 pages" autocomplete="off">
+                </div>
+                
+                <div>
+                    <label class="block text-xs text-zinc-400 mb-1">Category</label>
+                    <select id="habit-category" class="w-full glass-input p-3 rounded-lg text-sm appearance-none cursor-pointer">
+                        <option value="Health">Health</option>
+                        <option value="Studies">Studies</option>
+                        <option value="Career">Career</option>
+                        <option value="Finances">Finances</option>
+                        <option value="Relationships">Relationships</option>
+                        <option value="Uncategorized">Uncategorized</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="flex gap-3 mt-8">
+                <button onclick="closeHabitModal()" class="flex-1 py-3 rounded-lg bg-white/5 hover:bg-white/10 text-zinc-300 text-sm transition">Cancel</button>
+                <button onclick="saveHabit()" class="flex-1 py-3 rounded-lg bg-white text-black hover:bg-zinc-200 font-medium text-sm transition">Save Habit</button>
             </div>
         </div>
     </div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getDatabase, ref, set, get, child } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js";
-
-        // Firebase Configuration (Exact match)
+    <script>
+        // --- 1. FIREBASE CONFIGURATION (Reused as requested) ---
         const firebaseConfig = {
             apiKey: "AIzaSyD47CV7A3CBN8WprDT190YBoja77HG6NJY",
             authDomain: "advait-bd3da.firebaseapp.com",
@@ -383,556 +298,473 @@
             projectId: "advait-bd3da",
             storageBucket: "advait-bd3da.firebasestorage.app",
             messagingSenderId: "816232706393",
-            appId: "1:816232706393:web:5aaa150277498ce2591c48",
-            measurementId: "G-KQ1MNHH754"
+            appId: "1:816232706393:web:5aaa150277498ce2591c48"
+            // Analytics deliberately omitted
         };
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.database();
 
-        // Initialize Firebase Services
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getDatabase(app);
-        const provider = new GoogleAuthProvider();
-
-        // --- APP STATE & CONSTANTS ---
-        const defaultData = {
-            habits: [
-                { id: '1', name: 'Hydration (2L)', category: 'Health', streak: 0, completedDates: [] },
-                { id: '2', name: 'Deep Work (2hr)', category: 'Career', streak: 0, completedDates: [] },
-            ],
-            balanceScores: { health: 7, studies: 6, career: 8, finances: 5, relationships: 7 },
-            hasSeenSplash: false
+        // --- 2. DATA ARCHITECTURE & STATE ---
+        let appData = {
+            habits: [], // { id, name, category, created }
+            logs: {}    // { "YYYY-MM-DD": { completed: [id1, id2], scores: { Health: 50... } } }
         };
-
-        let state = { ...defaultData };
-        let currentView = 'dashboard';
         let currentUser = null;
-        
-        let radarChartInstance = null;
-        let lineChartInstance = null;
-        let barChartInstance = null;
+        let syncTimeout = null;
+        const categories = ["Health", "Studies", "Career", "Finances", "Relationships"];
+        let radarChart = null;
 
-        const navItems = [
-            { id: 'dashboard', label: 'Dashboard', icon: 'activity' },
-            { id: 'habits', label: 'Protocols', icon: 'target' },
-            { id: 'balance', label: 'Balance', icon: 'hexagon' },
-            { id: 'analytics', label: 'Telemetry', icon: 'trending-up' },
-            { id: 'settings', label: 'Settings', icon: 'settings' },
-        ];
-
-        // --- AUTHENTICATION & DATA SYNC LOGIC ---
-
-        // Helper to format dates consistently
         const getTodayStr = () => {
             const d = new Date();
-            // Create YYYY-MM-DD in local time
-            return new Date(d.getTime() - (d.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
+            // Format strictly as YYYY-MM-DD in local time
+            return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
         };
-        
-        // Sync state to Firebase RTDB
-        const saveStateToDB = async () => {
-            if (!currentUser) return;
-            try {
-                await set(ref(db, `users/${currentUser.uid}`), state);
-            } catch (error) {
-                console.error("Error saving to Firebase:", error);
-            }
-        };
+        let currentDay = getTodayStr();
 
-        // Firebase Auth Listener
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                currentUser = user;
-                document.getElementById('login-screen').classList.add('opacity-0', 'pointer-events-none');
-                
-                // Fetch User Data from Realtime Database
-                const dbRef = ref(db);
-                try {
-                    const snapshot = await get(child(dbRef, `users/${user.uid}`));
-                    if (snapshot.exists()) {
-                        state = snapshot.val();
-                        // Handle missing properties from legacy state gracefully
-                        if (!state.habits) state.habits = [];
-                        if (!state.balanceScores) state.balanceScores = defaultData.balanceScores;
-                    } else {
-                        // First time login, save default data
-                        state = { ...defaultData };
-                        await saveStateToDB();
-                    }
-                } catch (error) {
-                    console.error("Error fetching data:", error);
-                    state = { ...defaultData };
-                }
-                
-                // Populate Profile UI
-                document.getElementById('sidebar-user-avatar').src = user.photoURL || 'https://placehold.co/40x40/18181b/e4e4e7?text=U';
-                document.getElementById('sidebar-user-name').textContent = user.displayName || 'Commander';
-                document.getElementById('mobile-user-avatar').src = user.photoURL || 'https://placehold.co/40x40/18181b/e4e4e7?text=U';
-                
-                // Start App Sequence
-                startAppSequence();
+        // --- 3. SPLASH SCREEN LOGIC ---
+        window.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+            
+            const splash = document.getElementById('splash');
+            const app = document.getElementById('app-container');
+            
+            // Respect reduced motion
+            const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            
+            if (prefersReduced) {
+                splash.style.display = 'none';
+                app.classList.remove('hidden', 'opacity-0');
+                app.classList.add('opacity-100');
+                initializeApp();
             } else {
-                currentUser = null;
-                // Show login screen, hide app
-                document.getElementById('login-screen').classList.remove('opacity-0', 'pointer-events-none');
-                document.getElementById('app-container').classList.add('hidden', 'opacity-0');
-                document.getElementById('splash-screen').classList.add('hidden');
+                // Cinematic Sequence
+                setTimeout(() => {
+                    splash.style.animation = 'fadeOut 1s cubic-bezier(0.5, 0, 0.2, 1) forwards';
+                    setTimeout(() => {
+                        splash.style.display = 'none';
+                        app.classList.remove('hidden');
+                        app.classList.add('animate-rise-in');
+                        initializeApp();
+                    }, 1000);
+                }, 2500); // 2.5s reveal + 1s fade
             }
         });
 
-        // Global Handlers for HTML elements
-        window.loginWithGoogle = () => {
-            signInWithPopup(auth, provider).catch((error) => {
-                console.error("Google Login Error:", error);
-            });
-        };
-
-        window.logoutUser = () => {
-            signOut(auth).then(() => {
-                // UI update handled by onAuthStateChanged
-            }).catch((error) => console.error(error));
-        };
-
-        const startAppSequence = () => {
-            const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-            
-            if (state.hasSeenSplash || prefersReducedMotion) {
-                showAppContainer();
-            } else {
-                // Run Splash Sequence
-                const splash = document.getElementById('splash-screen');
-                splash.classList.remove('hidden');
-                splash.classList.add('flex');
-                
-                setTimeout(() => {
-                    document.getElementById('splash-content').classList.remove('translate-y-8', 'opacity-0');
-                }, 500);
-
-                setTimeout(() => { window.skipSplash(); }, 3500);
+        // --- 4. DATA PERSISTENCE & SYNC ---
+        function loadLocalData() {
+            const saved = localStorage.getItem('axiom_data');
+            if (saved) {
+                try {
+                    const parsed = JSON.parse(saved);
+                    appData.habits = Array.isArray(parsed.habits) ? parsed.habits : [];
+                    appData.logs = typeof parsed.logs === 'object' && parsed.logs !== null ? parsed.logs : {};
+                } catch(e) { console.error("Error loading local data", e); }
             }
-        };
+        }
 
-        window.skipSplash = () => {
-            const splash = document.getElementById('splash-screen');
-            splash.classList.add('opacity-0');
-            setTimeout(() => {
-                splash.classList.add('hidden');
-                splash.classList.remove('flex');
-                state.hasSeenSplash = true;
-                saveStateToDB();
-                showAppContainer();
-            }, 1000);
-        };
+        function saveLocalData() {
+            localStorage.setItem('axiom_data', JSON.stringify(appData));
+            updateUI();
+            triggerCloudSync();
+        }
 
-        const showAppContainer = () => {
-            const app = document.getElementById('app-container');
-            app.classList.remove('hidden');
-            setTimeout(() => {
-                app.classList.remove('opacity-0', 'pointer-events-none');
-                window.switchView('dashboard');
-                lucide.createIcons();
-            }, 50);
-        };
+        function triggerCloudSync() {
+            if (!currentUser) return;
+            updateSyncUI('Pending...');
+            clearTimeout(syncTimeout);
+            syncTimeout = setTimeout(syncToCloud, 700); // Debounce
+        }
 
-        // --- CUSTOM MODAL UI ---
-        let modalConfirmCallback = null;
-        const showModal = (title, message, callback) => {
-            document.getElementById('modal-title').textContent = title;
-            document.getElementById('modal-message').textContent = message;
-            modalConfirmCallback = callback;
-            const modal = document.getElementById('custom-modal');
-            const content = document.getElementById('custom-modal-content');
+        async function syncToCloud() {
+            if (!currentUser) return;
+            try {
+                // CRITICAL REQUIREMENT: Strict isolated path
+                const userRef = db.ref(`/axiom_app_data/users/${currentUser.uid}/axiom`);
+                await userRef.set({
+                    habits: appData.habits,
+                    logs: appData.logs,
+                    lastUpdated: firebase.database.ServerValue.TIMESTAMP
+                });
+                updateSyncUI('Synced successfully', true);
+            } catch (error) {
+                console.error("Sync failed:", error);
+                updateSyncUI('Sync failed. Retrying...', false);
+            }
+        }
+
+        async function forceSync() {
+            if (!currentUser) return;
+            updateSyncUI('Saving...');
+            await syncToCloud();
+        }
+
+        // --- 5. AUTHENTICATION LOGIC ---
+        auth.onAuthStateChanged(async (user) => {
+            currentUser = user;
+            if (user) {
+                // Check Cloud for existing data
+                updateSyncUI('Checking cloud...');
+                try {
+                    const snap = await db.ref(`/axiom_app_data/users/${user.uid}/axiom`).once('value');
+                    const cloudData = snap.val();
+                    
+                    if (cloudData) {
+                        // Cloud data exists, overwrite local (last-write-wins simplified)
+                        appData.habits = cloudData.habits || [];
+                        appData.logs = cloudData.logs || {};
+                        localStorage.setItem('axiom_data', JSON.stringify(appData));
+                        updateSyncUI('Synced to cloud', true);
+                    } else {
+                        // First time login, push local data up
+                        await syncToCloud();
+                    }
+                } catch(e) {
+                    console.error("Cloud fetch error:", e);
+                    updateSyncUI('Offline Mode');
+                }
+            } else {
+                updateSyncUI('Local Data Only');
+            }
+            updateAccountUI();
+            updateUI();
+        });
+
+        async function handleLogin() {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            try {
+                await auth.signInWithPopup(provider);
+            } catch (error) {
+                if(error.code === 'auth/unauthorized-domain') {
+                    alert("Authentication Error: This domain is not authorized. Please add your domain in Firebase Console -> Authentication -> Settings -> Authorized domains.");
+                } else if(error.code === 'auth/popup-blocked') {
+                    auth.signInWithRedirect(provider); // Fallback
+                } else {
+                    alert("Login failed: " + error.message);
+                }
+            }
+        }
+
+        function handleLogout() {
+            auth.signOut();
+        }
+
+        function clearLocalData() {
+            if(confirm("Are you sure? This removes local data. If logged in, cloud data will reload upon refresh.")) {
+                localStorage.removeItem('axiom_data');
+                appData = { habits: [], logs: {} };
+                updateUI();
+            }
+        }
+
+        // --- 6. CORE LOGIC (SCORING & HABITS) ---
+        function calculateScores(dateStr) {
+            const log = appData.logs[dateStr] || { completed: [] };
+            const completedIds = log.completed || [];
+            let scores = {};
+
+            categories.forEach(cat => {
+                const catHabits = appData.habits.filter(h => h.category === cat);
+                if (catHabits.length === 0) {
+                    scores[cat] = 5; // Neutral baseline
+                } else {
+                    const completedInCat = catHabits.filter(h => completedIds.includes(h.id)).length;
+                    scores[cat] = Math.round((completedInCat / catHabits.length) * 100);
+                    // Ensure it doesn't hit zero for aesthetic graph rendering
+                    if(scores[cat] < 5) scores[cat] = 5; 
+                }
+            });
+
+            // Save calculated scores for history snapshot
+            if (!appData.logs[dateStr]) appData.logs[dateStr] = { completed: [] };
+            appData.logs[dateStr].scores = scores;
+            return scores;
+        }
+
+        function toggleHabit(habitId) {
+            if (!appData.logs[currentDay]) {
+                appData.logs[currentDay] = { completed: [], scores: {} };
+            }
+            
+            let completed = appData.logs[currentDay].completed || [];
+            if (completed.includes(habitId)) {
+                completed = completed.filter(id => id !== habitId);
+            } else {
+                completed.push(habitId);
+            }
+            
+            appData.logs[currentDay].completed = completed;
+            calculateScores(currentDay); // Recalculate immediately
+            saveLocalData();
+        }
+
+        // Modal Logic
+        function openHabitModal(id = null) {
+            const modal = document.getElementById('habit-modal');
+            const content = document.getElementById('habit-modal-content');
+            
+            document.getElementById('habit-id').value = id || '';
+            document.getElementById('modal-title').innerText = id ? 'Edit Habit' : 'Create Habit';
+            
+            if (id) {
+                const habit = appData.habits.find(h => h.id === id);
+                document.getElementById('habit-name').value = habit.name;
+                document.getElementById('habit-category').value = habit.category;
+            } else {
+                document.getElementById('habit-name').value = '';
+                document.getElementById('habit-category').value = 'Health';
+            }
+            
             modal.classList.remove('hidden');
-            modal.classList.add('flex');
             setTimeout(() => {
                 modal.classList.remove('opacity-0');
                 content.classList.remove('scale-95');
             }, 10);
-        };
+        }
 
-        const hideModal = () => {
-            const modal = document.getElementById('custom-modal');
-            const content = document.getElementById('custom-modal-content');
+        function closeHabitModal() {
+            const modal = document.getElementById('habit-modal');
+            const content = document.getElementById('habit-modal-content');
+            
             modal.classList.add('opacity-0');
             content.classList.add('scale-95');
-            setTimeout(() => {
-                modal.classList.add('hidden');
-                modal.classList.remove('flex');
-            }, 300);
-        };
+            setTimeout(() => modal.classList.add('hidden'), 300);
+        }
 
-        document.getElementById('modal-cancel').addEventListener('click', hideModal);
-        document.getElementById('modal-confirm').addEventListener('click', () => {
-            if(modalConfirmCallback) modalConfirmCallback();
-            hideModal();
-        });
-
-
-        // --- NAVIGATION & ROUTING ---
-        const renderNavigation = () => {
-            const deskContainer = document.getElementById('nav-desktop');
-            const mobContainer = document.getElementById('nav-mobile');
+        function saveHabit() {
+            const id = document.getElementById('habit-id').value;
+            const name = document.getElementById('habit-name').value.trim();
+            const category = document.getElementById('habit-category').value;
             
-            let deskHTML = '';
-            let mobHTML = '';
+            if (!name) return alert("Habit name is required.");
 
-            navItems.forEach(item => {
-                const isActive = currentView === item.id;
-                
-                deskHTML += `
-                    <button onclick="window.switchView('${item.id}')" 
-                        class="w-full flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-300 ${isActive ? 'bg-zinc-800/80 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]' : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-900/50'}">
-                        <i data-lucide="${item.icon}" class="w-5 h-5"></i>
-                        <span class="tracking-wide text-sm">${item.label}</span>
-                    </button>
-                `;
-                
-                mobHTML += `
-                    <button onclick="window.switchView('${item.id}')" 
-                        class="flex flex-col items-center gap-1 p-2 transition-colors ${isActive ? 'text-zinc-100' : 'text-zinc-600'}">
-                        <i data-lucide="${item.icon}" class="w-5 h-5"></i>
-                        <span class="text-[10px] tracking-wider">${item.label}</span>
-                    </button>
-                `;
-            });
-
-            deskContainer.innerHTML = deskHTML;
-            mobContainer.innerHTML = mobHTML;
-            lucide.createIcons();
-        };
-
-        window.switchView = (viewId) => {
-            currentView = viewId;
-            renderNavigation();
-            
-            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
-            document.getElementById(`view-${viewId}`).classList.add('active');
-
-            if(viewId === 'dashboard') renderDashboard();
-            if(viewId === 'habits') renderHabits();
-            if(viewId === 'balance') renderBalance();
-            if(viewId === 'analytics') renderAnalytics();
-            
-            lucide.createIcons();
-        };
-
-        // --- VIEWS LOGIC ---
-        
-        const renderDashboard = () => {
-            const hour = new Date().getHours();
-            let timeGreeting = 'evening';
-            if (hour < 12) timeGreeting = 'morning';
-            else if (hour < 17) timeGreeting = 'afternoon';
-            
-            document.getElementById('greeting-time').textContent = timeGreeting;
-            
-            const options = { weekday: 'long', month: 'long', day: 'numeric' };
-            document.getElementById('current-date').textContent = new Date().toLocaleDateString('en-US', options);
-
-            const todayStr = getTodayStr();
-            const total = state.habits.length;
-            const completed = state.habits.filter(h => (h.completedDates || []).includes(todayStr)).length;
-            const percentage = total === 0 ? 0 : Math.round((completed / total) * 100);
-
-            const circle = document.getElementById('progress-circle');
-            const radius = circle.r.baseVal.value;
-            const circumference = radius * 2 * Math.PI;
-            const offset = circumference - (percentage / 100) * circumference;
-            circle.style.strokeDashoffset = offset;
-            
-            document.getElementById('progress-text').textContent = `${percentage}%`;
-            document.getElementById('progress-subtext').textContent = `${completed} of ${total} routines initialized`;
-
-            const listContainer = document.getElementById('dashboard-habits-list');
-            
-            if (total === 0) {
-                listContainer.innerHTML = `<div class="glass-panel rounded-2xl text-center py-12 text-zinc-500">No active directives. Go to Protocols to configure.</div>`;
+            if (id) {
+                const idx = appData.habits.findIndex(h => h.id === id);
+                appData.habits[idx] = { ...appData.habits[idx], name, category };
             } else {
-                let listHTML = '';
-                state.habits.slice(0, 5).forEach(habit => {
-                    const isDone = (habit.completedDates || []).includes(todayStr);
-                    listHTML += `
-                        <div class="glass-panel rounded-2xl p-4 transition-all duration-300 ${isDone ? 'bg-zinc-900/20 border-white/5' : 'hover:bg-zinc-800/40'}">
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center gap-4">
-                                    <button onclick="window.toggleHabit('${habit.id}')" 
-                                        class="w-6 h-6 rounded-full border flex items-center justify-center transition-colors ${isDone ? 'bg-zinc-300 border-zinc-300 text-black' : 'border-zinc-600 hover:border-zinc-400'}">
-                                        ${isDone ? '<i data-lucide="check" class="w-4 h-4"></i>' : ''}
-                                    </button>
-                                    <span class="text-lg font-light transition-colors ${isDone ? 'text-zinc-600 line-through' : 'text-zinc-200'}">
-                                        ${habit.name}
-                                    </span>
-                                </div>
-                                ${habit.streak > 0 ? `
-                                <div class="flex items-center gap-1 text-xs text-zinc-500">
-                                    <i data-lucide="activity" class="w-3 h-3"></i> ${habit.streak} day streak
-                                </div>
-                                ` : ''}
-                            </div>
-                        </div>
-                    `;
-                });
-                listContainer.innerHTML = listHTML;
+                appData.habits.push({ id: Date.now().toString(), name, category, created: currentDay });
             }
-        };
+            
+            calculateScores(currentDay); // Recalculate scores with new structure
+            saveLocalData();
+            closeHabitModal();
+        }
 
-        window.toggleHabit = (id) => {
-            const todayStr = getTodayStr();
-            state.habits = state.habits.map(habit => {
-                if (habit.id === id) {
-                    const dates = habit.completedDates || [];
-                    const isCompleted = dates.includes(todayStr);
-                    let newDates = isCompleted 
-                        ? dates.filter(d => d !== todayStr)
-                        : [...dates, todayStr];
-                    
-                    let streak = 0;
-                    let checkDate = new Date();
-                    
-                    // Simple streak calculation walking backwards
-                    while(true) {
-                        // Offset tz to ensure correct local date match
-                        const checkStr = new Date(checkDate.getTime() - (checkDate.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
-                        if(newDates.includes(checkStr)) {
-                            streak++;
-                            checkDate.setDate(checkDate.getDate() - 1);
-                        } else {
-                            if (checkStr === todayStr) {
-                                checkDate.setDate(checkDate.getDate() - 1);
-                                continue; // Skip today if unchecked, but keep counting yesterday
-                            }
-                            break;
+        function deleteHabit(id) {
+            if(confirm("Delete this habit? History will be preserved but it won't appear today.")) {
+                appData.habits = appData.habits.filter(h => h.id !== id);
+                calculateScores(currentDay);
+                saveLocalData();
+            }
+        }
+
+        // --- 7. UI RENDERING ---
+        function initializeApp() {
+            loadLocalData();
+            
+            // Set Date formatting
+            const options = { weekday: 'long', month: 'long', day: 'numeric' };
+            document.getElementById('date-display').innerText = new Date().toLocaleDateString('en-US', options);
+            
+            // Initialize Chart.js
+            const ctx = document.getElementById('balanceChart').getContext('2d');
+            Chart.defaults.color = 'rgba(255,255,255,0.4)';
+            Chart.defaults.font.family = 'Inter';
+            radarChart = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: categories,
+                    datasets: [{
+                        label: 'Balance',
+                        data: [5,5,5,5,5],
+                        backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                        borderColor: 'rgba(255, 255, 255, 0.6)',
+                        pointBackgroundColor: '#fff',
+                        pointBorderColor: '#fff',
+                        borderWidth: 1.5,
+                        fill: true
+                    }]
+                },
+                options: {
+                    scales: {
+                        r: {
+                            min: 0, max: 100,
+                            ticks: { display: false, stepSize: 20 },
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                            angleLines: { color: 'rgba(255, 255, 255, 0.1)' }
                         }
-                    }
-                    return { ...habit, completedDates: newDates, streak };
+                    },
+                    plugins: { legend: { display: false } },
+                    animation: { duration: 500 }
                 }
-                return habit;
             });
-            saveStateToDB();
-            
-            if(currentView === 'dashboard') renderDashboard();
-            if(currentView === 'habits') renderHabits();
-            lucide.createIcons();
-        };
 
-        window.deleteHabit = (id) => {
-            state.habits = state.habits.filter(h => h.id !== id);
-            saveStateToDB();
+            updateUI();
+        }
+
+        function updateUI() {
+            renderToday();
             renderHabits();
-            if(currentView === 'dashboard') renderDashboard();
-        };
+            renderBalance();
+            lucide.createIcons();
+        }
 
-        const renderHabits = () => {
-            const todayStr = getTodayStr();
-            const gridContainer = document.getElementById('all-habits-grid');
+        function renderToday() {
+            const container = document.getElementById('today-habits-container');
+            const emptyState = document.getElementById('today-empty-state');
+            const log = appData.logs[currentDay] || { completed: [] };
+            const completed = log.completed || [];
             
-            let gridHTML = '';
-            state.habits.forEach(habit => {
-                const dates = habit.completedDates || [];
-                const isDone = dates.includes(todayStr);
-                gridHTML += `
-                    <div class="glass-panel rounded-2xl p-6 group relative">
-                        <div class="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <button onclick="window.deleteHabit('${habit.id}')" class="text-zinc-600 hover:text-red-400 transition-colors">
-                                <i data-lucide="trash-2" class="w-4 h-4"></i>
-                            </button>
-                        </div>
-                        <div class="flex flex-col h-full justify-between">
-                            <div>
-                                <span class="text-[10px] uppercase tracking-widest text-zinc-500 bg-zinc-800/50 px-2 py-1 rounded border border-white/5">${habit.category}</span>
-                                <h4 class="text-xl font-light text-zinc-200 mt-4 mb-6">${habit.name}</h4>
+            // Greeting Name
+            const greeting = document.getElementById('greeting-display');
+            if (currentUser && currentUser.displayName) {
+                greeting.innerText = `Good morning, ${currentUser.displayName.split(' ')[0]}.`;
+            } else {
+                greeting.innerText = "Good morning.";
+            }
+
+            if (appData.habits.length === 0) {
+                container.innerHTML = '';
+                emptyState.classList.remove('hidden');
+                document.getElementById('today-percentage').innerText = "0%";
+                document.getElementById('today-progress-bar').style.width = "0%";
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+            let html = '';
+            
+            appData.habits.forEach(habit => {
+                const isChecked = completed.includes(habit.id);
+                html += `
+                    <div class="glass-panel p-4 rounded-xl flex items-center justify-between hover:bg-white/5 transition cursor-pointer" onclick="toggleHabit('${habit.id}')">
+                        <div class="flex items-center gap-4">
+                            <div class="w-6 h-6 rounded-full border border-white/30 flex items-center justify-center transition-colors ${isChecked ? 'bg-white text-black border-white' : 'bg-transparent text-transparent'}">
+                                <i data-lucide="check" class="w-3 h-3"></i>
                             </div>
-                            
-                            <div class="flex items-center justify-between border-t border-white/5 pt-4">
-                                <div class="flex flex-col">
-                                    <span class="text-xs text-zinc-500 uppercase tracking-wider">Status</span>
-                                    <button onclick="window.toggleHabit('${habit.id}')" 
-                                        class="mt-1 flex items-center gap-2 text-sm transition-colors ${isDone ? 'text-zinc-300' : 'text-zinc-500 hover:text-zinc-300'}">
-                                        <i data-lucide="${isDone ? 'check-circle-2' : 'circle'}" class="w-4 h-4"></i>
-                                        ${isDone ? 'Completed' : 'Pending'}
-                                    </button>
-                                </div>
-                                <div class="flex flex-col items-end">
-                                    <span class="text-xs text-zinc-500 uppercase tracking-wider">Streak</span>
-                                    <span class="text-lg font-light text-zinc-300 mt-1 flex items-center gap-1">
-                                        ${habit.streak} <i data-lucide="activity" class="w-3 h-3 text-zinc-600"></i>
-                                    </span>
-                                </div>
+                            <div>
+                                <p class="text-sm font-medium ${isChecked ? 'text-zinc-500 line-through' : 'text-zinc-200'}">${habit.name}</p>
+                                <p class="text-[10px] text-zinc-500 uppercase tracking-wider">${habit.category}</p>
                             </div>
                         </div>
                     </div>
                 `;
             });
-            gridContainer.innerHTML = gridHTML;
-            lucide.createIcons();
-        };
+            container.innerHTML = html;
 
-        document.getElementById('add-habit-form').addEventListener('submit', (e) => {
-            e.preventDefault();
-            const nameInput = document.getElementById('new-habit-name');
-            const catInput = document.getElementById('new-habit-cat');
-            
-            if (nameInput.value.trim()) {
-                state.habits.push({
-                    id: Date.now().toString(),
-                    name: nameInput.value.trim(),
-                    category: catInput.value,
-                    streak: 0,
-                    completedDates: []
-                });
-                saveStateToDB();
-                nameInput.value = '';
-                renderHabits();
+            const percentage = Math.round((completed.length / appData.habits.length) * 100) || 0;
+            document.getElementById('today-percentage').innerText = `${percentage}%`;
+            document.getElementById('today-progress-bar').style.width = `${percentage}%`;
+        }
+
+        function renderHabits() {
+            const list = document.getElementById('habits-list');
+            if(appData.habits.length === 0) {
+                list.innerHTML = `<div class="text-center py-12 text-zinc-500 text-sm glass-panel rounded-2xl border-dashed border-white/20">No habits created yet.</div>`;
+                return;
             }
-        });
 
-        Chart.defaults.color = '#71717a';
-        Chart.defaults.font.family = 'Inter, sans-serif';
-
-        const renderBalance = () => {
-            const slidersContainer = document.getElementById('balance-sliders');
-            
-            if (slidersContainer.children.length <= 1) { 
-                Object.keys(state.balanceScores).forEach(key => {
-                    const val = state.balanceScores[key];
-                    const div = document.createElement('div');
-                    div.className = 'space-y-2';
-                    div.innerHTML = `
-                        <div class="flex justify-between text-sm">
-                            <span class="capitalize text-zinc-300 font-light">${key}</span>
-                            <span class="text-zinc-500 font-mono" id="val-${key}">${val}/10</span>
+            let html = '';
+            appData.habits.forEach(habit => {
+                html += `
+                    <div class="glass-panel p-4 rounded-xl flex items-center justify-between group">
+                        <div>
+                            <p class="text-sm font-medium text-zinc-200">${habit.name}</p>
+                            <p class="text-[10px] text-zinc-500 uppercase tracking-wider">${habit.category}</p>
                         </div>
-                        <input type="range" min="1" max="10" value="${val}" 
-                            oninput="window.updateBalanceScore('${key}', this.value)"
-                            class="w-full h-1 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-zinc-300" />
-                    `;
-                    slidersContainer.appendChild(div);
-                });
-            }
+                        <div class="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button onclick="openHabitModal('${habit.id}')" class="p-2 hover:bg-white/10 rounded-lg text-zinc-400"><i data-lucide="edit-2" class="w-4 h-4"></i></button>
+                            <button onclick="deleteHabit('${habit.id}')" class="p-2 hover:bg-red-500/20 rounded-lg text-red-400"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                        </div>
+                    </div>
+                `;
+            });
+            list.innerHTML = html;
+        }
 
-            const ctx = document.getElementById('balanceChart').getContext('2d');
-            const dataValues = [
-                state.balanceScores.health,
-                state.balanceScores.studies,
-                state.balanceScores.career,
-                state.balanceScores.finances,
-                state.balanceScores.relationships
-            ];
-
-            if (radarChartInstance) {
-                radarChartInstance.data.datasets[0].data = dataValues;
-                radarChartInstance.update();
-            } else {
-                radarChartInstance = new Chart(ctx, {
-                    type: 'radar',
-                    data: {
-                        labels: ['Health', 'Studies', 'Career', 'Finances', 'Relations'],
-                        datasets: [{
-                            label: 'Current Status',
-                            data: dataValues,
-                            backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                            borderColor: '#e4e4e7',
-                            pointBackgroundColor: '#18181b',
-                            pointBorderColor: '#e4e4e7',
-                            pointHoverBackgroundColor: '#fff',
-                            pointHoverBorderColor: '#fff',
-                            borderWidth: 1,
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        scales: {
-                            r: {
-                                angleLines: { color: 'rgba(255, 255, 255, 0.1)' },
-                                grid: { color: 'rgba(255, 255, 255, 0.1)' },
-                                pointLabels: { color: '#a1a1aa', font: { size: 12, weight: '300' } },
-                                ticks: { display: false, min: 0, max: 10 }
-                            }
-                        },
-                        plugins: { legend: { display: false } }
-                    }
-                });
-            }
-        };
-
-        window.updateBalanceScore = (key, value) => {
-            state.balanceScores[key] = parseInt(value);
-            document.getElementById(`val-${key}`).textContent = `${value}/10`;
-            saveStateToDB();
-            if (radarChartInstance) {
-                radarChartInstance.data.datasets[0].data = [
-                    state.balanceScores.health,
-                    state.balanceScores.studies,
-                    state.balanceScores.career,
-                    state.balanceScores.finances,
-                    state.balanceScores.relationships
-                ];
-                radarChartInstance.update();
-            }
-        };
-
-        const renderAnalytics = () => {
-            const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-            const compData = days.map(() => Math.floor(Math.random() * 40) + 60);
-            const focusData = days.map(() => Math.floor(Math.random() * 50) + 30);
+        function renderBalance() {
+            const scores = calculateScores(currentDay);
+            const dataArr = categories.map(c => scores[c]);
             
-            const lineCtx = document.getElementById('lineChart').getContext('2d');
-            if(lineChartInstance) lineChartInstance.destroy();
-            lineChartInstance = new Chart(lineCtx, {
-                type: 'line',
-                data: {
-                    labels: days,
-                    datasets: [
-                        { label: 'Completion', data: compData, borderColor: '#e4e4e7', tension: 0.4, borderWidth: 2, pointBackgroundColor: '#18181b' },
-                        { label: 'Deep Work', data: focusData, borderColor: '#52525b', tension: 0.4, borderWidth: 2, pointRadius: 0 }
-                    ]
-                },
-                options: {
-                    responsive: true, maintainAspectRatio: false,
-                    scales: {
-                        y: { grid: { color: 'rgba(255,255,255,0.05)' }, border: { display: false }, min: 0, max: 100 },
-                        x: { grid: { display: false }, border: { display: false } }
-                    },
-                    plugins: { legend: { labels: { usePointStyle: true, boxWidth: 6 } } }
+            if(radarChart) {
+                radarChart.data.datasets[0].data = dataArr;
+                radarChart.update();
+            }
+
+            const scoreContainer = document.getElementById('category-scores');
+            let html = '';
+            categories.forEach((cat, index) => {
+                const score = dataArr[index];
+                const width = score < 5 ? 5 : score;
+                html += `
+                    <div>
+                        <div class="flex justify-between text-xs mb-1">
+                            <span class="text-zinc-300 font-medium">${cat}</span>
+                            <span class="text-zinc-500">${score}/100</span>
+                        </div>
+                        <div class="w-full bg-black/50 h-1.5 rounded-full overflow-hidden">
+                            <div class="h-full bg-white/50 rounded-full transition-all duration-1000" style="width: ${width}%"></div>
+                        </div>
+                    </div>
+                `;
+            });
+            scoreContainer.innerHTML = html;
+        }
+
+        // --- 8. NAVIGATION & ACCOUNT UI ---
+        function nav(viewId) {
+            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+            document.getElementById(`view-${viewId}`).classList.add('active');
+            
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                if(btn.dataset.target === viewId) {
+                    btn.classList.add('text-white', 'bg-white/5');
+                    btn.classList.remove('text-zinc-400');
+                } else {
+                    btn.classList.remove('text-white', 'bg-white/5');
+                    btn.classList.add('text-zinc-400');
                 }
             });
+        }
 
-            const barCtx = document.getElementById('barChart').getContext('2d');
-            if(barChartInstance) barChartInstance.destroy();
-            barChartInstance = new Chart(barCtx, {
-                type: 'bar',
-                data: {
-                    labels: ['Health', 'Career', 'Studies', 'Relations'],
-                    datasets: [{
-                        label: 'Focus Time',
-                        data: [85, 65, 90, 45],
-                        backgroundColor: '#d4d4d8',
-                        borderRadius: 4,
-                        barThickness: 24
-                    }]
-                },
-                options: {
-                    indexAxis: 'y',
-                    responsive: true, maintainAspectRatio: false,
-                    scales: {
-                        x: { display: false, max: 100 },
-                        y: { grid: { display: false }, border: { display: false } }
-                    },
-                    plugins: { legend: { display: false } }
-                }
+        function updateAccountUI() {
+            const signedOutDiv = document.getElementById('auth-signed-out');
+            const signedInDiv = document.getElementById('auth-signed-in');
+            const accountName = document.getElementById('account-name');
+            const accountIcon = document.getElementById('account-icon');
+
+            if (currentUser) {
+                signedOutDiv.classList.add('hidden');
+                signedInDiv.classList.remove('hidden');
+                document.getElementById('settings-user-name').innerText = currentUser.displayName || 'AXIOM User';
+                document.getElementById('settings-user-email').innerText = currentUser.email;
+                accountName.innerText = currentUser.displayName ? currentUser.displayName.split(' ')[0] : 'Account';
+                accountIcon.setAttribute('data-lucide', 'cloud-check'); // Change icon to cloud
+            } else {
+                signedOutDiv.classList.remove('hidden');
+                signedInDiv.classList.add('hidden');
+                accountName.innerText = "Sign In";
+                accountIcon.setAttribute('data-lucide', 'user');
+            }
+            lucide.createIcons();
+        }
+
+        function updateSyncUI(statusText, isSuccess = null) {
+            const syncStatusList = [document.getElementById('sync-status'), document.getElementById('detailed-sync-status')];
+            syncStatusList.forEach(el => {
+                if(el) el.innerText = statusText;
             });
-        };
-
-        // Factory Reset
-        document.getElementById('btn-reset').addEventListener('click', () => {
-            showModal('Factory Reset', 'Are you sure you want to reset all telemetry? This action is irreversible.', () => {
-                state = { ...defaultData, hasSeenSplash: true }; // Keep splash seen for reset convenience
-                saveStateToDB().then(() => {
-                    location.reload();
-                });
-            });
-        });
-
+            
+            // Visual feedback
+            const accountChip = document.getElementById('account-chip');
+            if(isSuccess === true) {
+                accountChip.classList.add('bg-green-500/10');
+                setTimeout(() => accountChip.classList.remove('bg-green-500/10'), 1500);
+            } else if (isSuccess === false) {
+                accountChip.classList.add('bg-red-500/10');
+                setTimeout(() => accountChip.classList.remove('bg-red-500/10'), 1500);
+            }
+        }
     </script>
 </body>
 </html>
