@@ -1,713 +1,881 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
-<title>AXIOM</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Italiana&family=Jost:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<style>
-:root{
-  /* Layout: collapsible glass sidebar + stacked glass panels; bottom nav on phones */
-  --bg:#07080a; --ink:#eceef1; --silver:#c9ced6; --mute:#8c929c; --dim:#5d636d;
-  --line:rgba(214,220,230,.14); --line2:rgba(214,220,230,.3);
-  --glass:rgba(255,255,255,.045); --glass-hi:rgba(255,255,255,.09);
-  --good:#9ccdb2; --warn:#d8bd7e; --bad:#d99a9a;
-  --display:'Italiana','Cormorant Garamond',Georgia,serif;
-  --body:'Jost','Helvetica Neue',Arial,sans-serif;
-  --mono:'JetBrains Mono',ui-monospace,Menlo,monospace;
-  color-scheme:dark;
-}
-*{box-sizing:border-box}
-html,body{min-height:100%}
-body{margin:0;background:var(--bg);color:var(--ink);font:400 15px/1.5 var(--body);-webkit-font-smoothing:antialiased;overflow-x:hidden}
-body::before{content:"";position:fixed;inset:0;z-index:-2;background:
-  radial-gradient(60% 50% at 82% -5%,rgba(150,160,176,.17),transparent 70%),
-  radial-gradient(55% 45% at -5% 105%,rgba(120,130,152,.15),transparent 70%),
-  radial-gradient(40% 40% at 50% 45%,rgba(255,255,255,.025),transparent 70%)}
-.fog{position:fixed;z-index:-1;border-radius:50%;filter:blur(90px);background:rgba(170,178,194,.12);animation:drift 30s ease-in-out infinite alternate;pointer-events:none}
-.fog.a{width:46vw;height:46vw;left:-10vw;top:10vh}
-.fog.b{width:38vw;height:38vw;right:-8vw;bottom:-6vh;animation-duration:38s;animation-direction:alternate-reverse}
-@keyframes drift{to{transform:translate(8vw,-6vh) scale(1.18)}}
-button{font:inherit;color:inherit;cursor:pointer}
-input,select,textarea{font:inherit;color:var(--ink)}
-:focus-visible{outline:2px solid var(--silver);outline-offset:2px;border-radius:6px}
-h1,h2,h3,p{margin:0}
-.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AXIOM | Live by design</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                    colors: {
+                        zinc: {
+                            950: '#09090b',
+                            900: '#18181b',
+                            800: '#27272a',
+                            700: '#3f3f46',
+                            600: '#52525b',
+                            500: '#71717a',
+                            400: '#a1a1aa',
+                            300: '#d4d4d8',
+                            200: '#e4e4e7',
+                            100: '#f4f4f5',
+                        }
+                    },
+                    animation: {
+                        'spin-slow': 'spin 10s linear infinite',
+                        'fade-in-up': 'fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    },
+                    keyframes: {
+                        fadeInUp: {
+                            '0%': { opacity: '0', transform: 'translateY(20px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500&display=swap');
+        
+        body {
+            background-color: #09090b;
+            color: #e4e4e7;
+            -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
+        }
 
-/* shell */
-.app{display:grid;grid-template-columns:240px minmax(0,1fr);min-height:100vh;transition:grid-template-columns .35s cubic-bezier(.3,.7,.2,1)}
-.app.col{grid-template-columns:76px minmax(0,1fr)}
-.side{position:sticky;top:0;height:100vh;padding:20px 14px;display:flex;flex-direction:column;gap:6px;border-right:1px solid var(--line);background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.01));backdrop-filter:blur(22px) saturate(120%);-webkit-backdrop-filter:blur(22px) saturate(120%);z-index:20}
-.brand{display:flex;align-items:center;gap:12px;padding:6px 8px 22px}
-.brand svg{flex:none}
-.brand b{font:400 26px/1 var(--display);letter-spacing:.2em;display:block}
-.brand small{display:block;font-size:11px;letter-spacing:.14em;color:var(--mute);margin-top:4px;text-transform:uppercase;white-space:nowrap}
-.nav{display:flex;flex-direction:column;gap:4px}
-.nav button{display:flex;align-items:center;gap:14px;border:1px solid transparent;background:none;padding:11px 12px;border-radius:12px;color:var(--mute);text-align:left;transition:.25s}
-.nav button svg{flex:none;width:20px;height:20px}
-.nav button:hover{color:var(--ink);background:var(--glass)}
-.nav button[aria-current=page]{color:var(--ink);background:var(--glass-hi);border-color:var(--line);box-shadow:inset 0 1px 0 rgba(255,255,255,.08)}
-.nav span{white-space:nowrap;overflow:hidden}
-.side .grow{flex:1}
-.collapse{display:flex;align-items:center;gap:14px;border:0;background:none;color:var(--dim);padding:10px 12px;border-radius:12px}
-.collapse:hover{color:var(--ink)}
-.collapse svg{transition:transform .35s}
-.app.col .collapse svg{transform:rotate(180deg)}
-.app.col .brand div,.app.col .nav span,.app.col .collapse span,.app.col .sidenote{display:none}
-.sidenote{font-size:11.5px;color:var(--dim);padding:0 10px 8px;line-height:1.4}
-.main{padding:28px clamp(16px,3.2vw,44px) 56px;min-width:0;max-width:1240px;width:100%;margin:0 auto}
+        /* Smoky Glassmorphism Utilities */
+        .glass-panel {
+            background: rgba(24, 24, 27, 0.4);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .glass-panel::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+        }
 
-/* glass */
-.panel{position:relative;border-radius:22px;border:1px solid var(--line);padding:22px;min-width:0;background:linear-gradient(150deg,rgba(255,255,255,.075),rgba(255,255,255,.022) 55%,rgba(255,255,255,.04));backdrop-filter:blur(20px) saturate(125%);-webkit-backdrop-filter:blur(20px) saturate(125%);box-shadow:inset 0 1px 0 rgba(255,255,255,.1),0 24px 60px -20px rgba(0,0,0,.7)}
-.panel::before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;background:linear-gradient(115deg,rgba(255,255,255,.07),transparent 28%)}
-.panel>*{position:relative}
-.eyebrow{font-size:11.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--mute)}
-.title{font:400 clamp(30px,4.6vw,46px)/1.08 var(--display);letter-spacing:.01em;text-wrap:balance}
-.h2{font:400 22px/1.2 var(--display);letter-spacing:.03em}
-.sub{color:var(--mute);font-size:14px}
-.head{display:flex;gap:16px;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;margin-bottom:22px}
-.phead{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px}
-.grid{display:grid;gap:16px}
-.g-today{grid-template-columns:minmax(0,1fr) minmax(0,1.5fr);align-items:start}
-.stack{display:grid;gap:16px;min-width:0}
-.g2{grid-template-columns:repeat(2,minmax(0,1fr))}
-.g3{grid-template-columns:repeat(3,minmax(0,1fr))}
-.g-bal{grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);align-items:start}
-@media (max-width:1020px){.g-today,.g-bal,.g2{grid-template-columns:minmax(0,1fr)}.g3{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}}
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #3f3f46;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #52525b;
+        }
 
-/* controls */
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1px solid var(--line2);background:linear-gradient(180deg,rgba(255,255,255,.14),rgba(255,255,255,.05));padding:9px 16px;border-radius:12px;font-weight:500;transition:.25s;box-shadow:inset 0 1px 0 rgba(255,255,255,.15)}
-.btn:hover{background:linear-gradient(180deg,rgba(255,255,255,.22),rgba(255,255,255,.08));transform:translateY(-1px)}
-.btn.ghost{background:none;box-shadow:none;border-color:var(--line)}
-.btn.ghost:hover{background:var(--glass)}
-.btn.danger{border-color:rgba(217,154,154,.4);color:var(--bad)}
-.btn.sm{padding:6px 11px;font-size:13px;border-radius:10px}
-.icon{display:inline-grid;place-items:center;width:34px;height:34px;border-radius:10px;border:1px solid var(--line);background:none;color:var(--mute);transition:.2s;padding:0}
-.icon:hover:not(:disabled){color:var(--ink);background:var(--glass-hi)}
-.icon:disabled{opacity:.3;cursor:default}
-.icon svg{width:17px;height:17px}
-.seg{display:inline-flex;border:1px solid var(--line);border-radius:12px;padding:3px;background:rgba(0,0,0,.25)}
-.seg button{border:0;background:none;padding:6px 14px;border-radius:9px;color:var(--mute)}
-.seg button[aria-pressed=true]{background:var(--glass-hi);color:var(--ink);box-shadow:inset 0 1px 0 rgba(255,255,255,.1)}
-.chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:99px;padding:3px 10px;font-size:12px;color:var(--silver);background:rgba(0,0,0,.2);white-space:nowrap}
-.chip.demo{border-color:rgba(216,189,126,.4);color:var(--warn)}
-.chip.good{color:var(--good)}.chip.bad{color:var(--bad)}
-.field{display:grid;gap:6px;margin-bottom:14px}
-.field label{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--mute)}
-.field input,.field select,.field textarea{width:100%;background:rgba(0,0,0,.35);border:1px solid var(--line);border-radius:12px;padding:10px 12px;transition:.2s}
-.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--line2);outline:none;box-shadow:0 0 0 3px rgba(201,206,214,.12)}
-.field .err{color:var(--bad);font-size:13px;min-height:0}
-.field .err:empty{display:none}
-.field textarea{font-family:var(--mono);font-size:12px;min-height:130px;resize:vertical}
-.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}
-@media (max-width:480px){.fgrid{grid-template-columns:1fr}}
-.banner{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;border:1px solid rgba(216,189,126,.3);background:rgba(216,189,126,.06);border-radius:14px;padding:10px 16px;margin-bottom:18px;color:var(--warn);font-size:14px}
+        /* Range Slider Styling */
+        input[type=range] {
+            -webkit-appearance: none;
+            width: 100%;
+            background: transparent;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 16px;
+            width: 16px;
+            border-radius: 50%;
+            background: #e4e4e7;
+            cursor: pointer;
+            margin-top: -6px;
+            box-shadow: 0 0 10px rgba(255,255,255,0.5);
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 4px;
+            cursor: pointer;
+            background: #3f3f46;
+            border-radius: 2px;
+        }
+        
+        /* View Transitions */
+        .view-section {
+            display: none;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+        }
+        .view-section.active {
+            display: block;
+            opacity: 1;
+            animation: fadeInUp 0.6s ease-out forwards;
+        }
 
-/* today */
-.ringwrap{display:flex;align-items:center;gap:22px;flex-wrap:wrap}
-.ring{width:168px;height:168px;flex:none}
-.ring .arc{transition:stroke-dasharray 1.1s cubic-bezier(.2,.7,.2,1)}
-.ringnum{position:relative;margin-left:-190px;width:168px;text-align:center;pointer-events:none;flex:none}
-.ringnum b{font:400 44px/1 var(--display);display:block}
-.ringnum small{color:var(--mute);font-size:12px;letter-spacing:.14em;text-transform:uppercase}
-.facts{display:grid;gap:12px;flex:1;min-width:140px}
-.fact b{font:500 22px/1.1 var(--mono);display:block}
-.fact span{font-size:12.5px;color:var(--mute)}
-.week{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;align-items:end;height:112px}
-.wk{display:grid;grid-template-rows:1fr auto;gap:6px;border:0;background:none;padding:0;height:100%;min-width:0}
-.wk i{display:block;align-self:end;border-radius:8px 8px 4px 4px;background:linear-gradient(180deg,rgba(255,255,255,.55),rgba(255,255,255,.14));min-height:4px;transition:height 1s cubic-bezier(.2,.7,.2,1),filter .2s}
-.wk:hover i{filter:brightness(1.3)}
-.wk span{font-size:11.5px;color:var(--mute);text-align:center}
-.wk.sel span{color:var(--ink);font-weight:600}
-.wk.sel i{background:linear-gradient(180deg,#fff,rgba(255,255,255,.3));box-shadow:0 0 18px rgba(255,255,255,.22)}
-.cats{display:grid;gap:12px}
-.cat{display:grid;grid-template-columns:104px 1fr 38px;gap:12px;align-items:center;font-size:14px}
-.cat em{font-style:normal;font-family:var(--mono);font-size:12.5px;color:var(--mute);text-align:right}
-.bar{height:6px;border-radius:9px;background:rgba(255,255,255,.07);overflow:hidden;min-width:0}
-.bar i{display:block;height:100%;border-radius:9px;background:linear-gradient(90deg,rgba(255,255,255,.35),#e8ebef);transition:width 1s cubic-bezier(.2,.7,.2,1)}
-.list{list-style:none;margin:0;padding:0;display:grid;gap:10px}
-.row{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:14px;align-items:center;padding:12px 14px;border:1px solid var(--line);border-radius:16px;background:rgba(0,0,0,.2);transition:.3s}
-.row:hover{border-color:var(--line2);background:rgba(255,255,255,.04)}
-.row.done{background:rgba(255,255,255,.055)}
-.chk{width:30px;height:30px;border-radius:10px;border:1.5px solid var(--line2);background:rgba(0,0,0,.3);display:grid;place-items:center;padding:0;transition:.25s;color:transparent}
-.chk svg{width:16px;height:16px}
-.chk[aria-checked=true]{background:linear-gradient(180deg,#f3f5f8,#aab1bc);color:#0a0b0d;border-color:#fff;box-shadow:0 0 16px rgba(255,255,255,.2)}
-.row .nm{font-weight:500;transition:.25s;overflow-wrap:anywhere}
-.row.done .nm{color:var(--mute);text-decoration:line-through;text-decoration-color:rgba(255,255,255,.3)}
-.row .meta{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:12.5px;color:var(--mute);margin-top:3px}
-.row .bar{margin-top:9px}
-.stepper{display:flex;align-items:center;gap:6px}
-.stepper output{min-width:62px;text-align:center;font:500 13px var(--mono)}
-.flame{color:var(--warn)}
-.empty{text-align:center;padding:34px 16px;color:var(--mute);display:grid;gap:12px;justify-items:center}
-.empty b{font:400 22px var(--display);color:var(--ink)}
-.dnav{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+        /* SVG Circular Progress */
+        .progress-ring__circle {
+            transition: stroke-dashoffset 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+        }
+    </style>
+</head>
+<body class="selection:bg-zinc-700 selection:text-white h-screen flex overflow-hidden">
 
-/* habits */
-.hrow{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:14px;align-items:center;padding:14px;border:1px solid var(--line);border-radius:16px;background:rgba(0,0,0,.2)}
-.reorder{display:grid;gap:4px}
-.reorder .icon{width:28px;height:24px;border-radius:8px}
-.strip{display:flex;gap:3px;margin-top:10px;flex-wrap:nowrap}
-.strip i{flex:1;height:14px;min-width:3px;border-radius:3px;background:rgba(255,255,255,.07)}
-.strip i.on{background:rgba(236,238,241,.78)}
-.strip i.part{background:rgba(236,238,241,.32)}
-.acts{display:flex;gap:6px}
-@media (max-width:560px){.hrow{grid-template-columns:auto minmax(0,1fr)}.hrow .acts{grid-column:1/-1;justify-content:flex-end}}
-
-/* charts */
-.chart{width:100%;height:auto;display:block;overflow:visible}
-.chart .grid{stroke:rgba(255,255,255,.08);stroke-width:1}
-.chart .tick{fill:var(--mute);font:11px var(--mono)}
-.chart .axl{fill:var(--mute);font:11px var(--body)}
-.chart .bar{fill:rgba(236,238,241,.4);transition:fill .2s}
-.chart .bar.hot{fill:rgba(255,255,255,.92)}
-.chart .bar:hover{fill:#fff}
-.anim .chart .bar{transform-box:fill-box;transform-origin:bottom;animation:grow .8s cubic-bezier(.2,.7,.2,1) both}
-@keyframes grow{from{transform:scaleY(0)}}
-.chart .ln{fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-.anim .chart .ln{animation:draw 1.3s cubic-bezier(.4,.1,.2,1) both}
-@keyframes draw{from{stroke-dasharray:1;stroke-dashoffset:1}to{stroke-dasharray:1;stroke-dashoffset:0}}
-.legend{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
-.legend button{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);border-radius:99px;padding:4px 11px;font-size:12.5px;background:none;color:var(--silver);transition:.2s}
-.legend button i{width:9px;height:9px;border-radius:50%;background:var(--c)}
-.legend button[aria-pressed=false]{opacity:.38}
-.hbar{display:grid;grid-template-columns:minmax(80px,1.1fr) 2fr 52px;gap:12px;align-items:center;font-size:14px;margin-bottom:11px}
-.hbar em{font:normal 12.5px var(--mono);color:var(--mute);text-align:right}
-.hbar span{overflow-wrap:anywhere}
-.tiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
-.tile b{font:400 34px/1 var(--display);display:block;margin:6px 0 4px}
-@media (max-width:560px){.tiles{grid-template-columns:1fr 1fr}}
-
-/* balance */
-.radarwrap{display:grid;place-items:center}
-.radar{width:100%;max-width:520px;height:auto;overflow:visible}
-.radar .ring5{fill:none;stroke:rgba(255,255,255,.09)}
-.radar .axis{stroke:rgba(255,255,255,.1)}
-.radar .shape{fill:rgba(236,238,241,.14);stroke:#eceef1;stroke-width:1.6;stroke-linejoin:round;filter:drop-shadow(0 0 10px rgba(255,255,255,.25))}
-.radar .cmp{fill:none;stroke:var(--mute);stroke-width:1.3;stroke-dasharray:4 4}
-.radar .nm{fill:var(--silver);font:500 12px var(--body);letter-spacing:.12em;text-transform:uppercase}
-.radar .sc{fill:#fff;font:500 15px var(--mono)}
-.slider{display:grid;gap:6px;margin-bottom:16px}
-.slider .top{display:flex;justify-content:space-between;align-items:baseline}
-.slider output{font:500 18px var(--mono)}
-input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:28px;background:none;margin:0}
-input[type=range]::-webkit-slider-runnable-track{height:4px;border-radius:4px;background:linear-gradient(90deg,var(--c) var(--p),rgba(255,255,255,.1) var(--p))}
-input[type=range]::-moz-range-track{height:4px;border-radius:4px;background:rgba(255,255,255,.1)}
-input[type=range]::-moz-range-progress{height:4px;border-radius:4px;background:var(--c)}
-input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;margin-top:-8px;background:radial-gradient(circle at 35% 30%,#fff,#9aa1ab);border:1px solid rgba(255,255,255,.6);box-shadow:0 2px 10px rgba(0,0,0,.6)}
-input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff,#9aa1ab);border:1px solid rgba(255,255,255,.6)}
-.insight{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:6px}
-.insight div{border:1px solid var(--line);border-radius:14px;padding:10px 12px;background:rgba(0,0,0,.2);min-width:0}
-.insight b{display:block;font:500 17px var(--mono)}
-.insight span{font-size:12px;color:var(--mute)}
-@media (max-width:480px){.insight{grid-template-columns:1fr}}
-.snap{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--line);font-size:14px}
-.snap:last-child{border:0}
-.snap .mono{color:var(--mute);font-size:12.5px}
-.measured{border-style:dashed}
-.mrow{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid var(--line);font-size:14px}
-.mrow:last-of-type{border:0}
-.mrow b{font:500 14px var(--mono)}
-.inline{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-.inline input{flex:1;min-width:110px;background:rgba(0,0,0,.35);border:1px solid var(--line);border-radius:12px;padding:8px 12px}
-
-/* modal + toast */
-.scrim{position:fixed;inset:0;z-index:60;background:rgba(2,3,4,.66);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);display:grid;place-items:center;padding:16px;animation:fade .25s}
-.modal{width:min(520px,100%);max-height:92vh;overflow:auto;background:#0d0f12;animation:rise .35s cubic-bezier(.2,.7,.2,1)}
-.modal .phead{margin-bottom:18px}
-.mfoot{display:flex;gap:10px;justify-content:space-between;flex-wrap:wrap;margin-top:6px}
-#toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 90px);transform:translate(-50%,20px);opacity:0;background:rgba(20,22,26,.92);border:1px solid var(--line2);padding:10px 18px;border-radius:99px;z-index:90;transition:.35s;pointer-events:none;backdrop-filter:blur(12px);font-size:14px;max-width:calc(100vw - 32px)}
-#toast.on{opacity:1;transform:translate(-50%,0)}
-@keyframes fade{from{opacity:0}}
-@keyframes rise{from{opacity:0;transform:translateY(14px)}}
-.enter>*{animation:rise .6s cubic-bezier(.2,.7,.2,1) both}
-.enter>*:nth-child(2){animation-delay:.06s}.enter>*:nth-child(3){animation-delay:.12s}.enter>*:nth-child(4){animation-delay:.18s}.enter>*:nth-child(5){animation-delay:.24s}.enter>*:nth-child(6){animation-delay:.3s}
-
-/* splash */
-#splash{position:fixed;inset:0;z-index:100;background:#030304;display:grid;place-items:center;transition:opacity 1s ease,transform 1s ease,visibility 1s;overflow:hidden}
-#splash.out{opacity:0;transform:scale(1.05);visibility:hidden;pointer-events:none}
-#smoke{position:absolute;inset:0;width:100%;height:100%}
-.vig{position:absolute;inset:0;background:radial-gradient(70% 60% at 50% 50%,transparent,rgba(0,0,0,.75))}
-.streak{position:absolute;left:0;width:100%;height:1px;opacity:0;background:linear-gradient(90deg,transparent,rgba(230,234,242,.85),transparent);animation:sweep 2.2s cubic-bezier(.5,.1,.3,1) forwards}
-.s1{top:47%;animation-delay:.25s}.s2{top:55%;animation-delay:.8s}
-@keyframes sweep{0%{transform:translateX(-60%) scaleX(.4);opacity:0}35%{opacity:.9}100%{transform:translateX(60%) scaleX(1);opacity:0}}
-.splashc{position:relative;text-align:center;padding:0 16px}
-.wm{display:flex;justify-content:center;gap:.14em;font:400 clamp(54px,15vw,148px)/1 var(--display);letter-spacing:.1em;color:#eef0f3;text-shadow:0 0 60px rgba(210,218,230,.25)}
-.wm span{opacity:0;filter:blur(20px);transform:translateY(16px) scale(1.08);animation:letter 1.4s cubic-bezier(.2,.7,.2,1) forwards;animation-delay:calc(.7s + var(--i)*.14s)}
-@keyframes letter{to{opacity:1;filter:blur(0);transform:none}}
-.tag{margin-top:26px;font-size:clamp(11px,2.6vw,14px);letter-spacing:.62em;text-transform:uppercase;color:var(--silver);opacity:0;animation:tagin 1.4s ease 2.1s forwards;padding-left:.62em}
-@keyframes tagin{from{opacity:0;letter-spacing:.9em;filter:blur(6px)}to{opacity:.85;letter-spacing:.62em;filter:none}}
-#skip{position:absolute;right:max(20px,env(safe-area-inset-right,0px));bottom:calc(env(safe-area-inset-bottom,0px) + 22px);z-index:2;background:none;border:1px solid var(--line);border-radius:99px;padding:7px 18px;color:var(--mute);letter-spacing:.2em;text-transform:uppercase;font-size:11.5px;transition:.2s}
-#skip:hover{color:var(--ink);border-color:var(--line2)}
-
-/* phone nav */
-@media (max-width:760px){
-  .app,.app.col{grid-template-columns:minmax(0,1fr)}
-  .side{position:fixed;top:auto;bottom:0;left:0;right:0;height:auto;flex-direction:row;padding:8px 8px calc(env(safe-area-inset-bottom,0px) + 8px);border-right:0;border-top:1px solid var(--line);background:rgba(10,11,13,.82)}
-  .brand,.collapse,.sidenote,.side .grow{display:none!important}
-  .nav{flex-direction:row;width:100%;justify-content:space-around}
-  .nav button{flex-direction:column;gap:3px;padding:7px 4px;flex:1;align-items:center;font-size:10.5px;min-width:0;border-radius:10px}
-  .nav button span{display:block!important;text-overflow:ellipsis;max-width:100%}
-  .main{padding-bottom:110px;padding-top:20px}
-  .cat{grid-template-columns:92px 1fr 36px}
-  .ringnum{margin-left:0}
-  .ringwrap{flex-direction:column;align-items:stretch}
-  .ringwrap .ring{margin:0 auto}
-  .ringnum{position:absolute;top:70px;left:50%;transform:translateX(-50%);margin:0}
-  .ringwrap{position:relative}
-}
-@media (prefers-reduced-motion:reduce){
-  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
-  .fog{animation:none}
-}
-</style>
-
-<div class="fog a"></div><div class="fog b"></div>
-
-<div id="splash" role="dialog" aria-label="AXIOM intro">
-  <canvas id="smoke"></canvas>
-  <div class="vig"></div>
-  <div class="streak s1"></div><div class="streak s2"></div>
-  <div class="splashc">
-    <h1 class="wm" aria-label="AXIOM"><span style="--i:0">A</span><span style="--i:1">X</span><span style="--i:2">I</span><span style="--i:3">O</span><span style="--i:4">M</span></h1>
-    <p class="tag">Live by design</p>
-  </div>
-  <button id="skip" type="button">Skip</button>
-</div>
-
-<div class="app" id="app">
-  <aside class="side">
-    <div class="brand">
-      <svg width="30" height="30" viewBox="0 0 30 30" fill="none" aria-hidden="true"><path d="M15 3 3 26h24L15 3Z" stroke="#c9ced6" stroke-width="1.3"/><path d="M9.5 18h11M15 3v23" stroke="#c9ced6" stroke-width="1" opacity=".6"/></svg>
-      <div><b>AXIOM</b><small>Live by design</small></div>
+    <!-- Ambient Background Lighting -->
+    <div class="fixed inset-0 pointer-events-none z-0">
+        <div class="absolute top-[-10%] left-[-10%] w-[40vw] h-[40vw] bg-zinc-600/10 rounded-full blur-[120px] animate-pulse-slow"></div>
+        <div class="absolute bottom-[-20%] right-[-10%] w-[50vw] h-[50vw] bg-zinc-500/5 rounded-full blur-[150px]"></div>
     </div>
-    <nav class="nav" id="nav" aria-label="Main"></nav>
-    <div class="grow"></div>
-    <p class="sidenote">Saved in this browser only. Not synced across devices.</p>
-    <button class="collapse" type="button" data-act="collapse" aria-label="Collapse sidebar"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m15 6-6 6 6 6"/></svg><span>Collapse</span></button>
-  </aside>
-  <main class="main"><div id="view"></div></main>
-</div>
-<div id="modalroot"></div>
-<div id="toast" role="status" aria-live="polite"></div>
 
-<script>
-(function(){
-'use strict';
-/* ---------- constants & helpers ---------- */
-var KEY='axiom.v1';
-var DIMS=[{k:'health',n:'Health',c:'#9ec9c1'},{k:'studies',n:'Studies',c:'#a9b8e6'},{k:'career',n:'Career',c:'#d8c79f'},{k:'finances',n:'Finances',c:'#b4d29b'},{k:'relationships',n:'Relationships',c:'#dba9bf'}];
-var DIM={};DIMS.forEach(function(d){DIM[d.k]=d});
-var VIEWS=[['today','Today'],['habits','Habits'],['analytics','Analytics'],['balance','Life Balance'],['settings','Settings']];
-var I={
- today:'<path d="M12 3v2M12 19v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M3 12h2M19 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4"/><circle cx="12" cy="12" r="4"/>',
- habits:'<path d="M9 6h11M9 12h11M9 18h11"/><path d="m3.5 6 1.3 1.3L7 5M3.5 12l1.3 1.3L7 11M3.5 18l1.3 1.3L7 17"/>',
- analytics:'<path d="M4 20V10M10 20V4M16 20v-8M22 20H2"/>',
- balance:'<path d="m12 3 8.5 6.2-3.2 10H6.7l-3.2-10L12 3Z"/><path d="M12 3v8l-5.3 8.2M12 11l5.3 8.2M12 11l8.5-1.8M12 11 3.5 9.2" opacity=".5"/>',
- settings:'<path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/>',
- plus:'<path d="M12 5v14M5 12h14"/>',minus:'<path d="M5 12h14"/>',
- edit:'<path d="M4 20h4L19 9l-4-4L4 16v4Z"/>',
- up:'<path d="m6 15 6-6 6 6"/>',down:'<path d="m6 9 6 6 6-6"/>',
- check:'<path d="m5 12.5 4.5 4.5L19 7.5"/>',
- left:'<path d="m15 6-6 6 6 6"/>',right:'<path d="m9 6 6 6-6 6"/>',
- flame:'<path d="M12 3c1 3.5 5 5.5 5 10a5 5 0 0 1-10 0c0-2 1-3.2 2-4 0 2 1 2.5 1.5 2.5C10 9 11 6 12 3Z"/>'
-};
-function ic(n,s){s=s||20;return '<svg width="'+s+'" height="'+s+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+I[n]+'</svg>'}
-function $(s,r){return (r||document).querySelector(s)}
-function $$(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))}
-function esc(s){return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
-function fmt(n){return Number.isInteger(n)?String(n):String(Math.round(n*10)/10)}
-function pc(n){return Math.round(n*100)}
-function pad(n){return (n<10?'0':'')+n}
-function dk(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())}
-function pd(k){var p=k.split('-').map(Number);return new Date(p[0],p[1]-1,p[2])}
-function addDays(k,n){var d=pd(k);d.setDate(d.getDate()+n);return dk(d)}
-function todayK(){return dk(new Date())}
-var WD=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-function longDate(k){return pd(k).toLocaleDateString(undefined,{weekday:'long',day:'numeric',month:'long',year:'numeric'})}
-function shortDate(k){return pd(k).toLocaleDateString(undefined,{day:'numeric',month:'short'})}
-function uid(){return 'h'+Date.now().toString(36)+Math.floor(Math.random()*1e4).toString(36)}
-function rng(a){return function(){a|=0;a=a+0x6D2B79F5|0;var t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+    <!-- Splash Screen -->
+    <div id="splash-screen" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-zinc-950 transition-opacity duration-1000">
+        <div class="absolute inset-0 overflow-hidden pointer-events-none">
+            <div class="absolute top-1/3 left-1/4 w-96 h-96 bg-white/5 rounded-full blur-[100px] animate-pulse"></div>
+        </div>
+        
+        <div id="splash-content" class="relative z-10 flex flex-col items-center transform transition-all duration-1000 translate-y-8 opacity-0">
+            <i data-lucide="hexagon" class="w-16 h-16 text-zinc-300 mb-6 animate-spin-slow" stroke-width="1"></i>
+            <h1 class="text-6xl md:text-8xl font-extralight tracking-[0.3em] text-transparent bg-clip-text bg-gradient-to-b from-white to-zinc-500 mb-4 ml-4">
+                AXIOM
+            </h1>
+            <p class="text-zinc-500 tracking-[0.5em] text-sm uppercase">Live by design</p>
+        </div>
 
-/* ---------- storage ---------- */
-var memOnly=false;
-function load(){try{var r=localStorage.getItem(KEY);if(r)return JSON.parse(r)}catch(e){}return null}
-function save(){try{localStorage.setItem(KEY,JSON.stringify(S));memOnly=false}catch(e){memOnly=true}}
+        <button onclick="skipSplash()" class="absolute bottom-12 right-12 text-zinc-600 hover:text-zinc-300 transition-colors flex items-center gap-2 text-sm tracking-wider uppercase z-20">
+            Skip sequence <i data-lucide="chevron-right" class="w-4 h-4"></i>
+        </button>
+    </div>
 
-/* ---------- sample data (illustrative) ---------- */
-function sample(){
-  var H=[
-   ['Drink water','count',8,'glasses',1,'health'],['Gym session','check',1,'','1','health'],
-   ['Study','count',3,'hours',.5,'studies'],['Eat properly','check',1,'',1,'health'],
-   ['Sleep by 11 pm','check',1,'',1,'health'],['Read','count',30,'min',5,'studies'],
-   ['Personal tasks','count',3,'tasks',1,'career'],['Check in with someone','check',1,'',1,'relationships'],
-   ['Log spending','check',1,'',1,'finances']
-  ].map(function(a,i){return {id:'h'+(i+1),name:a[0],type:a[1],target:a[2],unit:a[3],step:+a[4],cat:a[5]}});
-  var r=rng(42),log={},t=todayK();
-  for(var i=75;i>=1;i--){
-    var k=addDays(t,-i),dow=pd(k).getDay(),trend=.5+.32*(75-i)/75,day={};
-    H.forEach(function(h){
-      var p=trend+(h.id==='h2'&&(dow===0||dow===3)?-.4:0)+(dow===0?-.12:0)+(h.id==='h5'?-.08:0);
-      p=Math.min(.95,Math.max(.1,p));
-      if(r()<p){day[h.id]=h.type==='check'?1:h.target}
-      else if(h.type==='count'&&r()<.6){day[h.id]=Math.round(h.target*r()*.8/h.step)*h.step}
-    });
-    log[k]=day;
-  }
-  log[t]={h1:3,h3:1,h4:1,h6:10};
-  var sc=function(a){return {health:a[0],studies:a[1],career:a[2],finances:a[3],relationships:a[4]}};
-  var hist=[[-70,[5,6,5,4,6]],[-56,[6,6,5,4,6]],[-42,[6,7,6,5,5]],[-28,[7,7,6,5,6]],[-14,[7,8,6,6,6]],[-7,[8,8,7,6,7]]].map(function(x){return {date:addDays(t,x[0]),scores:sc(x[1])}});
-  var sav=[[-80,200],[-62,150],[-45,220],[-30,180],[-12,240],[-3,160]].map(function(x){return {date:addDays(t,x[0]),amount:x[1]}});
-  return {v:1,demo:true,habits:H,log:log,scores:sc([8,8,7,6,7]),history:hist,savings:sav,settings:{name:'',intro:true,collapsed:false}};
-}
+    <!-- Main App Container (Hidden during splash) -->
+    <div id="app-container" class="relative z-10 flex w-full h-full opacity-0 pointer-events-none transition-opacity duration-1000">
+        
+        <!-- Desktop Sidebar -->
+        <aside class="hidden md:flex flex-col w-64 border-r border-white/5 bg-black/20 backdrop-blur-md p-6 h-full z-20">
+            <div class="flex items-center gap-3 mb-16 px-2">
+                <i data-lucide="hexagon" class="w-8 h-8 text-zinc-200" stroke-width="1.5"></i>
+                <span class="text-2xl font-light tracking-[0.2em] text-zinc-100">AXIOM</span>
+            </div>
+            
+            <nav class="space-y-2 flex-1" id="nav-desktop">
+                <!-- Nav items generated by JS -->
+            </nav>
+            
+            <div class="mt-auto pt-6 border-t border-white/5 px-2">
+                <p class="text-[10px] text-zinc-600 uppercase tracking-widest">OS Version 2.0</p>
+            </div>
+        </aside>
 
-var S=load();
-if(!S||!S.habits||!S.log){S=sample();save()}
-S.history=S.history||[];S.savings=S.savings||[];
-S.scores=S.scores||{health:5,studies:5,career:5,finances:5,relationships:5};
-S.settings=Object.assign({name:'',intro:true,collapsed:false},S.settings||{});
+        <!-- Mobile Bottom Nav -->
+        <nav class="md:hidden fixed bottom-0 left-0 w-full bg-zinc-950/80 backdrop-blur-xl border-t border-white/10 z-40 p-4 pb-safe">
+            <div class="flex justify-between items-center max-w-md mx-auto" id="nav-mobile">
+                <!-- Nav items generated by JS -->
+            </div>
+        </nav>
 
-/* ---------- derived stats ---------- */
-function val(h,k){return (S.log[k]||{})[h.id]||0}
-function done(h,k){return val(h,k)>=h.target}
-function dayPct(k){var n=S.habits.length;if(!n)return 0;var c=0;S.habits.forEach(function(h){if(done(h,k))c++});return c/n}
-function streak(h){var k=todayK();if(!done(h,k))k=addDays(k,-1);var n=0;while(done(h,k)&&n<1000){n++;k=addDays(k,-1)}return n}
-function rate(h,days,end){end=end||todayK();var c=0;for(var i=0;i<days;i++)if(done(h,addDays(end,-i)))c++;return c/days}
-function avgPct(days,end){end=end||todayK();var s=0;for(var i=0;i<days;i++)s+=dayPct(addDays(end,-i));return s/days}
-function catRate(cat,days,end){var hs=S.habits.filter(function(h){return h.cat===cat});if(!hs.length)return null;end=end||todayK();var s=0;hs.forEach(function(h){s+=rate(h,days,end)});return s/hs.length}
-function delta(n){var p=Math.round(n*100);if(p===0)return '<span class="chip">no change</span>';return '<span class="chip '+(p>0?'good':'bad')+'">'+(p>0?'▲ +':'▼ ')+p+' pts</span>'}
+        <!-- Main Content Area -->
+        <main class="flex-1 relative overflow-y-auto h-full pb-24 md:pb-0 z-10">
+            <div class="max-w-6xl mx-auto p-6 md:p-12" id="views-container">
+                
+                <!-- 1. Dashboard View -->
+                <div id="view-dashboard" class="view-section active space-y-8">
+                    <header class="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 gap-4">
+                        <div>
+                            <h1 class="text-4xl font-light text-zinc-100 tracking-tight">Good <span id="greeting-time">day</span>, <span id="greeting-name">Commander</span>.</h1>
+                            <p class="text-zinc-400 mt-2 tracking-wide" id="current-date"></p>
+                        </div>
+                    </header>
 
-/* ---------- ui state ---------- */
-var ui={view:'today',date:todayK(),range:7,dims:{health:1,studies:1,career:1,finances:1,relationships:1},cmp:'',modal:null,confirm:'',lastView:''};
-function routeFromHash(){var h=(location.hash||'').replace('#','');return VIEWS.some(function(v){return v[0]===h})?h:'today'}
-ui.view=routeFromHash();
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <!-- Circular Progress Card -->
+                        <div class="glass-panel rounded-2xl p-6 flex flex-col items-center justify-center py-10">
+                            <h3 class="text-zinc-400 text-sm uppercase tracking-widest mb-6">Daily Protocol</h3>
+                            <div class="relative flex items-center justify-center w-40 h-40">
+                                <svg class="w-full h-full" viewBox="0 0 120 120">
+                                    <circle class="text-zinc-800" stroke-width="8" stroke="currentColor" fill="transparent" r="52" cx="60" cy="60" />
+                                    <circle id="progress-circle" class="text-zinc-200 progress-ring__circle" stroke-width="8" stroke-linecap="round" stroke="currentColor" fill="transparent" r="52" cx="60" cy="60" stroke-dasharray="326.72" stroke-dashoffset="326.72" />
+                                </svg>
+                                <div class="absolute flex flex-col items-center justify-center text-center">
+                                    <span class="text-3xl font-light text-white" id="progress-text">0%</span>
+                                </div>
+                            </div>
+                            <p class="mt-6 text-zinc-300 font-light" id="progress-subtext">0 of 0 routines initialized</p>
+                        </div>
 
-function toast(m){var t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(function(){t.classList.remove('on')},2400)}
+                        <!-- Active Directives List -->
+                        <div class="md:col-span-2 space-y-4">
+                            <h3 class="text-zinc-400 text-sm uppercase tracking-widest mb-4 px-2">Active Directives</h3>
+                            <div id="dashboard-habits-list" class="space-y-3">
+                                <!-- Populated by JS -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-/* ---------- charts ---------- */
-function barChart(items,every,label){
-  var W=640,H=210,L=40,R=6,T=10,B=26,pw=W-L-R,ph=H-T-B,n=items.length,g=n>14?3:10,bw=(pw-g*(n-1))/n;
-  var s='<svg viewBox="0 0 '+W+' '+H+'" class="chart" role="img" aria-label="'+esc(label)+'">';
-  [0,.5,1].forEach(function(v){var y=T+ph*(1-v);s+='<line class="grid" x1="'+L+'" x2="'+(W-R)+'" y1="'+y+'" y2="'+y+'"/><text class="tick" x="'+(L-8)+'" y="'+(y+4)+'" text-anchor="end">'+(v*100)+'%</text>'});
-  items.forEach(function(it,i){
-    var x=L+i*(bw+g),h=Math.max(2,ph*it.v),y=T+ph-h;
-    s+='<rect class="bar'+(it.hot?' hot':'')+'" x="'+x.toFixed(1)+'" y="'+y.toFixed(1)+'" width="'+bw.toFixed(1)+'" height="'+h.toFixed(1)+'" rx="'+Math.min(4,bw/2).toFixed(1)+'" style="animation-delay:'+(i*14)+'ms"><title>'+esc(it.title)+'</title></rect>';
-    if(i%every===0)s+='<text class="axl" x="'+(x+bw/2).toFixed(1)+'" y="'+(H-8)+'" text-anchor="middle">'+esc(it.label)+'</text>';
-  });
-  return s+'</svg>';
-}
-function lineChart(series,labels,ymax,ytick,label){
-  var W=640,H=220,L=40,R=14,T=12,B=26,pw=W-L-R,ph=H-T-B,n=series[0].pts.length;
-  var X=function(i){return L+(n===1?pw/2:pw*i/(n-1))},Y=function(v){return T+ph*(1-v/ymax)};
-  var s='<svg viewBox="0 0 '+W+' '+H+'" class="chart" role="img" aria-label="'+esc(label)+'">';
-  [0,.5,1].forEach(function(f){var y=T+ph*(1-f);s+='<line class="grid" x1="'+L+'" x2="'+(W-R)+'" y1="'+y+'" y2="'+y+'"/><text class="tick" x="'+(L-8)+'" y="'+(y+4)+'" text-anchor="end">'+ytick(ymax*f)+'</text>'});
-  labels.forEach(function(l){s+='<text class="axl" x="'+X(l.i).toFixed(1)+'" y="'+(H-8)+'" text-anchor="'+(l.i===0?'start':l.i===n-1?'end':'middle')+'">'+esc(l.t)+'</text>'});
-  series.forEach(function(se){
-    var d=se.pts.map(function(v,i){return (i?'L':'M')+X(i).toFixed(1)+' '+Y(v).toFixed(1)}).join(' ');
-    s+='<path class="ln" pathLength="1" d="'+d+'" stroke="'+se.c+'"'+(se.dash?' stroke-dasharray="4 4"':'')+'/>';
-    var li=n-1;s+='<circle cx="'+X(li).toFixed(1)+'" cy="'+Y(se.pts[li]).toFixed(1)+'" r="4.5" fill="'+se.c+'" stroke="#07080a" stroke-width="2"><title>'+esc(se.name+': '+ytick(se.pts[li]))+'</title></circle>';
-  });
-  return s+'</svg>';
-}
-function radar(sc,cmp){
-  var W=460,H=380,cx=230,cy=190,R=114,N=5;
-  var ang=function(i){return -Math.PI/2+i*2*Math.PI/N};
-  var pt=function(i,v,r){r=r||R;return [cx+Math.cos(ang(i))*r*v/10,cy+Math.sin(ang(i))*r*v/10]};
-  var poly=function(f){return DIMS.map(function(d,i){return pt(i,f(d)).map(function(x){return x.toFixed(1)}).join(',')}).join(' ')};
-  var s='<svg viewBox="0 0 '+W+' '+H+'" class="radar" role="img" aria-label="Life balance radar: '+DIMS.map(function(d){return d.n+' '+sc[d.k]}).join(', ')+'">';
-  [2,4,6,8,10].forEach(function(v){s+='<polygon class="ring5" points="'+poly(function(){return v})+'"/>'});
-  DIMS.forEach(function(d,i){var p=pt(i,10);s+='<line class="axis" x1="'+cx+'" y1="'+cy+'" x2="'+p[0].toFixed(1)+'" y2="'+p[1].toFixed(1)+'"/>'});
-  if(cmp)s+='<polygon class="cmp" points="'+poly(function(d){return cmp[d.k]})+'"/>';
-  s+='<polygon class="shape" points="'+poly(function(d){return sc[d.k]})+'"/>';
-  DIMS.forEach(function(d,i){
-    var p=pt(i,sc[d.k]);s+='<circle cx="'+p[0].toFixed(1)+'" cy="'+p[1].toFixed(1)+'" r="5" fill="'+d.c+'" stroke="#07080a" stroke-width="2"/>';
-    var lp=pt(i,10,R+30),c=Math.cos(ang(i)),an=Math.abs(c)<.2?'middle':c>0?'start':'end';
-    var dy=Math.sin(ang(i))<-.5?-14:Math.sin(ang(i))>.5?10:0;
-    s+='<text class="nm" x="'+lp[0].toFixed(1)+'" y="'+(lp[1]+dy).toFixed(1)+'" text-anchor="'+an+'">'+d.n+'</text><text class="sc" x="'+lp[0].toFixed(1)+'" y="'+(lp[1]+dy+18).toFixed(1)+'" text-anchor="'+an+'">'+sc[d.k]+'/10</text>';
-  });
-  return s+'</svg>';
-}
-function ring(p){
-  var size=168,r=size/2-12,C=2*Math.PI*r;
-  return '<svg viewBox="0 0 168 168" class="ring" aria-hidden="true"><defs><linearGradient id="rg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f4f6f9"/><stop offset="1" stop-color="#6f7681"/></linearGradient></defs><circle cx="84" cy="84" r="'+r+'" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="8"/><circle class="arc" cx="84" cy="84" r="'+r+'" fill="none" stroke="url(#rg)" stroke-width="8" stroke-linecap="round" transform="rotate(-90 84 84)" stroke-dasharray="0 '+C.toFixed(1)+'" data-dash="'+(C*p).toFixed(1)+' '+C.toFixed(1)+'"/></svg>';
-}
+                <!-- 2. Habits View -->
+                <div id="view-habits" class="view-section space-y-8">
+                    <div class="mb-8">
+                        <h2 class="text-3xl font-light tracking-wide text-zinc-100 flex items-center gap-3">
+                            <i data-lucide="target" class="w-6 h-6 text-zinc-400"></i> Protocol Management
+                        </h2>
+                        <p class="text-zinc-500 mt-1 text-sm uppercase tracking-widest">Configure daily routines</p>
+                    </div>
 
-/* ---------- views ---------- */
-function demoChip(){return S.demo?'<span class="chip demo">Illustrative sample data</span>':''}
-function demoBanner(){return S.demo?'<div class="banner"><span>You are looking at illustrative sample data. Your own check-ins will be added on top of it.</span><button class="btn sm ghost" data-act="clear-sample">Clear sample data</button></div>':''}
+                    <div class="glass-panel rounded-2xl p-6 mb-8 bg-black/50">
+                        <form id="add-habit-form" class="flex flex-col md:flex-row gap-4">
+                            <input type="text" id="new-habit-name" placeholder="New directive..." required
+                                class="flex-1 bg-zinc-900/50 border border-white/10 rounded-lg px-4 py-3 text-zinc-200 placeholder-zinc-600 focus:outline-none focus:border-white/30 transition-colors" />
+                            <select id="new-habit-cat" class="bg-zinc-900/50 border border-white/10 rounded-lg px-4 py-3 text-zinc-300 focus:outline-none focus:border-white/30">
+                                <option value="Health">Health</option>
+                                <option value="Studies">Studies</option>
+                                <option value="Career">Career</option>
+                                <option value="Finances">Finances</option>
+                                <option value="Relationships">Relationships</option>
+                                <option value="Other">Other</option>
+                            </select>
+                            <button type="submit" class="bg-zinc-200 text-black px-6 py-3 rounded-lg font-medium hover:bg-white transition-colors flex items-center justify-center gap-2">
+                                <i data-lucide="plus" class="w-5 h-5"></i> Add
+                            </button>
+                        </form>
+                    </div>
 
-function vToday(){
-  var k=ui.date,t=todayK(),isT=k===t,hs=S.habits,total=hs.length;
-  var dn=hs.filter(function(h){return done(h,k)}).length,p=total?dn/total:0;
-  var hr=new Date().getHours(),g=hr<5?'Still up':hr<12?'Good morning':hr<18?'Good afternoon':'Good evening';
-  var nm=S.settings.name?', '+esc(S.settings.name):'';
-  var head='<div class="head"><div><p class="eyebrow">'+esc(longDate(k))+'</p><h1 class="title">'+(isT?g+nm:'Looking back')+'</h1>'+(S.settings.name?'':'<p class="sub" style="margin-top:6px">Add your name in <a href="#settings" style="color:var(--silver)">Settings</a> to personalise this.</p>')+'</div>'+
-   '<div class="dnav"><button class="icon" data-act="day-prev" aria-label="Previous day">'+ic('left',17)+'</button>'+(isT?'':'<button class="btn sm ghost" data-act="day-today">Back to today</button>')+'<button class="icon" data-act="day-next" aria-label="Next day"'+(isT?' disabled':'')+'>'+ic('right',17)+'</button></div></div>';
-  if(!total)return head+demoBanner()+'<div class="panel empty"><b>No habits yet</b><span>Add the routines you want to keep and they will show up here as a daily checklist.</span><button class="btn" data-act="add">'+ic('plus',16)+' Add your first habit</button></div>';
-  var best=0,bestN='';hs.forEach(function(h){var s=streak(h);if(s>best){best=s;bestN=h.name}});
-  var wk=avgPct(7),pw=avgPct(7,addDays(t,-7)),c30=avgPct(30);
-  var week='';for(var i=6;i>=0;i--){var dkk=addDays(t,-i),v=dayPct(dkk);week+='<button class="wk'+(dkk===k?' sel':'')+'" data-act="goto" data-id="'+dkk+'" aria-label="'+esc(longDate(dkk))+', '+pc(v)+' percent"><i data-h="'+Math.max(4,v*100)+'" style="height:4%"></i><span>'+WD[pd(dkk).getDay()]+'</span></button>'}
-  var cats=DIMS.map(function(d){var c=hs.filter(function(h){return h.cat===d.k});if(!c.length)return '<div class="cat"><span>'+d.n+'</span><div class="bar"></div><em>–</em></div>';var f=c.filter(function(h){return done(h,k)}).length/c.length;return '<div class="cat"><span>'+d.n+'</span><div class="bar"><i data-w="'+pc(f)+'" style="width:0"></i></div><em>'+pc(f)+'%</em></div>'}).join('');
-  var rows=hs.map(function(h){
-    var v=val(h,k),dn2=v>=h.target,s=streak(h),isC=h.type==='count';
-    return '<li class="row'+(dn2?' done':'')+'"><button class="chk" role="checkbox" aria-checked="'+dn2+'" aria-label="'+esc(h.name)+'" data-act="toggle" data-id="'+h.id+'">'+ic('check',16)+'</button>'+
-     '<div style="min-width:0"><div class="nm">'+esc(h.name)+'</div><div class="meta"><span>'+DIM[h.cat].n+'</span>'+(s>0?'<span class="flame" title="Current streak">'+ic('flame',13)+' '+s+(s===1?' day':' days')+'</span>':'')+'</div>'+(isC?'<div class="bar"><i data-w="'+Math.min(100,pc(v/h.target))+'" style="width:0"></i></div>':'')+'</div>'+
-     (isC?'<div class="stepper"><button class="icon" data-act="dec" data-id="'+h.id+'" aria-label="Decrease '+esc(h.name)+'">'+ic('minus',16)+'</button><output aria-live="polite">'+fmt(v)+' / '+fmt(h.target)+'<br><small style="color:var(--mute);font-weight:400">'+esc(h.unit)+'</small></output><button class="icon" data-act="inc" data-id="'+h.id+'" aria-label="Increase '+esc(h.name)+'">'+ic('plus',16)+'</button></div>':'')+'</li>';
-  }).join('');
-  return head+demoBanner()+'<div class="grid g-today"><div class="stack">'+
-   '<section class="panel"><div class="phead"><h2 class="h2">'+(isT?'Today':shortDate(k))+'</h2>'+demoChip()+'</div><div class="ringwrap">'+ring(p)+'<div class="ringnum"><b>'+pc(p)+'%</b><small>complete</small></div><div class="facts"><div class="fact"><b>'+dn+' of '+total+'</b><span>habits done</span></div><div class="fact"><b>'+(best?best+' days':'–')+'</b><span>'+(best?'longest running streak · '+esc(bestN):'no streak yet')+'</span></div><div class="fact"><b>'+pc(c30)+'%</b><span>30 day consistency</span></div></div></div></section>'+
-   '<section class="panel"><div class="phead"><h2 class="h2">This week</h2><span>'+delta(wk-pw)+'</span></div><div class="week">'+week+'</div><p class="sub" style="margin-top:12px">Average '+pc(wk)+'% over 7 days, against '+pc(pw)+'% the week before. Tap a day to edit it.</p></section>'+
-   '<section class="panel"><div class="phead"><h2 class="h2">Goals by area</h2></div><div class="cats">'+cats+'</div></section></div>'+
-   '<section class="panel"><div class="phead"><h2 class="h2">Checklist</h2><button class="btn sm" data-act="add">'+ic('plus',15)+' Add habit</button></div><ul class="list">'+rows+'</ul></section></div>';
-}
+                    <div id="all-habits-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
 
-function vHabits(){
-  var hs=S.habits;
-  var head='<div class="head"><div><p class="eyebrow">Routines</p><h1 class="title">Habits</h1></div><button class="btn" data-act="add">'+ic('plus',16)+' New habit</button></div>';
-  if(!hs.length)return head+'<div class="panel empty"><b>Nothing here yet</b><span>A habit is a checkbox or a counter you want to hit every day, like eight glasses of water or one hour of study.</span><button class="btn" data-act="add">'+ic('plus',16)+' Add a habit</button></div>';
-  var t=todayK();
-  var rows=hs.map(function(h,i){
-    var strip='';for(var d=29;d>=0;d--){var k=addDays(t,-d),v=val(h,k);strip+='<i class="'+(v>=h.target?'on':v>0?'part':'')+'" title="'+esc(shortDate(k))+'"></i>'}
-    var s=streak(h);
-    return '<li class="hrow"><div class="reorder"><button class="icon" data-act="up" data-id="'+h.id+'" aria-label="Move '+esc(h.name)+' up"'+(i===0?' disabled':'')+'>'+ic('up',14)+'</button><button class="icon" data-act="down" data-id="'+h.id+'" aria-label="Move '+esc(h.name)+' down"'+(i===hs.length-1?' disabled':'')+'>'+ic('down',14)+'</button></div>'+
-     '<div style="min-width:0"><div class="nm" style="font-weight:500;overflow-wrap:anywhere">'+esc(h.name)+'</div><div class="meta" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px"><span class="chip">'+DIM[h.cat].n+'</span><span class="chip">'+(h.type==='check'?'Checkbox':'Target '+fmt(h.target)+' '+esc(h.unit))+'</span><span class="chip">'+ic('flame',12)+' '+s+' day streak</span><span class="chip">'+pc(rate(h,30))+'% last 30 days</span></div><div class="strip" aria-hidden="true">'+strip+'</div></div>'+
-     '<div class="acts"><button class="btn sm ghost" data-act="edit" data-id="'+h.id+'">'+ic('edit',14)+' Edit</button></div></li>';
-  }).join('');
-  return head+demoBanner()+'<section class="panel"><p class="sub" style="margin-bottom:14px">The strip under each habit shows the last 30 days. Bright squares are completed days, dim squares are partial progress.</p><ul class="list">'+rows+'</ul></section>';
-}
+                <!-- 3. Balance View -->
+                <div id="view-balance" class="view-section space-y-8">
+                    <div class="mb-8">
+                        <h2 class="text-3xl font-light tracking-wide text-zinc-100 flex items-center gap-3">
+                            <i data-lucide="hexagon" class="w-6 h-6 text-zinc-400"></i> Life Balance Matrix
+                        </h2>
+                        <p class="text-zinc-500 mt-1 text-sm uppercase tracking-widest">Self-assessment & equilibrium</p>
+                    </div>
 
-function vAnalytics(){
-  var head='<div class="head"><div><p class="eyebrow">Measured from your check-ins</p><h1 class="title">Analytics</h1></div><div class="inline">'+demoChip()+'<div class="seg" role="group" aria-label="Range"><button aria-pressed="'+(ui.range===7)+'" data-act="range" data-id="7">Week</button><button aria-pressed="'+(ui.range===30)+'" data-act="range" data-id="30">Month</button></div></div></div>';
-  if(!S.habits.length)return head+'<div class="panel empty"><b>No data to chart</b><span>Add habits and check them off. Charts fill in as days pass.</span><button class="btn" data-act="add">Add a habit</button></div>';
-  var t=todayK(),n=ui.range,items=[];
-  for(var i=n-1;i>=0;i--){var k=addDays(t,-i);items.push({v:dayPct(k),hot:k===t,label:n===7?WD[pd(k).getDay()]:String(pd(k).getDate()),title:longDate(k)+': '+pc(dayPct(k))+'%'})}
-  var cur=avgPct(n),prev=avgPct(n,addDays(t,-n)),perfect=0,active=0;
-  for(var j=0;j<n;j++){var q=dayPct(addDays(t,-j));if(q>=.999)perfect++;if(q>0)active++}
-  var tl=n===7?28:90,pts=[];
-  for(var a=tl-1;a>=0;a--)pts.push(avgPct(7,addDays(t,-a)));
-  var lab=[{i:0,t:shortDate(addDays(t,-(tl-1)))},{i:Math.round((tl-1)/2),t:shortDate(addDays(t,-Math.round((tl-1)/2)))},{i:tl-1,t:'Today'}];
-  var hb=S.habits.map(function(h){return {h:h,r:rate(h,n),p:rate(h,n,addDays(t,-n))}}).sort(function(x,y){return y.r-x.r}).map(function(o){return '<div class="hbar"><span>'+esc(o.h.name)+'</span><div class="bar"><i data-w="'+pc(o.r)+'" style="width:0"></i></div><em>'+pc(o.r)+'%</em></div>'}).join('');
-  var cb=DIMS.map(function(d){var r=catRate(d.k,n),pr=catRate(d.k,n,addDays(t,-n));if(r===null)return '<div class="hbar"><span>'+d.n+'</span><div class="bar"></div><em>–</em></div>';return '<div class="hbar"><span>'+d.n+'</span><div class="bar"><i data-w="'+pc(r)+'" style="width:0;background:'+d.c+'"></i></div><em>'+pc(r)+'%</em></div>'}).join('');
-  var wd=[1,2,3,4,5,6,0].map(function(w){var s=0,c=0;for(var x=0;x<56;x++){var kk=addDays(t,-x);if(pd(kk).getDay()===w){s+=dayPct(kk);c++}}return {v:c?s/c:0,label:WD[w],title:WD[w]+' average: '+pc(c?s/c:0)+'%'}});
-  var ws=wd.slice().sort(function(a,b){return b.v-a.v});
-  return head+demoBanner()+'<div class="stack">'+
-   '<div class="tiles"><div class="panel tile"><span class="eyebrow">Average completion</span><b>'+pc(cur)+'%</b>'+delta(cur-prev)+'</div><div class="panel tile"><span class="eyebrow">Perfect days</span><b>'+perfect+'<span style="font-size:18px;color:var(--mute)"> / '+n+'</span></b><span class="sub">every habit done</span></div><div class="panel tile"><span class="eyebrow">Previous '+n+' days</span><b>'+pc(prev)+'%</b><span class="sub">for comparison</span></div></div>'+
-   '<section class="panel"><div class="phead"><h2 class="h2">Daily completion</h2><span class="sub">Last '+n+' days</span></div>'+barChart(items,n===7?1:5,'Daily completion percentage for the last '+n+' days')+'</section>'+
-   '<section class="panel"><div class="phead"><h2 class="h2">Consistency trend</h2><span class="sub">7 day rolling average</span></div>'+lineChart([{name:'Consistency',c:'#e8ebef',pts:pts}],lab,1,function(v){return pc(v)+'%'},'Seven day rolling consistency')+'</section>'+
-   '<div class="grid g2"><section class="panel"><div class="phead"><h2 class="h2">Habit consistency</h2><span class="sub">Last '+n+' days</span></div>'+hb+'</section><section class="panel"><div class="phead"><h2 class="h2">By life area</h2><span class="sub">Habit completion</span></div>'+cb+'</section></div>'+
-   '<section class="panel"><div class="phead"><h2 class="h2">Weekday pattern</h2><span class="sub">Last 8 weeks. Strongest day: '+ws[0].label+', weakest: '+ws[ws.length-1].label+'</span></div>'+barChart(wd,1,'Average completion by weekday')+'</section></div>';
-}
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <div class="glass-panel rounded-2xl p-6 h-[400px] flex items-center justify-center">
+                            <canvas id="balanceChart"></canvas>
+                        </div>
 
-function snapshotOf(k){return S.history.filter(function(x){return x.date===k})[0]}
-function vBalance(){
-  var cmp=ui.cmp?(snapshotOf(ui.cmp)||{}).scores:null;
-  var vals=DIMS.map(function(d){return S.scores[d.k]});
-  var avg=vals.reduce(function(a,b){return a+b},0)/5,sd=Math.sqrt(vals.reduce(function(a,b){return a+(b-avg)*(b-avg)},0)/5);
-  var hi=DIMS.slice().sort(function(a,b){return S.scores[b.k]-S.scores[a.k]});
-  var last=S.history[S.history.length-1],changed=!last||DIMS.some(function(d){return last.scores[d.k]!==S.scores[d.k]});
-  var sliders=DIMS.map(function(d){var v=S.scores[d.k];return '<div class="slider"><div class="top"><label for="sc-'+d.k+'" style="color:var(--silver)">'+d.n+'</label><output id="o-'+d.k+'" style="color:'+d.c+'">'+v+'</output></div><input type="range" id="sc-'+d.k+'" data-dim="'+d.k+'" min="1" max="10" step="1" value="'+v+'" style="--c:'+d.c+';--p:'+((v-1)/9*100)+'%"></div>'}).join('');
-  var opts='<option value="">No comparison</option>'+S.history.slice().reverse().map(function(h){return '<option value="'+h.date+'"'+(ui.cmp===h.date?' selected':'')+'>'+esc(shortDate(h.date))+' snapshot</option>'}).join('');
-  var trend;
-  if(S.history.length<2){trend='<div class="empty"><b>Trends need two snapshots</b><span>Save a snapshot now, then another in a week or two, and this chart will show how your balance moves.</span></div>'}
-  else{
-    var n=S.history.length,ser=DIMS.filter(function(d){return ui.dims[d.k]}).map(function(d){return {name:d.n,c:d.c,pts:S.history.map(function(h){return h.scores[d.k]})}});
-    var lab=[{i:0,t:shortDate(S.history[0].date)},{i:n-1,t:shortDate(S.history[n-1].date)}];
-    trend=(ser.length?lineChart(ser,lab,10,function(v){return String(Math.round(v*10)/10)},'Self assessment scores over time'):'<div class="empty"><span>Turn on at least one area below.</span></div>')+'<div class="legend">'+DIMS.map(function(d){return '<button style="--c:'+d.c+'" aria-pressed="'+(ui.dims[d.k]?'true':'false')+'" data-act="dim" data-id="'+d.k+'"><i></i>'+d.n+'</button>'}).join('')+'</div>';
-  }
-  var hist=S.history.length?S.history.slice().reverse().map(function(h){return '<div class="snap"><span>'+esc(longDate(h.date))+'</span><span class="mono">'+DIMS.map(function(d){return h.scores[d.k]}).join(' · ')+'</span><button class="icon" data-act="del-snap" data-id="'+h.date+'" aria-label="Delete snapshot from '+esc(shortDate(h.date))+'">'+ic('minus',15)+'</button></div>'}).join(''):'<p class="sub">No snapshots yet.</p>';
-  var t=todayK(),gym=S.habits.filter(function(h){return /gym|workout|run|train|exercise/i.test(h.name)}),wk=0;
-  gym.forEach(function(h){for(var i=0;i<7;i++)if(done(h,addDays(t,-i)))wk++});
-  var sh=0;S.habits.forEach(function(h){if(h.cat==='studies'&&/hour/i.test(h.unit))for(var i=0;i<7;i++)sh+=val(h,addDays(t,-i))});
-  var mo=t.slice(0,7),saved=S.savings.filter(function(s){return s.date.slice(0,7)===mo}).reduce(function(a,b){return a+b.amount},0);
-  var rd=DIMS.map(function(d){var r=catRate(d.k,7);return '<div class="mrow"><span>'+d.n+' habits, last 7 days</span><b>'+(r===null?'–':pc(r)+'%')+'</b></div>'}).join('');
-  return '<div class="head"><div><p class="eyebrow">Self assessment</p><h1 class="title">Life Balance</h1></div>'+demoChip()+'</div>'+demoBanner()+
-   '<div class="grid g-bal"><div class="stack"><section class="panel"><div class="phead"><h2 class="h2">Where you stand</h2><div class="field" style="margin:0;min-width:170px"><select id="cmp" aria-label="Compare with a past snapshot">'+opts+'</select></div></div><div class="radarwrap" id="radarbox">'+radar(S.scores,cmp)+'</div><div class="insight" id="insight">'+insight(avg,sd,hi)+'</div></section>'+
-   '<section class="panel"><div class="phead"><h2 class="h2">Trend over time</h2></div>'+trend+'</section></div>'+
-   '<div class="stack"><section class="panel"><div class="phead"><h2 class="h2">Rate each area</h2><span class="sub">1 low, 10 high</span></div>'+sliders+'<div class="inline" style="justify-content:space-between"><span class="sub" id="draft">'+(changed?(last?'Scores differ from your '+esc(shortDate(last.date))+' snapshot.':'Not saved to history yet.'):'Matches your latest snapshot.')+'</span><button class="btn" data-act="snap">Save snapshot</button></div></section>'+
-   '<section class="panel measured"><div class="phead"><h2 class="h2">Measured</h2><span class="chip">Not self rated</span></div><p class="sub" style="margin-bottom:10px">Counted from your habit log and entries. These never change your scores.</p>'+
-   '<div class="mrow"><span>Workouts, last 7 days</span><b>'+(gym.length?wk:'–')+'</b></div><div class="mrow"><span>Study hours, last 7 days</span><b>'+fmt(sh)+'</b></div>'+rd+
-   '<div class="mrow"><span>Saved this month</span><b>'+fmt(saved)+'</b></div><form id="savform" class="inline" style="margin-top:10px" novalidate><input id="savamt" type="number" inputmode="decimal" min="0" step="any" placeholder="Amount saved today" aria-label="Amount saved today"><button class="btn sm" type="submit">Log</button></form><div class="field err" id="saverr" style="margin:6px 0 0"><span class="err"></span></div></section>'+
-   '<section class="panel"><div class="phead"><h2 class="h2">Snapshots</h2></div>'+hist+'</section></div></div>';
-}
-function insight(avg,sd,hi){return '<div><b>'+(Math.round(avg*10)/10)+'</b><span>Average score</span></div><div><b>'+(Math.round(sd*10)/10)+'</b><span>Spread. Lower is more even.</span></div><div><b style="color:'+hi[4].c+'">'+hi[4].n+'</b><span>Needs attention most</span></div>'}
+                        <div class="glass-panel rounded-2xl p-6 flex flex-col justify-center space-y-6" id="balance-sliders">
+                            <h3 class="text-zinc-400 text-sm uppercase tracking-widest mb-2">Adjust Parameters</h3>
+                            <!-- Sliders populated by JS -->
+                        </div>
+                    </div>
+                </div>
 
-function vSettings(){
-  return '<div class="head"><div><p class="eyebrow">Preferences</p><h1 class="title">Settings</h1></div></div><div class="grid g2" style="align-items:start"><div class="stack">'+
-   '<section class="panel"><h2 class="h2" style="margin-bottom:14px">Profile</h2><form id="nameform" novalidate><div class="field"><label for="nm">Your name</label><input id="nm" maxlength="30" value="'+esc(S.settings.name)+'" placeholder="Used in your greeting"><div class="err" id="nmerr"></div></div><button class="btn" type="submit">Save name</button></form></section>'+
-   '<section class="panel"><h2 class="h2" style="margin-bottom:14px">Experience</h2><div class="inline" style="justify-content:space-between;margin-bottom:12px"><label for="introset">Play the intro when AXIOM opens</label><input type="checkbox" id="introset" '+(S.settings.intro?'checked':'')+' style="width:20px;height:20px;accent-color:#c9ced6"></div><p class="sub">The intro is skipped automatically if your device asks for reduced motion.</p><div style="margin-top:14px"><button class="btn sm ghost" data-act="replay">Replay intro</button></div></section>'+
-   '<section class="panel"><h2 class="h2" style="margin-bottom:10px">Where your data lives</h2><p class="sub">Everything is stored in this browser on this device. It is not uploaded and it does not sync to other devices or browsers. Clearing site data removes it, so export a backup now and then.'+(memOnly?' <b style="color:var(--warn)">Storage is blocked in this browser, so changes will be lost when you close the page.</b>':'')+'</p></section></div><div class="stack">'+
-   '<section class="panel"><h2 class="h2" style="margin-bottom:14px">Backup</h2><div class="field"><label for="exp">Export. Copy and keep this text.</label><textarea id="exp" readonly>'+esc(JSON.stringify(S))+'</textarea></div><button class="btn sm" data-act="copyexp">Copy backup</button>'+
-   '<div class="field" style="margin-top:22px"><label for="imp">Import. Paste a backup here.</label><textarea id="imp" placeholder="Paste exported text"></textarea><div class="err" id="imperr"></div></div><button class="btn sm" data-act="import">Restore from backup</button></section>'+
-   '<section class="panel"><h2 class="h2" style="margin-bottom:14px">Reset</h2>'+(S.demo?'<p class="sub" style="margin-bottom:12px">Sample data is still loaded. Clearing it keeps your habits and removes the fake history.</p><button class="btn sm ghost" data-act="clear-sample" style="margin-bottom:16px">Clear sample data</button><br>':'')+
-   (ui.confirm==='reset'?'<p class="sub" style="margin-bottom:10px">This deletes every habit, check-in, score and snapshot.</p><div class="inline"><button class="btn sm danger" data-act="reset-yes">Yes, delete everything</button><button class="btn sm ghost" data-act="reset-no">Cancel</button></div>':'<button class="btn sm danger" data-act="reset">Delete all data</button>')+'</section></div></div>';
-}
+                <!-- 4. Analytics View -->
+                <div id="view-analytics" class="view-section space-y-8">
+                    <div class="mb-8">
+                        <h2 class="text-3xl font-light tracking-wide text-zinc-100 flex items-center gap-3">
+                            <i data-lucide="trending-up" class="w-6 h-6 text-zinc-400"></i> System Telemetry
+                        </h2>
+                        <p class="text-zinc-500 mt-1 text-sm uppercase tracking-widest">Historical performance data</p>
+                    </div>
 
-/* ---------- modal ---------- */
-function modalHTML(){
-  var m=ui.modal;if(!m)return '';
-  var h=m.id?S.habits.filter(function(x){return x.id===m.id})[0]:null;
-  var f=m.draft||(h?{name:h.name,cat:h.cat,type:h.type,target:h.target,unit:h.unit,step:h.step}:{name:'',cat:'health',type:'check',target:1,unit:'',step:1});
-  var e=m.errors||{},isC=f.type==='count';
-  return '<div class="scrim" data-act="scrim"><form class="panel modal" id="hform" role="dialog" aria-modal="true" aria-labelledby="mt" novalidate><div class="phead"><h2 class="h2" id="mt">'+(h?'Edit habit':'New habit')+'</h2><button type="button" class="icon" data-act="close" aria-label="Close">'+ic('plus',16).replace('<svg','<svg style="transform:rotate(45deg)"')+'</button></div>'+
-   '<div class="field"><label for="f-name">Name</label><input id="f-name" maxlength="40" value="'+esc(f.name)+'" placeholder="For example, Stretch for ten minutes" autocomplete="off"><div class="err">'+esc(e.name||'')+'</div></div>'+
-   '<div class="fgrid"><div class="field"><label for="f-cat">Life area</label><select id="f-cat">'+DIMS.map(function(d){return '<option value="'+d.k+'"'+(f.cat===d.k?' selected':'')+'>'+d.n+'</option>'}).join('')+'</select></div>'+
-   '<div class="field"><label for="f-type">Tracking</label><select id="f-type"><option value="check"'+(!isC?' selected':'')+'>Checkbox</option><option value="count"'+(isC?' selected':'')+'>Counter with a daily target</option></select></div></div>'+
-   '<div id="countfields"'+(isC?'':' hidden')+'><div class="fgrid"><div class="field"><label for="f-target">Daily target</label><input id="f-target" type="number" inputmode="decimal" min="0.5" step="any" value="'+esc(f.target)+'"><div class="err">'+esc(e.target||'')+'</div></div><div class="field"><label for="f-unit">Unit</label><input id="f-unit" maxlength="14" value="'+esc(f.unit)+'" placeholder="glasses, hours, pages"><div class="err">'+esc(e.unit||'')+'</div></div></div>'+
-   '<div class="field"><label for="f-step">Amount per tap</label><input id="f-step" type="number" inputmode="decimal" min="0.1" step="any" value="'+esc(f.step)+'"><div class="err">'+esc(e.step||'')+'</div></div></div>'+
-   '<div class="mfoot"><div>'+(h?(ui.confirm==='del'?'<span class="inline"><button type="button" class="btn sm danger" data-act="del-yes">Delete for good</button><button type="button" class="btn sm ghost" data-act="del-no">Keep</button></span>':'<button type="button" class="btn sm danger" data-act="del">Delete</button>'):'')+'</div><div class="inline"><button type="button" class="btn ghost" data-act="close">Cancel</button><button class="btn" type="submit">'+(h?'Save changes':'Add habit')+'</button></div></div></form></div>';
-}
-function renderModal(){$('#modalroot').innerHTML=modalHTML();var i=$('#f-name');if(i&&ui.modal&&!ui.modal.noFocus)i.focus()}
-function readForm(){return {name:$('#f-name').value.trim(),cat:$('#f-cat').value,type:$('#f-type').value,target:$('#f-target').value,unit:$('#f-unit').value.trim(),step:$('#f-step').value}}
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <div class="glass-panel rounded-2xl p-6 h-[350px] flex flex-col">
+                            <h3 class="text-zinc-400 text-xs uppercase tracking-widest mb-4">Weekly Execution Rate (%)</h3>
+                            <div class="flex-1 relative w-full h-full">
+                                <canvas id="lineChart"></canvas>
+                            </div>
+                        </div>
 
-/* ---------- render ---------- */
-function renderNav(){
-  $('#nav').innerHTML=VIEWS.map(function(v){return '<button type="button" data-act="nav" data-id="'+v[0]+'"'+(ui.view===v[0]?' aria-current="page"':'')+'>'+ic(v[0],20)+'<span>'+v[1]+'</span></button>'}).join('');
-  $('#app').classList.toggle('col',!!S.settings.collapsed);
-}
-function render(){
-  var changed=ui.lastView!==ui.view+(ui.view==='today'?'':'')||ui.force;ui.force=false;
-  var ae=document.activeElement,fa=ae&&ae.dataset&&ae.dataset.act?ae.dataset.act:null,fi=ae&&ae.dataset?ae.dataset.id:null;
-  var fn={today:vToday,habits:vHabits,analytics:vAnalytics,balance:vBalance,settings:vSettings}[ui.view];
-  var v=$('#view');v.innerHTML='<div class="'+(changed?'enter anim':'')+'">'+fn()+'</div>';
-  ui.lastView=ui.view;renderNav();
-  var go=function(){$$('[data-w]').forEach(function(e){e.style.width=e.dataset.w+'%'});$$('[data-h]').forEach(function(e){e.style.height=e.dataset.h+'%'});$$('[data-dash]').forEach(function(e){e.setAttribute('stroke-dasharray',e.dataset.dash)})};
-  if(changed)requestAnimationFrame(function(){requestAnimationFrame(go)});else{$$('.arc,.bar i,.wk i').forEach(function(e){e.style.transition='none'});go()}
-  if(fa&&fi){var n=$('[data-act="'+fa+'"][data-id="'+fi+'"]');if(n&&!n.disabled)n.focus()}
-}
-function commit(){save();render()}
+                        <div class="glass-panel rounded-2xl p-6 h-[350px] flex flex-col">
+                            <h3 class="text-zinc-400 text-xs uppercase tracking-widest mb-4">Category Distribution Focus</h3>
+                            <div class="flex-1 relative w-full h-full">
+                                <canvas id="barChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-function setView(v){ui.view=v;ui.confirm='';if(location.hash!=='#'+v)location.hash=v;render();window.scrollTo(0,0)}
-window.addEventListener('hashchange',function(){var v=routeFromHash();if(v!==ui.view){ui.view=v;ui.confirm='';render()}});
+                <!-- 5. Settings View -->
+                <div id="view-settings" class="view-section space-y-8 max-w-2xl">
+                    <div class="mb-8">
+                        <h2 class="text-3xl font-light tracking-wide text-zinc-100 flex items-center gap-3">
+                            <i data-lucide="settings" class="w-6 h-6 text-zinc-400"></i> System Preferences
+                        </h2>
+                        <p class="text-zinc-500 mt-1 text-sm uppercase tracking-widest">Configuration & overrides</p>
+                    </div>
 
-/* ---------- actions ---------- */
-function move(id,dir){var i=S.habits.findIndex(function(h){return h.id===id}),j=i+dir;if(i<0||j<0||j>=S.habits.length)return;var t=S.habits[i];S.habits[i]=S.habits[j];S.habits[j]=t;commit()}
-function setVal(h,k,v){S.log[k]=S.log[k]||{};if(v<=0)delete S.log[k][h.id];else S.log[k][h.id]=v}
-function snapshot(){var t=todayK(),s={};DIMS.forEach(function(d){s[d.k]=S.scores[d.k]});var ex=snapshotOf(t);if(ex)ex.scores=s;else S.history.push({date:t,scores:s});S.history.sort(function(a,b){return a.date<b.date?-1:1});commit();toast('Snapshot saved for today')}
-function clearSample(){S.log={};S.history=[];S.savings=[];S.demo=false;commit();toast('Sample data cleared')}
+                    <div class="glass-panel rounded-2xl p-6 space-y-6">
+                        <div>
+                            <label class="block text-zinc-400 text-sm tracking-wider uppercase mb-2">Operator Designation</label>
+                            <input type="text" id="setting-username" class="w-full bg-zinc-900/50 border border-white/10 rounded-lg px-4 py-3 text-zinc-200 focus:outline-none focus:border-white/30 transition-colors" />
+                        </div>
 
-document.addEventListener('click',function(ev){
-  var el=ev.target.closest('[data-act]');if(!el)return;
-  var a=el.dataset.act,id=el.dataset.id;
-  if(a==='scrim'){if(ev.target!==el)return;ui.modal=null;ui.confirm='';renderModal();return}
-  var h=id?S.habits.filter(function(x){return x.id===id})[0]:null;
-  switch(a){
-   case 'nav':setView(id);break;
-   case 'collapse':S.settings.collapsed=!S.settings.collapsed;save();renderNav();break;
-   case 'toggle':if(h){setVal(h,ui.date,done(h,ui.date)?0:h.target);commit()}break;
-   case 'inc':if(h){var v=Math.round((val(h,ui.date)+h.step)*100)/100;setVal(h,ui.date,v);commit()}break;
-   case 'dec':if(h){var w=Math.round((val(h,ui.date)-h.step)*100)/100;setVal(h,ui.date,Math.max(0,w));commit()}break;
-   case 'day-prev':ui.date=addDays(ui.date,-1);ui.force=true;render();break;
-   case 'day-next':if(ui.date<todayK()){ui.date=addDays(ui.date,1);ui.force=true;render()}break;
-   case 'day-today':ui.date=todayK();ui.force=true;render();break;
-   case 'goto':ui.date=id;render();break;
-   case 'add':ui.modal={id:null};ui.confirm='';renderModal();break;
-   case 'edit':ui.modal={id:id};ui.confirm='';renderModal();break;
-   case 'close':ui.modal=null;ui.confirm='';renderModal();break;
-   case 'del':ui.confirm='del';ui.modal.draft=readForm();ui.modal.noFocus=1;renderModal();break;
-   case 'del-no':ui.confirm='';ui.modal.noFocus=1;renderModal();break;
-   case 'del-yes':S.habits=S.habits.filter(function(x){return x.id!==ui.modal.id});ui.modal=null;ui.confirm='';renderModal();commit();toast('Habit deleted');break;
-   case 'up':move(id,-1);break;
-   case 'down':move(id,1);break;
-   case 'range':ui.range=+id;ui.force=true;render();break;
-   case 'dim':ui.dims[id]=ui.dims[id]?0:1;render();break;
-   case 'snap':snapshot();break;
-   case 'del-snap':S.history=S.history.filter(function(x){return x.date!==id});if(ui.cmp===id)ui.cmp='';commit();toast('Snapshot deleted');break;
-   case 'clear-sample':clearSample();break;
-   case 'replay':playSplash();break;
-   case 'copyexp':var ta=$('#exp');var ok=function(){toast('Backup copied')},no=function(){ta.focus();ta.select();toast('Press copy on your keyboard to finish')};
-     try{navigator.clipboard.writeText(ta.value).then(ok,no)}catch(e){no()}break;
-   case 'import':try{var o=JSON.parse($('#imp').value);if(!o||!Array.isArray(o.habits)||typeof o.log!=='object')throw 0;S=o;S.history=S.history||[];S.savings=S.savings||[];S.settings=Object.assign({name:'',intro:true,collapsed:false},S.settings||{});S.scores=S.scores||{health:5,studies:5,career:5,finances:5,relationships:5};commit();toast('Backup restored')}catch(e){$('#imperr').textContent='That text is not a valid AXIOM backup. Copy the whole export and try again.'}break;
-   case 'reset':ui.confirm='reset';render();break;
-   case 'reset-no':ui.confirm='';render();break;
-   case 'reset-yes':S={v:1,demo:false,habits:[],log:{},scores:{health:5,studies:5,career:5,finances:5,relationships:5},history:[],savings:[],settings:{name:'',intro:true,collapsed:false}};ui.confirm='';commit();toast('All data deleted');break;
-  }
-});
+                        <div class="pt-6 border-t border-white/5">
+                            <label class="block text-zinc-400 text-sm tracking-wider uppercase mb-4 text-red-400/80">Danger Zone</label>
+                            <button id="btn-reset" class="bg-red-950/30 border border-red-900/50 text-red-400 px-6 py-3 rounded-lg font-medium hover:bg-red-900/40 transition-colors w-full md:w-auto">
+                                Factory Reset System
+                            </button>
+                            <p class="text-zinc-600 text-xs mt-3">Clears all habits, history, and configuration stored locally. Cannot be undone.</p>
+                        </div>
+                    </div>
+                </div>
 
-document.addEventListener('submit',function(ev){
-  ev.preventDefault();var f=ev.target.id;
-  if(f==='hform'){
-    var d=readForm(),e={},isC=d.type==='count',tg=parseFloat(d.target),st=parseFloat(d.step);
-    if(!d.name)e.name='Give the habit a name.';
-    else if(S.habits.some(function(h){return h.name.toLowerCase()===d.name.toLowerCase()&&h.id!==ui.modal.id}))e.name='You already have a habit with this name.';
-    if(isC){if(!(tg>0))e.target='Enter a target above zero.';else if(tg>9999)e.target='Keep the target under 10,000.';
-      if(!d.unit)e.unit='Add a unit, like glasses or pages.';
-      if(!(st>0))e.step='Enter an amount above zero.';else if(st>tg)e.step='This is larger than the daily target.'}
-    if(Object.keys(e).length){ui.modal.draft=d;ui.modal.errors=e;ui.modal.noFocus=1;renderModal();var bad=$('#hform .err:not(:empty)');if(bad){var inp=bad.previousElementSibling;if(inp)inp.focus()}return}
-    var rec={name:d.name,cat:d.cat,type:d.type,target:isC?tg:1,unit:isC?d.unit:'',step:isC?st:1};
-    if(ui.modal.id){var h=S.habits.filter(function(x){return x.id===ui.modal.id})[0];Object.assign(h,rec);toast('Habit updated')}
-    else{rec.id=uid();S.habits.push(rec);toast('Habit added')}
-    ui.modal=null;ui.confirm='';renderModal();commit();
-  }else if(f==='nameform'){
-    var n=$('#nm').value.trim();if(n.length>30){$('#nmerr').textContent='Keep it under 30 characters.';return}
-    S.settings.name=n;commit();toast('Name saved');
-  }else if(f==='savform'){
-    var amt=parseFloat($('#savamt').value),er=$('#saverr .err');
-    if(!(amt>0)){er.textContent='Enter an amount above zero.';return}
-    S.savings.push({date:todayK(),amount:amt});commit();toast('Savings logged');
-  }
-});
-document.addEventListener('change',function(ev){
-  var t=ev.target;
-  if(t.id==='f-type'){$('#countfields').hidden=t.value!=='count'}
-  else if(t.id==='cmp'){ui.cmp=t.value;render()}
-  else if(t.id==='introset'){S.settings.intro=t.checked;save()}
-});
-document.addEventListener('input',function(ev){
-  var t=ev.target;
-  if(t.dataset&&t.dataset.dim){
-    var k=t.dataset.dim,v=+t.value;S.scores[k]=v;t.style.setProperty('--p',((v-1)/9*100)+'%');$('#o-'+k).textContent=v;
-    var cmp=ui.cmp?(snapshotOf(ui.cmp)||{}).scores:null;$('#radarbox').innerHTML=radar(S.scores,cmp);
-    var vals=DIMS.map(function(d){return S.scores[d.k]}),avg=vals.reduce(function(a,b){return a+b},0)/5,sd=Math.sqrt(vals.reduce(function(a,b){return a+(b-avg)*(b-avg)},0)/5),hi=DIMS.slice().sort(function(a,b){return S.scores[b.k]-S.scores[a.k]});
-    $('#insight').innerHTML=insight(avg,sd,hi);
-    var last=S.history[S.history.length-1],ch=!last||DIMS.some(function(d){return last.scores[d.k]!==S.scores[d.k]});
-    $('#draft').textContent=ch?(last?'Scores differ from your '+shortDate(last.date)+' snapshot.':'Not saved to history yet.'):'Matches your latest snapshot.';
-    clearTimeout(input.t);input.t=setTimeout(save,250);
-  }
-});
-function input(){}
-document.addEventListener('keydown',function(ev){if(ev.key==='Escape'&&ui.modal){ui.modal=null;ui.confirm='';renderModal()}});
+            </div>
+        </main>
+    </div>
 
-/* ---------- splash ---------- */
-var splashTimer,raf,smokeOn=false;
-function smoke(){
-  var c=$('#smoke'),x=c.getContext('2d'),W,H,dpr=Math.min(window.devicePixelRatio||1,2),ps=[],r=rng(7);
-  function size(){W=c.clientWidth;H=c.clientHeight;c.width=W*dpr;c.height=H*dpr;x.setTransform(dpr,0,0,dpr,0,0)}
-  size();
-  for(var i=0;i<34;i++)ps.push({x:r()*W,y:r()*H,r:140+r()*300,vx:(r()-.5)*.28,vy:-.04-r()*.2,a:.025+r()*.05});
-  var dust=[];for(var j=0;j<70;j++)dust.push({x:r()*W,y:r()*H,s:.4+r()*1.3,vy:-.1-r()*.35,a:.15+r()*.5,p:r()*6});
-  smokeOn=true;var t0=0;
-  function frame(t){
-    if(!smokeOn)return;t0=t;
-    x.globalCompositeOperation='source-over';x.fillStyle='#030304';x.fillRect(0,0,W,H);
-    x.globalCompositeOperation='lighter';
-    ps.forEach(function(p){
-      p.x+=p.vx;p.y+=p.vy;if(p.y<-p.r)p.y=H+p.r;if(p.x<-p.r)p.x=W+p.r;if(p.x>W+p.r)p.x=-p.r;
-      var g=x.createRadialGradient(p.x,p.y,0,p.x,p.y,p.r);g.addColorStop(0,'rgba(190,198,212,'+p.a+')');g.addColorStop(1,'rgba(190,198,212,0)');
-      x.fillStyle=g;x.fillRect(p.x-p.r,p.y-p.r,p.r*2,p.r*2);
-    });
-    dust.forEach(function(d){d.y+=d.vy;d.x+=Math.sin(t/1800+d.p)*.25;if(d.y<-4){d.y=H+4;d.x=Math.random()*W}x.fillStyle='rgba(235,240,248,'+(d.a*(.6+.4*Math.sin(t/700+d.p)))+')';x.beginPath();x.arc(d.x,d.y,d.s,0,6.283);x.fill()});
-    raf=requestAnimationFrame(frame);
-  }
-  raf=requestAnimationFrame(frame);
-}
-function endSplash(){
-  clearTimeout(splashTimer);var s=$('#splash');if(s.classList.contains('out'))return;
-  s.classList.add('out');setTimeout(function(){smokeOn=false;cancelAnimationFrame(raf)},1100);
-  ui.force=true;render();
-}
-function playSplash(){
-  var s=$('#splash');
-  var spans=$$('.wm span,.tag,.streak',s);spans.forEach(function(e){e.style.animation='none';e.offsetHeight;e.style.animation=''});
-  s.classList.remove('out');if(!smokeOn)smoke();
-  clearTimeout(splashTimer);splashTimer=setTimeout(endSplash,3900);
-}
-$('#skip').addEventListener('click',endSplash);
-$('#splash').addEventListener('keydown',function(e){if(e.key==='Escape')endSplash()});
+    <!-- Custom Modal for Alerts/Confirmations to avoid browser defaults -->
+    <div id="custom-modal" class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/60 backdrop-blur-sm opacity-0 transition-opacity duration-300">
+        <div class="glass-panel rounded-2xl p-6 max-w-sm w-full mx-4 transform scale-95 transition-transform duration-300" id="custom-modal-content">
+            <h3 class="text-xl font-light text-zinc-100 mb-2" id="modal-title">Confirm Action</h3>
+            <p class="text-zinc-400 text-sm mb-6" id="modal-message">Are you sure?</p>
+            <div class="flex justify-end gap-3">
+                <button id="modal-cancel" class="px-4 py-2 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors">Cancel</button>
+                <button id="modal-confirm" class="px-4 py-2 rounded-lg bg-red-900/50 text-red-200 hover:bg-red-800/60 transition-colors">Confirm</button>
+            </div>
+        </div>
+    </div>
 
-/* ---------- boot ---------- */
-render();
-var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-if(reduce||!S.settings.intro){$('#splash').classList.add('out');$('#splash').style.transition='none'}
-else{smoke();splashTimer=setTimeout(endSplash,3900);$('#skip').focus()}
-})();
-</script>
+    <script>
+        // --- CONSTANTS & INITIAL STATE ---
+        const STORAGE_KEY = 'axiom_os_data_v2';
+        
+        const defaultData = {
+            userName: 'Commander',
+            habits: [
+                { id: '1', name: 'Hydration (2L)', category: 'Health', streak: 4, completedDates: [] },
+                { id: '2', name: 'Deep Work (2hr)', category: 'Career', streak: 2, completedDates: [] },
+                { id: '3', name: 'Physical Training', category: 'Health', streak: 0, completedDates: [] },
+                { id: '4', name: 'Reading (30m)', category: 'Studies', streak: 7, completedDates: [] },
+            ],
+            balanceScores: {
+                health: 7,
+                studies: 6,
+                career: 8,
+                finances: 5,
+                relationships: 7
+            },
+            hasSeenSplash: false
+        };
 
-</body></html>
+        let state = { ...defaultData };
+        let currentView = 'dashboard';
+        
+        // Chart instances
+        let radarChartInstance = null;
+        let lineChartInstance = null;
+        let barChartInstance = null;
+
+        const navItems = [
+            { id: 'dashboard', label: 'Dashboard', icon: 'activity' },
+            { id: 'habits', label: 'Protocols', icon: 'target' },
+            { id: 'balance', label: 'Balance', icon: 'hexagon' },
+            { id: 'analytics', label: 'Telemetry', icon: 'trending-up' },
+            { id: 'settings', label: 'Settings', icon: 'settings' },
+        ];
+
+        // --- UTILS ---
+        const getTodayStr = () => new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD local
+        
+        const loadState = () => {
+            try {
+                const stored = localStorage.getItem(STORAGE_KEY);
+                if (stored) state = JSON.parse(stored);
+            } catch (e) {
+                console.error("Storage error:", e);
+            }
+        };
+
+        const saveState = () => {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        };
+
+        // Custom Modal
+        let modalConfirmCallback = null;
+        const showModal = (title, message, callback) => {
+            document.getElementById('modal-title').textContent = title;
+            document.getElementById('modal-message').textContent = message;
+            modalConfirmCallback = callback;
+            const modal = document.getElementById('custom-modal');
+            const content = document.getElementById('custom-modal-content');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            // small delay for transition
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                content.classList.remove('scale-95');
+            }, 10);
+        };
+
+        const hideModal = () => {
+            const modal = document.getElementById('custom-modal');
+            const content = document.getElementById('custom-modal-content');
+            modal.classList.add('opacity-0');
+            content.classList.add('scale-95');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }, 300);
+        };
+
+        document.getElementById('modal-cancel').addEventListener('click', hideModal);
+        document.getElementById('modal-confirm').addEventListener('click', () => {
+            if(modalConfirmCallback) modalConfirmCallback();
+            hideModal();
+        });
+
+
+        // --- NAVIGATION & ROUTING ---
+        const renderNavigation = () => {
+            const deskContainer = document.getElementById('nav-desktop');
+            const mobContainer = document.getElementById('nav-mobile');
+            
+            let deskHTML = '';
+            let mobHTML = '';
+
+            navItems.forEach(item => {
+                const isActive = currentView === item.id;
+                
+                // Desktop Nav Item
+                deskHTML += `
+                    <button onclick="switchView('${item.id}')" 
+                        class="w-full flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-300 ${isActive ? 'bg-zinc-800/80 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]' : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-900/50'}">
+                        <i data-lucide="${item.icon}" class="w-5 h-5"></i>
+                        <span class="tracking-wide text-sm">${item.label}</span>
+                    </button>
+                `;
+                
+                // Mobile Nav Item
+                mobHTML += `
+                    <button onclick="switchView('${item.id}')" 
+                        class="flex flex-col items-center gap-1 p-2 transition-colors ${isActive ? 'text-zinc-100' : 'text-zinc-600'}">
+                        <i data-lucide="${item.icon}" class="w-5 h-5"></i>
+                        <span class="text-[10px] tracking-wider">${item.label}</span>
+                    </button>
+                `;
+            });
+
+            deskContainer.innerHTML = deskHTML;
+            mobContainer.innerHTML = mobHTML;
+            lucide.createIcons();
+        };
+
+        const switchView = (viewId) => {
+            currentView = viewId;
+            
+            // Update Nav UI
+            renderNavigation();
+            
+            // Hide all views, show targeted
+            document.querySelectorAll('.view-section').forEach(el => {
+                el.classList.remove('active');
+            });
+            document.getElementById(`view-${viewId}`).classList.add('active');
+
+            // Trigger specific view renders
+            if(viewId === 'dashboard') renderDashboard();
+            if(viewId === 'habits') renderHabits();
+            if(viewId === 'balance') renderBalance();
+            if(viewId === 'analytics') renderAnalytics();
+            if(viewId === 'settings') renderSettings();
+        };
+
+        // --- VIEW RENDERING LOGIC ---
+
+        // 1. Dashboard
+        const renderDashboard = () => {
+            // Update Headers
+            const hour = new Date().getHours();
+            let timeGreeting = 'evening';
+            if (hour < 12) timeGreeting = 'morning';
+            else if (hour < 17) timeGreeting = 'afternoon';
+            
+            document.getElementById('greeting-time').textContent = timeGreeting;
+            document.getElementById('greeting-name').textContent = state.userName;
+            
+            const options = { weekday: 'long', month: 'long', day: 'numeric' };
+            document.getElementById('current-date').textContent = new Date().toLocaleDateString('en-US', options);
+
+            // Calculate Progress
+            const todayStr = getTodayStr();
+            const total = state.habits.length;
+            const completed = state.habits.filter(h => h.completedDates.includes(todayStr)).length;
+            const percentage = total === 0 ? 0 : Math.round((completed / total) * 100);
+
+            // Update Circle SVG
+            const circle = document.getElementById('progress-circle');
+            const radius = circle.r.baseVal.value;
+            const circumference = radius * 2 * Math.PI;
+            const offset = circumference - (percentage / 100) * circumference;
+            circle.style.strokeDashoffset = offset;
+            
+            document.getElementById('progress-text').textContent = `${percentage}%`;
+            document.getElementById('progress-subtext').textContent = `${completed} of ${total} routines initialized`;
+
+            // Render Active Directives List
+            const listContainer = document.getElementById('dashboard-habits-list');
+            
+            if (total === 0) {
+                listContainer.innerHTML = `<div class="glass-panel rounded-2xl text-center py-12 text-zinc-500">No active directives. Go to Protocols to configure.</div>`;
+            } else {
+                let listHTML = '';
+                // Limit to first 5 on dashboard
+                state.habits.slice(0, 5).forEach(habit => {
+                    const isDone = habit.completedDates.includes(todayStr);
+                    listHTML += `
+                        <div class="glass-panel rounded-2xl p-4 transition-all duration-300 ${isDone ? 'bg-zinc-900/20 border-white/5' : 'hover:bg-zinc-800/40'}">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-4">
+                                    <button onclick="toggleHabit('${habit.id}')" 
+                                        class="w-6 h-6 rounded-full border flex items-center justify-center transition-colors ${isDone ? 'bg-zinc-300 border-zinc-300 text-black' : 'border-zinc-600 hover:border-zinc-400'}">
+                                        ${isDone ? '<i data-lucide="check" class="w-4 h-4"></i>' : ''}
+                                    </button>
+                                    <span class="text-lg font-light transition-colors ${isDone ? 'text-zinc-600 line-through' : 'text-zinc-200'}">
+                                        ${habit.name}
+                                    </span>
+                                </div>
+                                ${habit.streak > 0 ? `
+                                <div class="flex items-center gap-1 text-xs text-zinc-500">
+                                    <i data-lucide="activity" class="w-3 h-3"></i> ${habit.streak} day streak
+                                </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                    `;
+                });
+                listContainer.innerHTML = listHTML;
+            }
+            lucide.createIcons();
+        };
+
+        // Habit Actions
+        window.toggleHabit = (id) => {
+            const todayStr = getTodayStr();
+            state.habits = state.habits.map(habit => {
+                if (habit.id === id) {
+                    const isCompleted = habit.completedDates.includes(todayStr);
+                    let newDates = isCompleted 
+                        ? habit.completedDates.filter(d => d !== todayStr)
+                        : [...habit.completedDates, todayStr];
+                    
+                    // Recalculate streak (simplified)
+                    let streak = 0;
+                    let checkDate = new Date();
+                    while(true) {
+                        const checkStr = checkDate.toLocaleDateString('en-CA');
+                        if(newDates.includes(checkStr)) {
+                            streak++;
+                            checkDate.setDate(checkDate.getDate() - 1);
+                        } else {
+                            if (checkStr === todayStr) {
+                                checkDate.setDate(checkDate.getDate() - 1);
+                                continue;
+                            }
+                            break;
+                        }
+                    }
+                    return { ...habit, completedDates: newDates, streak };
+                }
+                return habit;
+            });
+            saveState();
+            
+            // Re-render current view
+            if(currentView === 'dashboard') renderDashboard();
+            if(currentView === 'habits') renderHabits();
+        };
+
+        window.deleteHabit = (id) => {
+            state.habits = state.habits.filter(h => h.id !== id);
+            saveState();
+            renderHabits();
+            if(currentView === 'dashboard') renderDashboard();
+        };
+
+        // 2. Habits / Protocols
+        const renderHabits = () => {
+            const todayStr = getTodayStr();
+            const gridContainer = document.getElementById('all-habits-grid');
+            
+            let gridHTML = '';
+            state.habits.forEach(habit => {
+                const isDone = habit.completedDates.includes(todayStr);
+                gridHTML += `
+                    <div class="glass-panel rounded-2xl p-6 group relative">
+                        <div class="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button onclick="deleteHabit('${habit.id}')" class="text-zinc-600 hover:text-red-400 transition-colors">
+                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                        <div class="flex flex-col h-full justify-between">
+                            <div>
+                                <span class="text-[10px] uppercase tracking-widest text-zinc-500 bg-zinc-800/50 px-2 py-1 rounded border border-white/5">${habit.category}</span>
+                                <h4 class="text-xl font-light text-zinc-200 mt-4 mb-6">${habit.name}</h4>
+                            </div>
+                            
+                            <div class="flex items-center justify-between border-t border-white/5 pt-4">
+                                <div class="flex flex-col">
+                                    <span class="text-xs text-zinc-500 uppercase tracking-wider">Status</span>
+                                    <button onclick="toggleHabit('${habit.id}')" 
+                                        class="mt-1 flex items-center gap-2 text-sm transition-colors ${isDone ? 'text-zinc-300' : 'text-zinc-500 hover:text-zinc-300'}">
+                                        <i data-lucide="${isDone ? 'check-circle-2' : 'circle'}" class="w-4 h-4"></i>
+                                        ${isDone ? 'Completed' : 'Pending'}
+                                    </button>
+                                </div>
+                                <div class="flex flex-col items-end">
+                                    <span class="text-xs text-zinc-500 uppercase tracking-wider">Streak</span>
+                                    <span class="text-lg font-light text-zinc-300 mt-1 flex items-center gap-1">
+                                        ${habit.streak} <i data-lucide="activity" class="w-3 h-3 text-zinc-600"></i>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            gridContainer.innerHTML = gridHTML;
+            lucide.createIcons();
+        };
+
+        document.getElementById('add-habit-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const nameInput = document.getElementById('new-habit-name');
+            const catInput = document.getElementById('new-habit-cat');
+            
+            if (nameInput.value.trim()) {
+                state.habits.push({
+                    id: Date.now().toString(),
+                    name: nameInput.value.trim(),
+                    category: catInput.value,
+                    streak: 0,
+                    completedDates: []
+                });
+                saveState();
+                nameInput.value = '';
+                renderHabits();
+            }
+        });
+
+        // --- CHARTS & BALANCE CONFIGURATION ---
+        Chart.defaults.color = '#71717a';
+        Chart.defaults.font.family = 'Inter, sans-serif';
+
+        // 3. Balance View
+        const renderBalance = () => {
+            const slidersContainer = document.getElementById('balance-sliders');
+            
+            // Initial render of sliders if empty
+            if (slidersContainer.children.length <= 1) { // includes the h3
+                Object.keys(state.balanceScores).forEach(key => {
+                    const val = state.balanceScores[key];
+                    const div = document.createElement('div');
+                    div.className = 'space-y-2';
+                    div.innerHTML = `
+                        <div class="flex justify-between text-sm">
+                            <span class="capitalize text-zinc-300 font-light">${key}</span>
+                            <span class="text-zinc-500 font-mono" id="val-${key}">${val}/10</span>
+                        </div>
+                        <input type="range" min="1" max="10" value="${val}" 
+                            oninput="updateBalanceScore('${key}', this.value)"
+                            class="w-full h-1 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-zinc-300" />
+                    `;
+                    slidersContainer.appendChild(div);
+                });
+            }
+
+            // Radar Chart setup
+            const ctx = document.getElementById('balanceChart').getContext('2d');
+            const dataValues = [
+                state.balanceScores.health,
+                state.balanceScores.studies,
+                state.balanceScores.career,
+                state.balanceScores.finances,
+                state.balanceScores.relationships
+            ];
+
+            if (radarChartInstance) {
+                radarChartInstance.data.datasets[0].data = dataValues;
+                radarChartInstance.update();
+            } else {
+                radarChartInstance = new Chart(ctx, {
+                    type: 'radar',
+                    data: {
+                        labels: ['Health', 'Studies', 'Career', 'Finances', 'Relations'],
+                        datasets: [{
+                            label: 'Current Status',
+                            data: dataValues,
+                            backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                            borderColor: '#e4e4e7',
+                            pointBackgroundColor: '#18181b',
+                            pointBorderColor: '#e4e4e7',
+                            pointHoverBackgroundColor: '#fff',
+                            pointHoverBorderColor: '#fff',
+                            borderWidth: 1,
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            r: {
+                                angleLines: { color: 'rgba(255, 255, 255, 0.1)' },
+                                grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                                pointLabels: { color: '#a1a1aa', font: { size: 12, weight: '300' } },
+                                ticks: { display: false, min: 0, max: 10 }
+                            }
+                        },
+                        plugins: { legend: { display: false } }
+                    }
+                });
+            }
+        };
+
+        window.updateBalanceScore = (key, value) => {
+            state.balanceScores[key] = parseInt(value);
+            document.getElementById(`val-${key}`).textContent = `${value}/10`;
+            saveState();
+            if (radarChartInstance) {
+                radarChartInstance.data.datasets[0].data = [
+                    state.balanceScores.health,
+                    state.balanceScores.studies,
+                    state.balanceScores.career,
+                    state.balanceScores.finances,
+                    state.balanceScores.relationships
+                ];
+                radarChartInstance.update();
+            }
+        };
+
+        // 4. Analytics
+        const renderAnalytics = () => {
+            // Generate realistic sample data
+            const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+            const compData = days.map(() => Math.floor(Math.random() * 40) + 60);
+            const focusData = days.map(() => Math.floor(Math.random() * 50) + 30);
+            
+            // Line Chart
+            const lineCtx = document.getElementById('lineChart').getContext('2d');
+            if(lineChartInstance) lineChartInstance.destroy();
+            lineChartInstance = new Chart(lineCtx, {
+                type: 'line',
+                data: {
+                    labels: days,
+                    datasets: [
+                        { label: 'Completion', data: compData, borderColor: '#e4e4e7', tension: 0.4, borderWidth: 2, pointBackgroundColor: '#18181b' },
+                        { label: 'Deep Work', data: focusData, borderColor: '#52525b', tension: 0.4, borderWidth: 2, pointRadius: 0 }
+                    ]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    scales: {
+                        y: { grid: { color: 'rgba(255,255,255,0.05)' }, border: { display: false }, min: 0, max: 100 },
+                        x: { grid: { display: false }, border: { display: false } }
+                    },
+                    plugins: { legend: { labels: { usePointStyle: true, boxWidth: 6 } } }
+                }
+            });
+
+            // Bar Chart (Category Distribution mock)
+            const barCtx = document.getElementById('barChart').getContext('2d');
+            if(barChartInstance) barChartInstance.destroy();
+            barChartInstance = new Chart(barCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Health', 'Career', 'Studies', 'Relations'],
+                    datasets: [{
+                        label: 'Focus Time',
+                        data: [85, 65, 90, 45],
+                        backgroundColor: '#d4d4d8',
+                        borderRadius: 4,
+                        barThickness: 24
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true, maintainAspectRatio: false,
+                    scales: {
+                        x: { display: false, max: 100 },
+                        y: { grid: { display: false }, border: { display: false } }
+                    },
+                    plugins: { legend: { display: false } }
+                }
+            });
+        };
+
+        // 5. Settings
+        const renderSettings = () => {
+            const input = document.getElementById('setting-username');
+            input.value = state.userName;
+            
+            input.oninput = (e) => {
+                state.userName = e.target.value;
+                saveState();
+            };
+        };
+
+        document.getElementById('btn-reset').addEventListener('click', () => {
+            showModal('Factory Reset', 'Are you sure you want to reset all telemetry? This action is irreversible.', () => {
+                localStorage.removeItem(STORAGE_KEY);
+                location.reload();
+            });
+        });
+
+
+        // --- BOOTSTRAP & SPLASH ---
+        
+        const initApp = () => {
+            loadState();
+            
+            const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            
+            if (state.hasSeenSplash || prefersReducedMotion) {
+                // Skip splash
+                document.getElementById('splash-screen').style.display = 'none';
+                showApp();
+            } else {
+                // Run splash sequence
+                setTimeout(() => {
+                    const content = document.getElementById('splash-content');
+                    content.classList.remove('translate-y-8', 'opacity-0');
+                }, 500);
+
+                setTimeout(() => {
+                    skipSplash();
+                }, 3500);
+            }
+        };
+
+        const skipSplash = () => {
+            const splash = document.getElementById('splash-screen');
+            splash.classList.add('opacity-0');
+            setTimeout(() => {
+                splash.style.display = 'none';
+                showApp();
+                state.hasSeenSplash = true;
+                saveState();
+            }, 1000);
+        };
+
+        const showApp = () => {
+            const app = document.getElementById('app-container');
+            app.classList.remove('opacity-0', 'pointer-events-none');
+            switchView('dashboard');
+        };
+
+        // Start
+        window.addEventListener('DOMContentLoaded', initApp);
+
+    </script>
+</body>
+</html>
