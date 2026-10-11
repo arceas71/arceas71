@@ -121,25 +121,19 @@
 
     <!-- Cinematic Splash Screen -->
     <div id="splash" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#030303] pointer-events-none overflow-hidden">
-        <!-- Deep Background Elements -->
         <div class="absolute inset-0 bg-grid"></div>
         <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-white/[0.02] rounded-full blur-[120px] animate-pulse-slow"></div>
         
-        <!-- HUD Calibration Corners -->
         <div class="absolute top-12 left-12 w-12 h-12 border-t-2 border-l-2 border-white/[0.15] opacity-0 animate-fade-in-up" style="animation-delay: 0.3s;"></div>
         <div class="absolute top-12 right-12 w-12 h-12 border-t-2 border-r-2 border-white/[0.15] opacity-0 animate-fade-in-up" style="animation-delay: 0.3s;"></div>
         <div class="absolute bottom-12 left-12 w-12 h-12 border-b-2 border-l-2 border-white/[0.15] opacity-0 animate-fade-in-up" style="animation-delay: 0.3s;"></div>
         <div class="absolute bottom-12 right-12 w-12 h-12 border-b-2 border-r-2 border-white/[0.15] opacity-0 animate-fade-in-up" style="animation-delay: 0.3s;"></div>
 
-        <!-- Typography & Tagline -->
         <div class="relative z-10 flex flex-col items-center">
             <h1 class="font-display text-5xl md:text-7xl font-light silver-text animate-blur-in ml-4">AXIOM</h1>
-            
             <p class="text-[10px] md:text-xs text-zinc-500 tracking-[0.5em] md:tracking-[0.8em] uppercase opacity-0 animate-fade-in-up mt-4 md:mt-6 ml-2 font-medium">
                 Live by design
             </p>
-            
-            <!-- Scanning Light -->
             <div class="absolute top-[40%] left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-white/30 to-transparent animate-scan mix-blend-overlay"></div>
         </div>
     </div>
@@ -259,10 +253,42 @@
             <section id="view-settings" class="view-section">
                 <header class="mb-10">
                     <h2 class="text-3xl md:text-4xl font-display font-light silver-text mb-2">System Settings</h2>
-                    <p class="text-zinc-500 text-sm">Manage your data, account, and synchronization.</p>
+                    <p class="text-zinc-500 text-sm">Manage your profile, account, and data security.</p>
                 </header>
 
                 <div class="glass-panel rounded-3xl overflow-hidden mb-8">
+                    
+                    <!-- Profile & Metrics Section -->
+                    <div class="p-8 border-b border-white/5 relative overflow-hidden">
+                        <div class="absolute top-0 right-0 p-12 opacity-10 pointer-events-none">
+                            <i data-lucide="user" class="w-32 h-32"></i>
+                        </div>
+                        <h3 class="text-white font-medium mb-6 flex items-center gap-2 text-lg"><i data-lucide="user" class="w-5 h-5 text-zinc-400"></i> Profile & Vitals</h3>
+                        
+                        <div class="space-y-5 max-w-md relative z-10">
+                            <div>
+                                <label class="block text-xs font-medium tracking-wide text-zinc-400 uppercase mb-2">Custom Display Name</label>
+                                <input type="text" id="profile-username" class="w-full glass-input p-3.5 rounded-xl text-sm" placeholder="How should AXIOM address you?">
+                            </div>
+                            
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-medium tracking-wide text-zinc-400 uppercase mb-2">Height</label>
+                                    <input type="text" id="profile-height" class="w-full glass-input p-3.5 rounded-xl text-sm" placeholder="e.g., 180 cm / 5'11&quot;">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium tracking-wide text-zinc-400 uppercase mb-2">Weight</label>
+                                    <input type="text" id="profile-weight" class="w-full glass-input p-3.5 rounded-xl text-sm" placeholder="e.g., 75 kg / 165 lbs">
+                                </div>
+                            </div>
+                            
+                            <button onclick="saveProfile()" class="bg-white/10 hover:bg-white/20 border border-white/5 text-white px-5 py-2.5 rounded-xl text-sm font-medium transition mt-2 flex items-center gap-2">
+                                <i data-lucide="save" class="w-4 h-4"></i> Save Profile
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Cloud & Auth Section -->
                     <div class="p-8 border-b border-white/5 relative overflow-hidden">
                         <div class="absolute top-0 right-0 p-12 opacity-10 pointer-events-none">
                             <i data-lucide="cloud" class="w-32 h-32"></i>
@@ -294,14 +320,20 @@
                                     </div>
                                     <button onclick="forceSync()" class="p-2.5 bg-white/5 border border-white/10 rounded-lg hover:bg-white/10 text-white transition tooltip" title="Force Manual Save"><i data-lucide="refresh-cw" class="w-4 h-4"></i></button>
                                 </div>
-                                <button onclick="handleLogout()" class="px-6 py-4 sm:py-0 bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 rounded-xl text-sm font-medium transition">Sign Out</button>
+                                <button onclick="handleLogout()" class="px-6 py-4 sm:py-0 bg-zinc-800 border border-zinc-700 text-zinc-300 hover:bg-zinc-700 rounded-xl text-sm font-medium transition">Sign Out</button>
                             </div>
                         </div>
                     </div>
+                    
+                    <!-- Danger Zone Section -->
                     <div class="p-8">
-                        <h3 class="text-white font-medium mb-4 flex items-center gap-2 text-lg"><i data-lucide="hard-drive" class="w-5 h-5 text-zinc-400"></i> Local Storage</h3>
-                        <p class="text-sm text-zinc-500 mb-6 max-w-md leading-relaxed">Wiping data will clear this device entirely. If you are synced to the cloud, your data will be restored on your next login.</p>
-                        <button onclick="clearLocalData()" class="bg-transparent border border-red-500/30 text-red-400 px-6 py-3 rounded-xl text-sm font-medium hover:bg-red-500/10 transition">Wipe Local Database</button>
+                        <h3 class="text-white font-medium mb-4 flex items-center gap-2 text-lg"><i data-lucide="alert-triangle" class="w-5 h-5 text-red-500"></i> Danger Zone</h3>
+                        <p class="text-sm text-zinc-500 mb-6 max-w-2xl leading-relaxed">Local wiping clears this device. Cloud wiping requires explicit confirmation and will permanently delete your remote database.</p>
+                        
+                        <div class="flex flex-col sm:flex-row gap-4">
+                            <button onclick="clearLocalData()" class="bg-transparent border border-zinc-500/30 text-zinc-400 px-6 py-3 rounded-xl text-sm font-medium hover:bg-white/5 transition">Wipe Local Database</button>
+                            <button id="btn-wipe-cloud" onclick="wipeCloudData()" class="hidden bg-red-500/10 border border-red-500/30 text-red-400 px-6 py-3 rounded-xl text-sm font-medium hover:bg-red-500/20 transition">Wipe Cloud Data</button>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -378,7 +410,11 @@
         const db = firebase.database();
 
         // --- 2. DATA ARCHITECTURE & STATE ---
-        let appData = { habits: [], logs: {} };
+        let appData = { 
+            habits: [], 
+            logs: {},
+            profile: { username: '', height: '', weight: '' }
+        };
         let currentUser = null;
         let syncTimeout = null;
         const categories = ["Health", "Studies", "Career", "Finances", "Relationships"];
@@ -409,7 +445,6 @@
                 app.classList.add('opacity-100');
                 initializeApp();
             } else {
-                // Increased wait time slightly to enjoy the staggered tagline fade-in
                 setTimeout(() => {
                     splash.style.animation = 'fadeOut 1.2s cubic-bezier(0.5, 0, 0.2, 1) forwards';
                     setTimeout(() => {
@@ -430,6 +465,7 @@
                     const parsed = JSON.parse(saved);
                     appData.habits = Array.isArray(parsed.habits) ? parsed.habits : [];
                     appData.logs = typeof parsed.logs === 'object' && parsed.logs !== null ? parsed.logs : {};
+                    appData.profile = parsed.profile || { username: '', height: '', weight: '' };
                 } catch(e) { console.error("Error loading local data", e); }
             }
         }
@@ -454,6 +490,7 @@
                 await userRef.set({
                     habits: appData.habits,
                     logs: appData.logs,
+                    profile: appData.profile,
                     lastUpdated: firebase.database.ServerValue.TIMESTAMP
                 });
                 updateSyncUI('System Synced', true);
@@ -474,12 +511,14 @@
             currentUser = user;
             if (user) {
                 updateSyncUI('Connecting...');
+                document.getElementById('btn-wipe-cloud').classList.remove('hidden');
                 try {
                     const snap = await db.ref(`/axiom_app_data/users/${user.uid}/axiom`).once('value');
                     const cloudData = snap.val();
                     if (cloudData) {
                         appData.habits = cloudData.habits || [];
                         appData.logs = cloudData.logs || {};
+                        appData.profile = cloudData.profile || { username: '', height: '', weight: '' };
                         localStorage.setItem('axiom_data', JSON.stringify(appData));
                         updateSyncUI('System Synced', true);
                     } else {
@@ -488,6 +527,7 @@
                 } catch(e) { updateSyncUI('Offline Mode'); }
             } else {
                 updateSyncUI('Local Mode');
+                document.getElementById('btn-wipe-cloud').classList.add('hidden');
             }
             updateAccountUI();
             updateUI();
@@ -508,9 +548,61 @@
         function clearLocalData() {
             if(confirm("Wipe local database? Data will restore from cloud on next login if previously synced.")) {
                 localStorage.removeItem('axiom_data');
-                appData = { habits: [], logs: {} };
+                appData = { habits: [], logs: {}, profile: { username: '', height: '', weight: '' } };
+                document.getElementById('profile-username').value = '';
+                document.getElementById('profile-height').value = '';
+                document.getElementById('profile-weight').value = '';
                 updateUI();
             }
+        }
+
+        async function wipeCloudData() {
+            if (!currentUser) return;
+            
+            const confirmation = window.prompt("WARNING: This will permanently delete all AXIOM data from the cloud.\n\nTo proceed, please type the word: DELETE");
+            
+            if (confirmation === "DELETE") {
+                try {
+                    updateSyncUI('Wiping Cloud Data...', false);
+                    await db.ref(`/axiom_app_data/users/${currentUser.uid}/axiom`).remove();
+                    
+                    // Clear locally as well to ensure a clean slate
+                    localStorage.removeItem('axiom_data');
+                    appData = { habits: [], logs: {}, profile: { username: '', height: '', weight: '' } };
+                    
+                    document.getElementById('profile-username').value = '';
+                    document.getElementById('profile-height').value = '';
+                    document.getElementById('profile-weight').value = '';
+                    
+                    updateUI();
+                    updateSyncUI('Cloud Data Destroyed', false);
+                    alert("Cloud data has been permanently erased.");
+                } catch (error) {
+                    alert("Failed to wipe cloud data: " + error.message);
+                }
+            } else if (confirmation !== null) {
+                alert("Wipe aborted. Confirmation word did not match.");
+            }
+        }
+
+        function saveProfile() {
+            appData.profile.username = document.getElementById('profile-username').value.trim();
+            appData.profile.height = document.getElementById('profile-height').value.trim();
+            appData.profile.weight = document.getElementById('profile-weight').value.trim();
+            saveLocalData();
+            
+            // Visual feedback for save button
+            const btn = event.currentTarget;
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = `<i data-lucide="check" class="w-4 h-4"></i> Saved`;
+            btn.classList.add('bg-green-500/20', 'text-green-400', 'border-green-500/30');
+            lucide.createIcons();
+            
+            setTimeout(() => {
+                btn.innerHTML = originalHTML;
+                btn.classList.remove('bg-green-500/20', 'text-green-400', 'border-green-500/30');
+                lucide.createIcons();
+            }, 2000);
         }
 
         // --- 6. FRACTIONAL SCORING LOGIC ---
@@ -720,6 +812,13 @@
         }
 
         function updateUI() {
+            // Update Profile Inputs in Settings
+            if (appData.profile) {
+                document.getElementById('profile-username').value = appData.profile.username || '';
+                document.getElementById('profile-height').value = appData.profile.height || '';
+                document.getElementById('profile-weight').value = appData.profile.weight || '';
+            }
+
             renderToday();
             renderHabits();
             renderBalance();
@@ -731,12 +830,14 @@
             const emptyState = document.getElementById('today-empty-state');
             const log = getLog();
             
-            const greeting = document.getElementById('greeting-display');
-            if (currentUser && currentUser.displayName) {
-                greeting.innerText = `Good morning, ${currentUser.displayName.split(' ')[0]}.`;
-            } else {
-                greeting.innerText = "Good morning.";
+            // Priority: Custom Username > Google First Name > Generic
+            let displayName = "Good morning.";
+            if (appData.profile && appData.profile.username) {
+                displayName = `Good morning, ${appData.profile.username}.`;
+            } else if (currentUser && currentUser.displayName) {
+                displayName = `Good morning, ${currentUser.displayName.split(' ')[0]}.`;
             }
+            document.getElementById('greeting-display').innerText = displayName;
 
             if (appData.habits.length === 0) {
                 container.innerHTML = '';
@@ -900,9 +1001,15 @@
             if (currentUser) {
                 signedOutDiv.classList.add('hidden');
                 signedInDiv.classList.remove('hidden');
-                document.getElementById('settings-user-name').innerText = currentUser.displayName || 'AXIOM User';
+                
+                // Show Custom Name in Settings if it exists, otherwise fallback to Google Name
+                const displayInSettings = (appData.profile && appData.profile.username) ? 
+                                           appData.profile.username : 
+                                           (currentUser.displayName || 'AXIOM User');
+                                           
+                document.getElementById('settings-user-name').innerText = displayInSettings;
                 document.getElementById('settings-user-email').innerText = currentUser.email;
-                accountName.innerText = currentUser.displayName ? currentUser.displayName.split(' ')[0] : 'Account';
+                accountName.innerText = displayInSettings.split(' ')[0];
                 accountIcon.setAttribute('data-lucide', 'cloud-check');
             } else {
                 signedOutDiv.classList.remove('hidden');
