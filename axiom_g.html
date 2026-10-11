@@ -6,7 +6,7 @@
     <title>AXIOM</title>
     
     <!-- Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@200;400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@200;300;400;600&display=swap" rel="stylesheet">
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -15,24 +15,29 @@
             theme: {
                 extend: {
                     fontFamily: { sans: ['Inter', 'sans-serif'], display: ['Outfit', 'sans-serif'] },
-                    colors: { glass: 'rgba(20, 20, 22, 0.65)' },
                     animation: {
-                        'blur-in': 'blurIn 2s cubic-bezier(0.2, 0.8, 0.2, 1) forwards',
-                        'fade-out': 'fadeOut 1s cubic-bezier(0.5, 0, 0.2, 1) forwards',
-                        'rise-in': 'riseIn 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards'
+                        'blur-in': 'blurIn 2.5s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+                        'fade-out': 'fadeOut 1.2s cubic-bezier(0.5, 0, 0.2, 1) forwards',
+                        'rise-in': 'riseIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+                        'scan': 'scan 3s ease-in-out infinite',
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite'
                     },
                     keyframes: {
                         blurIn: {
-                            '0%': { filter: 'blur(12px)', opacity: '0', transform: 'scale(0.95)' },
-                            '100%': { filter: 'blur(0)', opacity: '1', transform: 'scale(1)' }
+                            '0%': { filter: 'blur(20px)', opacity: '0', transform: 'scale(0.9) tracking-widest' },
+                            '100%': { filter: 'blur(0)', opacity: '1', transform: 'scale(1) tracking-[0.3em]' }
                         },
                         fadeOut: {
                             '0%': { opacity: '1', transform: 'scale(1)' },
-                            '100%': { opacity: '0', transform: 'scale(1.05)', visibility: 'hidden' }
+                            '100%': { opacity: '0', transform: 'scale(1.02)', visibility: 'hidden' }
                         },
                         riseIn: {
-                            '0%': { opacity: '0', transform: 'translateY(20px)' },
+                            '0%': { opacity: '0', transform: 'translateY(30px)' },
                             '100%': { opacity: '1', transform: 'translateY(0)' }
+                        },
+                        scan: {
+                            '0%, 100%': { transform: 'translateY(-100px)', opacity: '0' },
+                            '50%': { transform: 'translateY(100px)', opacity: '1' }
                         }
                     }
                 }
@@ -40,42 +45,62 @@
         }
     </script>
 
-    <!-- Style Overrides for Glassmorphism -->
+    <!-- Style Overrides for Premium Glassmorphism -->
     <style>
-        body { background-color: #050505; color: #e5e7eb; overflow-x: hidden; }
+        body { 
+            background-color: #030303; 
+            color: #e5e7eb; 
+            overflow-x: hidden;
+            background-image: radial-gradient(circle at 50% 0%, #111 0%, #030303 70%);
+        }
+        
+        .bg-grid {
+            background-size: 40px 40px;
+            background-image: linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+                              linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+            mask-image: radial-gradient(ellipse at center, black 20%, transparent 80%);
+            -webkit-mask-image: radial-gradient(ellipse at center, black 20%, transparent 80%);
+        }
+
         .glass-panel {
-            background: rgba(25, 25, 25, 0.4);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+            background: linear-gradient(135deg, rgba(30, 30, 32, 0.4) 0%, rgba(15, 15, 16, 0.6) 100%);
+            backdrop-filter: blur(20px) saturate(120%);
+            -webkit-backdrop-filter: blur(20px) saturate(120%);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4), 
+                        inset 0 1px 0 0 rgba(255, 255, 255, 0.1), 
+                        inset 0 0 0 1px rgba(255, 255, 255, 0.02);
         }
+        
         .glass-input {
-            background: rgba(10, 10, 10, 0.5);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.08);
             color: #fff;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
         }
-        .glass-input:focus { border-color: rgba(255, 255, 255, 0.3); outline: none; }
+        .glass-input:focus { 
+            border-color: rgba(255, 255, 255, 0.4); 
+            background: rgba(15, 15, 15, 0.6);
+            outline: none; 
+        }
+        
         .silver-text {
-            background: linear-gradient(180deg, #FFFFFF 0%, #A0A0A0 100%);
+            background: linear-gradient(180deg, #FFFFFF 0%, #888888 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-        }
-        .glow-line {
-            height: 1px;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
         }
         
         @media (prefers-reduced-motion: reduce) {
             * { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
         }
         
-        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar { width: 4px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 10px; }
         
         .view-section { display: none; }
-        .view-section.active { display: block; animation: riseIn 0.4s ease forwards; }
+        .view-section.active { display: block; animation: riseIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
     </style>
 
     <!-- Icons & Charts -->
@@ -87,34 +112,36 @@
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 </head>
-<body class="antialiased min-h-screen flex flex-col md:flex-row">
+<body class="antialiased min-h-screen flex flex-col md:flex-row selection:bg-white/20">
 
     <!-- Cinematic Splash Screen -->
-    <div id="splash" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#050505] pointer-events-none">
-        <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.03)_0%,transparent_60%)]"></div>
-        <h1 class="font-display text-5xl md:text-7xl tracking-[0.3em] font-light silver-text animate-blur-in">AXIOM</h1>
-        <div class="glow-line w-48 mt-6 animate-blur-in opacity-50"></div>
+    <div id="splash" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#030303] pointer-events-none overflow-hidden">
+        <div class="absolute inset-0 bg-grid"></div>
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-white/[0.03] rounded-full blur-[100px] animate-pulse-slow"></div>
+        <div class="relative z-10 flex flex-col items-center">
+            <h1 class="font-display text-5xl md:text-7xl font-light silver-text animate-blur-in ml-4">AXIOM</h1>
+            <div class="absolute top-1/2 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-white/30 to-transparent animate-scan mix-blend-overlay"></div>
+        </div>
     </div>
 
     <!-- Application Wrapper -->
     <div id="app-container" class="flex w-full min-h-screen opacity-0 hidden">
         
         <!-- Sidebar Navigation -->
-        <nav class="w-full md:w-64 glass-panel md:min-h-screen flex flex-col justify-between p-6 z-40 relative md:fixed border-r border-b-0 md:border-b border-white/10">
+        <nav class="w-full md:w-64 glass-panel md:min-h-screen flex flex-col justify-between p-6 z-40 relative md:fixed border-r border-b-0 md:border-b border-white/5">
             <div>
                 <h2 class="font-display text-2xl tracking-[0.2em] silver-text mb-12 hidden md:block">AXIOM</h2>
                 <div class="flex md:flex-col gap-2 overflow-x-auto md:overflow-visible no-scrollbar pb-2 md:pb-0">
-                    <button onclick="nav('today')" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-zinc-400 hover:text-white hover:bg-white/5 transition-all text-sm font-medium" data-target="today"><i data-lucide="sun"></i> Today</button>
-                    <button onclick="nav('habits')" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-zinc-400 hover:text-white hover:bg-white/5 transition-all text-sm font-medium" data-target="habits"><i data-lucide="list-todo"></i> Habits</button>
-                    <button onclick="nav('balance')" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-zinc-400 hover:text-white hover:bg-white/5 transition-all text-sm font-medium" data-target="balance"><i data-lucide="hexagon"></i> Balance</button>
-                    <button onclick="nav('settings')" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-zinc-400 hover:text-white hover:bg-white/5 transition-all text-sm font-medium" data-target="settings"><i data-lucide="settings"></i> Settings</button>
+                    <button onclick="nav('today')" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-zinc-500 hover:text-white hover:bg-white/5 transition-all text-sm font-medium" data-target="today"><i data-lucide="sun"></i> Today</button>
+                    <button onclick="nav('habits')" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-zinc-500 hover:text-white hover:bg-white/5 transition-all text-sm font-medium" data-target="habits"><i data-lucide="list-todo"></i> Habits</button>
+                    <button onclick="nav('balance')" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-zinc-500 hover:text-white hover:bg-white/5 transition-all text-sm font-medium" data-target="balance"><i data-lucide="hexagon"></i> Balance</button>
+                    <button onclick="nav('settings')" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-zinc-500 hover:text-white hover:bg-white/5 transition-all text-sm font-medium" data-target="settings"><i data-lucide="settings"></i> Settings</button>
                 </div>
             </div>
             
-            <!-- Account Chip -->
-            <div class="hidden md:block mt-auto pt-6 border-t border-white/10">
+            <div class="hidden md:block mt-auto pt-6 border-t border-white/5">
                 <div id="account-chip" class="flex items-center gap-3 px-2 cursor-pointer hover:bg-white/5 p-2 rounded-xl transition" onclick="nav('settings')">
-                    <div class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center border border-white/20">
+                    <div class="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center border border-white/10 shadow-inner">
                         <i data-lucide="user" class="w-4 h-4 text-zinc-400" id="account-icon"></i>
                     </div>
                     <div class="flex-1 truncate">
@@ -131,70 +158,78 @@
             <!-- TODAY VIEW -->
             <section id="view-today" class="view-section active">
                 <header class="mb-12">
-                    <p class="text-sm text-zinc-400 font-medium tracking-wider uppercase mb-2" id="date-display"></p>
-                    <h2 class="text-3xl md:text-4xl font-display font-light silver-text" id="greeting-display">Good morning.</h2>
+                    <p class="text-xs text-zinc-500 font-medium tracking-[0.2em] uppercase mb-3" id="date-display"></p>
+                    <h2 class="text-3xl md:text-5xl font-display font-light silver-text" id="greeting-display">Good morning.</h2>
                 </header>
 
-                <div class="glass-panel p-6 rounded-2xl mb-8 flex items-center justify-between">
-                    <div>
-                        <h3 class="text-lg font-medium text-white mb-1">Daily Progress</h3>
-                        <p class="text-sm text-zinc-400">Complete your routines to build your balance.</p>
+                <div class="glass-panel p-6 md:p-8 rounded-3xl mb-10 flex items-center justify-between relative overflow-hidden">
+                    <div class="absolute inset-0 bg-gradient-to-r from-white/[0.03] to-transparent pointer-events-none"></div>
+                    <div class="relative z-10">
+                        <h3 class="text-lg font-medium text-white mb-1">Daily Alignment</h3>
+                        <p class="text-sm text-zinc-400">Complete your routines to build your system.</p>
                     </div>
-                    <div class="text-3xl font-display text-white" id="today-percentage">0%</div>
+                    <div class="text-4xl md:text-5xl font-display font-light text-white relative z-10" id="today-percentage">0%</div>
                 </div>
 
-                <div class="w-full bg-white/5 h-1 rounded-full mb-10 overflow-hidden">
-                    <div id="today-progress-bar" class="h-full bg-white/40 transition-all duration-700 w-0"></div>
+                <div class="w-full bg-black/40 h-1.5 rounded-full mb-10 overflow-hidden border border-white/5">
+                    <div id="today-progress-bar" class="h-full bg-gradient-to-r from-zinc-500 to-white transition-all duration-1000 ease-out w-0 shadow-[0_0_10px_rgba(255,255,255,0.5)]"></div>
                 </div>
 
                 <div id="today-habits-container" class="space-y-4">
                     <!-- Dynamic Checklist -->
                 </div>
                 
-                <div id="today-empty-state" class="hidden text-center py-12 glass-panel rounded-2xl border-dashed border-white/20">
-                    <i data-lucide="leaf" class="w-12 h-12 text-zinc-600 mx-auto mb-4"></i>
-                    <h3 class="text-zinc-300 font-medium mb-2">No habits configured</h3>
-                    <p class="text-zinc-500 text-sm mb-6">Start building your routines in the Habits tab.</p>
-                    <button onclick="nav('habits')" class="bg-white/10 hover:bg-white/20 text-white px-6 py-2 rounded-full text-sm transition">Add Habit</button>
+                <div id="today-empty-state" class="hidden text-center py-16 glass-panel rounded-3xl border-dashed border-white/10">
+                    <div class="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mx-auto mb-6 border border-white/10">
+                        <i data-lucide="layers" class="w-8 h-8 text-zinc-500"></i>
+                    </div>
+                    <h3 class="text-zinc-200 font-medium mb-2 text-lg">System Empty</h3>
+                    <p class="text-zinc-500 text-sm mb-8 max-w-sm mx-auto">Your daily operating system requires configuration. Add habits to begin tracking.</p>
+                    <button onclick="nav('habits')" class="bg-white text-black px-8 py-3 rounded-full text-sm font-medium hover:bg-zinc-200 transition shadow-[0_0_15px_rgba(255,255,255,0.2)]">Configure Routines</button>
                 </div>
             </section>
 
             <!-- HABITS VIEW -->
             <section id="view-habits" class="view-section">
-                <header class="mb-8 flex justify-between items-end">
+                <header class="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-4">
                     <div>
-                        <h2 class="text-3xl font-display font-light silver-text mb-2">Habits</h2>
-                        <p class="text-zinc-400 text-sm">Design your routines.</p>
+                        <h2 class="text-3xl md:text-4xl font-display font-light silver-text mb-2">Habit Configuration</h2>
+                        <p class="text-zinc-500 text-sm">Design the architecture of your daily routine.</p>
                     </div>
-                    <button onclick="openHabitModal()" class="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-lg text-sm transition flex items-center gap-2">
-                        <i data-lucide="plus" class="w-4 h-4"></i> Add Habit
+                    <button onclick="openHabitModal()" class="bg-white/10 hover:bg-white/20 border border-white/10 text-white px-5 py-2.5 rounded-xl text-sm font-medium transition flex items-center gap-2">
+                        <i data-lucide="plus" class="w-4 h-4"></i> Add Routine
                     </button>
                 </header>
-
-                <div id="habits-list" class="space-y-3">
-                    <!-- Dynamic Habit Management List -->
-                </div>
+                <div id="habits-list" class="space-y-3"></div>
             </section>
 
             <!-- BALANCE VIEW -->
             <section id="view-balance" class="view-section">
-                <header class="mb-8">
-                    <h2 class="text-3xl font-display font-light silver-text mb-2">Life Balance</h2>
-                    <p class="text-zinc-400 text-sm">Automatically calculated based on your daily habit completion.</p>
+                <header class="mb-10">
+                    <h2 class="text-3xl md:text-4xl font-display font-light silver-text mb-2">Life Alignment</h2>
+                    <p class="text-zinc-500 text-sm">Real-time analysis of your personal dimensions based on fractional routine completion.</p>
                 </header>
                 
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                    <div class="glass-panel p-8 rounded-3xl flex items-center justify-center">
-                        <canvas id="balanceChart" width="400" height="400"></canvas>
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="lg:col-span-2 glass-panel p-8 rounded-3xl flex items-center justify-center relative overflow-hidden min-h-[450px]">
+                        <div class="absolute inset-0 bg-grid opacity-30 pointer-events-none"></div>
+                        <div class="absolute inset-6 rounded-full border border-white/[0.03] pointer-events-none"></div>
+                        <div class="absolute inset-12 rounded-full border border-white/[0.02] pointer-events-none"></div>
+                        <div class="relative z-10 w-full max-w-[400px]">
+                            <canvas id="balanceChart"></canvas>
+                        </div>
                     </div>
                     
-                    <div class="flex flex-col gap-4">
-                        <div class="glass-panel p-6 rounded-2xl">
-                            <h3 class="text-lg font-medium text-white mb-4">Category Scores (Today)</h3>
-                            <div id="category-scores" class="space-y-4">
-                                <!-- Dynamic Scores -->
-                            </div>
-                            <p class="mt-6 text-xs text-zinc-500">Categories with no active habits default to a neutral baseline (5/100).</p>
+                    <div class="flex flex-col gap-6">
+                        <div class="glass-panel p-6 rounded-3xl relative overflow-hidden flex flex-col justify-center text-center h-48">
+                            <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-zinc-800 via-white to-zinc-800"></div>
+                            <p class="text-zinc-500 text-xs uppercase tracking-[0.2em] font-medium mb-3">Overall Score</p>
+                            <h3 class="text-6xl font-display font-light silver-text tracking-tight" id="overall-score">0</h3>
+                            <p class="text-xs text-zinc-400 mt-4 leading-relaxed px-2" id="balance-insight">Gathering data to determine your alignment.</p>
+                        </div>
+                        <div class="glass-panel p-6 rounded-3xl flex-1 flex flex-col">
+                            <h3 class="text-xs font-medium text-zinc-500 uppercase tracking-[0.1em] mb-6 border-b border-white/5 pb-4">Dimension Metrics</h3>
+                            <div id="category-scores" class="space-y-5 flex-1 justify-center flex flex-col"></div>
                         </div>
                     </div>
                 </div>
@@ -202,51 +237,51 @@
 
             <!-- SETTINGS VIEW -->
             <section id="view-settings" class="view-section">
-                <header class="mb-8">
-                    <h2 class="text-3xl font-display font-light silver-text mb-2">Settings</h2>
-                    <p class="text-zinc-400 text-sm">Application configuration and account management.</p>
+                <header class="mb-10">
+                    <h2 class="text-3xl md:text-4xl font-display font-light silver-text mb-2">System Settings</h2>
+                    <p class="text-zinc-500 text-sm">Manage your data, account, and synchronization.</p>
                 </header>
 
-                <div class="glass-panel rounded-2xl overflow-hidden mb-8">
-                    <div class="p-6 border-b border-white/10">
-                        <h3 class="text-white font-medium mb-4 flex items-center gap-2"><i data-lucide="cloud"></i> Account & Sync</h3>
+                <div class="glass-panel rounded-3xl overflow-hidden mb-8">
+                    <div class="p-8 border-b border-white/5 relative overflow-hidden">
+                        <div class="absolute top-0 right-0 p-12 opacity-10 pointer-events-none">
+                            <i data-lucide="cloud" class="w-32 h-32"></i>
+                        </div>
+                        <h3 class="text-white font-medium mb-6 flex items-center gap-2 text-lg"><i data-lucide="shield-check" class="w-5 h-5 text-zinc-400"></i> Authentication</h3>
                         
-                        <div id="auth-signed-out" class="space-y-4">
-                            <p class="text-sm text-zinc-400">Sign in with Google to securely back up your AXIOM data to the cloud.</p>
-                            <button onclick="handleLogin()" class="bg-white text-black px-6 py-2.5 rounded-lg text-sm font-medium transition hover:bg-zinc-200 flex items-center gap-3">
+                        <div id="auth-signed-out" class="space-y-6 relative z-10">
+                            <p class="text-sm text-zinc-400 max-w-md leading-relaxed">Sign in with Google to securely back up your AXIOM configuration and history to the cloud.</p>
+                            <button onclick="handleLogin()" class="bg-white text-black px-6 py-3 rounded-xl text-sm font-medium transition hover:bg-zinc-200 flex items-center gap-3 shadow-[0_0_15px_rgba(255,255,255,0.2)]">
                                 Sign in with Google
                             </button>
                         </div>
 
-                        <div id="auth-signed-in" class="hidden space-y-4">
-                            <div class="flex items-center gap-4 mb-6">
-                                <div class="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center border border-white/20">
-                                    <i data-lucide="user-check" class="text-zinc-300"></i>
+                        <div id="auth-signed-in" class="hidden relative z-10">
+                            <div class="flex items-center gap-4 mb-8">
+                                <div class="w-14 h-14 rounded-full bg-black/50 flex items-center justify-center border border-white/10 shadow-inner">
+                                    <i data-lucide="user-check" class="text-zinc-300 w-6 h-6"></i>
                                 </div>
                                 <div>
-                                    <p class="text-white font-medium" id="settings-user-name">User Name</p>
-                                    <p class="text-xs text-zinc-400" id="settings-user-email">email@example.com</p>
+                                    <p class="text-white font-medium text-lg" id="settings-user-name">User Name</p>
+                                    <p class="text-sm text-zinc-500" id="settings-user-email">email@example.com</p>
                                 </div>
                             </div>
-                            
-                            <div class="flex items-center justify-between p-4 bg-black/40 rounded-xl border border-white/5">
-                                <div>
-                                    <p class="text-sm text-white">Synchronization</p>
-                                    <p class="text-xs text-zinc-400" id="detailed-sync-status">All changes saved to cloud.</p>
+                            <div class="flex flex-col sm:flex-row gap-4">
+                                <div class="flex-1 flex items-center justify-between p-4 bg-black/40 rounded-xl border border-white/5">
+                                    <div>
+                                        <p class="text-sm text-white font-medium">Cloud Sync</p>
+                                        <p class="text-xs text-zinc-500 mt-1" id="detailed-sync-status">Status active.</p>
+                                    </div>
+                                    <button onclick="forceSync()" class="p-2.5 bg-white/5 border border-white/10 rounded-lg hover:bg-white/10 text-white transition tooltip" title="Force Manual Save"><i data-lucide="refresh-cw" class="w-4 h-4"></i></button>
                                 </div>
-                                <div class="flex gap-2">
-                                    <button onclick="forceSync()" class="p-2 bg-white/10 rounded-lg hover:bg-white/20 text-white transition tooltip" title="Save Now"><i data-lucide="refresh-cw" class="w-4 h-4"></i></button>
-                                </div>
+                                <button onclick="handleLogout()" class="px-6 py-4 sm:py-0 bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 rounded-xl text-sm font-medium transition">Sign Out</button>
                             </div>
-
-                            <button onclick="handleLogout()" class="text-red-400 hover:text-red-300 text-sm font-medium transition px-2 py-1">Sign Out</button>
                         </div>
                     </div>
-                    
-                    <div class="p-6">
-                        <h3 class="text-white font-medium mb-4 flex items-center gap-2"><i data-lucide="hard-drive"></i> Local Data</h3>
-                        <p class="text-sm text-zinc-400 mb-4">Wiping data will clear this device. If synced to the cloud, data will restore on next login.</p>
-                        <button onclick="clearLocalData()" class="bg-red-500/10 text-red-500 border border-red-500/20 px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-red-500/20 transition">Wipe Local Data</button>
+                    <div class="p-8">
+                        <h3 class="text-white font-medium mb-4 flex items-center gap-2 text-lg"><i data-lucide="hard-drive" class="w-5 h-5 text-zinc-400"></i> Local Storage</h3>
+                        <p class="text-sm text-zinc-500 mb-6 max-w-md leading-relaxed">Wiping data will clear this device entirely. If you are synced to the cloud, your data will be restored on your next login.</p>
+                        <button onclick="clearLocalData()" class="bg-transparent border border-red-500/30 text-red-400 px-6 py-3 rounded-xl text-sm font-medium hover:bg-red-500/10 transition">Wipe Local Database</button>
                     </div>
                 </div>
             </section>
@@ -254,21 +289,21 @@
     </div>
 
     <!-- Habit Modal -->
-    <div id="habit-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm hidden opacity-0 transition-opacity p-4">
-        <div class="glass-panel w-full max-w-md p-6 rounded-2xl mx-auto transform scale-95 transition-transform duration-300 max-h-[90vh] overflow-y-auto" id="habit-modal-content">
-            <h3 class="text-xl text-white font-medium mb-6" id="modal-title">Create Habit</h3>
+    <div id="habit-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md hidden opacity-0 transition-opacity p-4">
+        <div class="glass-panel w-full max-w-md p-8 rounded-3xl mx-auto transform scale-95 transition-transform duration-300 shadow-[0_0_50px_rgba(0,0,0,0.8)] border border-white/10" id="habit-modal-content">
+            <h3 class="text-2xl font-display font-light silver-text mb-6" id="modal-title">Configure Routine</h3>
             
             <input type="hidden" id="habit-id">
             
-            <div class="space-y-5">
+            <div class="space-y-6">
                 <div>
-                    <label class="block text-xs text-zinc-400 mb-1">Habit Name</label>
-                    <input type="text" id="habit-name" class="w-full glass-input p-3 rounded-lg text-sm" placeholder="e.g., 50 Push-ups, Study Physics, Drink 2L water" autocomplete="off">
+                    <label class="block text-xs font-medium tracking-wide text-zinc-400 uppercase mb-2">Identifier Name</label>
+                    <input type="text" id="habit-name" class="w-full glass-input p-3.5 rounded-xl text-sm" placeholder="e.g., Read 20 pages, Deep Work" autocomplete="off">
                 </div>
                 
                 <div>
-                    <label class="block text-xs text-zinc-400 mb-1">Category</label>
-                    <select id="habit-category" class="w-full glass-input p-3 rounded-lg text-sm appearance-none cursor-pointer">
+                    <label class="block text-xs font-medium tracking-wide text-zinc-400 uppercase mb-2">Dimension</label>
+                    <select id="habit-category" class="w-full glass-input p-3.5 rounded-xl text-sm appearance-none cursor-pointer">
                         <option value="Health">Health</option>
                         <option value="Studies">Studies</option>
                         <option value="Career">Career</option>
@@ -279,34 +314,30 @@
                 </div>
 
                 <div>
-                    <label class="block text-xs text-zinc-400 mb-1">Format</label>
-                    <select id="habit-format" onchange="toggleFormatFields()" class="w-full glass-input p-3 rounded-lg text-sm appearance-none cursor-pointer">
+                    <label class="block text-xs font-medium tracking-wide text-zinc-400 uppercase mb-2">Tracking Format</label>
+                    <select id="habit-format" onchange="toggleFormatFields()" class="w-full glass-input p-3.5 rounded-xl text-sm appearance-none cursor-pointer">
                         <option value="boolean">Simple Check (Yes / No)</option>
-                        <option value="numeric">Quantity / Target</option>
+                        <option value="numeric">Quantity / Target Based</option>
                     </select>
                 </div>
                 
-                <div id="numeric-fields" class="hidden space-y-4 pt-2 border-t border-white/5">
+                <div id="numeric-fields" class="hidden space-y-5 pt-4 border-t border-white/5">
                     <div class="grid grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-xs text-zinc-400 mb-1">Daily Target</label>
-                            <input type="number" id="habit-target" class="w-full glass-input p-3 rounded-lg text-sm" placeholder="e.g., 50">
+                            <label class="block text-xs font-medium tracking-wide text-zinc-400 uppercase mb-2">Daily Target</label>
+                            <input type="number" id="habit-target" class="w-full glass-input p-3.5 rounded-xl text-sm" placeholder="e.g., 8">
                         </div>
                         <div>
-                            <label class="block text-xs text-zinc-400 mb-1">Unit</label>
-                            <input type="text" id="habit-unit" class="w-full glass-input p-3 rounded-lg text-sm" placeholder="e.g., reps, mins, ml">
+                            <label class="block text-xs font-medium tracking-wide text-zinc-400 uppercase mb-2">Unit</label>
+                            <input type="text" id="habit-unit" class="w-full glass-input p-3.5 rounded-xl text-sm" placeholder="e.g., glasses, reps, L">
                         </div>
-                    </div>
-                    <div>
-                        <label class="block text-xs text-zinc-400 mb-1">Quick Add Amount (Button Step)</label>
-                        <input type="number" id="habit-step" class="w-full glass-input p-3 rounded-lg text-sm" placeholder="e.g., 10">
                     </div>
                 </div>
             </div>
 
-            <div class="flex gap-3 mt-8">
-                <button onclick="closeHabitModal()" class="flex-1 py-3 rounded-lg bg-white/5 hover:bg-white/10 text-zinc-300 text-sm transition">Cancel</button>
-                <button onclick="saveHabit()" class="flex-1 py-3 rounded-lg bg-white text-black hover:bg-zinc-200 font-medium text-sm transition">Save Habit</button>
+            <div class="flex gap-4 mt-10">
+                <button onclick="closeHabitModal()" class="flex-1 py-3.5 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-zinc-300 text-sm font-medium transition">Cancel</button>
+                <button onclick="saveHabit()" class="flex-1 py-3.5 rounded-xl bg-white text-black hover:bg-zinc-200 font-medium text-sm transition shadow-[0_0_15px_rgba(255,255,255,0.15)]">Save Configuration</button>
             </div>
         </div>
     </div>
@@ -359,14 +390,14 @@
                 initializeApp();
             } else {
                 setTimeout(() => {
-                    splash.style.animation = 'fadeOut 1s cubic-bezier(0.5, 0, 0.2, 1) forwards';
+                    splash.style.animation = 'fadeOut 1.2s cubic-bezier(0.5, 0, 0.2, 1) forwards';
                     setTimeout(() => {
                         splash.style.display = 'none';
                         app.classList.remove('hidden');
                         app.classList.add('animate-rise-in');
                         initializeApp();
-                    }, 1000);
-                }, 2500);
+                    }, 1200);
+                }, 2800);
             }
         });
 
@@ -390,7 +421,7 @@
 
         function triggerCloudSync() {
             if (!currentUser) return;
-            updateSyncUI('Pending...');
+            updateSyncUI('Syncing...');
             clearTimeout(syncTimeout);
             syncTimeout = setTimeout(syncToCloud, 700);
         }
@@ -404,16 +435,16 @@
                     logs: appData.logs,
                     lastUpdated: firebase.database.ServerValue.TIMESTAMP
                 });
-                updateSyncUI('Synced successfully', true);
+                updateSyncUI('System Synced', true);
             } catch (error) {
                 console.error("Sync failed:", error);
-                updateSyncUI('Sync failed. Retrying...', false);
+                updateSyncUI('Sync Failed', false);
             }
         }
 
         async function forceSync() {
             if (!currentUser) return;
-            updateSyncUI('Saving...');
+            updateSyncUI('Forcing Save...');
             await syncToCloud();
         }
 
@@ -421,7 +452,7 @@
         auth.onAuthStateChanged(async (user) => {
             currentUser = user;
             if (user) {
-                updateSyncUI('Checking cloud...');
+                updateSyncUI('Connecting...');
                 try {
                     const snap = await db.ref(`/axiom_app_data/users/${user.uid}/axiom`).once('value');
                     const cloudData = snap.val();
@@ -429,13 +460,13 @@
                         appData.habits = cloudData.habits || [];
                         appData.logs = cloudData.logs || {};
                         localStorage.setItem('axiom_data', JSON.stringify(appData));
-                        updateSyncUI('Synced to cloud', true);
+                        updateSyncUI('System Synced', true);
                     } else {
                         await syncToCloud();
                     }
                 } catch(e) { updateSyncUI('Offline Mode'); }
             } else {
-                updateSyncUI('Local Data Only');
+                updateSyncUI('Local Mode');
             }
             updateAccountUI();
             updateUI();
@@ -454,26 +485,42 @@
         function handleLogout() { auth.signOut(); }
 
         function clearLocalData() {
-            if(confirm("Wipe local data? (If logged in, cloud data restores on refresh)")) {
+            if(confirm("Wipe local database? Data will restore from cloud on next login if previously synced.")) {
                 localStorage.removeItem('axiom_data');
                 appData = { habits: [], logs: {} };
                 updateUI();
             }
         }
 
-        // --- 6. CORE LOGIC (SCORING & HABITS) ---
+        // --- 6. FRACTIONAL SCORING LOGIC ---
+        // Calculate the fractional completion of a specific habit
+        function getHabitFraction(habit, log) {
+            if (habit.format === 'numeric') {
+                const current = log.progress[habit.id] || 0;
+                // e.g. 1 out of 8 glasses = 0.125
+                return Math.min(current / habit.target, 1);
+            } else {
+                return log.completed.includes(habit.id) ? 1 : 0;
+            }
+        }
+
+        // Calculate scores based on the *fraction* of tasks completed
         function calculateScores(dateStr) {
-            const log = appData.logs[dateStr] || { completed: [] };
-            const completedIds = log.completed || [];
+            const log = appData.logs[dateStr] || { completed: [], progress: {} };
             let scores = {};
 
             categories.forEach(cat => {
                 const catHabits = appData.habits.filter(h => h.category === cat);
                 if (catHabits.length === 0) {
-                    scores[cat] = 5;
+                    scores[cat] = 5; // Baseline if no habits exist in category
                 } else {
-                    const completedInCat = catHabits.filter(h => completedIds.includes(h.id)).length;
-                    scores[cat] = Math.max(5, Math.round((completedInCat / catHabits.length) * 100));
+                    let totalFraction = 0;
+                    catHabits.forEach(habit => {
+                        totalFraction += getHabitFraction(habit, log);
+                    });
+                    
+                    // The category score is the average of the fractions (x100)
+                    scores[cat] = Math.max(5, Math.round((totalFraction / catHabits.length) * 100));
                 }
             });
 
@@ -482,45 +529,16 @@
             return scores;
         }
 
-        function toggleHabit(habitId) {
-            const habit = appData.habits.find(h => h.id === habitId);
-            const log = getLog();
-            
-            if (habit.format === 'numeric') {
-                const isCompleted = log.completed.includes(habitId);
-                if (isCompleted) {
-                    log.progress[habitId] = 0; // Reset
-                    log.completed = log.completed.filter(id => id !== habitId);
-                } else {
-                    log.progress[habitId] = habit.target; // Max out
-                    if(!log.completed.includes(habitId)) log.completed.push(habitId);
-                }
-            } else {
-                if (log.completed.includes(habitId)) {
-                    log.completed = log.completed.filter(id => id !== habitId);
-                } else {
-                    log.completed.push(habitId);
-                }
-            }
-            
-            calculateScores(currentDay);
-            saveLocalData();
-        }
-
         function updateProgress(habitId, amount, event) {
             if (event) event.stopPropagation();
             const habit = appData.habits.find(h => h.id === habitId);
             const log = getLog();
             
             let current = log.progress[habitId] || 0;
-            
-            // Catch up logic if it was marked complete via the main toggle button
-            if (log.completed.includes(habitId) && current < habit.target) {
-                current = habit.target;
-            }
-            
             current += amount;
+            
             if (current < 0) current = 0;
+            if (current > habit.target) current = habit.target;
             
             log.progress[habitId] = current;
             
@@ -532,6 +550,29 @@
             
             calculateScores(currentDay);
             saveLocalData();
+        }
+
+        function toggleHabit(habitId) {
+            const habit = appData.habits.find(h => h.id === habitId);
+            const log = getLog();
+            
+            if (habit.format === 'numeric') {
+                // If it's already full, reset it to 0
+                if (log.progress[habitId] >= habit.target) {
+                    updateProgress(habitId, -habit.target, null);
+                } else {
+                    // Otherwise just increment by 1
+                    updateProgress(habitId, 1, null);
+                }
+            } else {
+                if (log.completed.includes(habitId)) {
+                    log.completed = log.completed.filter(id => id !== habitId);
+                } else {
+                    log.completed.push(habitId);
+                }
+                calculateScores(currentDay);
+                saveLocalData();
+            }
         }
 
         // Modal Logic
@@ -547,7 +588,7 @@
             const content = document.getElementById('habit-modal-content');
             
             document.getElementById('habit-id').value = id || '';
-            document.getElementById('modal-title').innerText = id ? 'Edit Habit' : 'Create Habit';
+            document.getElementById('modal-title').innerText = id ? 'Modify Routine' : 'Initialize Routine';
             
             if (id) {
                 const habit = appData.habits.find(h => h.id === id);
@@ -556,14 +597,12 @@
                 document.getElementById('habit-format').value = habit.format || 'boolean';
                 document.getElementById('habit-target').value = habit.target || '';
                 document.getElementById('habit-unit').value = habit.unit || '';
-                document.getElementById('habit-step').value = habit.step || '';
             } else {
                 document.getElementById('habit-name').value = '';
                 document.getElementById('habit-category').value = 'Health';
                 document.getElementById('habit-format').value = 'boolean';
                 document.getElementById('habit-target').value = '';
                 document.getElementById('habit-unit').value = '';
-                document.getElementById('habit-step').value = '';
             }
             
             toggleFormatFields();
@@ -590,16 +629,14 @@
             const format = document.getElementById('habit-format').value;
             const target = parseInt(document.getElementById('habit-target').value) || 1;
             const unit = document.getElementById('habit-unit').value.trim();
-            const step = parseInt(document.getElementById('habit-step').value) || 1;
             
-            if (!name) return alert("Habit name is required.");
+            if (!name) return alert("Routine name is required.");
 
             const newHabit = {
                 id: id || Date.now().toString(),
                 name, category, format,
                 target: format === 'numeric' ? target : null,
                 unit: format === 'numeric' ? unit : null,
-                step: format === 'numeric' ? step : null,
                 created: id ? appData.habits.find(h => h.id === id).created : currentDay
             };
 
@@ -616,7 +653,7 @@
         }
 
         function deleteHabit(id) {
-            if(confirm("Delete this habit? History will be preserved.")) {
+            if(confirm("Purge this routine? Historical data will be maintained.")) {
                 appData.habits = appData.habits.filter(h => h.id !== id);
                 calculateScores(currentDay);
                 saveLocalData();
@@ -638,13 +675,15 @@
                 data: {
                     labels: categories,
                     datasets: [{
-                        label: 'Balance',
+                        label: 'Alignment',
                         data: [5,5,5,5,5],
-                        backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                        borderColor: 'rgba(255, 255, 255, 0.6)',
+                        backgroundColor: 'rgba(255, 255, 255, 0.15)',
+                        borderColor: 'rgba(255, 255, 255, 0.8)',
                         pointBackgroundColor: '#fff',
                         pointBorderColor: '#fff',
-                        borderWidth: 1.5,
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: '#fff',
+                        borderWidth: 2,
                         fill: true
                     }]
                 },
@@ -652,13 +691,14 @@
                     scales: {
                         r: {
                             min: 0, max: 100,
-                            ticks: { display: false, stepSize: 20 },
-                            grid: { color: 'rgba(255, 255, 255, 0.1)' },
-                            angleLines: { color: 'rgba(255, 255, 255, 0.1)' }
+                            ticks: { display: false },
+                            grid: { color: 'rgba(255, 255, 255, 0.1)', circular: true },
+                            angleLines: { color: 'rgba(255, 255, 255, 0.15)' },
+                            pointLabels: { color: 'rgba(255,255,255,0.6)', font: { size: 11, family: 'Inter', weight: '500' } }
                         }
                     },
-                    plugins: { legend: { display: false } },
-                    animation: { duration: 500 }
+                    plugins: { legend: { display: false }, tooltip: { enabled: false } },
+                    animation: { duration: 800, easing: 'easeOutQuart' }
                 }
             });
             updateUI();
@@ -675,7 +715,6 @@
             const container = document.getElementById('today-habits-container');
             const emptyState = document.getElementById('today-empty-state');
             const log = getLog();
-            const completed = log.completed || [];
             
             const greeting = document.getElementById('greeting-display');
             if (currentUser && currentUser.displayName) {
@@ -695,41 +734,39 @@
             emptyState.classList.add('hidden');
             let html = '';
             
+            // Calculate total daily progress fraction
+            let totalFractionSum = 0;
+
             appData.habits.forEach(habit => {
-                const isCompleted = completed.includes(habit.id);
-                let current = log.progress[habit.id] || 0;
+                const fraction = getHabitFraction(habit, log);
+                totalFractionSum += fraction;
                 
-                if (isCompleted && habit.format === 'numeric' && current < habit.target) {
-                    current = habit.target;
-                }
-                
-                let percent = 0;
-                if (habit.format === 'numeric') {
-                    percent = Math.min((current / habit.target) * 100, 100);
-                }
+                const isCompleted = fraction >= 1;
+                const percent = fraction * 100;
+                const current = log.progress[habit.id] || 0;
 
                 html += `
-                    <div class="glass-panel p-0 rounded-xl relative overflow-hidden group cursor-pointer hover:bg-white/5 transition" onclick="toggleHabit('${habit.id}')">
+                    <div class="glass-panel p-0 rounded-2xl relative overflow-hidden group cursor-pointer hover:bg-white/10 transition-colors border-l-4 ${isCompleted ? 'border-l-white' : 'border-l-transparent'}" onclick="toggleHabit('${habit.id}')">
                         ${habit.format === 'numeric' ? `<div class="absolute left-0 top-0 bottom-0 bg-white/10 transition-all duration-500 ease-out" style="width: ${percent}%"></div>` : ''}
                         
-                        <div class="p-4 relative z-10 flex items-center justify-between">
-                            <div class="flex items-center gap-4">
-                                <div class="w-6 h-6 rounded-full border border-white/30 flex items-center justify-center transition-colors ${isCompleted ? 'bg-white text-black border-white' : 'bg-transparent text-transparent'}">
-                                    <i data-lucide="check" class="w-3 h-3"></i>
+                        <div class="p-5 relative z-10 flex items-center justify-between">
+                            <div class="flex items-center gap-5">
+                                <div class="w-7 h-7 rounded-full border flex items-center justify-center transition-all duration-300 ${isCompleted ? 'bg-white text-black border-white shadow-[0_0_10px_rgba(255,255,255,0.5)]' : 'bg-black/30 border-white/20 text-transparent'}">
+                                    <i data-lucide="check" class="w-4 h-4"></i>
                                 </div>
                                 <div>
-                                    <p class="text-sm font-medium ${isCompleted ? 'text-zinc-500 line-through' : 'text-zinc-200'}">${habit.name}</p>
-                                    <div class="text-[10px] text-zinc-500 uppercase tracking-wider flex items-center gap-2 mt-0.5">
+                                    <p class="text-base font-medium transition-colors ${isCompleted ? 'text-zinc-400 line-through' : 'text-zinc-100'}">${habit.name}</p>
+                                    <div class="text-[11px] text-zinc-500 uppercase tracking-widest flex items-center gap-2 mt-1">
                                         <span>${habit.category}</span>
-                                        ${habit.format === 'numeric' ? `<span class="text-zinc-400 lowercase">• ${current} / ${habit.target}${habit.unit}</span>` : ''}
+                                        ${habit.format === 'numeric' ? `<span class="text-zinc-400 normal-case tracking-normal font-medium px-2 py-0.5 bg-black/40 rounded border border-white/5 shadow-inner"> ${current} / ${habit.target}${habit.unit}</span>` : ''}
                                     </div>
                                 </div>
                             </div>
                             
                             ${habit.format === 'numeric' ? `
-                            <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <button onclick="updateProgress('${habit.id}', -${habit.step || 1}, event)" class="w-8 h-8 flex items-center justify-center rounded-lg bg-black/40 hover:bg-black/60 text-zinc-400 transition">-</button>
-                                <button onclick="updateProgress('${habit.id}',${habit.step || 1}, event)" class="w-8 h-8 flex items-center justify-center rounded-lg bg-white/10 hover:bg-white/20 text-white transition tooltip" title="+${habit.step || 1}">+</button>
+                            <div class="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <button onclick="updateProgress('${habit.id}', -1, event)" class="w-9 h-9 flex items-center justify-center rounded-xl bg-black/60 hover:bg-black/80 text-zinc-400 transition text-lg border border-white/5">-</button>
+                                <button onclick="updateProgress('${habit.id}', 1, event)" class="w-9 h-9 flex items-center justify-center rounded-xl bg-white/15 hover:bg-white/25 text-white transition text-lg border border-white/10">+</button>
                             </div>
                             ` : ''}
                         </div>
@@ -738,32 +775,33 @@
             });
             container.innerHTML = html;
 
-            const percentage = Math.round((completed.length / appData.habits.length) * 100) || 0;
-            document.getElementById('today-percentage').innerText = `${percentage}%`;
-            document.getElementById('today-progress-bar').style.width = `${percentage}%`;
+            // Overall Daily Percentage is now fractional!
+            const overallDailyPercentage = Math.round((totalFractionSum / appData.habits.length) * 100) || 0;
+            document.getElementById('today-percentage').innerText = `${overallDailyPercentage}%`;
+            document.getElementById('today-progress-bar').style.width = `${overallDailyPercentage}%`;
         }
 
         function renderHabits() {
             const list = document.getElementById('habits-list');
             if(appData.habits.length === 0) {
-                list.innerHTML = `<div class="text-center py-12 text-zinc-500 text-sm glass-panel rounded-2xl border-dashed border-white/20">No habits created yet.</div>`;
+                list.innerHTML = `<div class="text-center py-12 text-zinc-500 text-sm glass-panel rounded-3xl border-dashed border-white/10">Architecture empty. Add routines to begin.</div>`;
                 return;
             }
 
             let html = '';
             appData.habits.forEach(habit => {
                 html += `
-                    <div class="glass-panel p-4 rounded-xl flex items-center justify-between group">
+                    <div class="glass-panel p-5 rounded-2xl flex items-center justify-between group hover:bg-white/5 transition">
                         <div>
-                            <p class="text-sm font-medium text-zinc-200">${habit.name}</p>
-                            <p class="text-[10px] text-zinc-500 uppercase tracking-wider mt-0.5">
+                            <p class="text-base font-medium text-zinc-200">${habit.name}</p>
+                            <p class="text-[11px] text-zinc-500 uppercase tracking-widest mt-1">
                                 ${habit.category} 
-                                ${habit.format === 'numeric' ? `• Target: ${habit.target}${habit.unit}` : ''}
+                                ${habit.format === 'numeric' ? `<span class="text-zinc-400 normal-case tracking-normal ml-2 bg-black/30 px-1.5 py-0.5 rounded shadow-inner">Target: ${habit.target}${habit.unit}</span>` : ''}
                             </p>
                         </div>
                         <div class="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <button onclick="openHabitModal('${habit.id}')" class="p-2 hover:bg-white/10 rounded-lg text-zinc-400"><i data-lucide="edit-2" class="w-4 h-4"></i></button>
-                            <button onclick="deleteHabit('${habit.id}')" class="p-2 hover:bg-red-500/20 rounded-lg text-red-400"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                            <button onclick="openHabitModal('${habit.id}')" class="p-2.5 bg-white/5 hover:bg-white/15 border border-white/5 rounded-xl text-zinc-300 transition"><i data-lucide="edit-2" class="w-4 h-4"></i></button>
+                            <button onclick="deleteHabit('${habit.id}')" class="p-2.5 bg-red-500/10 hover:bg-red-500/20 border border-red-500/10 rounded-xl text-red-400 transition"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
                         </div>
                     </div>
                 `;
@@ -774,6 +812,31 @@
         function renderBalance() {
             const scores = calculateScores(currentDay);
             const dataArr = categories.map(c => scores[c]);
+            
+            let total = 0;
+            let highest = { name: categories[0], val: scores[categories[0]] };
+            let lowest = { name: categories[0], val: scores[categories[0]] };
+            
+            categories.forEach(cat => {
+                const s = scores[cat];
+                total += s;
+                if(s > highest.val) highest = {name: cat, val: s};
+                if(s < lowest.val) lowest = {name: cat, val: s};
+            });
+            
+            const avg = Math.round(total / 5);
+            document.getElementById('overall-score').innerText = avg;
+            
+            const insight = document.getElementById('balance-insight');
+            if (appData.habits.length === 0) {
+                insight.innerText = "System requires routines to calculate alignment.";
+            } else if (avg >= 80) {
+                insight.innerText = `Optimal alignment achieved. ${highest.name} is leading your growth.`;
+            } else if (highest.val === lowest.val) {
+                insight.innerText = "Dimensions are perfectly balanced across all tracked vectors.";
+            } else {
+                insight.innerText = `Strongest performance in ${highest.name}, while ${lowest.name} requires attention.`;
+            }
             
             if(radarChart) {
                 radarChart.data.datasets[0].data = dataArr;
@@ -787,12 +850,12 @@
                 const width = score < 5 ? 5 : score;
                 html += `
                     <div>
-                        <div class="flex justify-between text-xs mb-1">
-                            <span class="text-zinc-300 font-medium">${cat}</span>
-                            <span class="text-zinc-500">${score}/100</span>
+                        <div class="flex justify-between items-end mb-2">
+                            <span class="text-zinc-300 text-sm font-medium tracking-wide">${cat}</span>
+                            <span class="text-zinc-500 text-xs font-display tracking-widest">${score}/100</span>
                         </div>
-                        <div class="w-full bg-black/50 h-1.5 rounded-full overflow-hidden">
-                            <div class="h-full bg-white/50 rounded-full transition-all duration-1000" style="width: ${width}%"></div>
+                        <div class="w-full bg-black/60 h-2 rounded-full overflow-hidden border border-white/5 shadow-inner">
+                            <div class="h-full bg-gradient-to-r from-zinc-600 to-white rounded-full transition-all duration-1000 ease-out" style="width: ${width}%"></div>
                         </div>
                     </div>
                 `;
@@ -807,11 +870,11 @@
             
             document.querySelectorAll('.nav-btn').forEach(btn => {
                 if(btn.dataset.target === viewId) {
-                    btn.classList.add('text-white', 'bg-white/5');
-                    btn.classList.remove('text-zinc-400');
+                    btn.classList.add('text-white', 'bg-white/10', 'border', 'border-white/5', 'shadow-sm');
+                    btn.classList.remove('text-zinc-500');
                 } else {
-                    btn.classList.remove('text-white', 'bg-white/5');
-                    btn.classList.add('text-zinc-400');
+                    btn.classList.remove('text-white', 'bg-white/10', 'border', 'border-white/5', 'shadow-sm');
+                    btn.classList.add('text-zinc-500');
                 }
             });
         }
@@ -846,11 +909,11 @@
             
             const accountChip = document.getElementById('account-chip');
             if(isSuccess === true) {
-                accountChip.classList.add('bg-green-500/10');
-                setTimeout(() => accountChip.classList.remove('bg-green-500/10'), 1500);
+                accountChip.classList.add('bg-white/10');
+                setTimeout(() => accountChip.classList.remove('bg-white/10'), 2000);
             } else if (isSuccess === false) {
-                accountChip.classList.add('bg-red-500/10');
-                setTimeout(() => accountChip.classList.remove('bg-red-500/10'), 1500);
+                accountChip.classList.add('bg-red-500/20');
+                setTimeout(() => accountChip.classList.remove('bg-red-500/20'), 2000);
             }
         }
     </script>
