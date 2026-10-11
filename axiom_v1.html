@@ -1,711 +1,643 @@
-<!doctype html>
-<html lang="en" data-motion="system" data-quality="rich">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="color-scheme" content="dark">
-<meta name="theme-color" content="#050607">
-<meta name="description" content="AXIOM — Live by design. A personal operating system for habits, progress and life balance.">
-<title>AXIOM — Live by design</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23060708'/%3E%3Cpath d='M16 5l10 7.3-3.8 11.7H9.8L6 12.3z' fill='none' stroke='%23d6dbe3' stroke-width='1.6' stroke-linejoin='round'/%3E%3Ccircle cx='16' cy='16.5' r='2' fill='%23d6dbe3'/%3E%3C/svg%3E">
-<style>
-/* ═══════════════════════════════════════════════════════════════
-   AXIOM — Live by design
-   Black & silver · smoky glassmorphism
-   Works on older browsers (Chrome 109+, Firefox ESR 115+): no color-mix,
-   no CSS nesting, no :has() dependence.
-   ═══════════════════════════════════════════════════════════════ */
+import React, { useState, useEffect, useMemo } from 'react';
+import { 
+  Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer,
+  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, BarChart, Bar, Legend
+} from 'recharts';
+import { 
+  Activity, CheckCircle2, ChevronRight, Circle, Settings as SettingsIcon, 
+  Target, TrendingUp, User, X, Plus, Trash2, Edit2, Hexagon, Play
+} from 'lucide-react';
 
-:root {
-  --bg: #050607;
-  --ink: #eef1f5;
-  --ink-2: #c5cbd4;
-  --ink-3: #8f97a3;
-  --ink-4: #5f6672;
-  --line: rgba(208, 215, 226, .13);
-  --line-2: rgba(208, 215, 226, .26);
-  --silver: #d6dbe3;
-  --err: #e6b1b1;
 
-  --c-health: #9fd0bd;
-  --c-studies: #a8b6e6;
-  --c-career: #dcc79a;
-  --c-finances: #8ec5d6;
-  --c-relationships: #dba5bd;
-  --c-personal: #c9ced6;
+// --- UTILITIES & STATE MANAGEMENT ---
 
-  --sans: "Inter", "SF Pro Display", "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;
-  --serif: "Cormorant Garamond", "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
-  --ease: cubic-bezier(.2, .7, .1, 1);
-  --side: 252px;
-  --radius: 20px;
-}
+const STORAGE_KEY = 'axiom_os_data_v1';
 
-*, *::before, *::after { box-sizing: border-box; }
-html { color-scheme: dark; background: var(--bg); -webkit-text-size-adjust: 100%; }
-body {
-  margin: 0; min-height: 100vh; background: var(--bg); color: var(--ink);
-  font: 400 15px/1.5 var(--sans); -webkit-font-smoothing: antialiased; overflow-x: hidden;
-}
-h1, h2, h3, p { margin: 0; }
-button, input, select, textarea { font: inherit; color: inherit; }
-button { cursor: pointer; }
-ul, ol { margin: 0; padding: 0; list-style: none; }
-.ic { flex: none; display: block; }
-.sr-only { position: absolute !important; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
-[hidden] { display: none !important; }
-:focus-visible { outline: 2px solid #e4e9f1; outline-offset: 3px; }
-::selection { background: rgba(214, 219, 227, .28); }
-.skip-link { position: fixed; left: 12px; top: -60px; z-index: 100; background: #eef1f5; color: #050607; padding: 10px 16px; border-radius: 10px; transition: top .2s; }
-.skip-link:focus { top: 12px; }
-.defs { position: absolute; width: 0; height: 0; overflow: hidden; }
+const defaultData = {
+  userName: 'Commander',
+  habits: [
+    { id: '1', name: 'Hydration (2L)', category: 'Health', streak: 4, completedDates: [] },
+    { id: '2', name: 'Deep Work (2hr)', category: 'Career', streak: 2, completedDates: [] },
+    { id: '3', name: 'Physical Training', category: 'Health', streak: 0, completedDates: [] },
+    { id: '4', name: 'Reading (30m)', category: 'Studies', streak: 7, completedDates: [] },
+  ],
+  balanceScores: {
+    health: 7,
+    studies: 6,
+    career: 8,
+    finances: 5,
+    relationships: 7
+  },
+  hasSeenSplash: false
+};
 
-/* ── Atmosphere ─────────────────────────────────────────────── */
-.atmos {
-  position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none;
-  background:
-    radial-gradient(1100px 700px at 80% -12%, rgba(190, 200, 216, .11), transparent 62%),
-    radial-gradient(900px 620px at -8% 112%, rgba(150, 160, 178, .09), transparent 62%),
-    var(--bg);
-}
-.blob { position: absolute; border-radius: 50%; will-change: transform; }
-.b1 { width: 52vw; height: 52vw; left: -14vw; top: -16vw; background: radial-gradient(circle, rgba(176, 186, 204, .17), transparent 66%); animation: drift1 42s ease-in-out infinite alternate; }
-.b2 { width: 44vw; height: 44vw; right: -12vw; top: 28vh; background: radial-gradient(circle, rgba(128, 140, 160, .17), transparent 66%); animation: drift2 54s ease-in-out infinite alternate; }
-.b3 { width: 60vw; height: 34vw; left: 22vw; bottom: -16vw; background: radial-gradient(ellipse, rgba(214, 220, 230, .09), transparent 66%); animation: drift3 60s ease-in-out infinite alternate; }
-.cone { position: absolute; left: 50%; top: -20vh; width: 70vw; height: 90vh; transform: translateX(-50%); background: conic-gradient(from 168deg at 50% 0%, transparent 0deg, rgba(220, 228, 240, .045) 12deg, transparent 24deg); }
-.grain {
-  position: fixed; inset: 0; z-index: 1; pointer-events: none; opacity: .055; mix-blend-mode: screen;
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .55 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
-}
-@keyframes drift1 { to { transform: translate3d(9vw, 7vw, 0) scale(1.12); } }
-@keyframes drift2 { to { transform: translate3d(-10vw, -6vw, 0) scale(1.08); } }
-@keyframes drift3 { to { transform: translate3d(8vw, -5vw, 0) scale(1.15); } }
+const getTodayStr = () => new Date().toISOString().split('T')[0];
 
-/* ── Shell ──────────────────────────────────────────────────── */
-.app { position: relative; z-index: 2; display: grid; grid-template-columns: var(--side) minmax(0, 1fr); min-height: 100vh; transition: grid-template-columns .45s var(--ease); }
-.app.collapsed { --side: 84px; }
-.side {
-  position: sticky; top: 0; height: 100vh; padding: 22px 16px; display: flex; flex-direction: column; gap: 22px;
-  border-right: 1px solid var(--line); background: linear-gradient(180deg, rgba(255, 255, 255, .035), rgba(255, 255, 255, .012));
-  -webkit-backdrop-filter: blur(24px) saturate(130%); backdrop-filter: blur(24px) saturate(130%);
-}
-.brand { display: flex; align-items: center; gap: 12px; padding: 4px 8px; color: var(--silver); height: 40px; }
-.brand svg { flex: none; }
-.brand-name { font-weight: 300; letter-spacing: .42em; font-size: 15px; white-space: nowrap; color: var(--ink); }
-.nav { display: flex; flex-direction: column; gap: 4px; }
-.nav a, .tabbar a {
-  position: relative; display: flex; align-items: center; gap: 14px; padding: 11px 12px; border-radius: 13px;
-  color: var(--ink-3); text-decoration: none; transition: color .25s, background .25s;
-  white-space: nowrap;
-}
-.nav a:hover { color: var(--ink); background: rgba(255, 255, 255, .05); }
-.nav a[aria-current="page"] { color: var(--ink); background: linear-gradient(90deg, rgba(255, 255, 255, .09), rgba(255, 255, 255, .03)); box-shadow: inset 0 0 0 1px var(--line); }
-.nav a[aria-current="page"]::before { content: ""; position: absolute; left: -16px; top: 12px; bottom: 12px; width: 3px; border-radius: 0 3px 3px 0; background: linear-gradient(180deg, #f3f5f8, #8d95a2); box-shadow: 0 0 14px rgba(226, 232, 240, .5); }
-.collapsed .nav .lbl, .collapsed .brand-name, .collapsed .store .lbl { opacity: 0; width: 0; overflow: hidden; }
-.nav .lbl, .brand-name, .store .lbl { transition: opacity .25s; }
-.side-foot { margin-top: auto; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-.store { display: flex; align-items: center; gap: 10px; color: var(--ink-3); font-size: 12px; padding: 0 8px; min-width: 0; }
-.store .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--silver); box-shadow: 0 0 10px rgba(214, 219, 227, .6); flex: none; }
-.store.warn .dot { background: var(--err); box-shadow: 0 0 10px rgba(230, 177, 177, .6); }
-.collapsed .side-foot { flex-direction: column; }
-.collapsed .store { padding: 0; }
+const useAxiomData = () => {
+  const [data, setData] = useState(() => {
+    try {
+      const item = window.localStorage.getItem(STORAGE_KEY);
+      return item ? JSON.parse(item) : defaultData;
+    } catch (error) {
+      console.warn("Error reading localStorage", error);
+      return defaultData;
+    }
+  });
 
-.content { min-width: 0; }
-main { max-width: 1260px; margin: 0 auto; padding: clamp(20px, 3.4vw, 44px) clamp(16px, 3.4vw, 44px) 80px; outline: none; }
-.mhead { display: none; }
+  useEffect(() => {
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  }, [data]);
 
-.tabbar { display: none; }
+  const updateField = (field, value) => {
+    setData(prev => ({ ...prev, [field]: value }));
+  };
 
-/* ── Glass ──────────────────────────────────────────────────── */
-.card {
-  position: relative; border-radius: var(--radius); padding: 22px; min-width: 0;
-  background: linear-gradient(160deg, rgba(255, 255, 255, .075), rgba(255, 255, 255, .022) 42%, rgba(255, 255, 255, .042));
-  border: 1px solid var(--line);
-  -webkit-backdrop-filter: blur(22px) saturate(140%); backdrop-filter: blur(22px) saturate(140%);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .08), 0 34px 60px -30px rgba(0, 0, 0, .9), 0 2px 8px rgba(0, 0, 0, .25);
-}
-.card::before {
-  content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
-  background: linear-gradient(118deg, rgba(255, 255, 255, .09) 0%, rgba(255, 255, 255, 0) 26%), radial-gradient(110% 55% at 0% 0%, rgba(255, 255, 255, .05), transparent 62%);
-}
-.card > * { position: relative; }
-@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  .card { background: rgba(22, 24, 28, .92); }
-  .side { background: rgba(14, 15, 18, .96); }
-}
-html[data-quality="lite"] .card, html[data-quality="lite"] .side, html[data-quality="lite"] dialog, html[data-quality="lite"] .tabbar, html[data-quality="lite"] .toast {
-  -webkit-backdrop-filter: none; backdrop-filter: none; background: rgba(21, 23, 27, .9);
-}
-html[data-quality="lite"] .blob, html[data-quality="lite"] .grain { animation: none; display: none; }
-html[data-quality="lite"] .card { box-shadow: inset 0 1px 0 rgba(255, 255, 255, .07), 0 12px 24px -16px rgba(0, 0, 0, .9); }
+  const toggleHabit = (id, dateStr) => {
+    setData(prev => {
+      const newHabits = prev.habits.map(habit => {
+        if (habit.id === id) {
+          const isCompleted = habit.completedDates.includes(dateStr);
+          const newDates = isCompleted 
+            ? habit.completedDates.filter(d => d !== dateStr)
+            : [...habit.completedDates, dateStr];
+          
+          // Simple streak calculation (just counts consecutive from today backwards - simplified for this demo)
+          let currentStreak = 0;
+          let checkDate = new Date();
+          while(true) {
+             const checkStr = checkDate.toISOString().split('T')[0];
+             if(newDates.includes(checkStr)) {
+                 currentStreak++;
+                 checkDate.setDate(checkDate.getDate() - 1);
+             } else {
+                 // Ignore if today isn't checked yet but yesterday was
+                 if (checkStr === getTodayStr()) {
+                     checkDate.setDate(checkDate.getDate() - 1);
+                     continue;
+                 }
+                 break;
+             }
+          }
 
-.grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 18px; }
-.span-12 { grid-column: span 12; } .span-8 { grid-column: span 8; } .span-7 { grid-column: span 7; }
-.span-6 { grid-column: span 6; } .span-5 { grid-column: span 5; } .span-4 { grid-column: span 4; }
-.stack { display: flex; flex-direction: column; gap: 18px; min-width: 0; }
+          return { ...habit, completedDates: newDates, streak: currentStreak };
+        }
+        return habit;
+      });
+      return { ...prev, habits: newHabits };
+    });
+  };
 
-/* ── Type ───────────────────────────────────────────────────── */
-.eyebrow { font-size: 11px; letter-spacing: .24em; text-transform: uppercase; color: var(--ink-3); }
-h1 { font-family: var(--serif); font-weight: 400; font-size: clamp(34px, 4.6vw, 54px); line-height: 1.05; letter-spacing: -.01em; margin-top: 8px; }
-h2 { font-size: 13px; font-weight: 500; letter-spacing: .16em; text-transform: uppercase; color: var(--ink-2); }
-h3 { font-size: 16px; font-weight: 500; }
-.sub { color: var(--ink-3); margin-top: 10px; max-width: 62ch; }
-.muted { color: var(--ink-3); }
-.num { font-variant-numeric: tabular-nums; }
-.phead { display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; flex-wrap: wrap; margin-bottom: 26px; }
-.phead-actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
-.card-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 18px; flex-wrap: wrap; }
+  const addHabit = (name, category) => {
+    const newHabit = {
+      id: Date.now().toString(),
+      name,
+      category,
+      streak: 0,
+      completedDates: []
+    };
+    setData(prev => ({ ...prev, habits: [...prev.habits, newHabit] }));
+  };
 
-/* ── Controls ───────────────────────────────────────────────── */
-.btn {
-  display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 10px 16px; border-radius: 12px;
-  border: 1px solid var(--line-2); background: rgba(255, 255, 255, .05); color: var(--ink); font-weight: 500; font-size: 14px;
-  transition: background .25s, border-color .25s, transform .2s var(--ease), box-shadow .25s; white-space: nowrap;
-}
-.btn:hover { background: rgba(255, 255, 255, .1); border-color: rgba(214, 220, 230, .4); }
-.btn:active { transform: translateY(1px) scale(.99); }
-.btn.primary { background: linear-gradient(180deg, #f4f6f9, #aab2be); color: #07090c; border-color: #f4f6f9; box-shadow: 0 8px 28px -10px rgba(226, 232, 242, .45), inset 0 1px 0 rgba(255, 255, 255, .7); }
-.btn.primary:hover { background: linear-gradient(180deg, #ffffff, #b8c0cc); }
-.btn.danger { color: var(--err); border-color: rgba(230, 177, 177, .35); }
-.btn.danger:hover { background: rgba(230, 177, 177, .1); }
-.btn.small { padding: 7px 12px; font-size: 13px; border-radius: 10px; }
-.btn[disabled] { opacity: .4; pointer-events: none; }
-.iconbtn {
-  display: inline-grid; place-items: center; width: 36px; height: 36px; border-radius: 11px; padding: 0;
-  border: 1px solid transparent; background: transparent; color: var(--ink-3); transition: background .2s, color .2s, border-color .2s;
-}
-.iconbtn:hover { color: var(--ink); background: rgba(255, 255, 255, .07); border-color: var(--line); }
-.iconbtn[disabled] { opacity: .3; pointer-events: none; }
-.chip {
-  display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 99px; font-size: 11.5px; letter-spacing: .04em;
-  color: var(--ink-2); border: 1px solid var(--line); background: rgba(255, 255, 255, .04); white-space: nowrap;
-}
-.chip i { width: 7px; height: 7px; border-radius: 50%; background: var(--c, var(--silver)); }
-.chip.sample { color: #e8d9ae; border-color: rgba(232, 217, 174, .3); background: rgba(232, 217, 174, .06); }
-.seg { display: inline-flex; padding: 3px; border-radius: 13px; border: 1px solid var(--line); background: rgba(0, 0, 0, .25); gap: 2px; }
-.seg button, .seg label span { display: block; padding: 7px 14px; border-radius: 10px; border: 0; background: transparent; color: var(--ink-3); font-size: 13px; transition: .2s; cursor: pointer; }
-.seg button:hover, .seg label span:hover { color: var(--ink); }
-.seg button[aria-pressed="true"], .seg input:checked + span { background: linear-gradient(180deg, rgba(255, 255, 255, .16), rgba(255, 255, 255, .07)); color: var(--ink); box-shadow: inset 0 0 0 1px var(--line-2); }
-.seg input { position: absolute; opacity: 0; pointer-events: none; }
-.seg label { position: relative; }
-.seg input:focus-visible + span { outline: 2px solid #e4e9f1; outline-offset: 2px; }
-.toggle-btn { display: inline-flex; align-items: center; gap: 8px; }
-.toggle-btn .sw { width: 30px; height: 18px; border-radius: 99px; background: rgba(255, 255, 255, .12); position: relative; transition: .25s; border: 1px solid var(--line-2); }
-.toggle-btn .sw::after { content: ""; position: absolute; left: 2px; top: 2px; width: 12px; height: 12px; border-radius: 50%; background: var(--ink-3); transition: .25s var(--ease); }
-.toggle-btn[aria-pressed="true"] .sw { background: rgba(214, 219, 227, .35); }
-.toggle-btn[aria-pressed="true"] .sw::after { transform: translateX(12px); background: #fff; }
+  const deleteHabit = (id) => {
+    setData(prev => ({ ...prev, habits: prev.habits.filter(h => h.id !== id) }));
+  };
 
-input[type="text"], input[type="number"], select, textarea {
-  width: 100%; padding: 11px 13px; border-radius: 12px; border: 1px solid var(--line-2); background: rgba(0, 0, 0, .3); color: var(--ink);
-  transition: border-color .2s, box-shadow .2s; min-width: 0;
-}
-input::placeholder { color: var(--ink-4); }
-input:focus, select:focus { outline: none; border-color: rgba(228, 233, 241, .6); box-shadow: 0 0 0 3px rgba(214, 219, 227, .12); }
-input[aria-invalid="true"] { border-color: rgba(230, 177, 177, .6); }
-select { appearance: none; -webkit-appearance: none; padding-right: 34px; cursor: pointer;
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path d='M1 1.5l5 5 5-5' fill='none' stroke='%238f97a3' stroke-width='1.6' stroke-linecap='round'/></svg>");
-  background-repeat: no-repeat; background-position: right 13px center; }
-select option { background: #101216; color: var(--ink); }
-.select-inline { width: auto; padding: 8px 32px 8px 12px; font-size: 13px; }
-.field { display: grid; gap: 7px; margin-bottom: 16px; border: 0; padding: 0; min-width: 0; }
-.field > label, .field > legend { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); padding: 0; }
-.field-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-bottom: 16px; }
-.field-row .field { margin: 0; }
-.err { color: var(--err); font-size: 12.5px; min-height: 0; }
-.err:empty { display: none; }
-.hint { color: var(--ink-3); font-size: 12.5px; }
+  const updateBalance = (category, value) => {
+    setData(prev => ({
+      ...prev,
+      balanceScores: { ...prev.balanceScores, [category]: parseInt(value) }
+    }));
+  };
 
-/* range sliders */
-input[type="range"] { -webkit-appearance: none; appearance: none; width: 100%; height: 24px; background: transparent; cursor: pointer; --p: 50%; margin: 0; }
-input[type="range"]::-webkit-slider-runnable-track { height: 4px; border-radius: 4px; background: linear-gradient(90deg, #e9edf3 0, #9aa3b0 var(--p), rgba(255, 255, 255, .13) var(--p)); }
-input[type="range"]::-moz-range-track { height: 4px; border-radius: 4px; background: rgba(255, 255, 255, .13); }
-input[type="range"]::-moz-range-progress { height: 4px; border-radius: 4px; background: linear-gradient(90deg, #e9edf3, #9aa3b0); }
-input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; margin-top: -7px; border-radius: 50%; border: 1px solid #fff; background: radial-gradient(circle at 35% 30%, #fff, #b9c1cd); box-shadow: 0 2px 10px rgba(0, 0, 0, .6), 0 0 0 4px rgba(214, 219, 227, .1); transition: box-shadow .2s; }
-input[type="range"]::-moz-range-thumb { width: 16px; height: 16px; border-radius: 50%; border: 1px solid #fff; background: radial-gradient(circle at 35% 30%, #fff, #b9c1cd); box-shadow: 0 2px 10px rgba(0, 0, 0, .6); }
-input[type="range"]:hover::-webkit-slider-thumb { box-shadow: 0 2px 10px rgba(0, 0, 0, .6), 0 0 0 7px rgba(214, 219, 227, .12); }
-input[type="range"]:focus-visible { outline: none; }
-input[type="range"]:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 3px #050607, 0 0 0 5px #e4e9f1; }
+  return { data, updateField, toggleHabit, addHabit, deleteHabit, updateBalance };
+};
 
-/* ── Banner & empty ─────────────────────────────────────────── */
-.banner {
-  display: flex; align-items: center; gap: 14px; flex-wrap: wrap; padding: 12px 16px; margin-bottom: 22px; border-radius: 14px;
-  border: 1px solid rgba(232, 217, 174, .22); background: linear-gradient(90deg, rgba(232, 217, 174, .08), rgba(232, 217, 174, .02)); color: var(--ink-2); font-size: 13.5px;
-}
-.banner b { color: #efe2b8; font-weight: 500; }
-.banner .grow { flex: 1 1 260px; }
-.empty { text-align: center; padding: 34px 18px; display: grid; justify-items: center; gap: 10px; }
-.empty .ei { width: 54px; height: 54px; border-radius: 17px; display: grid; place-items: center; border: 1px solid var(--line-2); background: rgba(255, 255, 255, .05); color: var(--silver); margin-bottom: 6px; }
-.empty h3 { font-family: var(--serif); font-weight: 400; font-size: 24px; }
-.empty p { color: var(--ink-3); max-width: 44ch; }
-.empty .btns { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin-top: 8px; }
-.empty.compact { padding: 22px 12px; }
-.empty.compact h3 { font-size: 20px; }
 
-/* ── Today ──────────────────────────────────────────────────── */
-.hero { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 28px; align-items: center; padding: clamp(22px, 3vw, 34px); }
-.hero h1 { margin-top: 14px; }
-.daynav { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
-.daynav .date { font-size: 13px; letter-spacing: .08em; color: var(--ink-2); padding: 0 6px; }
-.hero-insight { margin-top: 14px; color: var(--ink-2); max-width: 52ch; }
-.tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-top: 24px; max-width: 520px; }
-.tile { padding: 12px 14px; border-radius: 14px; border: 1px solid var(--line); background: rgba(0, 0, 0, .2); }
-.tile b { display: flex; align-items: center; gap: 6px; font-size: 22px; font-weight: 400; font-family: var(--serif); letter-spacing: .01em; }
-.tile small { display: block; margin-top: 2px; font-size: 11.5px; color: var(--ink-3); letter-spacing: .04em; }
-.ring { position: relative; width: 190px; height: 190px; }
-.ring svg { width: 100%; height: 100%; transform: rotate(-90deg); overflow: visible; }
-.ring .track { fill: none; stroke: rgba(255, 255, 255, .08); stroke-width: 9; }
-.ring .arc { fill: none; stroke: url(#gRing); stroke-width: 9; stroke-linecap: round; transition: stroke-dashoffset 1s var(--ease); filter: drop-shadow(0 0 8px rgba(224, 230, 240, .35)); }
-.ring .center { position: absolute; inset: 0; display: grid; place-content: center; text-align: center; }
-.ring .pct { font-family: var(--serif); font-size: 52px; line-height: 1; font-weight: 400; }
-.ring .pct sup { font-size: 20px; color: var(--ink-3); margin-left: 2px; vertical-align: top; position: relative; top: 6px; }
-.ring .of { font-size: 12px; color: var(--ink-3); letter-spacing: .08em; margin-top: 6px; }
 
-.rows { display: grid; gap: 8px; }
-.row {
-  display: grid; gap: 10px; padding: 12px 14px; border-radius: 15px; border: 1px solid var(--line); background: rgba(0, 0, 0, .18);
-  transition: background .25s, border-color .25s, transform .3s var(--ease);
-}
-.row:hover { background: rgba(255, 255, 255, .05); border-color: var(--line-2); }
-.row.is-done { background: rgba(255, 255, 255, .035); }
-.row.is-done .rtext b { color: var(--ink-3); }
-.row-main { display: flex; align-items: center; gap: 14px; min-width: 0; }
-.chk { display: flex; align-items: center; gap: 14px; cursor: pointer; flex: 1; min-width: 0; position: relative; }
-.chk input { position: absolute; opacity: 0; width: 26px; height: 26px; margin: 0; cursor: pointer; }
-.box { flex: none; width: 26px; height: 26px; border-radius: 9px; border: 1.5px solid var(--line-2); background: rgba(255, 255, 255, .03); display: grid; place-items: center; transition: .3s var(--ease); color: #07090c; }
-.box svg { width: 16px; height: 16px; }
-.box path { stroke-dasharray: 24; stroke-dashoffset: 24; transition: stroke-dashoffset .35s var(--ease) .05s; }
-.chk:hover .box { border-color: rgba(228, 233, 241, .6); }
-.chk input:checked + .box { background: linear-gradient(180deg, #f6f8fb, #b2bac6); border-color: #eef1f5; box-shadow: 0 0 20px rgba(224, 230, 240, .28); }
-.chk input:checked + .box path { stroke-dashoffset: 0; }
-.chk input:focus-visible + .box { outline: 2px solid #e4e9f1; outline-offset: 3px; }
-.rname { display: flex; align-items: center; gap: 12px; min-width: 0; }
-.ricon { flex: none; width: 36px; height: 36px; border-radius: 12px; display: grid; place-items: center; color: var(--c, var(--silver)); background: rgba(255, 255, 255, .05); border: 1px solid var(--line); }
-.rtext { display: grid; min-width: 0; }
-.rtext b { font-weight: 500; font-size: 15px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; transition: color .3s; }
-.rtext small { color: var(--ink-3); font-size: 12px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
-.rtext small .fl { display: inline-flex; align-items: center; gap: 3px; color: var(--ink-2); }
-.stepper { display: flex; align-items: center; gap: 6px; flex: none; }
-.stepper .sval { min-width: 92px; text-align: center; font-size: 13px; color: var(--ink-3); font-variant-numeric: tabular-nums; }
-.stepper .sval b { color: var(--ink); font-size: 16px; font-weight: 500; }
-.stepper .iconbtn { border-color: var(--line); background: rgba(255, 255, 255, .04); color: var(--ink); width: 34px; height: 34px; font-size: 18px; line-height: 1; }
-.mini { height: 3px; border-radius: 3px; background: rgba(255, 255, 255, .08); overflow: hidden; }
-.mini i { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #a5adba, #f1f4f8); transition: width .5s var(--ease); }
-.row.pop .box { animation: pop .5s var(--ease); }
-.row.is-count .badge { display: none; }
-.row-main .done-badge { color: var(--silver); display: none; }
-.row.is-done.is-count .done-badge { display: block; }
-@keyframes pop { 40% { transform: scale(1.22); } 100% { transform: scale(1); } }
+// --- UI COMPONENTS ---
 
-.goal { display: grid; gap: 8px; padding: 12px 0; border-top: 1px solid var(--line); }
-.goal:first-child { border-top: 0; padding-top: 0; }
-.goal-top { display: flex; align-items: center; gap: 10px; justify-content: space-between; }
-.goal-top b { font-weight: 500; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
-.goal-top .pv { font-variant-numeric: tabular-nums; color: var(--ink-2); font-size: 13px; }
+const GlassCard = ({ children, className = '', noPadding = false }) => (
+  <div className={`relative overflow-hidden bg-zinc-900/40 backdrop-blur-xl border border-white/10 rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.5)] ${noPadding ? '' : 'p-6'} ${className}`}>
+    <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+    {children}
+  </div>
+);
 
-.week { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 8px; align-items: end; }
-.wd { display: grid; gap: 6px; justify-items: center; background: none; border: 0; padding: 4px 0; border-radius: 10px; color: var(--ink-3); font-size: 11.5px; transition: background .2s; }
-.wd:hover { background: rgba(255, 255, 255, .05); }
-.wd .col { width: 100%; max-width: 30px; height: 84px; border-radius: 9px; background: rgba(255, 255, 255, .06); display: flex; align-items: flex-end; overflow: hidden; }
-.wd .col i { display: block; width: 100%; border-radius: 9px; background: linear-gradient(180deg, #f1f4f8, #8d95a2); transition: height .6s var(--ease); }
-.wd.future .col { opacity: .4; }
-.wd.sel { color: var(--ink); }
-.wd.sel .col { box-shadow: 0 0 0 1.5px rgba(228, 233, 241, .65); }
-.wd small { font-size: 11px; font-variant-numeric: tabular-nums; }
-.wsum { display: flex; justify-content: space-between; gap: 12px; margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--line); font-size: 13px; color: var(--ink-3); flex-wrap: wrap; }
-.wsum b { color: var(--ink); font-weight: 500; }
+const SectionTitle = ({ title, subtitle, icon: Icon }) => (
+  <div className="mb-8">
+    <h2 className="text-3xl font-light tracking-wide text-zinc-100 flex items-center gap-3">
+      {Icon && <Icon className="w-6 h-6 text-zinc-400" />}
+      {title}
+    </h2>
+    {subtitle && <p className="text-zinc-500 mt-1 text-sm uppercase tracking-widest">{subtitle}</p>}
+  </div>
+);
 
-/* ── Habits ─────────────────────────────────────────────────── */
-.hgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 400px), 1fr)); gap: 16px; }
-.hcard { display: grid; gap: 16px; transition: transform .35s var(--ease), border-color .3s, opacity .2s; }
-.hcard:hover { border-color: var(--line-2); }
-.hcard.dragging { opacity: .35; }
-.hcard.drop-before { box-shadow: 0 -3px 0 0 #e4e9f1, inset 0 1px 0 rgba(255, 255, 255, .08); }
-.hcard.drop-after { box-shadow: 0 3px 0 0 #e4e9f1, inset 0 1px 0 rgba(255, 255, 255, .08); }
-.hc-top { display: flex; align-items: center; gap: 10px; }
-.grip { cursor: grab; color: var(--ink-4); }
-.grip:active { cursor: grabbing; }
-.hc-title { flex: 1; min-width: 0; }
-.hc-title h3 { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.hc-title p { color: var(--ink-3); font-size: 12.5px; }
-.hc-actions { display: flex; gap: 0; flex: none; }
-.hc-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-.hc-stats div { padding: 10px 12px; border-radius: 13px; background: rgba(0, 0, 0, .2); border: 1px solid var(--line); }
-.hc-stats b { font-family: var(--serif); font-weight: 400; font-size: 24px; display: block; line-height: 1.1; }
-.hc-stats small { color: var(--ink-3); font-size: 11.5px; letter-spacing: .04em; }
-.dots { display: flex; gap: 6px; align-items: center; }
-.dots i { flex: 1; height: 9px; border-radius: 4px; background: rgba(255, 255, 255, .07); border: 1px solid transparent; }
-.dots i.done { background: linear-gradient(180deg, #f1f4f8, #98a1ae); }
-.dots i.part { background: linear-gradient(180deg, rgba(241, 244, 248, .45), rgba(152, 161, 174, .35)); }
-.dots i.miss { background: transparent; border-color: var(--line-2); }
-.dots i.na { background: transparent; border: 1px dashed var(--line); opacity: .5; }
-.dots-label { display: flex; justify-content: space-between; color: var(--ink-4); font-size: 11px; margin-top: -8px; }
+const CircularProgress = ({ percentage, size = 120, strokeWidth = 8 }) => {
+  const radius = (size - strokeWidth) / 2;
+  const circumference = radius * 2 * Math.PI;
+  const offset = circumference - (percentage / 100) * circumference;
 
-/* ── Analytics ──────────────────────────────────────────────── */
-.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 18px; grid-column: span 12; }
-.kpi { padding: 18px 20px; }
-.kpi .lbl { font-size: 11.5px; letter-spacing: .16em; text-transform: uppercase; color: var(--ink-3); }
-.kpi .val { font-family: var(--serif); font-size: 42px; line-height: 1.1; margin-top: 8px; font-variant-numeric: tabular-nums; }
-.kpi .val small { font-size: 18px; color: var(--ink-3); margin-left: 3px; font-family: var(--sans); }
-.delta { font-size: 12.5px; color: var(--ink-3); display: inline-flex; gap: 5px; align-items: center; margin-top: 4px; }
-.delta.up { color: var(--ink-2); }
-.delta .tri { font-size: 9px; }
-.chart { width: 100%; min-height: 60px; }
-.chart svg { display: block; overflow: visible; }
-.chart text { fill: var(--ink-3); font-size: 11px; font-family: var(--sans); }
-.chart text.ax { font-variant-numeric: tabular-nums; }
-.chart .gl { stroke: rgba(255, 255, 255, .07); stroke-width: 1; }
-.chart .thr { stroke: rgba(228, 233, 241, .35); stroke-dasharray: 4 5; stroke-width: 1; }
-.chart .bar { fill: url(#gBar); }
-.chart .bar.dim { opacity: .55; }
-.chart .bar.sel { fill: #fff; }
-.chart .ghost { fill: rgba(255, 255, 255, .05); stroke: rgba(255, 255, 255, .22); stroke-dasharray: 3 3; }
-.chart .hit { fill: transparent; }
-.chart .hit:hover { fill: rgba(255, 255, 255, .05); }
-.chart .area { fill: url(#gArea); }
-.chart .line { fill: none; stroke: #eef1f5; stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
-.chart .pline { fill: none; stroke: rgba(255, 255, 255, .28); stroke-width: 1.5; stroke-dasharray: 3 4; }
-.chart .pt { fill: #07090c; stroke-width: 2; }
-.chart .valtxt { fill: var(--ink-2); font-size: 11px; }
-.chart-wrap .legend { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 10px; color: var(--ink-3); font-size: 12px; }
-.legend span { display: inline-flex; align-items: center; gap: 7px; }
-.legend i { width: 14px; height: 0; border-top: 2px solid #eef1f5; }
-.legend i.dash { border-top: 2px dashed rgba(255, 255, 255, .4); }
+  return (
+    <div className="relative flex items-center justify-center" style={{ width: size, height: size }}>
+      <svg className="transform -rotate-90 w-full h-full">
+        {/* Background circle */}
+        <circle
+          className="text-zinc-800"
+          strokeWidth={strokeWidth}
+          stroke="currentColor"
+          fill="transparent"
+          r={radius}
+          cx={size / 2}
+          cy={size / 2}
+        />
+        {/* Progress circle */}
+        <circle
+          className="text-zinc-200 transition-all duration-1000 ease-out"
+          strokeWidth={strokeWidth}
+          strokeDasharray={circumference}
+          strokeDashoffset={offset}
+          strokeLinecap="round"
+          stroke="currentColor"
+          fill="transparent"
+          r={radius}
+          cx={size / 2}
+          cy={size / 2}
+        />
+      </svg>
+      <div className="absolute flex flex-col items-center justify-center text-center">
+        <span className="text-3xl font-light text-white">{Math.round(percentage)}%</span>
+      </div>
+    </div>
+  );
+};
 
-.hbars { display: grid; gap: 12px; }
-.hbar { display: grid; grid-template-columns: minmax(96px, 150px) 1fr 54px; gap: 12px; align-items: center; font-size: 13.5px; }
-.hbar .lbl { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--ink-2); display: flex; align-items: center; gap: 8px; }
-.hbar .lbl i { width: 8px; height: 8px; border-radius: 50%; background: var(--c); flex: none; }
-.hbar .track { height: 8px; border-radius: 8px; background: rgba(255, 255, 255, .07); overflow: hidden; position: relative; }
-.hbar .track i { position: absolute; inset: 0 auto 0 0; border-radius: 8px; background: linear-gradient(90deg, #8d95a2, #f1f4f8); transform-origin: left; }
-main[data-anim="1"] .hbar .track i { animation: growX .9s var(--ease) both; animation-delay: calc(var(--i, 0) * 50ms); }
-.hbar .v { text-align: right; font-variant-numeric: tabular-nums; }
-.hbar .v small { display: block; font-size: 11px; color: var(--ink-3); }
-@keyframes growX { from { transform: scaleX(0); } }
 
-.heat { display: grid; grid-template-rows: repeat(7, 1fr); grid-auto-flow: column; grid-template-columns: repeat(var(--cols), minmax(0, 1fr)); gap: 4px; }
-.hm { aspect-ratio: 1; border-radius: 5px; border: 0; padding: 0; min-width: 0; background: rgba(238, 241, 245, var(--a, .06)); position: relative; transition: transform .2s; }
-.hm:hover { transform: scale(1.25); z-index: 2; }
-.hm.empty { background: transparent; border: 1px dashed rgba(255, 255, 255, .08); }
-.hm.none { background: rgba(255, 255, 255, .04); }
-.hm.today { box-shadow: 0 0 0 1.5px #e4e9f1; }
-.hm.fut { visibility: hidden; }
-.heat-wrap { display: grid; grid-template-columns: auto 1fr; gap: 10px; align-items: stretch; }
-.heat-days { display: grid; grid-template-rows: repeat(7, 1fr); gap: 4px; font-size: 10.5px; color: var(--ink-4); align-items: center; padding-top: 22px; }
-.heat-months { display: grid; grid-template-columns: repeat(var(--cols), minmax(0, 1fr)); gap: 4px; font-size: 10.5px; color: var(--ink-3); height: 18px; margin-bottom: 4px; }
-.heat-months span { white-space: nowrap; overflow: visible; }
-.heat-legend { display: flex; align-items: center; gap: 6px; justify-content: flex-end; font-size: 11px; color: var(--ink-3); margin-top: 12px; }
-.heat-legend i { width: 14px; height: 14px; border-radius: 4px; background: rgba(238, 241, 245, var(--a)); }
 
-.cats { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 250px), 1fr)); gap: 14px; }
-.cat { padding: 18px; border-radius: 17px; border: 1px solid var(--line); background: rgba(0, 0, 0, .2); display: grid; gap: 12px; }
-.cat-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-.cat-top .nm { display: flex; align-items: center; gap: 9px; font-weight: 500; }
-.cat-top .nm i { width: 9px; height: 9px; border-radius: 50%; background: var(--c); box-shadow: 0 0 10px var(--c); }
-.cat .big { font-family: var(--serif); font-size: 34px; line-height: 1; }
-.cat .big small { font-size: 15px; color: var(--ink-3); font-family: var(--sans); }
-.cat svg.spark { width: 100%; height: 38px; display: block; overflow: visible; }
-.cat .tot { color: var(--ink-3); font-size: 12.5px; }
-.cat.none { opacity: .75; }
+// --- VIEWS ---
 
-/* ── Life balance ───────────────────────────────────────────── */
-.radar { display: grid; place-items: center; }
-.radar-svg { max-width: 100%; height: auto; touch-action: none; }
-.radar-svg .ring { fill: none; stroke: rgba(255, 255, 255, .08); stroke-width: 1; }
-.radar-svg .ring.outer { stroke: rgba(255, 255, 255, .2); }
-.radar-svg .spoke { stroke: rgba(255, 255, 255, .1); }
-.radar-svg .ringlbl { fill: var(--ink-4); font-size: 9.5px; }
-.radar-svg .shape { fill: url(#gRadar); stroke: #eef1f5; stroke-width: 1.8; stroke-linejoin: round; filter: drop-shadow(0 0 12px rgba(224, 230, 240, .25)); }
-.radar-svg .cmp { fill: none; stroke: rgba(255, 255, 255, .45); stroke-width: 1.5; stroke-dasharray: 5 5; }
-.radar-svg .rh { fill: #f4f6f9; stroke: #07090c; stroke-width: 2.5; cursor: grab; transition: r .2s; }
-.radar-svg .rh:hover, .radar-svg .rh.drag { r: 8; }
-.radar-svg .rhit { fill: transparent; cursor: grab; }
-.radar-svg .lname { fill: var(--ink-2); font-size: 11.5px; letter-spacing: .14em; text-transform: uppercase; }
-.radar-svg .lval { fill: #fff; font-family: var(--serif); font-size: 19px; }
-.srow { margin-bottom: 14px; }
-.shead { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
-.shead label { display: flex; align-items: center; gap: 9px; font-weight: 500; }
-.shead label i { width: 9px; height: 9px; border-radius: 50%; background: var(--c); box-shadow: 0 0 9px var(--c); }
-.shead output { font-family: var(--serif); font-size: 24px; font-variant-numeric: tabular-nums; }
-.srow small { color: var(--ink-3); font-size: 12px; }
-.insight { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 18px 0; }
-.insight div { padding: 10px 12px; border-radius: 13px; border: 1px solid var(--line); background: rgba(0, 0, 0, .2); }
-.insight b { display: block; font-family: var(--serif); font-weight: 400; font-size: 21px; text-transform: capitalize; }
-.insight small { color: var(--ink-3); font-size: 11.5px; }
-.checkin { display: flex; gap: 10px; flex-wrap: wrap; }
-.checkin input { flex: 1 1 180px; }
-.dim-toggles { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
-.dim-toggles button { display: inline-flex; align-items: center; gap: 7px; padding: 5px 11px; border-radius: 99px; border: 1px solid var(--line); background: transparent; color: var(--ink-3); font-size: 12.5px; transition: .2s; }
-.dim-toggles button i { width: 8px; height: 8px; border-radius: 50%; background: var(--c); opacity: .35; transition: .2s; }
-.dim-toggles button[aria-pressed="true"] { color: var(--ink); border-color: var(--line-2); background: rgba(255, 255, 255, .06); }
-.dim-toggles button[aria-pressed="true"] i { opacity: 1; box-shadow: 0 0 8px var(--c); }
-.hist { display: grid; gap: 10px; max-height: 420px; overflow: auto; padding-right: 4px; }
-.hist-item { padding: 12px 14px; border-radius: 14px; border: 1px solid var(--line); background: rgba(0, 0, 0, .18); display: grid; gap: 8px; }
-.hist-top { display: flex; align-items: center; gap: 8px; justify-content: space-between; flex-wrap: wrap; }
-.hist-top b { font-weight: 500; }
-.hist-vals { display: flex; gap: 12px; flex-wrap: wrap; font-size: 12.5px; color: var(--ink-3); font-variant-numeric: tabular-nums; }
-.hist-vals span { display: inline-flex; gap: 5px; align-items: center; }
-.hist-vals span i { width: 7px; height: 7px; border-radius: 50%; background: var(--c); }
-.hist-vals span b { color: var(--ink); font-weight: 500; }
-.hist-note { font-size: 13px; color: var(--ink-2); font-style: italic; }
-.mrows { display: grid; gap: 16px; }
-.mrow { display: grid; grid-template-columns: 150px 1fr 120px; gap: 16px; align-items: center; }
-.mrow .nm { display: flex; align-items: center; gap: 9px; font-weight: 500; }
-.mrow .nm i { width: 9px; height: 9px; border-radius: 50%; background: var(--c); }
-.mrow .track { height: 10px; border-radius: 10px; background: rgba(255, 255, 255, .06); overflow: hidden; }
-.mrow .track i { display: block; height: 100%; background: var(--c); opacity: .85; border-radius: 10px; }
-.mrow .v { text-align: right; font-family: var(--serif); font-size: 24px; }
-.mrow .v small { display: block; font-family: var(--sans); font-size: 11.5px; color: var(--ink-3); }
-.mrow .mid small { display: block; color: var(--ink-3); font-size: 12.5px; margin-top: 6px; }
-.note-box { display: flex; gap: 12px; align-items: flex-start; padding: 12px 14px; border-radius: 13px; border: 1px solid var(--line); background: rgba(255, 255, 255, .03); color: var(--ink-3); font-size: 13px; margin-bottom: 20px; }
+const SplashScreen = ({ onComplete }) => {
+  const [stage, setStage] = useState(0); // 0: init, 1: fade in text, 2: fade out
 
-/* ── Settings ───────────────────────────────────────────────── */
-.setgrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; align-items: start; }
-.setrow { display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 14px 0; border-top: 1px solid var(--line); }
-.setrow:first-of-type { border-top: 0; }
-.setrow .t { min-width: 0; }
-.setrow .t b { display: block; font-weight: 500; }
-.setrow .t small { color: var(--ink-3); font-size: 12.5px; }
-.setrow .ctl { flex: none; min-width: 160px; max-width: 260px; }
-.setrow .ctl.wide { min-width: 200px; }
-.btnrow { display: flex; gap: 10px; flex-wrap: wrap; }
-.kv { display: grid; grid-template-columns: auto 1fr; gap: 6px 16px; font-size: 13.5px; }
-.kv dt { color: var(--ink-3); } .kv dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; }
-.warnbox { border-color: rgba(230, 177, 177, .35); color: var(--err); }
+  useEffect(() => {
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    
+    if (prefersReducedMotion) {
+      onComplete();
+      return;
+    }
 
-/* ── Dialog, toast, tooltip ─────────────────────────────────── */
-dialog {
-  padding: 0; border: 1px solid var(--line-2); border-radius: 24px; color: var(--ink); width: min(540px, calc(100vw - 28px)); max-height: calc(100vh - 40px);
-  background: linear-gradient(160deg, rgba(34, 37, 43, .86), rgba(14, 16, 20, .92));
-  -webkit-backdrop-filter: blur(30px) saturate(140%); backdrop-filter: blur(30px) saturate(140%);
-  box-shadow: 0 50px 120px -30px rgba(0, 0, 0, .95), inset 0 1px 0 rgba(255, 255, 255, .1); overflow: auto;
-}
-dialog[open] { animation: dlgIn .35s var(--ease); }
-dialog::backdrop { background: rgba(2, 3, 4, .66); -webkit-backdrop-filter: blur(5px); backdrop-filter: blur(5px); }
-@keyframes dlgIn { from { opacity: 0; transform: translateY(14px) scale(.98); } }
-.dlg-body { padding: 26px; }
-.dlg-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-.dlg-head h2 { font-family: var(--serif); font-size: 28px; letter-spacing: 0; text-transform: none; font-weight: 400; color: var(--ink); }
-.dlg-foot { display: flex; gap: 10px; justify-content: flex-end; margin-top: 22px; flex-wrap: wrap; }
-.dlg-foot .left { margin-right: auto; }
-.dlg-text { color: var(--ink-2); }
-.count-only { display: none; }
-.is-count .count-only { display: grid; }
-.is-count .field-row.count-only { display: grid; }
-.icons { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; }
-.ipick { position: relative; }
-.ipick input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
-.ipick span { display: grid; place-items: center; aspect-ratio: 1; border-radius: 12px; border: 1px solid var(--line); background: rgba(255, 255, 255, .03); color: var(--ink-3); transition: .2s; }
-.ipick:hover span { color: var(--ink); border-color: var(--line-2); }
-.ipick input:checked + span { color: #07090c; background: linear-gradient(180deg, #f4f6f9, #aab2be); border-color: #f4f6f9; }
-.ipick input:focus-visible + span { outline: 2px solid #e4e9f1; outline-offset: 2px; }
+    const t1 = setTimeout(() => setStage(1), 500);
+    const t2 = setTimeout(() => setStage(2), 3000);
+    const t3 = setTimeout(onComplete, 4000);
 
-.toasts { position: fixed; z-index: 90; left: 50%; bottom: 26px; transform: translateX(-50%); display: grid; gap: 10px; justify-items: center; pointer-events: none; width: max-content; max-width: calc(100vw - 28px); }
-.toast {
-  pointer-events: auto; display: flex; align-items: center; gap: 14px; padding: 11px 16px; border-radius: 14px; border: 1px solid var(--line-2); font-size: 14px;
-  background: rgba(24, 27, 32, .88); -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px); box-shadow: 0 20px 50px -10px rgba(0, 0, 0, .8);
-  animation: toastIn .45s var(--ease);
-}
-.toast.out { opacity: 0; transform: translateY(8px); transition: .3s; }
-.toast button { background: none; border: 0; color: #fff; text-decoration: underline; text-underline-offset: 3px; padding: 2px 4px; }
-@keyframes toastIn { from { opacity: 0; transform: translateY(14px) scale(.97); } }
-.tip {
-  position: fixed; z-index: 95; pointer-events: none; padding: 8px 11px; border-radius: 10px; font-size: 12.5px; line-height: 1.45; color: var(--ink);
-  background: rgba(20, 22, 27, .94); border: 1px solid var(--line-2); box-shadow: 0 14px 36px -8px rgba(0, 0, 0, .8); opacity: 0; transform: translateY(4px); transition: opacity .12s, transform .12s;
-  max-width: 260px;
-}
-.tip.on { opacity: 1; transform: none; }
-.tip b { font-weight: 500; } .tip span { color: var(--ink-3); }
+    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
+  }, [onComplete]);
 
-/* ── Splash (Cinematic Update) ─────────────────────────────────────────────────── */
-#splash { position: fixed; inset: 0; z-index: 200; background: #020203; display: grid; place-items: center; overflow: hidden; perspective: 1000px; }
-#splash.out { opacity: 0; transform: scale(1.08) translateZ(50px); filter: blur(24px); transition: opacity 1.2s ease, transform 1.2s cubic-bezier(.2,.7,.1,1), filter 1.2s ease; pointer-events: none; }
-#smoke { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; filter: blur(2px); }
-#splash.play #smoke { animation: fadeIn 2s ease .1s forwards; }
+  return (
+    <div className={`fixed inset-0 z-50 flex flex-col items-center justify-center bg-zinc-950 transition-opacity duration-1000 ${stage === 2 ? 'opacity-0' : 'opacity-100'}`}>
+      {/* Background ambient effects */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-white/5 rounded-full blur-[100px] animate-pulse"></div>
+        <div className="absolute bottom-1/4 right-1/4 w-[30rem] h-[30rem] bg-zinc-600/5 rounded-full blur-[120px]"></div>
+      </div>
 
-/* Ambient cinematic glowing orb in the background */
-.ambient-light { position: absolute; left: 50%; top: 50%; width: 70vw; height: 70vw; transform: translate(-50%, -50%); background: radial-gradient(circle, rgba(176, 196, 222, 0.08) 0%, transparent 60%); filter: blur(80px); opacity: 0; mix-blend-mode: screen; pointer-events: none; }
-#splash.play .ambient-light { animation: focusPullLight 3s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
-@keyframes focusPullLight { 0% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); filter: blur(100px); } 100% { opacity: 1; transform: translate(-50%, -50%) scale(1); filter: blur(60px); } }
+      <div className={`relative z-10 flex flex-col items-center transform transition-all duration-1000 ease-out ${stage >= 1 ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}>
+        <Hexagon className="w-16 h-16 text-zinc-300 mb-6 animate-[spin_10s_linear_infinite]" strokeWidth={1} />
+        <h1 className="text-6xl md:text-8xl font-extralight tracking-[0.3em] text-transparent bg-clip-text bg-gradient-to-b from-white to-zinc-500 mb-4 ml-4">
+          AXIOM
+        </h1>
+        <p className="text-zinc-500 tracking-[0.5em] text-sm uppercase">Live by design</p>
+      </div>
 
-.vignette { position: absolute; inset: 0; background: radial-gradient(ellipse at center, transparent 20%, rgba(0, 0, 0, .85) 100%); pointer-events: none; }
-.beam { position: absolute; left: 50%; top: -10%; width: 60vmin; height: 120%; transform: translateX(-50%); background: conic-gradient(from 172deg at 50% 0%, transparent 0, rgba(220, 228, 240, .12) 8deg, transparent 16deg); opacity: 0; filter: blur(4px); }
-#splash.play .beam { animation: fadeInBeam 2.5s ease .3s forwards; }
-@keyframes fadeInBeam { to { opacity: 1; filter: blur(8px); } }
+      <button 
+        onClick={() => { setStage(2); setTimeout(onComplete, 500); }}
+        className="absolute bottom-12 right-12 text-zinc-600 hover:text-zinc-300 transition-colors flex items-center gap-2 text-sm tracking-wider uppercase"
+      >
+        Skip sequence <ChevronRight className="w-4 h-4" />
+      </button>
+    </div>
+  );
+};
 
-/* Cinematic Light Streaks */
-.streak { position: absolute; left: -40%; width: 80%; height: 1px; background: linear-gradient(90deg, transparent, rgba(226, 232, 242, .9), transparent); opacity: 0; transform: rotate(-9deg); mix-blend-mode: screen; }
-.streak.s1 { top: 38%; filter: blur(2px); height: 2px; }
-.streak.s2 { top: 58%; filter: blur(4px); height: 3px; }
-.streak.s3 { top: 70%; filter: blur(1px); height: 1px; }
-#splash.play .s1 { animation: streakCinematic 2.2s cubic-bezier(.4, 0, .2, 1) .9s forwards; }
-#splash.play .s2 { animation: streakCinematic 2.5s cubic-bezier(.4, 0, .2, 1) 1.15s forwards; }
-#splash.play .s3 { animation: streakCinematic 2.8s cubic-bezier(.4, 0, .2, 1) 1.45s forwards; }
-@keyframes streakCinematic { 0% { opacity: 0; transform: translateX(0) rotate(-9deg) scaleX(0.5); filter: blur(10px); } 20% { opacity: 1; filter: blur(2px); transform: translateX(30%) rotate(-9deg) scaleX(1.5); } 100% { opacity: 0; transform: translateX(150%) rotate(-9deg) scaleX(0.5); filter: blur(10px); } }
-@keyframes fadeIn { to { opacity: 1; } }
 
-/* Extreme focus pull on text */
-.splash-inner { position: relative; text-align: center; padding: 20px; z-index: 2; }
-.word { display: flex; justify-content: center; font-weight: 200; font-size: clamp(54px, 13vw, 150px); line-height: 1; letter-spacing: .34em; margin-right: -.34em; position: relative; }
-.word span { display: inline-block; opacity: 0; color: #ffffff; text-shadow: 0 0 30px rgba(220, 228, 240, .6), 0 0 80px rgba(255, 255, 255, .2); will-change: transform, filter, opacity; }
-#splash.play .word { animation: trackCinematic 3s cubic-bezier(0.2, 0.8, 0.2, 1) .2s both; }
-#splash.play .word span { animation: cinematicLetterIn 1.8s cubic-bezier(0.1, 0.8, 0.2, 1) both; animation-delay: calc(.3s + var(--i) * .12s); }
 
-@keyframes trackCinematic { from { letter-spacing: .9em; margin-right: -.9em; } to { letter-spacing: .34em; margin-right: -.34em; } }
-@keyframes cinematicLetterIn { 0% { opacity: 0; filter: blur(30px) brightness(2.5); transform: translateZ(100px) scale(1.3); } 40% { opacity: 1; filter: blur(8px) brightness(1.5); transform: translateZ(20px) scale(1.05); } 100% { opacity: 1; filter: blur(0) brightness(1); transform: translateZ(0) scale(1); } }
+const DashboardView = ({ data, toggleHabit }) => {
+  const todayStr = getTodayStr();
+  const todayHabits = data.habits;
+  const completedToday = todayHabits.filter(h => h.completedDates.includes(todayStr)).length;
+  const progress = todayHabits.length > 0 ? (completedToday / todayHabits.length) * 100 : 0;
 
-.glint { position: absolute; left: 0; right: 0; top: 50%; height: 140%; transform: translateY(-50%); overflow: hidden; pointer-events: none; }
-.glint::after { content: ""; position: absolute; top: 0; bottom: 0; width: 18%; left: -30%; background: linear-gradient(100deg, transparent, rgba(255, 255, 255, .8), transparent); filter: blur(8px); mix-blend-mode: overlay; }
-#splash.play .glint::after { animation: glintCinematic 1.8s ease-in-out 1.7s forwards; }
-@keyframes glintCinematic { 0% { left: -30%; filter: blur(12px); opacity: 0; } 50% { filter: blur(4px); opacity: 1; } 100% { left: 120%; filter: blur(12px); opacity: 0; } }
+  const dateDisplay = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
 
-.tag { margin-top: 26px; font-family: var(--serif); font-style: italic; font-size: clamp(20px, 3.2vw, 32px); letter-spacing: .1em; color: rgba(255, 255, 255, 0.7); opacity: 0; text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8); }
-#splash.play .tag { animation: cinematicTagIn 1.8s cubic-bezier(0.2, 0.8, 0.2, 1) 2.2s forwards; }
-@keyframes cinematicTagIn { 0% { opacity: 0; transform: translateY(15px) scale(0.95); letter-spacing: .4em; filter: blur(12px); } 100% { opacity: 1; transform: none; letter-spacing: .1em; filter: blur(0); } }
+  return (
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+      <header className="flex justify-between items-end mb-12">
+        <div>
+          <h1 className="text-4xl font-light text-zinc-100 tracking-tight">Good morning, {data.userName}.</h1>
+          <p className="text-zinc-400 mt-2 tracking-wide">{dateDisplay}</p>
+        </div>
+      </header>
 
-.skip-intro { position: absolute; right: 22px; bottom: 22px; display: inline-flex; align-items: center; gap: 8px; padding: 9px 14px; border-radius: 99px; border: 1px solid rgba(255, 255, 255, .15); background: rgba(255, 255, 255, .03); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); color: var(--ink-3); font-size: 13px; letter-spacing: .06em; opacity: 0; z-index: 10; transition: background 0.3s, color 0.3s, border-color 0.3s; }
-#splash.play .skip-intro { animation: fadeIn .8s ease 1s forwards; }
-.skip-intro:hover { background: rgba(255, 255, 255, .1); border-color: rgba(255, 255, 255, .3); color: #fff; }
-.skip-intro kbd { font: inherit; font-size: 11px; opacity: .6; border: 1px solid rgba(255, 255, 255, .25); border-radius: 5px; padding: 0 5px; }
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <GlassCard className="flex flex-col items-center justify-center py-10">
+          <h3 className="text-zinc-400 text-sm uppercase tracking-widest mb-6">Daily Protocol</h3>
+          <CircularProgress percentage={progress} size={160} strokeWidth={6} />
+          <p className="mt-6 text-zinc-300 font-light">
+            {completedToday} of {todayHabits.length} routines initialized
+          </p>
+        </GlassCard>
 
-/* Dashboard reveal */
-main[data-anim="1"] .card, main[data-anim="1"] .phead, main[data-anim="1"] .banner { animation: rise .8s var(--ease) both; animation-delay: calc(var(--i, 0) * 70ms); }
-@keyframes rise { from { opacity: 0; transform: translateY(18px); } }
-body.revealing .side { animation: slideIn .9s var(--ease) both; }
-@keyframes slideIn { from { opacity: 0; transform: translateX(-22px); } }
-.chart .bar { transform-box: fill-box; transform-origin: 50% 100%; }
-main[data-anim="1"] .chart .bar { animation: growY .8s var(--ease) both; animation-delay: calc(var(--i, 0) * 22ms); }
-main[data-anim="1"] .chart .draw { stroke-dasharray: 1; animation: draw 1.3s var(--ease) both; }
-main[data-anim="1"] .chart .area { animation: fadeUp 1.2s ease both; }
-@keyframes growY { from { transform: scaleY(0); } }
-@keyframes draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
-@keyframes fadeUp { from { opacity: 0; } }
+        <div className="md:col-span-2 space-y-4">
+          <h3 className="text-zinc-400 text-sm uppercase tracking-widest mb-4 px-2">Active Directives</h3>
+          {todayHabits.length === 0 ? (
+             <GlassCard className="text-center py-12 text-zinc-500">No active directives. Go to Habits to configure.</GlassCard>
+          ) : (
+            todayHabits.slice(0, 5).map(habit => {
+              const isDone = habit.completedDates.includes(todayStr);
+              return (
+                <GlassCard key={habit.id} className={`transition-all duration-300 ${isDone ? 'bg-zinc-900/20 border-white/5' : 'hover:bg-zinc-800/40'}`}>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <button 
+                        onClick={() => toggleHabit(habit.id, todayStr)}
+                        className={`w-6 h-6 rounded-full border flex items-center justify-center transition-colors ${
+                          isDone ? 'bg-zinc-300 border-zinc-300 text-black' : 'border-zinc-600 hover:border-zinc-400'
+                        }`}
+                      >
+                        {isDone && <CheckCircle2 className="w-4 h-4" />}
+                      </button>
+                      <span className={`text-lg font-light transition-colors ${isDone ? 'text-zinc-600 line-through' : 'text-zinc-200'}`}>
+                        {habit.name}
+                      </span>
+                    </div>
+                    {habit.streak > 0 && (
+                      <div className="flex items-center gap-1 text-xs text-zinc-500">
+                        <Activity className="w-3 h-3" /> {habit.streak} day streak
+                      </div>
+                    )}
+                  </div>
+                </GlassCard>
+              )
+            })
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
 
-/* ── Responsive ─────────────────────────────────────────────── */
-@media (max-width: 1100px) {
-  .span-8, .span-7, .span-5, .span-4 { grid-column: span 12; }
-  .span-6 { grid-column: span 12; }
-  .setgrid { grid-template-columns: 1fr; }
-}
-@media (max-width: 820px) {
-  .app { grid-template-columns: minmax(0, 1fr); }
-  .side { display: none; }
-  .mhead { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px 0; color: var(--silver); }
-  .mhead .brand-name { font-size: 13px; }
-  main { padding-bottom: 120px; }
-  .tabbar {
-    display: grid; grid-template-columns: repeat(5, 1fr); position: fixed; z-index: 50; left: 10px; right: 10px; bottom: calc(10px + env(safe-area-inset-bottom)); padding: 6px;
-    border-radius: 22px; border: 1px solid var(--line-2); background: rgba(18, 20, 24, .78);
-    -webkit-backdrop-filter: blur(24px) saturate(140%); backdrop-filter: blur(24px) saturate(140%); box-shadow: 0 20px 50px -10px rgba(0, 0, 0, .9);
+
+
+const HabitsView = ({ data, toggleHabit, addHabit, deleteHabit }) => {
+  const [newHabitName, setNewHabitName] = useState('');
+  const [newHabitCategory, setNewHabitCategory] = useState('Health');
+  const todayStr = getTodayStr();
+
+  const handleAdd = (e) => {
+    e.preventDefault();
+    if (newHabitName.trim()) {
+      addHabit(newHabitName.trim(), newHabitCategory);
+      setNewHabitName('');
+    }
+  };
+
+  return (
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+      <SectionTitle title="Protocol Management" subtitle="Configure daily routines" icon={Target} />
+
+      <GlassCard className="mb-8 bg-black/50">
+        <form onSubmit={handleAdd} className="flex flex-col md:flex-row gap-4">
+          <input 
+            type="text" 
+            placeholder="New directive..." 
+            value={newHabitName}
+            onChange={(e) => setNewHabitName(e.target.value)}
+            className="flex-1 bg-zinc-900/50 border border-white/10 rounded-lg px-4 py-3 text-zinc-200 placeholder-zinc-600 focus:outline-none focus:border-white/30 transition-colors"
+          />
+          <select 
+            value={newHabitCategory}
+            onChange={(e) => setNewHabitCategory(e.target.value)}
+            className="bg-zinc-900/50 border border-white/10 rounded-lg px-4 py-3 text-zinc-300 focus:outline-none focus:border-white/30"
+          >
+            {['Health', 'Studies', 'Career', 'Finances', 'Relationships', 'Other'].map(c => <option key={c} value={c}>{c}</option>)}
+          </select>
+          <button type="submit" className="bg-zinc-200 text-black px-6 py-3 rounded-lg font-medium hover:bg-white transition-colors flex items-center justify-center gap-2">
+            <Plus className="w-5 h-5" /> Add
+          </button>
+        </form>
+      </GlassCard>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {data.habits.map(habit => {
+          const isDone = habit.completedDates.includes(todayStr);
+          return (
+            <GlassCard key={habit.id} className="group relative">
+              <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                <button onClick={() => deleteHabit(habit.id)} className="text-zinc-600 hover:text-red-400">
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+              <div className="flex flex-col h-full justify-between">
+                <div>
+                  <span className="text-[10px] uppercase tracking-widest text-zinc-500 bg-zinc-800/50 px-2 py-1 rounded">{habit.category}</span>
+                  <h4 className="text-xl font-light text-zinc-200 mt-4 mb-6">{habit.name}</h4>
+                </div>
+                
+                <div className="flex items-center justify-between border-t border-white/5 pt-4">
+                   <div className="flex flex-col">
+                     <span className="text-xs text-zinc-500 uppercase tracking-wider">Status</span>
+                     <button 
+                        onClick={() => toggleHabit(habit.id, todayStr)}
+                        className={`mt-1 flex items-center gap-2 text-sm transition-colors ${isDone ? 'text-zinc-300' : 'text-zinc-500 hover:text-zinc-300'}`}
+                      >
+                        {isDone ? <CheckCircle2 className="w-4 h-4" /> : <Circle className="w-4 h-4" />}
+                        {isDone ? 'Completed' : 'Pending'}
+                      </button>
+                   </div>
+                   <div className="flex flex-col items-end">
+                     <span className="text-xs text-zinc-500 uppercase tracking-wider">Streak</span>
+                     <span className="text-lg font-light text-zinc-300 mt-1 flex items-center gap-1">
+                        {habit.streak} <Activity className="w-3 h-3 text-zinc-600" />
+                     </span>
+                   </div>
+                </div>
+              </div>
+            </GlassCard>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
+
+
+const LifeBalanceView = ({ data, updateBalance }) => {
+  const chartData = [
+    { subject: 'Health', A: data.balanceScores.health, fullMark: 10 },
+    { subject: 'Studies', A: data.balanceScores.studies, fullMark: 10 },
+    { subject: 'Career', A: data.balanceScores.career, fullMark: 10 },
+    { subject: 'Finances', A: data.balanceScores.finances, fullMark: 10 },
+    { subject: 'Relations', A: data.balanceScores.relationships, fullMark: 10 },
+  ];
+
+  return (
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+      <SectionTitle title="Life Balance Matrix" subtitle="Self-assessment & equilibrium" icon={Hexagon} />
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <GlassCard className="h-[400px] flex items-center justify-center">
+          <ResponsiveContainer width="100%" height="100%">
+            <RadarChart cx="50%" cy="50%" outerRadius="70%" data={chartData}>
+              <PolarGrid stroke="rgba(255,255,255,0.1)" />
+              <PolarAngleAxis dataKey="subject" tick={{ fill: '#a1a1aa', fontSize: 12, fontWeight: 300 }} />
+              <PolarRadiusAxis angle={30} domain={[0, 10]} tick={false} axisLine={false} />
+              <Radar
+                name="Current Status"
+                dataKey="A"
+                stroke="#e4e4e7"
+                strokeWidth={1}
+                fill="#ffffff"
+                fillOpacity={0.1}
+              />
+              <Tooltip 
+                contentStyle={{ backgroundColor: 'rgba(0,0,0,0.8)', borderColor: 'rgba(255,255,255,0.1)', borderRadius: '8px' }}
+                itemStyle={{ color: '#fff' }}
+              />
+            </RadarChart>
+          </ResponsiveContainer>
+        </GlassCard>
+
+        <GlassCard className="flex flex-col justify-center space-y-6">
+          <h3 className="text-zinc-400 text-sm uppercase tracking-widest mb-2">Adjust Parameters</h3>
+          {Object.entries(data.balanceScores).map(([key, value]) => (
+            <div key={key} className="space-y-2">
+              <div className="flex justify-between text-sm">
+                <span className="capitalize text-zinc-300 font-light">{key}</span>
+                <span className="text-zinc-500 font-mono">{value}/10</span>
+              </div>
+              <input 
+                type="range" 
+                min="1" max="10" 
+                value={value}
+                onChange={(e) => updateBalance(key, e.target.value)}
+                className="w-full h-1 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-zinc-300"
+              />
+            </div>
+          ))}
+        </GlassCard>
+      </div>
+    </div>
+  );
+};
+
+
+
+const AnalyticsView = () => {
+  // Generate realistic-looking sample data for demonstration
+  const performanceData = useMemo(() => {
+    const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    return days.map(day => ({
+      name: day,
+      completion: Math.floor(Math.random() * 40) + 60, // 60-100%
+      focus: Math.floor(Math.random() * 50) + 30,
+    }));
+  }, []);
+
+  const categoryData = [
+    { name: 'Health', value: 85 },
+    { name: 'Career', value: 65 },
+    { name: 'Studies', value: 90 },
+    { name: 'Relations', value: 45 },
+  ];
+
+  return (
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+      <SectionTitle title="System Analytics" subtitle="Historical performance data" icon={TrendingUp} />
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <GlassCard className="h-[350px] flex flex-col">
+          <h3 className="text-zinc-400 text-xs uppercase tracking-widest mb-6">Weekly Execution Rate (%)</h3>
+          <div className="flex-1">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={performanceData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
+                <XAxis dataKey="name" stroke="#52525b" tick={{fill: '#71717a', fontSize: 12}} tickLine={false} axisLine={false} />
+                <YAxis stroke="#52525b" tick={{fill: '#71717a', fontSize: 12}} tickLine={false} axisLine={false} domain={[0, 100]} />
+                <Tooltip 
+                  contentStyle={{ backgroundColor: 'rgba(24,24,27,0.9)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px' }}
+                />
+                <Legend iconType="circle" wrapperStyle={{ fontSize: '12px', color: '#a1a1aa' }} />
+                <Line type="monotone" dataKey="completion" name="Habit Completion" stroke="#e4e4e7" strokeWidth={2} dot={{ r: 4, fill: '#18181b', stroke: '#e4e4e7' }} />
+                <Line type="monotone" dataKey="focus" name="Deep Work" stroke="#71717a" strokeWidth={2} dot={false} />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </GlassCard>
+
+        <GlassCard className="h-[350px] flex flex-col">
+           <h3 className="text-zinc-400 text-xs uppercase tracking-widest mb-6">Category Distribution</h3>
+           <div className="flex-1">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={categoryData} layout="vertical" margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" horizontal={false} />
+                <XAxis type="number" hide />
+                <YAxis dataKey="name" type="category" stroke="#a1a1aa" tick={{fill: '#a1a1aa', fontSize: 12, fontWeight: 300}} tickLine={false} axisLine={false} width={80} />
+                <Tooltip 
+                  cursor={{fill: 'rgba(255,255,255,0.05)'}}
+                  contentStyle={{ backgroundColor: 'rgba(24,24,27,0.9)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px' }}
+                />
+                <Bar dataKey="value" fill="#d4d4d8" radius={[0, 4, 4, 0]} barSize={24} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </GlassCard>
+      </div>
+    </div>
+  );
+};
+
+
+
+const SettingsView = ({ data, updateField }) => {
+  const resetData = () => {
+    if(window.confirm("Are you sure you want to reset all telemetry? This action is irreversible.")) {
+      window.localStorage.removeItem(STORAGE_KEY);
+      window.location.reload();
+    }
+  };
+
+  return (
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 max-w-2xl">
+      <SectionTitle title="System Preferences" subtitle="Configuration & overrides" icon={SettingsIcon} />
+
+      <GlassCard className="space-y-6">
+        <div>
+          <label className="block text-zinc-400 text-sm tracking-wider uppercase mb-2">Operator Designation</label>
+          <input 
+            type="text" 
+            value={data.userName}
+            onChange={(e) => updateField('userName', e.target.value)}
+            className="w-full bg-zinc-900/50 border border-white/10 rounded-lg px-4 py-3 text-zinc-200 focus:outline-none focus:border-white/30 transition-colors"
+          />
+        </div>
+
+        <div className="pt-6 border-t border-white/5">
+           <label className="block text-zinc-400 text-sm tracking-wider uppercase mb-4 text-red-400/80">Danger Zone</label>
+           <button 
+             onClick={resetData}
+             className="bg-red-950/30 border border-red-900/50 text-red-400 px-6 py-3 rounded-lg font-medium hover:bg-red-900/40 transition-colors"
+           >
+             Factory Reset System
+           </button>
+           <p className="text-zinc-600 text-xs mt-3">Clears all habits, history, and configuration stored locally.</p>
+        </div>
+      </GlassCard>
+    </div>
+  );
+};
+
+
+
+// --- MAIN LAYOUT & NAVIGATION ---
+
+const Navigation = ({ currentView, setView }) => {
+  const navItems = [
+    { id: 'today', label: 'Dashboard', icon: Activity },
+    { id: 'habits', label: 'Protocols', icon: Target },
+    { id: 'balance', label: 'Balance', icon: Hexagon },
+    { id: 'analytics', label: 'Telemetry', icon: TrendingUp },
+    { id: 'settings', label: 'Settings', icon: SettingsIcon },
+  ];
+
+  return (
+    <>
+      {/* Desktop Sidebar */}
+      <aside className="hidden md:flex flex-col w-64 border-r border-white/5 bg-black/20 p-6">
+        <div className="flex items-center gap-3 mb-16 px-2">
+          <Hexagon className="w-8 h-8 text-zinc-200" strokeWidth={1.5} />
+          <span className="text-2xl font-light tracking-[0.2em] text-zinc-100">AXIOM</span>
+        </div>
+        
+        <nav className="space-y-2 flex-1">
+          {navItems.map(item => (
+            <button
+              key={item.id}
+              onClick={() => setView(item.id)}
+              className={`w-full flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-300 ${
+                currentView === item.id 
+                  ? 'bg-zinc-800/80 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]' 
+                  : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-900/50'
+              }`}
+            >
+              <item.icon className="w-5 h-5" />
+              <span className="tracking-wide text-sm">{item.label}</span>
+            </button>
+          ))}
+        </nav>
+        
+        <div className="mt-auto pt-6 border-t border-white/5 px-2">
+          <p className="text-[10px] text-zinc-600 uppercase tracking-widest">OS Version 1.0.4</p>
+        </div>
+      </aside>
+
+      {/* Mobile Bottom Nav */}
+      <nav className="md:hidden fixed bottom-0 left-0 w-full bg-zinc-950/80 backdrop-blur-xl border-t border-white/10 z-40 p-4 pb-safe">
+        <div className="flex justify-between items-center max-w-md mx-auto">
+          {navItems.map(item => (
+            <button
+              key={item.id}
+              onClick={() => setView(item.id)}
+              className={`flex flex-col items-center gap-1 p-2 transition-colors ${
+                currentView === item.id ? 'text-zinc-100' : 'text-zinc-600'
+              }`}
+            >
+              <item.icon className="w-5 h-5" />
+              <span className="text-[10px] tracking-wider">{item.label}</span>
+            </button>
+          ))}
+        </div>
+      </nav>
+    </>
+  );
+};
+
+
+
+export default function App() {
+  const { data, updateField, toggleHabit, addHabit, deleteHabit, updateBalance } = useAxiomData();
+  const [currentView, setCurrentView] = useState('today');
+  const [showSplash, setShowSplash] = useState(!data.hasSeenSplash);
+
+  const handleSplashComplete = () => {
+    setShowSplash(false);
+    updateField('hasSeenSplash', true);
+  };
+
+  if (showSplash) {
+    return <SplashScreen onComplete={handleSplashComplete} />;
   }
-  .tabbar a { flex-direction: column; gap: 4px; padding: 8px 2px; font-size: 10.5px; justify-content: center; border-radius: 16px; letter-spacing: .02em; }
-  .tabbar a[aria-current="page"] { color: var(--ink); background: rgba(255, 255, 255, .1); box-shadow: inset 0 0 0 1px var(--line); }
-  .toasts { bottom: 100px; }
-  .hero { grid-template-columns: 1fr; }
-  .hero .ring { justify-self: center; order: -1; width: 170px; height: 170px; }
-  .hero .ring .pct { font-size: 46px; }
-  .collapse-btn { display: none; }
-}
-@media (max-width: 560px) {
-  h1 { font-size: 36px; }
-  .card { padding: 18px; border-radius: 18px; }
-  .tiles { gap: 8px; }
-  .tile { padding: 10px; } .tile b { font-size: 19px; }
-  .field-row { grid-template-columns: 1fr 1fr; }
-  .icons { grid-template-columns: repeat(7, 1fr); gap: 6px; }
-  .hbar { grid-template-columns: 90px 1fr 46px; gap: 8px; }
-  .mrow { grid-template-columns: 1fr; gap: 8px; }
-  .mrow .v { text-align: left; }
-  .insight { grid-template-columns: 1fr 1fr 1fr; }
-  .insight b { font-size: 18px; }
-  .row-main { flex-wrap: wrap; }
-  .stepper { width: 100%; justify-content: space-between; padding-left: 40px; }
-  .hc-stats b { font-size: 21px; }
-  .setrow { flex-direction: column; align-items: stretch; gap: 10px; }
-  .setrow .ctl { max-width: none; }
-  .dlg-body { padding: 20px; }
-  .heat-days { display: none; }
-  .heat-wrap { grid-template-columns: 1fr; }
-  .heat { gap: 2px; } .heat-months { gap: 2px; }
-}
 
-/* ── Motion preferences ─────────────────────────────────────── */
-@media (prefers-reduced-motion: reduce) {
-  html[data-motion="system"] *, html[data-motion="system"] *::before, html[data-motion="system"] *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
-  html[data-motion="system"] .chart .draw { stroke-dasharray: none; }
-}
-html[data-motion="reduce"] *, html[data-motion="reduce"] *::before, html[data-motion="reduce"] *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
-html[data-motion="reduce"] .chart .draw { stroke-dasharray: none; }
-</style>
-</head>
-<body>
+  return (
+    <div className="min-h-screen bg-zinc-950 text-zinc-200 font-sans selection:bg-zinc-700 selection:text-white flex overflow-hidden">
+      {/* Dynamic ambient background matching the glassmorphism theme */}
+      <div className="fixed inset-0 pointer-events-none z-0">
+        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-zinc-800/10 rounded-full blur-[120px]"></div>
+        <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-zinc-700/5 rounded-full blur-[150px]"></div>
+      </div>
 
-<svg class="defs" aria-hidden="true" focusable="false">
-  <defs>
-    <linearGradient id="gBar" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f3f5f8"/><stop offset="1" stop-color="#7f8794"/></linearGradient>
-    <linearGradient id="gArea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#dfe4ec" stop-opacity=".28"/><stop offset="1" stop-color="#dfe4ec" stop-opacity="0"/></linearGradient>
-    <linearGradient id="gRing" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#8d95a2"/></linearGradient>
-    <radialGradient id="gRadar" cx="50%" cy="50%" r="60%"><stop offset="0" stop-color="#f1f4f8" stop-opacity=".30"/><stop offset="1" stop-color="#aab3c1" stop-opacity=".10"/></radialGradient>
-  </defs>
-</svg>
+      <Navigation currentView={currentView} setView={setCurrentView} />
 
-<div class="atmos" aria-hidden="true"><i class="blob b1"></i><i class="blob b2"></i><i class="blob b3"></i><i class="cone"></i></div>
-<div class="grain" aria-hidden="true"></div>
-<a class="skip-link" href="#main">Skip to content</a>
-
-<div class="app" id="app">
-  <aside class="side" aria-label="Sidebar">
-    <div class="brand">
-      <svg width="26" height="26" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" aria-hidden="true"><path d="M16 4l11 8-4.2 13H9.2L5 12z"/><path d="M16 4v12.5M16 16.5L9.2 25M16 16.5L22.8 25M16 16.5L5 12M16 16.5L27 12" opacity=".45"/><circle cx="16" cy="16.5" r="2" fill="currentColor" stroke="none"/></svg>
-      <span class="brand-name">AXIOM</span>
+      <main className="flex-1 relative z-10 overflow-y-auto h-screen pb-24 md:pb-0">
+        <div className="max-w-6xl mx-auto p-6 md:p-12">
+          {currentView === 'today' && <DashboardView data={data} toggleHabit={toggleHabit} />}
+          {currentView === 'habits' && <HabitsView data={data} toggleHabit={toggleHabit} addHabit={addHabit} deleteHabit={deleteHabit} />}
+          {currentView === 'balance' && <LifeBalanceView data={data} updateBalance={updateBalance} />}
+          {currentView === 'analytics' && <AnalyticsView />}
+          {currentView === 'settings' && <SettingsView data={data} updateField={updateField} />}
+        </div>
+      </main>
     </div>
-    <nav class="nav" id="nav" aria-label="Primary"></nav>
-    <div class="side-foot">
-      <div class="store" id="storeInd" title="Your data is stored only in this browser"><span class="dot"></span><span class="lbl">Saved in this browser</span></div>
-      <button class="iconbtn collapse-btn" data-action="collapse" id="collapseBtn" aria-label="Collapse sidebar" aria-expanded="true"></button>
-    </div>
-  </aside>
-
-  <div class="content">
-    <div class="mhead">
-      <div class="brand"><svg width="22" height="22" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true"><path d="M16 4l11 8-4.2 13H9.2L5 12z"/><circle cx="16" cy="16.5" r="2" fill="currentColor" stroke="none"/></svg><span class="brand-name">AXIOM</span></div>
-      <span class="chip" id="mStore">Local</span>
-    </div>
-    <main id="main" tabindex="-1" aria-live="off"></main>
-  </div>
-
-  <nav class="tabbar" id="tabbar" aria-label="Primary (mobile)"></nav>
-</div>
-
-<div id="splash" aria-label="AXIOM intro">
-  <div class="ambient-light" aria-hidden="true"></div>
-  <canvas id="smoke" aria-hidden="true"></canvas>
-  <div class="beam" aria-hidden="true"></div>
-  <div class="streak s1" aria-hidden="true"></div><div class="streak s2" aria-hidden="true"></div><div class="streak s3" aria-hidden="true"></div>
-  <div class="vignette" aria-hidden="true"></div>
-  <div class="splash-inner">
-    <h1 class="word" aria-label="AXIOM" style="margin-top:0"><span style="--i:0" aria-hidden="true">A</span><span style="--i:1" aria-hidden="true">X</span><span style="--i:2" aria-hidden="true">I</span><span style="--i:3" aria-hidden="true">O</span><span style="--i:4" aria-hidden="true">M</span><i class="glint" aria-hidden="true"></i></h1>
-    <p class="tag">Live by design.</p>
-  </div>
-  <button class="skip-intro" id="skipIntro" type="button">Skip intro <kbd>Esc</kbd></button>
-</div>
-
-<div id="toasts" class="toasts" role="status" aria-live="polite"></div>
-<div id="tip" class="tip" role="presentation"></div>
-<dialog id="dlg" aria-labelledby="dlg-title"></dialog>
-<input type="file" id="importFile" accept="application/json,.json" hidden>
-<noscript><p style="position:relative;z-index:5;padding:40px;text-align:center">AXIOM needs JavaScript enabled to run.</p></noscript>
-
-<script src="js/util.js"></script>
-<script src="js/config.js"></script>
-<script src="js/icons.js"></script>
-<script src="js/store.js"></script>
-<script src="js/sample.js"></script>
-<script src="js/domain.js"></script>
-<script src="js/charts.js"></script>
-<script src="js/radar.js"></script>
-<script src="js/views.js"></script>
-<script src="js/ui.js"></script>
-<script src="js/splash.js"></script>
-<script src="js/app.js"></script>
-</body>
-</html>
+  );
+}
