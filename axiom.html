@@ -516,38 +516,55 @@ dialog::backdrop { background: rgba(2, 3, 4, .66); -webkit-backdrop-filter: blur
 .tip.on { opacity: 1; transform: none; }
 .tip b { font-weight: 500; } .tip span { color: var(--ink-3); }
 
-/* ── Splash ─────────────────────────────────────────────────── */
-#splash { position: fixed; inset: 0; z-index: 200; background: #020203; display: grid; place-items: center; overflow: hidden; }
-#splash.out { opacity: 0; transform: scale(1.04); filter: blur(8px); transition: opacity .8s ease, transform .9s var(--ease), filter .8s ease; pointer-events: none; }
-#smoke { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; }
-#splash.play #smoke { animation: fadeIn 1.4s ease .1s forwards; }
-.vignette { position: absolute; inset: 0; background: radial-gradient(ellipse at center, transparent 30%, rgba(0, 0, 0, .75) 100%); }
-.beam { position: absolute; left: 50%; top: -10%; width: 60vmin; height: 120%; transform: translateX(-50%); background: conic-gradient(from 172deg at 50% 0%, transparent 0, rgba(220, 228, 240, .10) 8deg, transparent 16deg); opacity: 0; }
-#splash.play .beam { animation: fadeIn 2s ease .3s forwards; }
-.streak { position: absolute; left: -40%; width: 80%; height: 1px; background: linear-gradient(90deg, transparent, rgba(226, 232, 242, .85), transparent); opacity: 0; transform: rotate(-9deg); }
-.streak.s1 { top: 38%; } .streak.s2 { top: 58%; height: 2px; filter: blur(1px); } .streak.s3 { top: 70%; opacity: 0; }
-#splash.play .s1 { animation: streak 1.9s cubic-bezier(.4, 0, .2, 1) .9s forwards; }
-#splash.play .s2 { animation: streak 2.1s cubic-bezier(.4, 0, .2, 1) 1.15s forwards; }
-#splash.play .s3 { animation: streak 2.3s cubic-bezier(.4, 0, .2, 1) 1.45s forwards; }
-@keyframes streak { 0% { opacity: 0; transform: translateX(0) rotate(-9deg); } 20% { opacity: .9; } 100% { opacity: 0; transform: translateX(150%) rotate(-9deg); } }
+/* ── Splash (Cinematic Update) ─────────────────────────────────────────────────── */
+#splash { position: fixed; inset: 0; z-index: 200; background: #020203; display: grid; place-items: center; overflow: hidden; perspective: 1000px; }
+#splash.out { opacity: 0; transform: scale(1.08) translateZ(50px); filter: blur(24px); transition: opacity 1.2s ease, transform 1.2s cubic-bezier(.2,.7,.1,1), filter 1.2s ease; pointer-events: none; }
+#smoke { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; filter: blur(2px); }
+#splash.play #smoke { animation: fadeIn 2s ease .1s forwards; }
+
+/* Ambient cinematic glowing orb in the background */
+.ambient-light { position: absolute; left: 50%; top: 50%; width: 70vw; height: 70vw; transform: translate(-50%, -50%); background: radial-gradient(circle, rgba(176, 196, 222, 0.08) 0%, transparent 60%); filter: blur(80px); opacity: 0; mix-blend-mode: screen; pointer-events: none; }
+#splash.play .ambient-light { animation: focusPullLight 3s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
+@keyframes focusPullLight { 0% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); filter: blur(100px); } 100% { opacity: 1; transform: translate(-50%, -50%) scale(1); filter: blur(60px); } }
+
+.vignette { position: absolute; inset: 0; background: radial-gradient(ellipse at center, transparent 20%, rgba(0, 0, 0, .85) 100%); pointer-events: none; }
+.beam { position: absolute; left: 50%; top: -10%; width: 60vmin; height: 120%; transform: translateX(-50%); background: conic-gradient(from 172deg at 50% 0%, transparent 0, rgba(220, 228, 240, .12) 8deg, transparent 16deg); opacity: 0; filter: blur(4px); }
+#splash.play .beam { animation: fadeInBeam 2.5s ease .3s forwards; }
+@keyframes fadeInBeam { to { opacity: 1; filter: blur(8px); } }
+
+/* Cinematic Light Streaks */
+.streak { position: absolute; left: -40%; width: 80%; height: 1px; background: linear-gradient(90deg, transparent, rgba(226, 232, 242, .9), transparent); opacity: 0; transform: rotate(-9deg); mix-blend-mode: screen; }
+.streak.s1 { top: 38%; filter: blur(2px); height: 2px; }
+.streak.s2 { top: 58%; filter: blur(4px); height: 3px; }
+.streak.s3 { top: 70%; filter: blur(1px); height: 1px; }
+#splash.play .s1 { animation: streakCinematic 2.2s cubic-bezier(.4, 0, .2, 1) .9s forwards; }
+#splash.play .s2 { animation: streakCinematic 2.5s cubic-bezier(.4, 0, .2, 1) 1.15s forwards; }
+#splash.play .s3 { animation: streakCinematic 2.8s cubic-bezier(.4, 0, .2, 1) 1.45s forwards; }
+@keyframes streakCinematic { 0% { opacity: 0; transform: translateX(0) rotate(-9deg) scaleX(0.5); filter: blur(10px); } 20% { opacity: 1; filter: blur(2px); transform: translateX(30%) rotate(-9deg) scaleX(1.5); } 100% { opacity: 0; transform: translateX(150%) rotate(-9deg) scaleX(0.5); filter: blur(10px); } }
 @keyframes fadeIn { to { opacity: 1; } }
-.splash-inner { position: relative; text-align: center; padding: 20px; }
+
+/* Extreme focus pull on text */
+.splash-inner { position: relative; text-align: center; padding: 20px; z-index: 2; }
 .word { display: flex; justify-content: center; font-weight: 200; font-size: clamp(54px, 13vw, 150px); line-height: 1; letter-spacing: .34em; margin-right: -.34em; position: relative; }
-.word span { display: inline-block; opacity: 0; color: #f1f4f8; text-shadow: 0 0 40px rgba(220, 228, 240, .25); }
-#splash.play .word { animation: track 2.6s var(--ease) .2s both; }
-#splash.play .word span { animation: letterIn 1.3s var(--ease) both; animation-delay: calc(.35s + var(--i) * .13s); }
-@keyframes track { from { letter-spacing: .8em; margin-right: -.8em; } to { letter-spacing: .34em; margin-right: -.34em; } }
-@keyframes letterIn { from { opacity: 0; filter: blur(16px); transform: translateY(22px) scale(1.12); } to { opacity: 1; filter: blur(0); transform: none; } }
+.word span { display: inline-block; opacity: 0; color: #ffffff; text-shadow: 0 0 30px rgba(220, 228, 240, .6), 0 0 80px rgba(255, 255, 255, .2); will-change: transform, filter, opacity; }
+#splash.play .word { animation: trackCinematic 3s cubic-bezier(0.2, 0.8, 0.2, 1) .2s both; }
+#splash.play .word span { animation: cinematicLetterIn 1.8s cubic-bezier(0.1, 0.8, 0.2, 1) both; animation-delay: calc(.3s + var(--i) * .12s); }
+
+@keyframes trackCinematic { from { letter-spacing: .9em; margin-right: -.9em; } to { letter-spacing: .34em; margin-right: -.34em; } }
+@keyframes cinematicLetterIn { 0% { opacity: 0; filter: blur(30px) brightness(2.5); transform: translateZ(100px) scale(1.3); } 40% { opacity: 1; filter: blur(8px) brightness(1.5); transform: translateZ(20px) scale(1.05); } 100% { opacity: 1; filter: blur(0) brightness(1); transform: translateZ(0) scale(1); } }
+
 .glint { position: absolute; left: 0; right: 0; top: 50%; height: 140%; transform: translateY(-50%); overflow: hidden; pointer-events: none; }
-.glint::after { content: ""; position: absolute; top: 0; bottom: 0; width: 18%; left: -30%; background: linear-gradient(100deg, transparent, rgba(255, 255, 255, .55), transparent); filter: blur(6px); mix-blend-mode: overlay; }
-#splash.play .glint::after { animation: glint 1.5s ease-in-out 1.55s forwards; }
-@keyframes glint { to { left: 120%; } }
-.tag { margin-top: 26px; font-family: var(--serif); font-style: italic; font-size: clamp(20px, 3.2vw, 32px); letter-spacing: .1em; color: var(--ink-2); opacity: 0; }
-#splash.play .tag { animation: tagIn 1.3s var(--ease) 2.0s forwards; }
-@keyframes tagIn { from { opacity: 0; transform: translateY(10px); letter-spacing: .3em; filter: blur(6px); } to { opacity: 1; transform: none; letter-spacing: .1em; filter: blur(0); } }
-.skip-intro { position: absolute; right: 22px; bottom: 22px; display: inline-flex; align-items: center; gap: 8px; padding: 9px 14px; border-radius: 99px; border: 1px solid rgba(255, 255, 255, .2); background: rgba(255, 255, 255, .06); color: var(--ink-2); font-size: 13px; letter-spacing: .06em; opacity: 0; }
-#splash.play .skip-intro { animation: fadeIn .6s ease .5s forwards; }
-.skip-intro:hover { background: rgba(255, 255, 255, .12); color: #fff; }
+.glint::after { content: ""; position: absolute; top: 0; bottom: 0; width: 18%; left: -30%; background: linear-gradient(100deg, transparent, rgba(255, 255, 255, .8), transparent); filter: blur(8px); mix-blend-mode: overlay; }
+#splash.play .glint::after { animation: glintCinematic 1.8s ease-in-out 1.7s forwards; }
+@keyframes glintCinematic { 0% { left: -30%; filter: blur(12px); opacity: 0; } 50% { filter: blur(4px); opacity: 1; } 100% { left: 120%; filter: blur(12px); opacity: 0; } }
+
+.tag { margin-top: 26px; font-family: var(--serif); font-style: italic; font-size: clamp(20px, 3.2vw, 32px); letter-spacing: .1em; color: rgba(255, 255, 255, 0.7); opacity: 0; text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8); }
+#splash.play .tag { animation: cinematicTagIn 1.8s cubic-bezier(0.2, 0.8, 0.2, 1) 2.2s forwards; }
+@keyframes cinematicTagIn { 0% { opacity: 0; transform: translateY(15px) scale(0.95); letter-spacing: .4em; filter: blur(12px); } 100% { opacity: 1; transform: none; letter-spacing: .1em; filter: blur(0); } }
+
+.skip-intro { position: absolute; right: 22px; bottom: 22px; display: inline-flex; align-items: center; gap: 8px; padding: 9px 14px; border-radius: 99px; border: 1px solid rgba(255, 255, 255, .15); background: rgba(255, 255, 255, .03); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); color: var(--ink-3); font-size: 13px; letter-spacing: .06em; opacity: 0; z-index: 10; transition: background 0.3s, color 0.3s, border-color 0.3s; }
+#splash.play .skip-intro { animation: fadeIn .8s ease 1s forwards; }
+.skip-intro:hover { background: rgba(255, 255, 255, .1); border-color: rgba(255, 255, 255, .3); color: #fff; }
 .skip-intro kbd { font: inherit; font-size: 11px; opacity: .6; border: 1px solid rgba(255, 255, 255, .25); border-radius: 5px; padding: 0 5px; }
 
 /* Dashboard reveal */
@@ -660,6 +677,7 @@ html[data-motion="reduce"] .chart .draw { stroke-dasharray: none; }
 </div>
 
 <div id="splash" aria-label="AXIOM intro">
+  <div class="ambient-light" aria-hidden="true"></div>
   <canvas id="smoke" aria-hidden="true"></canvas>
   <div class="beam" aria-hidden="true"></div>
   <div class="streak s1" aria-hidden="true"></div><div class="streak s2" aria-hidden="true"></div><div class="streak s3" aria-hidden="true"></div>
