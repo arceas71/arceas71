@@ -353,7 +353,6 @@ footer small{display:block;margin-top:18px;color:#a9a496;text-align:center}
       <a class="insta" href="https://www.instagram.com/printbuddy_india/" target="_blank" rel="noopener"><svg width="22" height="22"><use href="#ig"/></svg> @printbuddy_india</a>
     </div>
     <p class="bulkline rv">Contact us for bulk orders — <a href="https://www.instagram.com/printbuddy_india/" target="_blank" rel="noopener">DM us on Instagram</a> or <a href="mailto:sudarshansaxena718@gmail.com">send an email</a>.</p>
-    <small>© <span id="yr"></span> Print Buddy</small>
   </div>
 </footer>
 
@@ -448,7 +447,6 @@ function slug(s,n){return String(s).toLowerCase().replace(/[^a-z0-9]+/g,'-').rep
 function toast(m){var t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(function(){t.classList.remove('show')},2400)}
 function fmtSize(b){return b>1048576?(b/1048576).toFixed(1)+' MB':Math.max(1,Math.round(b/1024))+' KB'}
 $$('.maxmb').forEach(function(e){e.textContent=CONFIG.maxTotalMB});
-$('#yr').textContent=new Date().getFullYear();
 
 /* ================= scroll animations ================= */
 var reduceMotion=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
