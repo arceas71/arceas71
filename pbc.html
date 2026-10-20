@@ -1,0 +1,754 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Print Buddy — Your Ideas. Your Identity.</title>
+<meta name="description" content="Custom apparel, posters, printables, stickers, cards, notebooks and bulk orders. Your idea. Our print. Your way.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=DM+Sans:wght@400;500;700&family=Kaushan+Script&display=swap" rel="stylesheet">
+<style>
+:root{
+  --cream:#f7f1e3; --paper:#fffaf0; --ink:#121212; --red:#b3122b; --red2:#d7263d;
+  --yellow:#ffc21a; --blue:#1d63d6; --green:#3fbf55; --line:#e4d9c0; --muted:#6b6455;
+  --radius:18px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--cream);color:var(--ink);font-family:'DM Sans',system-ui,sans-serif;line-height:1.5;-webkit-font-smoothing:antialiased}
+h1,h2,h3{font-family:'Archivo Black','DM Sans',sans-serif;line-height:1.05;margin:0;letter-spacing:-.01em}
+a{color:inherit}
+img,svg{max-width:100%}
+.wrap{max-width:1180px;margin:0 auto;padding:0 20px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:2px solid var(--ink);background:var(--ink);color:#fff;font:700 15px 'DM Sans',sans-serif;padding:12px 20px;border-radius:999px;cursor:pointer;text-decoration:none;transition:transform .12s,box-shadow .12s}
+.btn:hover{transform:translateY(-2px);box-shadow:0 5px 0 rgba(0,0,0,.18)}
+.btn:active{transform:none;box-shadow:none}
+.btn.red{background:var(--red);border-color:var(--red)}
+.btn.ghost{background:transparent;color:var(--ink)}
+.btn.sm{padding:8px 14px;font-size:14px}
+.btn[disabled]{opacity:.55;cursor:not-allowed;transform:none;box-shadow:none}
+
+/* header */
+header.top{position:sticky;top:0;z-index:30;background:rgba(247,241,227,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.top .wrap{display:flex;align-items:center;gap:18px;height:70px}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none}
+.brand svg{width:40px;height:40px}
+.brand b{font-family:'Archivo Black',sans-serif;font-size:20px;color:var(--red);letter-spacing:-.01em}
+nav.links{margin-left:auto;display:flex;gap:22px;align-items:center}
+nav.links a{text-decoration:none;font-weight:700;font-size:14px;letter-spacing:.04em;text-transform:uppercase}
+nav.links a:hover{color:var(--red)}
+.cartbtn{position:relative}
+.cartbtn .count{background:var(--yellow);color:var(--ink);border-radius:999px;min-width:22px;height:22px;display:inline-grid;place-items:center;font-size:12px;padding:0 6px}
+@media(max-width:760px){nav.links a.hide-sm{display:none}nav.links{gap:12px}.brand b{font-size:17px}}
+
+/* hero */
+.hero{position:relative;overflow:hidden;padding:56px 0 34px;text-align:center}
+.hero .slash{position:absolute;width:90px;height:60px;pointer-events:none}
+.hero .slash.l{left:-10px;top:60px}
+.hero .slash.r{right:-14px;top:340px;transform:scaleX(-1)}
+.hero .logo-big{width:150px;margin:0 auto 6px;display:block}
+.hero .wordmark{font-family:'Archivo Black',sans-serif;color:var(--red);font-size:clamp(34px,6vw,58px);margin:0 0 18px}
+.hero h1{font-size:clamp(38px,8vw,92px)}
+.hero h1 span{color:var(--red);display:block}
+.hero p.lead{max-width:560px;margin:18px auto 24px;color:#3a362d;font-size:18px}
+.hero .cta{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.cats{display:flex;justify-content:center;flex-wrap:wrap;gap:10px 22px;margin:34px 0 0;font-weight:700;letter-spacing:.22em;font-size:12px;text-transform:uppercase}
+.cats i{color:var(--red);font-style:normal}
+.script{font-family:'Kaushan Script',cursive;font-size:30px;color:var(--ink);margin-top:22px;display:inline-block;position:relative}
+.script:after{content:"";position:absolute;left:8%;right:0;bottom:-4px;height:3px;background:var(--red);border-radius:3px;transform:rotate(-1.5deg)}
+
+/* trust strip */
+.strip{display:grid;grid-template-columns:repeat(5,1fr);gap:0;background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);margin:26px 0 10px;overflow:hidden}
+.strip div{padding:16px 10px;text-align:center;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;border-right:1px solid var(--line)}
+.strip div:last-child{border:0}
+.strip svg{width:34px;height:34px;display:block;margin:0 auto 6px}
+.strip small{display:block;font-weight:500;color:var(--muted);letter-spacing:0;text-transform:none;font-size:11px}
+@media(max-width:760px){.strip{grid-template-columns:repeat(2,1fr)}.strip div{border-bottom:1px solid var(--line)}}
+
+/* sections */
+section{padding:56px 0}
+.sec-head{display:flex;align-items:end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:26px}
+.sec-head h2{font-size:clamp(28px,4.5vw,44px)}
+.sec-head h2 em{font-style:normal;color:var(--red)}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{border:2px solid var(--ink);background:transparent;border-radius:999px;padding:7px 15px;font:700 13px 'DM Sans',sans-serif;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--ink);color:#fff}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:20px}
+.card{background:var(--paper);border:2px solid var(--ink);border-radius:var(--radius);overflow:hidden;display:flex;flex-direction:column;box-shadow:5px 5px 0 var(--ink);transition:transform .12s,box-shadow .12s}
+.card:hover{transform:translate(-2px,-2px);box-shadow:8px 8px 0 var(--ink)}
+.card .art{height:170px;display:grid;place-items:center;border-bottom:2px solid var(--ink)}
+.card .art svg{height:118px;width:auto}
+.card .body{padding:16px 18px 18px;display:flex;flex-direction:column;gap:8px;flex:1}
+.card h3{font-size:20px}
+.card p{margin:0;color:var(--muted);font-size:14px;flex:1}
+.card .price{font-family:'Archivo Black',sans-serif;font-size:20px;color:var(--red)}
+.card .price small{font:500 12px 'DM Sans',sans-serif;color:var(--muted)}
+.card .row{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:6px}
+
+/* steps */
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.step{background:var(--ink);color:#fff;border-radius:var(--radius);padding:24px}
+.step b{font-family:'Archivo Black',sans-serif;font-size:44px;color:var(--yellow);display:block;line-height:1}
+.step h3{font-size:20px;margin:10px 0 6px}
+.step p{margin:0;color:#d9d4c7;font-size:14px}
+@media(max-width:760px){.steps{grid-template-columns:1fr}}
+
+/* forms */
+.panel{background:var(--paper);border:2px solid var(--ink);border-radius:var(--radius);padding:26px;box-shadow:6px 6px 0 var(--ink)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:34px;align-items:start}
+@media(max-width:860px){.two{grid-template-columns:1fr}}
+.field{display:flex;flex-direction:column;gap:5px;margin-bottom:14px}
+.field label,.lbl{font-weight:700;font-size:13px;letter-spacing:.03em}
+.field input,.field select,.field textarea{font:500 15px 'DM Sans',sans-serif;padding:11px 12px;border:2px solid var(--ink);border-radius:12px;background:#fff;color:var(--ink);width:100%}
+.field textarea{min-height:84px;resize:vertical}
+.field input:focus,.field select:focus,.field textarea:focus{outline:3px solid var(--yellow);outline-offset:1px}
+.field small{color:var(--muted);font-size:12px}
+.f2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:520px){.f2{grid-template-columns:1fr}}
+.hp{position:absolute;left:-9999px;opacity:0;height:0;width:0}
+.drop{border:2px dashed var(--ink);border-radius:14px;padding:16px;text-align:center;background:#fff;cursor:pointer;display:block}
+.drop:hover{background:#fff6d6}
+.drop input{display:none}
+.drop b{display:block}
+.drop span{font-size:12px;color:var(--muted)}
+.filelist{list-style:none;margin:8px 0 0;padding:0;font-size:13px}
+.filelist li{display:flex;justify-content:space-between;gap:8px;padding:4px 0;border-bottom:1px solid var(--line)}
+.filelist button{border:0;background:none;color:var(--red);font-weight:700;cursor:pointer}
+.msg{margin-top:12px;padding:12px 14px;border-radius:12px;font-size:14px;font-weight:500}
+.msg.err{background:#fde6e8;border:1px solid var(--red2);color:#7a0d1c}
+.msg.ok{background:#e4f6e7;border:1px solid var(--green);color:#16521f}
+.msg.info{background:#fff3cc;border:1px solid var(--yellow)}
+
+/* modal + drawer */
+.overlay{position:fixed;inset:0;background:rgba(10,10,10,.55);z-index:50;display:none;align-items:center;justify-content:center;padding:16px}
+.overlay.open{display:flex}
+.modal{background:var(--cream);border:2px solid var(--ink);border-radius:22px;max-width:760px;width:100%;max-height:92vh;overflow:auto;position:relative;box-shadow:8px 8px 0 var(--ink)}
+.modal .mh{display:flex;gap:16px;align-items:center;padding:20px 22px;border-bottom:2px solid var(--ink)}
+.modal .mh svg{height:70px;width:auto}
+.modal .mh h2{font-size:26px}
+.modal .mh p{margin:4px 0 0;color:var(--muted);font-size:14px}
+.modal .mb{padding:20px 22px}
+.modal .mf{padding:16px 22px;border-top:2px solid var(--ink);display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;position:sticky;bottom:0;background:var(--cream)}
+.x{position:absolute;right:12px;top:12px;width:36px;height:36px;border-radius:50%;border:2px solid var(--ink);background:#fff;font-size:20px;cursor:pointer;line-height:1;z-index:2}
+.opt{margin-bottom:16px}
+.opts{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+.opt button{border:2px solid var(--ink);background:#fff;border-radius:12px;padding:8px 14px;font:700 14px 'DM Sans',sans-serif;cursor:pointer}
+.opt button small{display:block;font-weight:500;color:var(--muted);font-size:11px}
+.opt button[aria-pressed="true"]{background:var(--ink);color:#fff}
+.opt button[aria-pressed="true"] small{color:#cfcab9}
+.qty{display:inline-flex;align-items:center;border:2px solid var(--ink);border-radius:999px;background:#fff;overflow:hidden}
+.qty button{border:0;background:none;width:36px;height:36px;font-size:18px;font-weight:700;cursor:pointer}
+.qty input{width:48px;text-align:center;border:0;font:700 15px 'DM Sans',sans-serif;background:none}
+.qty input::-webkit-inner-spin-button{display:none}
+.total{font-family:'Archivo Black',sans-serif;font-size:26px;color:var(--red)}
+.total small{display:block;font:500 12px 'DM Sans',sans-serif;color:var(--muted)}
+
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(480px,100%);background:var(--cream);z-index:60;border-left:2px solid var(--ink);transform:translateX(105%);transition:transform .25s;display:flex;flex-direction:column}
+.drawer.open{transform:none}
+.drawer .dh{padding:18px 20px;border-bottom:2px solid var(--ink);display:flex;justify-content:space-between;align-items:center}
+.drawer .dh h2{font-size:24px}
+.drawer .db{flex:1;overflow:auto;padding:16px 20px}
+.drawer .x{position:static}
+.ci{background:var(--paper);border:2px solid var(--ink);border-radius:14px;padding:12px 14px;margin-bottom:12px}
+.ci .t{display:flex;justify-content:space-between;gap:10px;font-weight:700}
+.ci .d{font-size:13px;color:var(--muted);margin:4px 0}
+.ci .r{display:flex;justify-content:space-between;align-items:center;margin-top:8px}
+.ci .rm{border:0;background:none;color:var(--red);font-weight:700;cursor:pointer;font-size:13px}
+.sum{border-top:2px solid var(--ink);margin-top:14px;padding-top:12px;font-size:14px}
+.sum div{display:flex;justify-content:space-between;padding:2px 0}
+.sum .g{font-family:'Archivo Black',sans-serif;font-size:20px;margin-top:6px;color:var(--red)}
+.empty{text-align:center;color:var(--muted);padding:40px 0}
+.dim{opacity:.5;pointer-events:none}
+
+.toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,40px);background:var(--ink);color:#fff;padding:12px 20px;border-radius:999px;z-index:80;opacity:0;transition:.25s;font-weight:700;font-size:14px}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+
+footer{background:var(--ink);color:#fff;padding:44px 0 30px}
+footer .cols{display:flex;gap:30px;flex-wrap:wrap;justify-content:space-between;align-items:center}
+footer .brand b{color:#fff}
+footer .insta{display:inline-flex;align-items:center;gap:10px;text-decoration:none;font-weight:700;border:2px solid #fff;border-radius:999px;padding:10px 18px}
+footer .insta:hover{background:#fff;color:var(--ink)}
+footer small{display:block;margin-top:26px;color:#a9a496}
+.spin{width:16px;height:16px;border:3px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:sp .7s linear infinite;display:inline-block}
+@keyframes sp{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+
+<!-- Shared SVG symbols -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="logo" viewBox="0 0 120 112">
+    <rect x="36" y="4" width="48" height="42" rx="3" fill="#fff" stroke="#121212" stroke-width="3"/>
+    <rect x="42" y="10" width="36" height="30" fill="#1d7be0" stroke="#121212" stroke-width="2"/>
+    <path d="M47 18h26M47 24h26M47 30h18" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/>
+    <rect x="9" y="42" width="102" height="44" rx="9" fill="#ffc21a" stroke="#121212" stroke-width="3"/>
+    <rect x="15" y="50" width="90" height="12" fill="#e8322b" stroke="#121212" stroke-width="2"/>
+    <rect x="15" y="62" width="90" height="16" fill="#2a4fa6" stroke="#121212" stroke-width="2"/>
+    <circle cx="82" cy="56" r="2.6" fill="#ffc21a"/><circle cx="90" cy="56" r="2.6" fill="#3fbf55"/><circle cx="98" cy="56" r="2.6" fill="#1d7be0"/>
+    <rect x="30" y="84" width="60" height="20" rx="3" fill="#3fbf55" stroke="#121212" stroke-width="3"/>
+  </symbol>
+  <symbol id="ig" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="4.2" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="17.3" cy="6.7" r="1.2" fill="currentColor"/></symbol>
+  <symbol id="slash" viewBox="0 0 90 60"><path d="M5 30 L50 6" stroke="#d7263d" stroke-width="11" stroke-linecap="round"/><path d="M5 52 L66 20" stroke="#d7263d" stroke-width="11" stroke-linecap="round"/></symbol>
+</svg>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="#top" aria-label="Print Buddy home"><svg><use href="#logo"/></svg><b>PRINT BUDDY</b></a>
+    <nav class="links">
+      <a href="#shop" class="hide-sm">Shop</a>
+      <a href="#bulk" class="hide-sm">Bulk</a>
+      <a href="#custom" class="hide-sm">Custom</a>
+      <a href="https://www.instagram.com/printbuddy_india/" target="_blank" rel="noopener" aria-label="Print Buddy on Instagram" class="hide-sm"><svg width="22" height="22" style="vertical-align:middle"><use href="#ig"/></svg></a>
+      <button class="btn red sm cartbtn" id="openCart" aria-label="Open cart">Cart <span class="count" id="cartCount">0</span></button>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+<div class="hero">
+  <svg class="slash l"><use href="#slash"/></svg><svg class="slash r"><use href="#slash"/></svg>
+  <div class="wrap">
+    <svg class="logo-big" viewBox="0 0 120 112" aria-hidden="true"><use href="#logo"/></svg>
+    <p class="wordmark">PRINT BUDDY</p>
+    <h1>Your ideas.<span>Your identity.</span></h1>
+    <p class="lead">From custom apparel to posters, printables and everything in between — we bring your ideas to life through print.</p>
+    <div class="cta">
+      <a class="btn red" href="#shop">Start shopping</a>
+      <a class="btn ghost" href="https://www.instagram.com/printbuddy_india/" target="_blank" rel="noopener"><svg width="18" height="18"><use href="#ig"/></svg> Follow @printbuddy_india</a>
+    </div>
+    <div class="cats"><span>Custom apparel</span><i>●</i><span>Printables</span><i>●</i><span>Posters</span><i>●</i><span>And more</span></div>
+    <div class="script">Made for your crew.</div>
+
+    <div class="strip" aria-label="What we print">
+      <div><svg viewBox="0 0 100 100"><path d="M22 14 L36 8 Q50 20 64 8 L78 14 L92 32 L78 40 L74 34 V88 H26 V34 L22 40 L8 32 Z" fill="#fff" stroke="#121212" stroke-width="5" stroke-linejoin="round"/><path d="M50 44l4 9 10 1-8 6 3 10-9-6-9 6 3-10-8-6 10-1z" fill="#d7263d"/></svg>Custom apparel</div>
+      <div><svg viewBox="0 0 100 100"><rect x="20" y="8" width="60" height="84" rx="5" fill="#fff" stroke="#121212" stroke-width="5"/><path d="M32 30h36M32 44h36M32 58h36M32 72h22" stroke="#121212" stroke-width="5" stroke-linecap="round"/></svg>Printables<small>Stickers, cards, notebooks &amp; more</small></div>
+      <div><svg viewBox="0 0 100 100"><rect x="18" y="8" width="64" height="84" rx="4" fill="#fff" stroke="#121212" stroke-width="5"/><rect x="26" y="16" width="48" height="68" fill="#d7263d"/><path d="M26 84 L44 52 L56 70 L64 60 L74 84z" fill="#fff"/><circle cx="36" cy="32" r="5" fill="#fff"/><circle cx="62" cy="32" r="5" fill="#fff"/></svg>Posters<small>A3, A4 &amp; custom sizes</small></div>
+      <div><svg viewBox="0 0 100 100"><circle cx="50" cy="30" r="13" fill="#d7263d"/><path d="M26 80q0-30 24-30t24 30z" fill="#d7263d"/><circle cx="20" cy="46" r="9" fill="#121212"/><path d="M4 84q0-22 16-22t16 22z" fill="#121212"/><circle cx="80" cy="46" r="9" fill="#121212"/><path d="M64 84q0-22 16-22t16 22z" fill="#121212"/></svg>Bulk orders<small>Teams, events, colleges &amp; more</small></div>
+      <div><svg viewBox="0 0 100 100"><path d="M50 12a26 26 0 0 0-14 48v10h28V60a26 26 0 0 0-14-48z" fill="#fff" stroke="#121212" stroke-width="5" stroke-linejoin="round"/><path d="M40 82h20M44 92h12" stroke="#121212" stroke-width="5" stroke-linecap="round"/><path d="M50 2v4M14 24l4 3M86 24l-4 3" stroke="#d7263d" stroke-width="5" stroke-linecap="round"/></svg>Custom requests<small>Just ask!</small></div>
+    </div>
+  </div>
+</div>
+
+<section id="shop">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2>The <em>shop</em></h2>
+      <div class="chips" id="filters" role="group" aria-label="Filter products">
+        <button class="chip" data-f="all" aria-pressed="true">All</button>
+        <button class="chip" data-f="apparel" aria-pressed="false">Apparel</button>
+        <button class="chip" data-f="posters" aria-pressed="false">Posters</button>
+        <button class="chip" data-f="printables" aria-pressed="false">Printables</button>
+      </div>
+    </div>
+    <div class="grid" id="grid"></div>
+    <p class="msg info" style="margin-top:22px" id="priceNote"></p>
+  </div>
+</section>
+
+<section style="padding-top:10px">
+  <div class="wrap">
+    <div class="sec-head"><h2>How it <em>works</em></h2></div>
+    <div class="steps">
+      <div class="step"><b>1</b><h3>Pick &amp; customise</h3><p>Choose a product, size and options, then upload your design and/or type what you want printed.</p></div>
+      <div class="step"><b>2</b><h3>Send your order</h3><p>Add to cart and place your order request. Your files go straight to our print desk.</p></div>
+      <div class="step"><b>3</b><h3>We confirm &amp; print</h3><p>We check your artwork, confirm the final price and payment with you, then print and deliver.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="bulk">
+  <div class="wrap two">
+    <div>
+      <h2 style="font-size:clamp(28px,4.5vw,44px)">Bulk orders for <span style="color:var(--red)">teams, colleges &amp; events.</span></h2>
+      <p style="font-size:17px;color:#3a362d;max-width:440px">Matching tees for the whole crew, fest posters, batch stickers, ID cards and notebooks. Orders of 10+ pieces get <b>10% off</b> automatically in the shop — for bigger runs, tell us what you need and we'll quote you.</p>
+      <div class="script" style="font-size:26px">Made for your crew.</div>
+    </div>
+    <form class="panel" id="bulkForm" novalidate>
+      <div class="f2">
+        <div class="field"><label for="b_name">Your name *</label><input id="b_name" name="name" required autocomplete="name"></div>
+        <div class="field"><label for="b_phone">Phone / WhatsApp *</label><input id="b_phone" name="phone" required inputmode="tel" autocomplete="tel"></div>
+      </div>
+      <div class="f2">
+        <div class="field"><label for="b_email">Email *</label><input id="b_email" name="email" type="email" required autocomplete="email"></div>
+        <div class="field"><label for="b_org">Team / college / event</label><input id="b_org" name="organisation"></div>
+      </div>
+      <div class="f2">
+        <div class="field"><label for="b_prod">What do you need?</label>
+          <select id="b_prod" name="product"><option>T-shirts</option><option>Hoodies</option><option>Posters</option><option>Stickers</option><option>Cards / ID cards</option><option>Notebooks</option><option>A mix of things</option></select></div>
+        <div class="field"><label for="b_qty">Approx. quantity</label><input id="b_qty" name="quantity" type="number" min="10" placeholder="e.g. 50"></div>
+      </div>
+      <div class="field"><label for="b_text">Details / text to be printed *</label><textarea id="b_text" name="details" placeholder="Sizes split, colours, names/numbers, deadline…"></textarea></div>
+      <div class="field"><span class="lbl">Artwork / reference files</span>
+        <label class="drop"><input type="file" multiple data-list="bulkFiles"><b>Tap to upload files</b><span>Images, PDF, AI, PSD, SVG, ZIP</span></label>
+        <ul class="filelist" id="bulkFiles"></ul></div>
+      <input class="hp" name="_honey" tabindex="-1" autocomplete="off">
+      <button class="btn red" type="submit">Request a bulk quote</button>
+      <div id="bulkMsg"></div>
+    </form>
+  </div>
+</section>
+
+<section id="custom" style="padding-top:0">
+  <div class="wrap two">
+    <form class="panel" id="customForm" novalidate>
+      <div class="f2">
+        <div class="field"><label for="c_name">Your name *</label><input id="c_name" name="name" required autocomplete="name"></div>
+        <div class="field"><label for="c_phone">Phone / WhatsApp *</label><input id="c_phone" name="phone" required inputmode="tel" autocomplete="tel"></div>
+      </div>
+      <div class="field"><label for="c_email">Email *</label><input id="c_email" name="email" type="email" required autocomplete="email"></div>
+      <div class="field"><label for="c_text">What would you like printed? *</label><textarea id="c_text" name="request" placeholder="Tell us the item, size, quantity and what goes on it…"></textarea></div>
+      <div class="field"><span class="lbl">Artwork / reference files</span>
+        <label class="drop"><input type="file" multiple data-list="customFiles"><b>Tap to upload files</b><span>Images, PDF, AI, PSD, SVG, ZIP</span></label>
+        <ul class="filelist" id="customFiles"></ul></div>
+      <input class="hp" name="_honey" tabindex="-1" autocomplete="off">
+      <button class="btn red" type="submit">Send custom request</button>
+      <div id="customMsg"></div>
+    </form>
+    <div>
+      <h2 style="font-size:clamp(28px,4.5vw,44px)">Got something else <span style="color:var(--red)">in mind?</span></h2>
+      <p style="font-size:17px;color:#3a362d;max-width:440px">Caps, tote bags, banners, calendars, wedding stationery — if it can be printed, just ask. Send us your idea and we'll get back with options and a price.</p>
+      <a class="btn" href="https://www.instagram.com/printbuddy_india/" target="_blank" rel="noopener"><svg width="18" height="18"><use href="#ig"/></svg> Or DM us on Instagram</a>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="cols">
+      <div>
+        <a class="brand" href="#top"><svg><use href="#logo"/></svg><b>PRINT BUDDY</b></a>
+        <p style="margin:10px 0 0;color:#d9d4c7">Your idea. Our print. Your way.</p>
+      </div>
+      <a class="insta" href="https://www.instagram.com/printbuddy_india/" target="_blank" rel="noopener"><svg width="22" height="22"><use href="#ig"/></svg> @printbuddy_india</a>
+    </div>
+    <small>#printbuddy #customprinting #customapparel #posterprinting #printables · © <span id="yr"></span> Print Buddy</small>
+  </div>
+</footer>
+
+<!-- Product modal -->
+<div class="overlay" id="pmodal" role="dialog" aria-modal="true" aria-labelledby="pm_title">
+  <div class="modal">
+    <button class="x" id="pm_close" aria-label="Close">×</button>
+    <div class="mh"><div id="pm_art"></div><div><h2 id="pm_title"></h2><p id="pm_desc"></p></div></div>
+    <div class="mb">
+      <div id="pm_opts"></div>
+      <div class="opt" id="pm_custom" style="display:none">
+        <span class="lbl">Custom size (inches)</span>
+        <div class="f2" style="margin-top:6px"><div class="field" style="margin:0"><input id="pm_w" type="number" min="3" max="60" step="0.5" placeholder="Width"></div><div class="field" style="margin:0"><input id="pm_h" type="number" min="3" max="60" step="0.5" placeholder="Height"></div></div>
+        <small style="color:var(--muted)" id="pm_customhint"></small>
+      </div>
+      <div class="opt"><span class="lbl">Quantity</span><div style="margin-top:6px"><div class="qty"><button type="button" id="pm_minus" aria-label="Decrease">−</button><input id="pm_qty" type="number" min="1" max="999" value="1" aria-label="Quantity"><button type="button" id="pm_plus" aria-label="Increase">+</button></div> <small id="pm_bulkhint" style="margin-left:8px;color:var(--muted)"></small></div></div>
+      <div class="field"><label for="pm_text">Text to print</label><textarea id="pm_text" placeholder="Type the exact text/name/number you want printed"></textarea></div>
+      <div class="field"><span class="lbl">Your design / image</span>
+        <label class="drop"><input type="file" id="pm_file" multiple data-list="pm_files"><b>Tap to upload your design</b><span>PNG, JPG, PDF, AI, PSD, SVG, ZIP · keep total under <span class="maxmb"></span> MB</span></label>
+        <ul class="filelist" id="pm_files"></ul></div>
+      <div class="field"><label for="pm_notes">Placement &amp; notes</label><textarea id="pm_notes" placeholder="e.g. logo on left chest, text on back, colours, fonts…"></textarea></div>
+      <div id="pm_err"></div>
+    </div>
+    <div class="mf"><div class="total" id="pm_total">₹0<small id="pm_unit"></small></div><button class="btn red" id="pm_add">Add to cart</button></div>
+  </div>
+</div>
+
+<!-- Cart drawer -->
+<div class="overlay" id="cartOverlay"></div>
+<aside class="drawer" id="drawer" aria-label="Cart" aria-hidden="true">
+  <div class="dh"><h2>Your cart</h2><button class="x" id="closeCart" aria-label="Close cart">×</button></div>
+  <div class="db" id="cartBody"></div>
+</aside>
+
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+(function(){
+'use strict';
+
+/* ================= CONFIG — edit these ================= */
+var CONFIG = {
+  email: 'sudarshansaxena718@gmail.com',     // where orders + files are forwarded
+  instagram: 'https://www.instagram.com/printbuddy_india/',
+  shipping: 60,            // flat delivery fee (₹)
+  freeShippingOver: 999,   // free delivery above this subtotal (₹)
+  bulkQty: 10,             // quantity at which bulk discount applies
+  bulkDiscount: 0.10,      // 10% off
+  maxTotalMB: 5            // total upload limit per submission
+};
+
+/* ================= PRODUCTS ================= */
+var ICONS = {
+  tshirt:'<svg viewBox="0 0 100 100"><path d="M22 14 L36 8 Q50 20 64 8 L78 14 L92 32 L78 40 L74 34 V88 H26 V34 L22 40 L8 32 Z" fill="#fff" stroke="#121212" stroke-width="4" stroke-linejoin="round"/><path d="M50 44l4 9 10 1-8 6 3 10-9-6-9 6 3-10-8-6 10-1z" fill="#d7263d"/></svg>',
+  hoodie:'<svg viewBox="0 0 100 100"><path d="M24 20 L38 12 Q50 24 62 12 L76 20 L94 40 L80 50 L76 44 V90 H24 V44 L20 50 L6 40 Z" fill="#fff" stroke="#121212" stroke-width="4" stroke-linejoin="round"/><path d="M38 12 Q50 44 62 12" fill="none" stroke="#121212" stroke-width="4"/><rect x="36" y="64" width="28" height="16" rx="3" fill="none" stroke="#121212" stroke-width="3"/><path d="M45 38v14M55 38v14" stroke="#121212" stroke-width="3" stroke-linecap="round"/></svg>',
+  poster:'<svg viewBox="0 0 100 100"><rect x="18" y="6" width="64" height="88" rx="4" fill="#fff" stroke="#121212" stroke-width="4"/><rect x="26" y="14" width="48" height="72" fill="#ffc21a"/><circle cx="50" cy="38" r="12" fill="#d7263d"/><path d="M26 86 L44 56 L56 74 L64 64 L74 86z" fill="#121212"/></svg>',
+  stickers:'<svg viewBox="0 0 100 100"><circle cx="36" cy="36" r="26" fill="#ffc21a" stroke="#121212" stroke-width="4"/><circle cx="28" cy="31" r="3.5" fill="#121212"/><circle cx="44" cy="31" r="3.5" fill="#121212"/><path d="M25 43q11 12 22 0" fill="none" stroke="#121212" stroke-width="4" stroke-linecap="round"/><path d="M72 40l6 13 14 2-10 10 3 14-13-7-13 7 3-14-10-10 14-2z" fill="#d7263d" stroke="#121212" stroke-width="4" stroke-linejoin="round"/></svg>',
+  cards:'<svg viewBox="0 0 100 100"><rect x="8" y="36" width="64" height="40" rx="5" fill="#1d63d6" stroke="#121212" stroke-width="4" transform="rotate(-10 40 56)"/><rect x="26" y="26" width="64" height="40" rx="5" fill="#fff" stroke="#121212" stroke-width="4" transform="rotate(6 58 46)"/><path d="M38 44h30M38 54h18" stroke="#d7263d" stroke-width="4" stroke-linecap="round" transform="rotate(6 58 46)"/></svg>',
+  notebook:'<svg viewBox="0 0 100 100"><rect x="22" y="8" width="60" height="84" rx="5" fill="#d7263d" stroke="#121212" stroke-width="4"/><rect x="34" y="24" width="38" height="26" rx="2" fill="#fff" stroke="#121212" stroke-width="3"/><path d="M40 34h26M40 42h16" stroke="#121212" stroke-width="3" stroke-linecap="round"/><g fill="#fff" stroke="#121212" stroke-width="2.5"><circle cx="22" cy="20" r="4"/><circle cx="22" cy="36" r="4"/><circle cx="22" cy="52" r="4"/><circle cx="22" cy="68" r="4"/><circle cx="22" cy="84" r="4"/></g></svg>'
+};
+var TINT = {apparel:'#ffe9a8', posters:'#cfe0ff', printables:'#d6f3da'};
+
+function sizes(){return ['S','M','L','XL','XXL'].map(function(s){return {label:s,add:0}});}
+function cols(a){return a.map(function(c){return {label:c,add:0}});}
+
+var PRODUCTS = [
+ {id:'tshirt', name:'Custom T-Shirt', cat:'apparel', icon:'tshirt', base:499,
+  desc:'Soft 180 GSM cotton tee, printed with your design or text.',
+  options:[{key:'Size',values:sizes()},{key:'Colour',values:cols(['White','Black','Navy','Red','Grey'])},
+           {key:'Print',values:[{label:'Front only',add:0},{label:'Front + Back',add:150}]}]},
+ {id:'hoodie', name:'Custom Hoodie', cat:'apparel', icon:'hoodie', base:999,
+  desc:'Cosy fleece hoodie, perfect for teams, batches and clubs.',
+  options:[{key:'Size',values:sizes()},{key:'Colour',values:cols(['Black','Navy','Grey','Maroon'])},
+           {key:'Print',values:[{label:'Front only',add:0},{label:'Front + Back',add:200}]}]},
+ {id:'poster', name:'Custom Poster', cat:'posters', icon:'poster', base:0,
+  desc:'Sharp, vibrant prints on thick paper. A4, A3, A2 or any custom size.',
+  options:[{key:'Size',values:[{label:'A4',sub:'8.3×11.7 in',add:99},{label:'A3',sub:'11.7×16.5 in',add:179},{label:'A2',sub:'16.5×23.4 in',add:349},{label:'Custom size',sub:'you choose',add:0,custom:true}]},
+           {key:'Finish',values:[{label:'Matte',add:0},{label:'Gloss',add:0}]}]},
+ {id:'stickers', name:'Custom Stickers', cat:'printables', icon:'stickers', base:0,
+  desc:'Die-cut vinyl stickers — waterproof, scratch-resistant, any shape.',
+  options:[{key:'Pack',values:[{label:'10 pcs',add:99},{label:'25 pcs',add:199},{label:'50 pcs',add:349},{label:'100 pcs',add:599}]},
+           {key:'Finish',values:[{label:'Glossy',add:0},{label:'Matte',add:0}]}]},
+ {id:'cards', name:'Custom Cards', cat:'printables', icon:'cards', base:0,
+  desc:'Business cards, greeting cards, invites and ID cards on premium card stock.',
+  options:[{key:'Pack',values:[{label:'50 cards',add:249},{label:'100 cards',add:399},{label:'200 cards',add:649}]},
+           {key:'Finish',values:[{label:'Matte',add:0},{label:'Glossy',add:0},{label:'Soft-touch',add:100}]}]},
+ {id:'notebook', name:'Custom Notebook', cat:'printables', icon:'notebook', base:0,
+  desc:'Your cover design, your name or logo — spiral-bound notebooks.',
+  options:[{key:'Size',values:[{label:'A5',add:149},{label:'A4',add:219}]},
+           {key:'Pages',values:[{label:'80 pages',add:0},{label:'120 pages',add:50},{label:'160 pages',add:100}]},
+           {key:'Ruling',values:[{label:'Ruled',add:0},{label:'Plain',add:0},{label:'Dotted',add:0}]}]}
+];
+
+/* ================= helpers ================= */
+var $ = function(s,r){return (r||document).querySelector(s)};
+var $$ = function(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))};
+function esc(s){return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function inr(n){return '₹'+Math.round(n).toLocaleString('en-IN')}
+function slug(s,n){return String(s).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,n||28)||'file'}
+function toast(m){var t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(function(){t.classList.remove('show')},2400)}
+function fmtSize(b){return b>1048576?(b/1048576).toFixed(1)+' MB':Math.max(1,Math.round(b/1024))+' KB'}
+function customPrice(w,h){return Math.max(149,Math.round(w*h*0.9))}
+$$('.maxmb').forEach(function(e){e.textContent=CONFIG.maxTotalMB});
+$('#yr').textContent=new Date().getFullYear();
+
+/* ================= shop grid ================= */
+function fromPrice(p){
+  // cheapest combination: for options where every value costs something (size/pack), take the cheapest; otherwise ₹0 extra
+  var total=p.base;
+  p.options.forEach(function(o){
+    var adds=o.values.filter(function(v){return !v.custom}).map(function(v){return v.add});
+    var nz=adds.filter(function(a){return a>0});
+    total+= nz.length===adds.length ? Math.min.apply(null,adds) : 0;
+  });
+  return total;
+}
+function renderGrid(f){
+  var g=$('#grid'); g.innerHTML='';
+  PRODUCTS.filter(function(p){return f==='all'||p.cat===f}).forEach(function(p){
+    var d=document.createElement('article'); d.className='card';
+    d.innerHTML='<div class="art" style="background:'+TINT[p.cat]+'">'+ICONS[p.icon]+'</div>'+
+      '<div class="body"><h3>'+esc(p.name)+'</h3><p>'+esc(p.desc)+'</p>'+
+      '<div class="row"><div class="price"><small>from </small>'+inr(fromPrice(p))+'</div>'+
+      '<button class="btn red sm" data-id="'+p.id+'">Customise</button></div></div>';
+    g.appendChild(d);
+  });
+}
+$('#filters').addEventListener('click',function(e){
+  var b=e.target.closest('.chip'); if(!b) return;
+  $$('.chip').forEach(function(c){c.setAttribute('aria-pressed',c===b)});
+  renderGrid(b.dataset.f);
+});
+$('#grid').addEventListener('click',function(e){var b=e.target.closest('[data-id]'); if(b) openProduct(b.dataset.id)});
+$('#priceNote').innerHTML='Prices are per item in ₹ and include printing. <b>'+Math.round(CONFIG.bulkDiscount*100)+'% off</b> when you order '+CONFIG.bulkQty+'+ of the same item. Delivery '+inr(CONFIG.shipping)+', <b>free above '+inr(CONFIG.freeShippingOver)+'</b>. Final price &amp; delivery are confirmed with you before printing.';
+renderGrid('all');
+
+/* ================= file lists ================= */
+function bindFileInput(input,listEl,store){
+  function draw(){
+    listEl.innerHTML='';
+    store.files.forEach(function(f,i){
+      var li=document.createElement('li');
+      li.innerHTML='<span>'+esc(f.name)+' <small style="color:var(--muted)">'+fmtSize(f.size)+'</small></span>';
+      var b=document.createElement('button'); b.type='button'; b.textContent='Remove';
+      b.onclick=function(){store.files.splice(i,1);draw()};
+      li.appendChild(b); listEl.appendChild(li);
+    });
+  }
+  input.addEventListener('change',function(){
+    Array.prototype.forEach.call(input.files,function(f){store.files.push(f)});
+    input.value=''; draw();
+  });
+  store.redraw=draw;
+}
+var bulkStore={files:[]}, customStore={files:[]}, pmStore={files:[]};
+bindFileInput($('input[data-list="bulkFiles"]'),$('#bulkFiles'),bulkStore);
+bindFileInput($('input[data-list="customFiles"]'),$('#customFiles'),customStore);
+bindFileInput($('#pm_file'),$('#pm_files'),pmStore);
+
+/* ================= product modal ================= */
+var cur=null; // current configurator state
+function openProduct(id){
+  var p=PRODUCTS.filter(function(x){return x.id===id})[0]; if(!p) return;
+  cur={p:p,sel:p.options.map(function(){return 0}),qty:1};
+  pmStore.files.length=0; pmStore.redraw();
+  $('#pm_art').innerHTML=ICONS[p.icon];
+  $('#pm_title').textContent=p.name; $('#pm_desc').textContent=p.desc;
+  $('#pm_text').value=''; $('#pm_notes').value=''; $('#pm_qty').value=1; $('#pm_err').innerHTML='';
+  $('#pm_w').value=''; $('#pm_h').value='';
+  buildOpts(); recalc();
+  $('#pmodal').classList.add('open'); document.body.style.overflow='hidden';
+  setTimeout(function(){$('#pm_close').focus()},30);
+}
+function closeProduct(){$('#pmodal').classList.remove('open'); if(!$('#drawer').classList.contains('open')) document.body.style.overflow=''}
+function buildOpts(){
+  var box=$('#pm_opts'); box.innerHTML='';
+  cur.p.options.forEach(function(o,oi){
+    var d=document.createElement('div'); d.className='opt';
+    d.innerHTML='<span class="lbl">'+esc(o.key)+'</span>';
+    var w=document.createElement('div'); w.className='opts';
+    o.values.forEach(function(v,vi){
+      var b=document.createElement('button'); b.type='button';
+      b.setAttribute('aria-pressed',cur.sel[oi]===vi);
+      var price = (v.add>0 && cur.p.base===0 && o.values.every(function(x){return x.add>0||x.custom})) ? inr(v.add) : (v.add>0?'+'+inr(v.add):'');
+      b.innerHTML=esc(v.label)+(v.sub?'<small>'+esc(v.sub)+'</small>':'')+(price&&!v.sub?'<small>'+price+'</small>':(price&&v.sub?'<small>'+esc(v.sub)+' · '+price+'</small>':''));
+      if(v.sub&&price) b.innerHTML=esc(v.label)+'<small>'+esc(v.sub)+' · '+price+'</small>';
+      b.onclick=function(){cur.sel[oi]=vi; $$('button',w).forEach(function(x,i){x.setAttribute('aria-pressed',i===vi)}); recalc()};
+      w.appendChild(b);
+    });
+    d.appendChild(w); box.appendChild(d);
+  });
+}
+function isCustomSize(){return cur.p.options.some(function(o,i){return o.values[cur.sel[i]].custom})}
+function unitPrice(){
+  var t=cur.p.base, err=null;
+  cur.p.options.forEach(function(o,i){
+    var v=o.values[cur.sel[i]];
+    if(v.custom){
+      var w=parseFloat($('#pm_w').value), h=parseFloat($('#pm_h').value);
+      if(w>0&&h>0) t+=customPrice(w,h); else err='Enter width and height';
+    } else t+=v.add;
+  });
+  return {unit:t,err:err};
+}
+function lineTotal(unit,qty){
+  var gross=unit*qty, disc=qty>=CONFIG.bulkQty?gross*CONFIG.bulkDiscount:0;
+  return {gross:gross,disc:disc,net:gross-disc};
+}
+function recalc(){
+  cur.qty=Math.max(1,Math.min(999,parseInt($('#pm_qty').value,10)||1));
+  var cs=isCustomSize();
+  $('#pm_custom').style.display=cs?'block':'none';
+  $('#pm_customhint').textContent=cs?'Priced at about ₹0.90 per sq. inch (minimum ₹149). Final price is confirmed before printing.':'';
+  var u=unitPrice(), lt=lineTotal(u.unit,cur.qty);
+  $('#pm_total').firstChild.nodeValue = u.err ? '—' : inr(lt.net);
+  $('#pm_unit').textContent = u.err ? u.err : inr(u.unit)+' each'+(lt.disc?' · '+Math.round(CONFIG.bulkDiscount*100)+'% bulk discount applied':'');
+  $('#pm_bulkhint').textContent = cur.qty<CONFIG.bulkQty ? 'Order '+CONFIG.bulkQty+'+ to save '+Math.round(CONFIG.bulkDiscount*100)+'%' : '';
+}
+['pm_w','pm_h'].forEach(function(id){$('#'+id).addEventListener('input',recalc)});
+$('#pm_qty').addEventListener('input',recalc);
+$('#pm_minus').onclick=function(){$('#pm_qty').value=Math.max(1,(parseInt($('#pm_qty').value,10)||1)-1);recalc()};
+$('#pm_plus').onclick=function(){$('#pm_qty').value=Math.min(999,(parseInt($('#pm_qty').value,10)||1)+1);recalc()};
+$('#pm_close').onclick=closeProduct;
+$('#pmodal').addEventListener('mousedown',function(e){if(e.target===this)closeProduct()});
+
+/* ================= cart ================= */
+var cart=[];
+function optSummary(it){return it.opts.map(function(o){return o.key+': '+o.value}).join(', ')}
+$('#pm_add').onclick=function(){
+  var err=$('#pm_err'); err.innerHTML='';
+  var u=unitPrice();
+  if(u.err){err.innerHTML='<div class="msg err">'+esc(u.err)+' for your custom size.</div>';return}
+  var text=$('#pm_text').value.trim(), notes=$('#pm_notes').value.trim();
+  if(!pmStore.files.length && !text){err.innerHTML='<div class="msg err">Please upload a design or type the text you want printed.</div>';return}
+  var opts=cur.p.options.map(function(o,i){
+    var v=o.values[cur.sel[i]], val=v.label;
+    if(v.custom) val='Custom '+$('#pm_w').value+' × '+$('#pm_h').value+' in';
+    return {key:o.key,value:val};
+  });
+  cart.push({pid:cur.p.id,name:cur.p.name,icon:cur.p.icon,opts:opts,unit:u.unit,qty:cur.qty,text:text,notes:notes,files:pmStore.files.slice()});
+  closeProduct(); renderCart(); openCart(); toast('Added to cart');
+};
+function totals(){
+  var sub=0,disc=0;
+  cart.forEach(function(it){var l=lineTotal(it.unit,it.qty); sub+=l.gross; disc+=l.disc});
+  var after=sub-disc, ship=!cart.length?0:(after>=CONFIG.freeShippingOver?0:CONFIG.shipping);
+  return {sub:sub,disc:disc,ship:ship,total:after+ship};
+}
+function renderCart(){
+  $('#cartCount').textContent=cart.reduce(function(a,i){return a+i.qty},0);
+  var b=$('#cartBody');
+  if(!cart.length){b.innerHTML='<div class="empty"><p>Your cart is empty.</p><a class="btn red sm" href="#shop" id="cartShop">Browse products</a></div>';var s=$('#cartShop'); if(s) s.onclick=closeCart; return}
+  var h='';
+  cart.forEach(function(it,i){
+    var l=lineTotal(it.unit,it.qty);
+    h+='<div class="ci"><div class="t"><span>'+esc(it.name)+'</span><span>'+inr(l.net)+'</span></div>'+
+      '<div class="d">'+esc(optSummary(it))+'</div>'+
+      (it.text?'<div class="d">Text: “'+esc(it.text.length>90?it.text.slice(0,90)+'…':it.text)+'”</div>':'')+
+      (it.files.length?'<div class="d">📎 '+it.files.map(function(f){return esc(f.name)}).join(', ')+'</div>':'')+
+      '<div class="r"><div class="qty"><button data-a="m" data-i="'+i+'" aria-label="Decrease">−</button><input value="'+it.qty+'" readonly aria-label="Quantity"><button data-a="p" data-i="'+i+'" aria-label="Increase">+</button></div>'+
+      '<button class="rm" data-a="r" data-i="'+i+'">Remove</button></div></div>';
+  });
+  var t=totals();
+  h+='<div class="sum"><div><span>Subtotal</span><span>'+inr(t.sub)+'</span></div>'+
+     (t.disc?'<div><span>Bulk discount</span><span>−'+inr(t.disc)+'</span></div>':'')+
+     '<div><span>Delivery</span><span>'+(t.ship?inr(t.ship):'Free')+'</span></div>'+
+     '<div class="g"><span>Total</span><span>'+inr(t.total)+'</span></div></div>'+
+     '<form id="checkout" style="margin-top:18px" novalidate>'+
+     '<h3 style="font-size:18px;margin-bottom:12px">Delivery details</h3>'+
+     '<div class="field"><label for="o_name">Full name *</label><input id="o_name" required autocomplete="name"></div>'+
+     '<div class="f2"><div class="field"><label for="o_phone">Phone / WhatsApp *</label><input id="o_phone" inputmode="tel" required autocomplete="tel"></div>'+
+     '<div class="field"><label for="o_email">Email *</label><input id="o_email" type="email" required autocomplete="email"></div></div>'+
+     '<div class="field"><label for="o_addr">Delivery address *</label><textarea id="o_addr" required autocomplete="street-address" placeholder="House/flat, street, area, city, PIN code"></textarea></div>'+
+     '<div class="field"><label for="o_notes">Order notes</label><textarea id="o_notes" placeholder="Deadline, anything else we should know"></textarea></div>'+
+     '<input class="hp" id="o_honey" tabindex="-1" autocomplete="off">'+
+     '<p class="msg info" style="margin:0 0 12px;font-size:13px">No payment is taken on this page. We’ll review your files and contact you to confirm the final price and payment.</p>'+
+     '<button class="btn red" type="submit" style="width:100%" id="placeBtn">Place order request</button><div id="orderMsg"></div></form>';
+  var keep=snapshotCheckout(); b.innerHTML=h; restoreCheckout(keep);
+}
+function snapshotCheckout(){var o={};['o_name','o_phone','o_email','o_addr','o_notes'].forEach(function(id){var e=document.getElementById(id); if(e) o[id]=e.value}); return o}
+function restoreCheckout(o){Object.keys(o).forEach(function(id){var e=document.getElementById(id); if(e) e.value=o[id]})}
+$('#cartBody').addEventListener('click',function(e){
+  var b=e.target.closest('[data-a]'); if(!b) return;
+  var i=+b.dataset.i, a=b.dataset.a;
+  if(a==='r') cart.splice(i,1);
+  if(a==='p') cart[i].qty=Math.min(999,cart[i].qty+1);
+  if(a==='m') cart[i].qty=Math.max(1,cart[i].qty-1);
+  renderCart();
+});
+function openCart(){$('#drawer').classList.add('open');$('#drawer').setAttribute('aria-hidden','false');$('#cartOverlay').classList.add('open');document.body.style.overflow='hidden'}
+function closeCart(){$('#drawer').classList.remove('open');$('#drawer').setAttribute('aria-hidden','true');$('#cartOverlay').classList.remove('open');document.body.style.overflow=''}
+$('#openCart').onclick=openCart; $('#closeCart').onclick=closeCart; $('#cartOverlay').onclick=closeCart;
+document.addEventListener('keydown',function(e){if(e.key==='Escape'){closeProduct();closeCart()}});
+
+/* ================= sending to email ================= */
+function newOrderId(prefix){
+  var d=new Date(), p=function(n){return String(n).padStart(2,'0')};
+  var r=Math.random().toString(36).slice(2,6).toUpperCase();
+  return prefix+'-'+String(d.getFullYear()).slice(2)+p(d.getMonth()+1)+p(d.getDate())+'-'+r;
+}
+function renameFile(orderId,tag,idx,file){
+  var dot=file.name.lastIndexOf('.'), ext=dot>0?file.name.slice(dot).toLowerCase().replace(/[^a-z0-9.]/g,''):'';
+  var base=dot>0?file.name.slice(0,dot):file.name;
+  return orderId+'_'+tag+'_'+String(idx).padStart(2,'0')+'_'+slug(base,24)+ext;
+}
+/* groups: [{tag:'item1-custom-t-shirt-L-Black', files:[File]}]  → returns {renamed:[{group,file,newName}], bytes} */
+function prepareFiles(orderId,groups){
+  var out=[],bytes=0;
+  groups.forEach(function(g){
+    g.files.forEach(function(f,i){
+      var nn=renameFile(orderId,g.tag,i+1,f);
+      out.push({group:g,file:f,name:nn}); bytes+=f.size;
+    });
+  });
+  return {list:out,bytes:bytes};
+}
+function send(opts){
+  /* opts: {orderId, subject, fields:{label:value}, files:[{file,name}], replyTo} */
+  var fd=new FormData();
+  fd.append('_subject',opts.subject);
+  fd.append('_template','table');
+  fd.append('_captcha','false');
+  if(opts.replyTo) fd.append('_replyto',opts.replyTo);
+  Object.keys(opts.fields).forEach(function(k){fd.append(k,opts.fields[k])});
+  opts.files.forEach(function(f,i){fd.append('attachment_'+(i+1),new File([f.file],f.name,{type:f.file.type}),f.name)});
+  return fetch('https://formsubmit.co/ajax/'+encodeURIComponent(CONFIG.email),{method:'POST',headers:{'Accept':'application/json'},body:fd})
+    .then(function(r){return r.json().catch(function(){return {}}).then(function(j){return {ok:r.ok,j:j}})})
+    .then(function(x){
+      if(x.ok && String(x.j.success)==='true') return true;
+      var e=new Error((x.j&&x.j.message)||'The order could not be sent.'); throw e;
+    });
+}
+function checkSize(bytes){
+  if(bytes>CONFIG.maxTotalMB*1048576) return 'Your files total '+fmtSize(bytes)+', which is over the '+CONFIG.maxTotalMB+' MB limit. Please compress them or remove some files — or DM us on Instagram for large files.';
+  return null;
+}
+function failHtml(m){
+  return '<div class="msg err">'+esc(m)+' If this keeps happening, please DM us on <a href="'+CONFIG.instagram+'" target="_blank" rel="noopener"><b>Instagram</b></a>.</div>';
+}
+function setBusy(btn,busy,label){btn.disabled=busy; btn.innerHTML=busy?'<span class="spin"></span> Sending…':label}
+
+/* ----- cart checkout ----- */
+document.addEventListener('submit',function(e){
+  if(e.target.id!=='checkout') return;
+  e.preventDefault();
+  var msg=$('#orderMsg'), btn=$('#placeBtn'); msg.innerHTML='';
+  var name=$('#o_name').value.trim(), phone=$('#o_phone').value.trim(), email=$('#o_email').value.trim(), addr=$('#o_addr').value.trim(), notes=$('#o_notes').value.trim();
+  if($('#o_honey').value) return;
+  if(!name||!phone||!email||!addr){msg.innerHTML='<div class="msg err">Please fill in your name, phone, email and address.</div>';return}
+  if(!/^\S+@\S+\.\S+$/.test(email)){msg.innerHTML='<div class="msg err">Please enter a valid email address.</div>';return}
+  if(!/\d{8,}/.test(phone.replace(/\D/g,'')) ){msg.innerHTML='<div class="msg err">Please enter a valid phone number.</div>';return}
+  var orderId=newOrderId('PB');
+  var groups=cart.map(function(it,i){return {tag:'item'+(i+1)+'-'+slug(it.pid)+'-'+slug(it.opts.map(function(o){return o.value}).join('-'),22),files:it.files}});
+  var prep=prepareFiles(orderId,groups), sizeErr=checkSize(prep.bytes);
+  if(sizeErr){msg.innerHTML='<div class="msg err">'+esc(sizeErr)+'</div>';return}
+  var t=totals(), lines=[];
+  cart.forEach(function(it,i){
+    var l=lineTotal(it.unit,it.qty);
+    var names=prep.list.filter(function(x){return x.group===groups[i]}).map(function(x){return x.name});
+    lines.push('ITEM '+(i+1)+': '+it.name+'\n'+
+      '  Options: '+optSummary(it)+'\n'+
+      '  Qty: '+it.qty+' × '+inr(it.unit)+' = '+inr(l.gross)+(l.disc?' (−'+inr(l.disc)+' bulk discount = '+inr(l.net)+')':'')+'\n'+
+      '  Text to print: '+(it.text||'—')+'\n'+
+      '  Notes: '+(it.notes||'—')+'\n'+
+      '  Files: '+(names.length?names.join(', '):'none'));
+  });
+  var fields={
+    'Order ID':orderId,'Customer name':name,'Phone':phone,'Email':email,'Delivery address':addr,'Order notes':notes||'—',
+    'Items':'\n'+lines.join('\n\n'),
+    'Subtotal':inr(t.sub),'Bulk discount':inr(t.disc),'Delivery':t.ship?inr(t.ship):'Free','TOTAL':inr(t.total),
+    'Attached files':prep.list.length?prep.list.map(function(x){return x.name}).join(', '):'none',
+    'Submitted':new Date().toLocaleString('en-IN',{timeZone:'Asia/Kolkata'})+' IST'
+  };
+  setBusy(btn,true);
+  send({orderId:orderId,subject:'New Print Buddy order '+orderId+' — '+inr(t.total),fields:fields,files:prep.list,replyTo:email})
+   .then(function(){
+     cart=[]; renderCart();
+     $('#cartBody').innerHTML='<div class="msg ok" style="margin-top:20px"><h3 style="font-size:20px;margin-bottom:8px">Order request sent! 🎉</h3>Your order ID is <b>'+esc(orderId)+'</b>. We’ll review your files and contact you on <b>'+esc(phone)+'</b> to confirm the price and payment.</div><p style="text-align:center"><a class="btn ghost sm" href="'+CONFIG.instagram+'" target="_blank" rel="noopener">Follow @printbuddy_india</a></p>';
+   })
+   .catch(function(err){
+     setBusy(btn,false,'Place order request');
+     $('#orderMsg').innerHTML=failHtml(err.message||'Something went wrong while sending.');
+   });
+});
+
+/* ----- bulk + custom forms ----- */
+function wireSimpleForm(formId,msgId,store,prefix,tagName,subject,reqKeys,textId){
+  var form=$(formId);
+  form.addEventListener('submit',function(e){
+    e.preventDefault();
+    var msg=$(msgId); msg.innerHTML='';
+    if(form.elements['_honey'].value) return;
+    var v=function(n){return (form.elements[n].value||'').trim()};
+    for(var i=0;i<reqKeys.length;i++){ if(!v(reqKeys[i])){msg.innerHTML='<div class="msg err">Please fill in all required (*) fields.</div>';return} }
+    if(!/^\S+@\S+\.\S+$/.test(v('email'))){msg.innerHTML='<div class="msg err">Please enter a valid email address.</div>';return}
+    var orderId=newOrderId(prefix);
+    var prep=prepareFiles(orderId,[{tag:tagName,files:store.files}]), sizeErr=checkSize(prep.bytes);
+    if(sizeErr){msg.innerHTML='<div class="msg err">'+esc(sizeErr)+'</div>';return}
+    var fields={'Reference ID':orderId};
+    $$('input,select,textarea',form).forEach(function(el){
+      if(!el.name||el.name==='_honey'||el.type==='file') return;
+      var label=(el.labels&&el.labels[0]?el.labels[0].textContent.replace('*','').trim():el.name);
+      fields[label]=el.value.trim()||'—';
+    });
+    fields['Attached files']=prep.list.length?prep.list.map(function(x){return x.name}).join(', '):'none';
+    fields['Submitted']=new Date().toLocaleString('en-IN',{timeZone:'Asia/Kolkata'})+' IST';
+    var btn=$('button[type=submit]',form), label=btn.textContent;
+    setBusy(btn,true);
+    send({orderId:orderId,subject:subject+' '+orderId+' — '+v('name'),fields:fields,files:prep.list,replyTo:v('email')})
+      .then(function(){
+        form.reset(); store.files.length=0; store.redraw(); setBusy(btn,false,label);
+        msg.innerHTML='<div class="msg ok">Sent! Your reference is <b>'+esc(orderId)+'</b>. We’ll get back to you soon.</div>';
+      })
+      .catch(function(err){setBusy(btn,false,label); msg.innerHTML=failHtml(err.message||'Something went wrong while sending.')});
+  });
+}
+wireSimpleForm('#bulkForm','#bulkMsg',bulkStore,'PB-BULK','bulk','New BULK enquiry',['name','phone','email','details']);
+wireSimpleForm('#customForm','#customMsg',customStore,'PB-CUSTOM','custom','New CUSTOM request',['name','phone','email','request']);
+
+renderCart();
+
+/* tiny test hook (harmless in production) */
+window.__PB={prepareFiles:prepareFiles,renameFile:renameFile,newOrderId:newOrderId,CONFIG:CONFIG};
+})();
+</script>
+</body>
+</html>
