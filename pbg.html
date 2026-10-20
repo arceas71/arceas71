@@ -4,7 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Print Buddy | Your Ideas. Your Identity.</title>
-  <!-- Google Fonts matching the poster typography -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Montserrat:wght@500;700;800;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -21,6 +20,10 @@
       --printer-green: #4ECB71;
       --text-muted: #5A5852;
       --border-color: #E2DEC9;
+    }
+
+    html {
+      scroll-behavior: smooth;
     }
 
     * {
@@ -62,18 +65,18 @@
     .nav-brand {
       display: flex;
       align-items: center;
-      gap: 0.75rem;
+      gap: 0.6rem;
       text-decoration: none;
       color: var(--brand-red);
       font-weight: 900;
-      font-size: 1.4rem;
+      font-size: 1.35rem;
       letter-spacing: 0.5px;
     }
 
     .nav-links {
       display: flex;
       align-items: center;
-      gap: 1.5rem;
+      gap: 1rem;
     }
 
     .insta-btn {
@@ -86,7 +89,7 @@
       padding: 0.5rem 1rem;
       border-radius: 999px;
       font-weight: 600;
-      font-size: 0.9rem;
+      font-size: 0.88rem;
       transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
 
@@ -98,13 +101,12 @@
     .cart-toggle-btn {
       background-color: var(--brand-black);
       color: white;
-      border: none;
+      text-decoration: none;
       padding: 0.55rem 1.15rem;
       border-radius: 999px;
       font-family: 'Montserrat', sans-serif;
       font-weight: 700;
-      font-size: 0.9rem;
-      cursor: pointer;
+      font-size: 0.88rem;
       display: flex;
       align-items: center;
       gap: 0.5rem;
@@ -123,11 +125,11 @@
       font-size: 0.75rem;
     }
 
-    /* Hero Section matching the Instagram Post */
+    /* Hero Section */
     .hero {
       position: relative;
       text-align: center;
-      padding: 4rem 1.5rem 3rem;
+      padding: 3.5rem 1.5rem 2.5rem;
       max-width: 960px;
       margin: 0 auto;
     }
@@ -136,39 +138,39 @@
       display: inline-block;
       font-family: 'Montserrat', sans-serif;
       font-weight: 900;
-      font-size: 0.85rem;
+      font-size: 0.82rem;
       line-height: 1.05;
       background: #FFFDF7;
       border: 2px solid var(--brand-black);
-      padding: 0.6rem 0.8rem;
+      padding: 0.55rem 0.75rem;
       border-radius: 8px;
       transform: rotate(-6deg);
-      margin-bottom: 1.5rem;
+      margin-bottom: 1.25rem;
       box-shadow: 3px 3px 0px var(--brand-black);
     }
 
     .printer-logo-svg {
-      width: 150px;
+      width: 145px;
       height: auto;
-      margin: 0 auto 1rem;
+      margin: 0 auto 0.85rem;
       display: block;
       filter: drop-shadow(0 6px 12px rgba(0,0,0,0.08));
     }
 
     .hero-brand-title {
       color: var(--brand-red);
-      font-size: 2.2rem;
+      font-size: 2.1rem;
       font-weight: 900;
       letter-spacing: 1.5px;
-      margin-bottom: 0.75rem;
+      margin-bottom: 0.6rem;
     }
 
     .hero-headline {
-      font-size: clamp(2.4rem, 6vw, 4.2rem);
+      font-size: clamp(2.3rem, 5.5vw, 4rem);
       font-weight: 900;
       line-height: 1.05;
       letter-spacing: -1px;
-      margin-bottom: 1.25rem;
+      margin-bottom: 1.2rem;
     }
 
     .hero-headline span {
@@ -184,9 +186,19 @@
       gap: 0.75rem;
       font-family: 'Montserrat', sans-serif;
       font-weight: 700;
-      font-size: 0.85rem;
+      font-size: 0.82rem;
       letter-spacing: 1.5px;
-      margin-bottom: 2.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .hero-subnav a {
+      color: var(--brand-black);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .hero-subnav a:hover {
+      color: var(--brand-red);
     }
 
     .hero-subnav .dot {
@@ -194,14 +206,14 @@
       font-size: 1.2rem;
     }
 
-    /* 5 Category Icons Row from the Poster */
+    /* 5 Category Icons Row */
     .category-strip {
       display: grid;
       grid-template-columns: repeat(5, 1fr);
       gap: 1rem;
       max-width: 850px;
-      margin: 0 auto 2.5rem;
-      padding: 1.5rem 1rem;
+      margin: 0 auto 2rem;
+      padding: 1.35rem 1rem;
       border-top: 1px solid var(--border-color);
       border-bottom: 1px solid var(--border-color);
     }
@@ -213,6 +225,13 @@
       text-align: center;
       border-right: 1px solid var(--border-color);
       padding: 0 0.5rem;
+      text-decoration: none;
+      color: inherit;
+      transition: transform 0.2s;
+    }
+
+    .cat-item:hover {
+      transform: translateY(-3px);
     }
 
     .cat-item:last-child {
@@ -220,13 +239,13 @@
     }
 
     .cat-item svg {
-      width: 42px;
-      height: 42px;
-      margin-bottom: 0.6rem;
+      width: 40px;
+      height: 40px;
+      margin-bottom: 0.5rem;
     }
 
     .cat-item h4 {
-      font-size: 0.75rem;
+      font-size: 0.73rem;
       font-weight: 800;
       letter-spacing: 0.5px;
       margin-bottom: 0.2rem;
@@ -244,7 +263,6 @@
       color: var(--brand-black);
       transform: rotate(-3deg);
       display: inline-block;
-      position: relative;
     }
 
     .crew-tagline::after {
@@ -257,35 +275,20 @@
       margin-top: -4px;
     }
 
-    /* Main Shop Section */
+    /* Shop Layout */
     .shop-container {
       max-width: 1200px;
-      margin: 2rem auto 5rem;
+      margin: 1.5rem auto 5rem;
       padding: 0 1.5rem;
       display: grid;
       grid-template-columns: 1fr 380px;
-      gap: 2.5rem;
+      gap: 2.25rem;
       align-items: start;
-    }
-
-    .section-title {
-      font-size: 1.8rem;
-      font-weight: 900;
-      margin-bottom: 0.5rem;
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-    }
-
-    .section-subtitle {
-      color: var(--text-muted);
-      margin-bottom: 2rem;
-      font-size: 0.95rem;
     }
 
     .products-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
       gap: 1.5rem;
     }
 
@@ -293,12 +296,13 @@
       background: var(--card-bg);
       border: 2px solid var(--brand-black);
       border-radius: 14px;
-      padding: 1.5rem;
+      padding: 1.4rem;
       box-shadow: 5px 5px 0px var(--brand-black);
       display: flex;
       flex-direction: column;
       justify-content: space-between;
       transition: transform 0.2s ease;
+      scroll-margin-top: 90px;
     }
 
     .product-card:hover {
@@ -309,94 +313,96 @@
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
-      margin-bottom: 0.75rem;
+      gap: 0.75rem;
+      margin-bottom: 0.4rem;
     }
 
-    .product-badge {
-      background: var(--bg-cream);
-      border: 1px solid var(--brand-black);
-      font-size: 0.7rem;
+    .product-title {
+      font-size: 1.15rem;
       font-weight: 800;
-      padding: 0.2rem 0.55rem;
-      border-radius: 4px;
-      text-transform: uppercase;
+      line-height: 1.25;
     }
 
     .product-price {
       font-family: 'Montserrat', sans-serif;
-      font-size: 1.35rem;
+      font-size: 1.3rem;
       font-weight: 900;
       color: var(--brand-red);
-    }
-
-    .product-title {
-      font-size: 1.2rem;
-      font-weight: 800;
-      margin-bottom: 0.35rem;
+      white-space: nowrap;
     }
 
     .product-desc {
-      font-size: 0.85rem;
+      font-size: 0.83rem;
       color: var(--text-muted);
-      margin-bottom: 1.1rem;
+      margin-bottom: 1rem;
     }
 
-    .form-group {
-      margin-bottom: 0.9rem;
+    .controls-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 0.7rem;
     }
 
-    .form-group label {
-      display: block;
-      font-size: 0.78rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      margin-bottom: 0.3rem;
-      color: var(--brand-black);
+    .variant-qty-row {
+      display: grid;
+      grid-template-columns: 1fr 78px;
+      gap: 0.5rem;
     }
 
-    .form-group select,
-    .form-group input[type="text"],
-    .form-group input[type="number"],
-    .form-group textarea {
+    select,
+    input[type="text"],
+    input[type="number"],
+    textarea {
       width: 100%;
-      padding: 0.6rem 0.75rem;
+      padding: 0.62rem 0.75rem;
       border: 1.5px solid #CCC8B8;
       border-radius: 8px;
       font-family: inherit;
-      font-size: 0.88rem;
+      font-size: 0.86rem;
       background: #FAF9F5;
+      color: var(--brand-black);
+      transition: border-color 0.2s, background 0.2s;
     }
 
-    .form-group select:focus,
-    .form-group input:focus,
-    .form-group textarea:focus {
+    select:focus,
+    input:focus,
+    textarea:focus {
       outline: none;
       border-color: var(--brand-red);
       background: #FFF;
     }
 
-    .file-input-wrapper {
+    /* Custom Reference Image Dropzone (3rd inside card) */
+    .upload-box {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
       border: 1.5px dashed var(--brand-black);
       background: var(--bg-cream);
-      padding: 0.65rem;
+      padding: 0.65rem 0.8rem;
       border-radius: 8px;
-      text-align: center;
-      font-size: 0.8rem;
-      cursor: pointer;
-    }
-
-    .file-input-wrapper input[type="file"] {
-      width: 100%;
-      font-size: 0.78rem;
-      cursor: pointer;
-    }
-
-    .rename-preview {
-      font-size: 0.72rem;
-      color: var(--brand-red);
+      font-size: 0.82rem;
       font-weight: 600;
-      margin-top: 0.3rem;
-      word-break: break-all;
+      cursor: pointer;
+      text-align: center;
+      transition: background 0.2s, border-color 0.2s;
+    }
+
+    .upload-box:hover {
+      background: #EFECE0;
+      border-color: var(--brand-red);
+    }
+
+    .upload-box input[type="file"] {
+      display: none;
+    }
+
+    .upload-status {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      max-width: 230px;
     }
 
     .add-to-cart-btn {
@@ -408,11 +414,11 @@
       border-radius: 8px;
       font-family: 'Montserrat', sans-serif;
       font-weight: 800;
-      font-size: 0.9rem;
+      font-size: 0.88rem;
       cursor: pointer;
       box-shadow: 3px 3px 0px var(--brand-black);
       transition: all 0.15s ease;
-      margin-top: 0.5rem;
+      margin-top: 0.85rem;
     }
 
     .add-to-cart-btn:hover {
@@ -421,7 +427,7 @@
       box-shadow: 2px 2px 0px var(--brand-black);
     }
 
-    /* Order Summary & Checkout Sidebar */
+    /* Checkout Panel */
     .checkout-panel {
       background: var(--card-bg);
       border: 2px solid var(--brand-black);
@@ -430,6 +436,7 @@
       box-shadow: 6px 6px 0px var(--brand-black);
       position: sticky;
       top: 90px;
+      scroll-margin-top: 90px;
     }
 
     .checkout-header {
@@ -442,7 +449,7 @@
     }
 
     .cart-items-list {
-      max-height: 280px;
+      max-height: 260px;
       overflow-y: auto;
       margin-bottom: 1rem;
     }
@@ -451,8 +458,8 @@
       background: var(--bg-cream);
       border: 1px solid var(--border-color);
       border-radius: 8px;
-      padding: 0.75rem;
-      margin-bottom: 0.65rem;
+      padding: 0.7rem;
+      margin-bottom: 0.6rem;
       font-size: 0.82rem;
       position: relative;
     }
@@ -460,7 +467,7 @@
     .cart-item-title {
       font-weight: 800;
       font-family: 'Montserrat', sans-serif;
-      color: var(--brand-black);
+      padding-right: 1.2rem;
     }
 
     .cart-item-meta {
@@ -469,18 +476,10 @@
       font-size: 0.76rem;
     }
 
-    .cart-item-file {
-      color: var(--brand-red);
-      font-weight: 600;
-      font-size: 0.74rem;
-      margin-top: 0.25rem;
-      word-break: break-all;
-    }
-
     .remove-item-btn {
       position: absolute;
       top: 0.5rem;
-      right: 0.5rem;
+      right: 0.55rem;
       background: none;
       border: none;
       color: var(--brand-red);
@@ -494,11 +493,18 @@
       justify-content: space-between;
       font-family: 'Montserrat', sans-serif;
       font-weight: 900;
-      font-size: 1.2rem;
+      font-size: 1.15rem;
       padding: 0.75rem 0;
       border-top: 2px solid var(--brand-black);
       border-bottom: 2px solid var(--brand-black);
-      margin-bottom: 1.2rem;
+      margin-bottom: 1rem;
+    }
+
+    .customer-inputs {
+      display: flex;
+      flex-direction: column;
+      gap: 0.65rem;
+      margin-bottom: 1rem;
     }
 
     .submit-order-btn {
@@ -510,38 +516,42 @@
       border-radius: 8px;
       font-family: 'Montserrat', sans-serif;
       font-weight: 800;
-      font-size: 0.95rem;
+      font-size: 0.92rem;
       cursor: pointer;
-      transition: background 0.2s;
-      margin-bottom: 0.6rem;
+      transition: background 0.2s, transform 0.15s;
     }
 
-    .submit-order-btn:hover {
+    .submit-order-btn:hover:not(:disabled) {
       background: var(--brand-red);
     }
 
-    .mailto-fallback-btn {
-      width: 100%;
-      background: transparent;
-      color: var(--brand-black);
-      border: 1.5px solid var(--brand-black);
-      padding: 0.65rem;
+    .submit-order-btn:disabled {
+      opacity: 0.65;
+      cursor: not-allowed;
+    }
+
+    .order-feedback {
+      display: none;
+      margin-top: 0.85rem;
+      padding: 0.8rem;
       border-radius: 8px;
-      font-family: 'Montserrat', sans-serif;
-      font-weight: 700;
-      font-size: 0.8rem;
-      cursor: pointer;
-    }
-
-    .mailto-fallback-btn:hover {
-      background: var(--bg-cream);
-    }
-
-    .email-notice {
-      font-size: 0.73rem;
-      color: var(--text-muted);
+      font-size: 0.83rem;
+      font-weight: 600;
       text-align: center;
-      margin-top: 0.65rem;
+    }
+
+    .order-feedback.success {
+      display: block;
+      background: #E7F8ED;
+      border: 1.5px solid #28A745;
+      color: #155724;
+    }
+
+    .order-feedback.error {
+      display: block;
+      background: #FDECEC;
+      border: 1.5px solid var(--brand-red);
+      color: var(--brand-red-dark);
     }
 
     /* Footer */
@@ -558,10 +568,10 @@
       color: white;
       font-family: 'Montserrat', sans-serif;
       font-weight: 900;
-      padding: 0.6rem 1.2rem;
+      padding: 0.55rem 1.15rem;
       border-radius: 6px;
       letter-spacing: 1px;
-      margin-bottom: 1.2rem;
+      margin-bottom: 1rem;
       transform: rotate(-3deg);
     }
 
@@ -582,20 +592,19 @@
 </head>
 <body>
 
-  <!-- Navigation -->
+  <!-- Header -->
   <header>
     <a href="#" class="nav-brand">
       <span>🖨️ PRINT BUDDY</span>
     </a>
     <div class="nav-links">
       <a href="https://www.instagram.com/printbuddy_india/" target="_blank" rel="noopener noreferrer" class="insta-btn">
-        <!-- Instagram Icon -->
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
         @printbuddy_india
       </a>
-      <button class="cart-toggle-btn" onclick="document.getElementById('checkout-section').scrollIntoView({behavior: 'smooth'})">
-        🛒 Order Bag <span class="cart-count" id="nav-cart-count">0</span>
-      </button>
+      <a href="#checkout-section" class="cart-toggle-btn">
+        🛒 Bag <span class="cart-count" id="nav-cart-count">0</span>
+      </a>
     </div>
   </header>
 
@@ -605,27 +614,21 @@
       GOOD<br>THINGS<br>TAKE<br>TIME <span style="color: var(--brand-red);">☺</span>
     </div>
 
-    <!-- Custom SVG recreating the exact Print Buddy Printer Logo -->
+    <!-- Print Buddy Logo SVG -->
     <svg class="printer-logo-svg" viewBox="0 0 200 160" xmlns="http://www.w3.org/2000/svg">
-      <!-- Top Paper Feed -->
       <rect x="45" y="25" width="110" height="45" rx="4" fill="#FFFFFF" stroke="#181818" stroke-width="5"/>
       <rect x="55" y="32" width="90" height="38" fill="#B52B65" stroke="#181818" stroke-width="4"/>
       <rect x="65" y="12" width="70" height="55" rx="3" fill="#1C92F4" stroke="#181818" stroke-width="5"/>
       <line x1="78" y1="26" x2="122" y2="26" stroke="#181818" stroke-width="4" stroke-linecap="round"/>
       <line x1="78" y1="38" x2="122" y2="38" stroke="#181818" stroke-width="4" stroke-linecap="round"/>
       <line x1="78" y1="50" x2="122" y2="50" stroke="#181818" stroke-width="4" stroke-linecap="round"/>
-      <!-- Main Printer Body -->
       <rect x="25" y="65" width="150" height="70" rx="14" fill="#F7C815" stroke="#181818" stroke-width="5"/>
-      <!-- Center Printer Panel -->
       <rect x="50" y="65" width="100" height="25" fill="#E59838" stroke="#181818" stroke-width="5"/>
       <rect x="50" y="90" width="100" height="22" fill="#D92B2B" stroke="#181818" stroke-width="5"/>
-      <!-- Status Dots -->
       <circle cx="118" cy="101" r="4" fill="#4ECB71" stroke="#181818" stroke-width="2.5"/>
       <circle cx="130" cy="101" r="4" fill="#F7C815" stroke="#181818" stroke-width="2.5"/>
       <circle cx="142" cy="101" r="4" fill="#1C92F4" stroke="#181818" stroke-width="2.5"/>
-      <!-- Lower Output Slot -->
       <rect x="50" y="112" width="100" height="23" fill="#2A4494" stroke="#181818" stroke-width="5"/>
-      <!-- Green Output Paper -->
       <polygon points="65,123 135,123 145,148 55,148" fill="#4ECB71" stroke="#181818" stroke-width="5" stroke-linejoin="round"/>
     </svg>
 
@@ -636,120 +639,81 @@
     </h1>
 
     <div class="hero-subnav">
-      <span>CUSTOM APPAREL</span>
+      <a href="#card-custom_apparel">CUSTOM APPAREL</a>
       <span class="dot">•</span>
-      <span>PRINTABLES</span>
+      <a href="#card-printables">PRINTABLES</a>
       <span class="dot">•</span>
-      <span>POSTERS</span>
+      <a href="#card-posters">POSTERS</a>
       <span class="dot">•</span>
-      <span>AND MORE</span>
+      <a href="#card-custom_requests">AND MORE</a>
     </div>
 
-    <!-- Poster 5-Column Icon Strip -->
     <div class="category-strip">
-      <div class="cat-item">
+      <a href="#card-custom_apparel" class="cat-item">
         <svg viewBox="0 0 24 24" fill="none" stroke="#181818" stroke-width="2"><path d="M20.38 3.46L16 2a4 4 0 01-8 0L3.62 3.46a2 2 0 00-1.34 2.23l.58 3.47a1 1 0 00.99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 002-2V10h2.15a1 1 0 00.99-.84l.58-3.47a2 2 0 00-1.34-2.23z"/><polygon points="12 9 13.09 11.26 15.5 11.63 13.75 13.34 14.18 15.74 12 14.58 9.82 15.74 10.25 13.34 8.5 11.63 10.91 11.26 12 9" fill="#C41625" stroke="#C41625"/></svg>
         <h4>CUSTOM APPAREL</h4>
-        <p>T-Shirts, Hoodies & Tote Bags</p>
-      </div>
-      <div class="cat-item">
+        <p>Tees, Hoodies & Totes</p>
+      </a>
+      <a href="#card-printables" class="cat-item">
         <svg viewBox="0 0 24 24" fill="none" stroke="#181818" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/></svg>
         <h4>PRINTABLES</h4>
         <p>(Stickers, Cards, Notebooks & More)</p>
-      </div>
-      <div class="cat-item">
+      </a>
+      <a href="#card-posters" class="cat-item">
         <svg viewBox="0 0 24 24" fill="none" stroke="#181818" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5" fill="#C41625"/><polyline points="21 15 16 10 5 21"/></svg>
         <h4>POSTERS</h4>
         <p>(A3, A4 & Custom Sizes)</p>
-      </div>
-      <div class="cat-item">
+      </a>
+      <a href="#card-bulk_orders" class="cat-item">
         <svg viewBox="0 0 24 24" fill="none" stroke="#181818" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4" fill="#C41625"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
         <h4>BULK ORDERS</h4>
         <p>(Teams, Events, Colleges & More)</p>
-      </div>
-      <div class="cat-item">
+      </a>
+      <a href="#card-custom_requests" class="cat-item">
         <svg viewBox="0 0 24 24" fill="none" stroke="#181818" stroke-width="2"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 0 0-4 12.7V17h8v-2.3A7 7 0 0 0 12 2z"/></svg>
         <h4>CUSTOM REQUESTS</h4>
         <p>(Just Ask!)</p>
-      </div>
+      </a>
     </div>
 
     <div class="script-font crew-tagline">Made for your crew.</div>
   </section>
 
-  <!-- Main Shopping & Customizer Section -->
-  <main class="shop-container">
-    <div>
-      <h2 class="section-title">🛍️ Customize & Shop Products</h2>
-      <p class="section-subtitle">
-        Upload your artwork or enter what you want printed for any product below. All uploaded files are automatically renamed with your product & customer tag and forwarded to <strong>sudarshansaxena718@gmail.com</strong>.
-      </p>
+  <!-- Shop Section -->
+  <main class="shop-container" id="shop">
+    <div class="products-grid" id="products-grid"></div>
 
-      <div class="products-grid" id="products-grid">
-        <!-- Products dynamically rendered by JS below -->
-      </div>
-    </div>
-
-    <!-- Checkout / Order Forwarding Panel -->
+    <!-- Bag & Checkout Sidebar -->
     <aside class="checkout-panel" id="checkout-section">
       <div class="checkout-header">
-        <h3>📦 Your Custom Order</h3>
+        <h3>🛍️ Your Bag</h3>
         <span id="sidebar-item-count" style="font-size: 0.8rem; font-weight: 700; color: var(--brand-red);">0 Items</span>
       </div>
 
-      <!-- Direct FormSubmit integration to sudarshansaxena718@gmail.com -->
-      <form id="order-form" action="https://formsubmit.co/sudarshansaxena718@gmail.com" method="POST" enctype="multipart/form-data">
-        <!-- FormSubmit Configuration -->
-        <input type="hidden" name="_subject" id="email-subject" value="New Custom Print Order - Print Buddy India">
-        <input type="hidden" name="_captcha" value="false">
-        <input type="hidden" name="_template" value="table">
-        <input type="hidden" name="Order_Summary_Details" id="hidden-order-summary" value="">
-
+      <form id="order-form" onsubmit="submitOrderSilently(event)">
         <div class="cart-items-list" id="cart-items-container">
           <p style="color: var(--text-muted); font-size: 0.85rem; text-align: center; padding: 1.5rem 0;">
-            Your bag is empty. Customize a product on the left and click <strong>"Add to Order"</strong>!
+            Your bag is empty. Add your custom items from the catalog!
           </p>
         </div>
 
         <div class="cart-total-row">
-          <span>Total Estimate</span>
+          <span>Total</span>
           <span id="cart-total-price">₹0</span>
         </div>
 
-        <div class="form-group">
-          <label>Your Full Name *</label>
-          <input type="text" id="cust-name" name="Customer_Name" placeholder="e.g. Aarav Sharma" required oninput="refreshRenamedFiles()">
+        <div class="customer-inputs">
+          <input type="text" id="cust-name" placeholder="Your Full Name *" required>
+          <input type="text" id="cust-phone" placeholder="Phone / WhatsApp Number *" required>
+          <input type="text" id="cust-insta" placeholder="Instagram Handle or Email *" required>
+          <textarea id="cust-address" rows="2" placeholder="Delivery Address *" required></textarea>
         </div>
 
-        <div class="form-group">
-          <label>Phone / WhatsApp Number *</label>
-          <input type="text" id="cust-phone" name="Customer_Phone" placeholder="e.g. +91 98765 43210" required>
-        </div>
-
-        <div class="form-group">
-          <label>Instagram Handle / Email *</label>
-          <input type="text" id="cust-insta" name="Customer_Instagram_Or_Email" placeholder="@yourhandle or email@example.com" required>
-        </div>
-
-        <div class="form-group">
-          <label>Delivery Address / Notes</label>
-          <textarea id="cust-address" name="Delivery_Address" rows="2" placeholder="Hostel/College/Home address & any special deadlines..."></textarea>
-        </div>
-
-        <!-- Container that holds the dynamically renamed file inputs for email attachment forwarding -->
-        <div id="attached-files-Bin" style="display:none;"></div>
-
-        <button type="submit" class="submit-order-btn" onclick="return prepareFormSubmission(event)">
-          🚀 Forward Order & Files to Email
+        <button type="submit" class="submit-order-btn" id="submit-btn">
+          Place Custom Order
         </button>
 
-        <button type="button" class="mailto-fallback-btn" onclick="openMailtoFallback()">
-          ✉️ Open in Default Email App (Mailto)
-        </button>
-
-        <p class="email-notice">
-          Forwards all custom print inputs & renamed files directly to <strong>sudarshansaxena718@gmail.com</strong>
-        </p>
+        <div id="order-feedback" class="order-feedback"></div>
       </form>
     </aside>
   </main>
@@ -757,89 +721,78 @@
   <!-- Footer -->
   <footer>
     <div class="footer-stamp">CREATE • PRINT • REPEAT</div>
-    <h3 style="margin-bottom: 0.5rem;">PRINT BUDDY INDIA</h3>
-    <p style="color: #B8B5A8; font-size: 0.9rem; margin-bottom: 1rem;">
-      Your idea. Our print. Your way. Whether it's something to wear, display, or gift — we've got you covered.
+    <h3 style="margin-bottom: 0.5rem;">PRINT BUDDY</h3>
+    <p style="color: #B8B5A8; font-size: 0.9rem; margin-bottom: 1.25rem;">
+      Your idea. Our print. Your way.
     </p>
-    <p style="margin-bottom: 1.5rem;">
-      <a href="https://www.instagram.com/printbuddy_india/" target="_blank" rel="noopener noreferrer" class="insta-btn">
-        Follow @printbuddy_india on Instagram
-      </a>
-    </p>
-    <p style="font-size: 0.78rem; color: #888;">
-      Orders & inquiries forwarded to: <a href="mailto:sudarshansaxena718@gmail.com" style="color: #F7C815;">sudarshansaxena718@gmail.com</a>
-    </p>
+    <a href="https://www.instagram.com/printbuddy_india/" target="_blank" rel="noopener noreferrer" class="insta-btn">
+      Follow @printbuddy_india on Instagram
+    </a>
   </footer>
 
   <script>
-    // Product Catalog matching the Print Buddy Instagram post
     const PRODUCTS = [
       {
         id: "custom_apparel",
-        category: "👕 Custom Apparel",
-        title: "Custom Printed Apparel",
-        desc: "High-GSM cotton tees, oversized drops, hoodies & tote bags printed with your custom graphic or text.",
+        title: "Custom Apparel",
+        desc: "High-GSM cotton tees, oversized drops, hoodies & canvas tote bags.",
         options: [
-          { label: "Classic Crewneck T-Shirt (S-XXL)", price: 499 },
-          { label: "Oversized Drop-Shoulder Tee (S-XXL)", price: 649 },
+          { label: "Classic Crewneck T-Shirt", price: 499 },
+          { label: "Oversized Drop-Shoulder Tee", price: 649 },
           { label: "Heavyweight Pullover Hoodie", price: 999 },
           { label: "Custom Canvas Tote Bag", price: 249 }
         ],
-        placeholder: "E.g., Front chest logo, back full graphic, T-shirt color (Black/White/Cream), Size (M/L/XL)..."
+        placeholder: "Custom instructions (e.g., color, size S-XXL, front/back placement, text to print)..."
       },
       {
         id: "posters",
-        category: "🖼️ Posters",
-        title: "Custom Wall Posters (A3, A4 & Custom)",
-        desc: "300 GSM premium matte or glossy finish posters for dorm rooms, studios, and events.",
+        title: "Posters (A3, A4 & Custom)",
+        desc: "300 GSM premium matte or glossy finish posters for rooms, studios & events.",
         options: [
-          { label: "A4 Poster (8.3 × 11.7 in) - 300 GSM", price: 79 },
-          { label: "A3 Poster (11.7 × 16.5 in) - 300 GSM", price: 129 },
-          { label: "Set of 5 A4 Custom Wall Collage", price: 349 },
-          { label: "Set of 5 A3 Custom Posters", price: 549 },
-          { label: "Custom Banner / Giant Poster (24 × 36 in)", price: 399 }
+          { label: "A4 Poster (300 GSM)", price: 79 },
+          { label: "A3 Poster (300 GSM)", price: 129 },
+          { label: "Set of 5 A4 Wall Collage", price: 349 },
+          { label: "Set of 5 A3 Posters", price: 549 },
+          { label: "Custom Giant Poster (24 × 36 in)", price: 399 }
         ],
-        placeholder: "E.g., Matte or Glossy finish, white border or borderless, link to drive folder or album cover names..."
+        placeholder: "Custom instructions (e.g., matte/glossy finish, white border or borderless)..."
       },
       {
-        id: "printables_stickers",
-        category: "📄 Printables",
-        title: "Die-Cut Stickers, Cards & Notebooks",
-        desc: "Waterproof vinyl stickers, custom spiral notebooks, bookmarks, Polaroid prints & greeting cards.",
+        id: "printables",
+        title: "Printables (Stickers, Cards & Notebooks)",
+        desc: "Die-cut waterproof vinyl stickers, spiral notebooks, polaroids & cards.",
         options: [
-          { label: "Custom Die-Cut Vinyl Sticker Pack (10 pcs)", price: 149 },
-          { label: "A3 Sticker Sheet (Kiss-Cut)", price: 179 },
-          { label: "Custom Cover Spiral Notebook (A5, 160 pages)", price: 249 },
-          { label: "Custom Polaroid Photo Prints (Set of 20)", price: 199 },
-          { label: "Custom Greeting / Thank You Cards (Pack of 10)", price: 229 }
+          { label: "Die-Cut Vinyl Stickers (Pack of 10)", price: 149 },
+          { label: "Kiss-Cut A3 Sticker Sheet", price: 179 },
+          { label: "Custom Spiral Notebook (A5)", price: 249 },
+          { label: "Custom Polaroid Prints (Set of 20)", price: 199 },
+          { label: "Custom Cards (Pack of 10)", price: 229 }
         ],
-        placeholder: "E.g., Glossy/Holographic vinyl, die-cut border preference, text on notebook cover..."
+        placeholder: "Custom instructions (e.g., glossy/holographic finish, cover text, cut style)..."
       },
       {
         id: "bulk_orders",
-        category: "👥 Bulk Orders",
-        title: "Bulk Orders (Teams, Colleges & Events)",
-        desc: "Special discounted packs for college fests, club merch, hackathons, startups, and sports teams.",
+        title: "Bulk Orders (Teams, Events & Colleges)",
+        desc: "Discounted merch bundles for college fests, clubs, hackathons & teams.",
         options: [
-          { label: "College Club / Team T-Shirts (Pack of 10)", price: 3990 },
-          { label: "College Fest Merch Combo (20 Tees + 100 Stickers)", price: 7999 },
-          { label: "Event ID Cards + Lanyards + Posters Pack (25 pcs)", price: 2499 },
-          { label: "Corporate / Startup Welcome Swag Kit (10 Kits)", price: 6499 }
+          { label: "Club / Team Tees (Pack of 10)", price: 3990 },
+          { label: "Fest Combo (20 Tees + 100 Stickers)", price: 7999 },
+          { label: "Event ID Cards + Posters Pack (25 pcs)", price: 2499 },
+          { label: "Startup / Team Swag Kit (10 Kits)", price: 6499 }
         ],
-        placeholder: "E.g., College/Event name, size breakdown (3S, 4M, 3L), individual names/numbers on back..."
+        placeholder: "Custom instructions (e.g., size breakdown, team names/numbers, event deadline)..."
       },
       {
         id: "custom_requests",
-        category: "💡 Custom Requests",
-        title: "Got Something Else in Mind? Just Ask!",
-        desc: "Custom mugs, badges, keychains, standees, certificates, zines, or any experimental print idea.",
+        title: "Custom Requests",
+        desc: "Got something else in mind? Mugs, badges, keychains, standees or zines.",
         options: [
-          { label: "Custom Printed Ceramic Mug", price: 299 },
+          { label: "Custom Ceramic Mug", price: 299 },
           { label: "Pin Button Badges (Pack of 10)", price: 199 },
-          { label: "Custom Acrylic Keychains (Pack of 5)", price: 299 },
-          { label: "Bespoke / Special Print Request (Base Deposit)", price: 199 }
+          { label: "Acrylic Keychains (Pack of 5)", price: 299 },
+          { label: "Special Custom Print Request", price: 199 }
         ],
-        placeholder: "Describe your exact idea, dimensions, material preference, and quantity..."
+        placeholder: "Describe what you want printed, dimensions, material & any details..."
       }
     ];
 
@@ -847,78 +800,50 @@
 
     function renderProducts() {
       const grid = document.getElementById("products-grid");
-      grid.innerHTML = PRODUCTS.map((prod, idx) => `
+      grid.innerHTML = PRODUCTS.map(prod => `
         <div class="product-card" id="card-${prod.id}">
           <div>
             <div class="product-header">
-              <span class="product-badge">${prod.category}</span>
+              <h3 class="product-title">${prod.title}</h3>
               <span class="product-price" id="price-display-${prod.id}">₹${prod.options[0].price}</span>
             </div>
-            <h3 class="product-title">${prod.title}</h3>
             <p class="product-desc">${prod.desc}</p>
 
-            <div class="form-group">
-              <label>1. Select Variant & Price</label>
-              <select id="variant-${prod.id}" onchange="updateCardPrice('${prod.id}')">
-                ${prod.options.map((opt, i) => `<option value="${i}" data-price="${opt.price}">${opt.label} — ₹${opt.price}</option>`).join("")}
-              </select>
-            </div>
-
-            <div class="form-group">
-              <label>2. Quantity</label>
-              <input type="number" id="qty-${prod.id}" value="1" min="1" max="500" onchange="updateCardPrice('${prod.id}')">
-            </div>
-
-            <div class="form-group">
-              <label>3. What should we print? (Text / Instructions) *</label>
-              <textarea id="text-${prod.id}" rows="2" placeholder="${prod.placeholder}"></textarea>
-            </div>
-
-            <div class="form-group">
-              <label>4. Upload Design / Reference File (Optional)</label>
-              <div class="file-input-wrapper">
-                <input type="file" id="file-${prod.id}" accept="image/*,.pdf,.psd,.ai,.svg,.zip" onchange="previewRenamedFile('${prod.id}')">
-                <div class="rename-preview" id="rename-preview-${prod.id}"></div>
+            <div class="controls-stack">
+              <!-- 1 & 2: Variant & Quantity (no numbered labels) -->
+              <div class="variant-qty-row">
+                <select id="variant-${prod.id}" onchange="updateCardPrice('${prod.id}')">
+                  ${prod.options.map((opt, i) => `<option value="${i}">${opt.label} — ₹${opt.price}</option>`).join("")}
+                </select>
+                <input type="number" id="qty-${prod.id}" value="1" min="1" max="500" title="Quantity" onchange="updateCardPrice('${prod.id}')">
               </div>
+
+              <!-- 3: Reference Image Upload Third -->
+              <label class="upload-box">
+                <span>📎</span>
+                <span class="upload-status" id="file-label-${prod.id}">Upload Reference Image</span>
+                <input type="file" id="file-${prod.id}" accept="image/*,.pdf,.psd,.ai,.svg,.zip" onchange="handleFileSelect('${prod.id}')">
+              </label>
+
+              <!-- 4: Custom Instructions Last -->
+              <textarea id="text-${prod.id}" rows="2" placeholder="${prod.placeholder}"></textarea>
             </div>
           </div>
 
           <button type="button" class="add-to-cart-btn" onclick="addToCart('${prod.id}')">
-            + Add Custom Item to Order
+            Add to Bag
           </button>
         </div>
       `).join("");
     }
 
-    function sanitizeToken(str) {
-      return (str || "Customer")
-        .trim()
-        .replace(/[^a-zA-Z0-9_-]/g, "_")
-        .replace(/_+/g, "_")
-        .slice(0, 30);
-    }
-
-    function generateAppropriateFileName(prodId, variantLabel, originalFileName, itemIndex) {
-      const custName = sanitizeToken(document.getElementById("cust-name")?.value || "Client");
-      const cleanProd = sanitizeToken(prodId.toUpperCase());
-      const cleanVariant = sanitizeToken(variantLabel.split("(")[0]);
-      const ext = originalFileName.includes(".") ? originalFileName.substring(originalFileName.lastIndexOf(".")) : "";
-      const baseOrig = sanitizeToken(originalFileName.replace(/\.[^/.]+$/, ""));
-      return `PrintBuddy_Item${itemIndex}_${cleanProd}_${cleanVariant}_${custName}_${baseOrig}${ext}`;
-    }
-
-    function previewRenamedFile(prodId) {
+    function handleFileSelect(prodId) {
       const fileInput = document.getElementById(`file-${prodId}`);
-      const previewEl = document.getElementById(`rename-preview-${prodId}`);
-      const prod = PRODUCTS.find(p => p.id === prodId);
-      const variantIdx = document.getElementById(`variant-${prodId}`).value;
-      const variantLabel = prod.options[variantIdx].label;
-
+      const labelEl = document.getElementById(`file-label-${prodId}`);
       if (fileInput.files && fileInput.files[0]) {
-        const newName = generateAppropriateFileName(prodId, variantLabel, fileInput.files[0].name, cart.length + 1);
-        previewEl.textContent = `📎 Will be forwarded as: ${newName}`;
+        labelEl.textContent = fileInput.files[0].name;
       } else {
-        previewEl.textContent = "";
+        labelEl.textContent = "Upload Reference Image";
       }
     }
 
@@ -928,7 +853,23 @@
       const qty = Math.max(1, parseInt(document.getElementById(`qty-${prodId}`).value || "1", 10));
       const unitPrice = prod.options[variantIdx].price;
       document.getElementById(`price-display-${prodId}`).textContent = `₹${unitPrice * qty}`;
-      previewRenamedFile(prodId);
+    }
+
+    function sanitizeToken(str) {
+      return (str || "Client")
+        .trim()
+        .replace(/[^a-zA-Z0-9_-]/g, "_")
+        .replace(/_+/g, "_")
+        .slice(0, 30);
+    }
+
+    function buildFormattedFileName(prodId, variantLabel, originalName, index) {
+      const custName = sanitizeToken(document.getElementById("cust-name")?.value || "Customer");
+      const cleanProd = sanitizeToken(prodId.toUpperCase());
+      const cleanVariant = sanitizeToken(variantLabel);
+      const ext = originalName.includes(".") ? originalName.substring(originalName.lastIndexOf(".")) : "";
+      const base = sanitizeToken(originalName.replace(/\.[^/.]+$/, ""));
+      return `PrintBuddy_Item${index}_${cleanProd}_${cleanVariant}_${custName}_${base}${ext}`;
     }
 
     function addToCart(prodId) {
@@ -941,19 +882,8 @@
       const selectedFile = fileInput.files && fileInput.files[0] ? fileInput.files[0] : null;
 
       if (!customText && !selectedFile) {
-        alert("Please enter your custom print instructions/text or upload a design file before adding to your order!");
-        document.getElementById(`text-${prodId}`).focus();
+        alert("Please upload a reference image or enter custom instructions for your print.");
         return;
-      }
-
-      const itemNumber = cart.length + 1;
-      let renamedFileObj = null;
-      let generatedFileName = "No file uploaded (Text-only print)";
-
-      if (selectedFile) {
-        generatedFileName = generateAppropriateFileName(prodId, variant.label, selectedFile.name, itemNumber);
-        // Create a new File object with the standardized appropriate file name
-        renamedFileObj = new File([selectedFile], generatedFileName, { type: selectedFile.type });
       }
 
       cart.push({
@@ -961,39 +891,29 @@
         prodId: prod.id,
         title: prod.title,
         variantLabel: variant.label,
-        unitPrice: variant.price,
         qty: qty,
         lineTotal: variant.price * qty,
-        customText: customText || "(See attached design file)",
-        originalFile: selectedFile,
-        renamedFile: renamedFileObj,
-        fileName: generatedFileName
+        customText: customText || "Refer to uploaded image",
+        originalFile: selectedFile
       });
 
-      // Reset inputs on card
+      // Reset card fields
       document.getElementById(`text-${prodId}`).value = "";
       fileInput.value = "";
-      document.getElementById(`rename-preview-${prodId}`).textContent = "";
+      document.getElementById(`file-label-${prodId}`).textContent = "Upload Reference Image";
       document.getElementById(`qty-${prodId}`).value = "1";
       updateCardPrice(prodId);
+
+      // Hide any previous feedback banner when modifying bag
+      const fb = document.getElementById("order-feedback");
+      fb.className = "order-feedback";
+      fb.textContent = "";
 
       renderCart();
     }
 
     function removeFromCart(uid) {
       cart = cart.filter(item => item.uid !== uid);
-      refreshRenamedFiles();
-      renderCart();
-    }
-
-    function refreshRenamedFiles() {
-      cart.forEach((item, index) => {
-        if (item.originalFile) {
-          const updatedName = generateAppropriateFileName(item.prodId, item.variantLabel, item.originalFile.name, index + 1);
-          item.fileName = updatedName;
-          item.renamedFile = new File([item.originalFile], updatedName, { type: item.originalFile.type });
-        }
-      });
       renderCart();
     }
 
@@ -1002,7 +922,6 @@
       const navCount = document.getElementById("nav-cart-count");
       const sidebarCount = document.getElementById("sidebar-item-count");
       const totalEl = document.getElementById("cart-total-price");
-      const fileBin = document.getElementById("attached-files-Bin");
 
       navCount.textContent = cart.length;
       sidebarCount.textContent = `${cart.length} Item${cart.length === 1 ? "" : "s"}`;
@@ -1010,37 +929,22 @@
       if (cart.length === 0) {
         container.innerHTML = `
           <p style="color: var(--text-muted); font-size: 0.85rem; text-align: center; padding: 1.5rem 0;">
-            Your bag is empty. Customize a product on the left and click <strong>"Add to Order"</strong>!
+            Your bag is empty. Add your custom items from the catalog!
           </p>`;
         totalEl.textContent = "₹0";
-        fileBin.innerHTML = "";
         return;
       }
 
       let total = 0;
-      fileBin.innerHTML = "";
-
       container.innerHTML = cart.map((item, idx) => {
         total += item.lineTotal;
-
-        // Attach renamed file into a hidden <input type="file"> using DataTransfer so FormSubmit emails it with the new filename
-        if (item.renamedFile) {
-          const dt = new DataTransfer();
-          dt.items.add(item.renamedFile);
-          const hiddenFileInput = document.createElement("input");
-          hiddenFileInput.type = "file";
-          hiddenFileInput.name = `Attachment_Item_${idx + 1}_${sanitizeToken(item.prodId)}`;
-          hiddenFileInput.files = dt.files;
-          fileBin.appendChild(hiddenFileInput);
-        }
-
         return `
           <div class="cart-item">
-            <button type="button" class="remove-item-btn" onclick="removeFromCart(${item.uid})" title="Remove">✕</button>
-            <div class="cart-item-title">${idx + 1}. ${item.title}</div>
-            <div class="cart-item-meta">${item.variantLabel} × ${item.qty} = <strong>₹${item.lineTotal}</strong></div>
-            <div class="cart-item-meta"><strong>Print Input:</strong> "${item.customText}"</div>
-            <div class="cart-item-file">🏷️ File: ${item.fileName}</div>
+            <button type="button" class="remove-item-btn" onclick="removeFromCart(${item.uid})">✕</button>
+            <div class="cart-item-title">${item.title}</div>
+            <div class="cart-item-meta">${item.variantLabel} × ${item.qty} — <strong>₹${item.lineTotal}</strong></div>
+            <div class="cart-item-meta">${item.customText}</div>
+            ${item.originalFile ? `<div class="cart-item-meta">📎 ${item.originalFile.name}</div>` : ""}
           </div>
         `;
       }).join("");
@@ -1048,66 +952,82 @@
       totalEl.textContent = `₹${total}`;
     }
 
-    function buildPlainTextOrderSummary() {
+    async function submitOrderSilently(event) {
+      event.preventDefault();
+
+      if (cart.length === 0) {
+        alert("Your bag is empty! Add at least one item before placing an order.");
+        return;
+      }
+
+      const submitBtn = document.getElementById("submit-btn");
+      const feedback = document.getElementById("order-feedback");
       const name = document.getElementById("cust-name").value.trim();
       const phone = document.getElementById("cust-phone").value.trim();
       const insta = document.getElementById("cust-insta").value.trim();
-      const addr = document.getElementById("cust-address").value.trim();
-      const total = cart.reduce((acc, item) => acc + item.lineTotal, 0);
+      const address = document.getElementById("cust-address").value.trim();
+      const total = cart.reduce((sum, item) => sum + item.lineTotal, 0);
 
-      let lines = [
-        `=== PRINT BUDDY INDIA - CUSTOM ORDER ===`,
-        `Customer Name: ${name}`,
-        `Phone / WhatsApp: ${phone}`,
-        `Instagram / Email: ${insta}`,
-        `Delivery Address: ${addr || "N/A"}`,
-        `Total Estimate: Rs. ${total}`,
-        `----------------------------------------`,
-        `ORDERED ITEMS & PRINT SPECIFICATIONS:`
-      ];
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Placing Order...";
+      feedback.className = "order-feedback";
 
-      cart.forEach((item, i) => {
-        lines.push(
-          `\n[Item #${i + 1}] ${item.title} - ${item.variantLabel}`,
-          `  Quantity: ${item.qty} | Subtotal: Rs. ${item.lineTotal}`,
-          `  What to Print: ${item.customText}`,
-          `  Forwarded File Name: ${item.fileName}`
+      const formData = new FormData();
+      // Target email kept completely in background logic
+      const targetEndpoint = "https://formsubmit.co/ajax/sudarshansaxena718@gmail.com";
+
+      formData.append("_subject", `New Print Buddy Order - ${name} (₹${total})`);
+      formData.append("_captcha", "false");
+      formData.append("_template", "table");
+      formData.append("Customer_Name", name);
+      formData.append("Phone_WhatsApp", phone);
+      formData.append("Instagram_Or_Email", insta);
+      formData.append("Delivery_Address", address);
+      formData.append("Total_Order_Amount", `₹${total}`);
+
+      cart.forEach((item, index) => {
+        const itemNum = index + 1;
+        let assignedFileName = "None";
+
+        if (item.originalFile) {
+          assignedFileName = buildFormattedFileName(item.prodId, item.variantLabel, item.originalFile.name, itemNum);
+          const renamedFile = new File([item.originalFile], assignedFileName, { type: item.originalFile.type });
+          formData.append(`File_Item_${itemNum}`, renamedFile, assignedFileName);
+        }
+
+        formData.append(
+          `Item_${itemNum}`,
+          `${item.title} (${item.variantLabel}) | Qty: ${item.qty} | ₹${item.lineTotal} | Instructions: ${item.customText} | File: ${assignedFileName}`
         );
       });
 
-      return lines.join("\n");
-    }
+      try {
+        const response = await fetch(targetEndpoint, {
+          method: "POST",
+          body: formData,
+          headers: {
+            "Accept": "application/json"
+          }
+        });
 
-    function prepareFormSubmission(event) {
-      if (cart.length === 0) {
-        event.preventDefault();
-        alert("Your order bag is empty! Please add at least one customized product before submitting.");
-        return false;
+        if (response.ok) {
+          cart = [];
+          renderCart();
+          document.getElementById("order-form").reset();
+          feedback.className = "order-feedback success";
+          feedback.textContent = "🎉 Order received! We'll reach out to you shortly to confirm your prints.";
+        } else {
+          throw new Error("Submission failed");
+        }
+      } catch (err) {
+        feedback.className = "order-feedback error";
+        feedback.textContent = "Something went wrong while placing your order. Please try again or DM us on @printbuddy_india.";
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Place Custom Order";
       }
-
-      refreshRenamedFiles();
-      const custName = document.getElementById("cust-name").value.trim() || "Customer";
-      document.getElementById("email-subject").value = `New Print Buddy Order from ${custName} (${cart.length} items)`;
-      document.getElementById("hidden-order-summary").value = buildPlainTextOrderSummary();
-      return true;
     }
 
-    function openMailtoFallback() {
-      if (cart.length === 0) {
-        alert("Please add at least one customized product to your order bag first!");
-        return;
-      }
-      refreshRenamedFiles();
-      const custName = document.getElementById("cust-name").value.trim() || "Customer";
-      const subject = encodeURIComponent(`Print Buddy Custom Order - ${custName}`);
-      const body = encodeURIComponent(
-        buildPlainTextOrderSummary() +
-        "\n\n(Note: If you selected design files, please attach the files referenced above to this email before hitting send!)"
-      );
-      window.location.href = `mailto:sudarshansaxena718@gmail.com?subject=${subject}&body=${body}`;
-    }
-
-    // Initialize catalog on load
     renderProducts();
   </script>
 </body>
