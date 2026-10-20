@@ -4,12 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Print Buddy — Your Ideas. Your Identity.</title>
-<meta name="description" content="Custom apparel, posters, printables, stickers, cards, notebooks and bulk orders. Your idea. Our print. Your way.">
+<meta name="description" content="Custom apparel, posters, printables, stickers, cards and notebooks. Your idea. Our print. Your way.">
 <script>
 /* set theme before first paint to avoid a flash */
 (function(){var t=null;try{t=localStorage.getItem('pb-theme')}catch(e){}
 if(!t){t=(window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light'}
-document.documentElement.setAttribute('data-theme',t)})();
+document.documentElement.setAttribute('data-theme',t);
+document.documentElement.classList.add('js')})();
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -20,6 +21,7 @@ document.documentElement.setAttribute('data-theme',t)})();
   --yellow:#ffc21a; --blue:#1d63d6; --green:#3fbf55; --line:#e4d9c0; --muted:#6b6455;
   --on-ink:#fff; --field:#fff; --solid:#121212; --hdr:rgba(247,241,227,.92); --body:#3a362d; --drophover:#fff6d6;
   --radius:18px;
+  --ease:cubic-bezier(.2,.7,.2,1);
 }
 html[data-theme="dark"]{
   color-scheme:dark;
@@ -30,7 +32,7 @@ html[data-theme="dark"]{
 *{box-sizing:border-box}
 html{scroll-behavior:smooth;scroll-padding-top:90px}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
-body{margin:0;background:var(--cream);color:var(--ink);font-family:'DM Sans',system-ui,sans-serif;line-height:1.5;-webkit-font-smoothing:antialiased;transition:background .25s,color .25s}
+body{margin:0;background:var(--cream);color:var(--ink);font-family:'DM Sans',system-ui,sans-serif;line-height:1.5;-webkit-font-smoothing:antialiased;transition:background .25s,color .25s;overflow-x:hidden}
 h1,h2,h3{font-family:'Archivo Black','DM Sans',sans-serif;line-height:1.05;margin:0;letter-spacing:-.01em}
 a{color:inherit}
 img,svg{max-width:100%}
@@ -43,9 +45,14 @@ img,svg{max-width:100%}
 .btn.sm{padding:8px 14px;font-size:14px}
 .btn[disabled]{opacity:.55;cursor:not-allowed;transform:none;box-shadow:none}
 
+/* scroll progress bar */
+.progress{position:fixed;top:0;left:0;height:4px;width:100%;background:linear-gradient(90deg,var(--red2),var(--yellow));transform-origin:0 50%;transform:scaleX(0);z-index:100;pointer-events:none}
+
 /* header */
-header.top{position:sticky;top:0;z-index:30;background:var(--hdr);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
-.top .wrap{display:flex;align-items:center;gap:18px;height:70px}
+header.top{position:sticky;top:0;z-index:30;background:var(--hdr);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);transition:box-shadow .3s}
+header.top.scrolled{box-shadow:0 6px 24px rgba(0,0,0,.12)}
+.top .wrap{display:flex;align-items:center;gap:18px;height:70px;transition:height .3s var(--ease)}
+header.top.scrolled .wrap{height:60px}
 .brand{display:flex;align-items:center;gap:10px;text-decoration:none}
 .brand svg{width:40px;height:40px}
 .brand b{font-family:'Archivo Black',sans-serif;font-size:20px;color:var(--red);letter-spacing:-.01em}
@@ -54,6 +61,8 @@ nav.links a{text-decoration:none;font-weight:700;font-size:14px;letter-spacing:.
 nav.links a:hover{color:var(--red)}
 .cartbtn{position:relative}
 .cartbtn .count{background:var(--yellow);color:#121212;border-radius:999px;min-width:22px;height:22px;display:inline-grid;place-items:center;font-size:12px;padding:0 6px}
+.cartbtn .count.bump{animation:bump .4s var(--ease)}
+@keyframes bump{40%{transform:scale(1.5)}}
 .themebtn{width:40px;height:40px;border-radius:50%;border:2px solid var(--ink);background:transparent;color:var(--ink);display:inline-grid;place-items:center;cursor:pointer;padding:0;flex:none}
 .themebtn:hover{background:var(--ink);color:var(--on-ink)}
 .themebtn svg{width:20px;height:20px}
@@ -64,10 +73,11 @@ html[data-theme="dark"] .themebtn .moon{display:none}
 
 /* hero */
 .hero{position:relative;overflow:hidden;padding:56px 0 34px;text-align:center}
-.hero .slash{position:absolute;width:90px;height:60px;pointer-events:none}
+.hero .slash{position:absolute;width:90px;height:60px;pointer-events:none;will-change:translate}
 .hero .slash.l{left:-10px;top:60px}
 .hero .slash.r{right:-14px;top:340px;transform:scaleX(-1)}
-.hero .logo-big{width:150px;margin:0 auto 6px;display:block}
+.hero .logo-big{width:150px;margin:0 auto 6px;display:block;animation:float 5s ease-in-out infinite}
+@keyframes float{50%{transform:translateY(-8px) rotate(-1.5deg)}}
 .hero .wordmark{font-family:'Archivo Black',sans-serif;color:var(--red);font-size:clamp(34px,6vw,58px);margin:0 0 18px}
 .hero h1{font-size:clamp(38px,8vw,92px)}
 .hero h1 span{color:var(--red);display:block}
@@ -79,11 +89,30 @@ html[data-theme="dark"] .themebtn .moon{display:none}
 .script:after{content:"";position:absolute;left:8%;right:0;bottom:-4px;height:3px;background:var(--red);border-radius:3px;transform:rotate(-1.5deg)}
 .lede{font-size:17px;color:var(--body);max-width:440px}
 
+/* page-load hero animation */
+.js .ha{opacity:0;animation:heroIn .9s var(--ease) forwards;animation-delay:calc(var(--i,0)*.12s + .1s)}
+@keyframes heroIn{from{opacity:0;transform:translateY(34px) scale(.98)}to{opacity:1;transform:none}}
+/* hero title: line-by-line slide up */
+.js .hero h1 .ln{display:block;opacity:0;animation:heroIn .9s var(--ease) forwards}
+
+/* scroll reveal */
+.js .rv{opacity:0;transform:translateY(34px);transition:opacity .8s var(--ease),transform .8s var(--ease);transition-delay:var(--d,0s);will-change:opacity,transform}
+.js .rv.rv-l{transform:translateX(-46px)}
+.js .rv.rv-r{transform:translateX(46px)}
+.js .rv.rv-z{transform:scale(.92) translateY(20px)}
+.js .rv.in{opacity:1;transform:none}
+@media(prefers-reduced-motion:reduce){
+  .js .rv,.js .ha,.js .hero h1 .ln{opacity:1!important;transform:none!important;animation:none!important;transition:none!important}
+  .hero .logo-big{animation:none}
+}
+
 /* trust strip */
 .strip{display:grid;grid-template-columns:repeat(5,1fr);gap:0;background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);margin:26px 0 10px;overflow:hidden}
-.strip div{padding:16px 10px;text-align:center;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;border-right:1px solid var(--line)}
+.strip div{padding:16px 10px;text-align:center;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;border-right:1px solid var(--line);transition:background .2s}
+.strip div:hover{background:var(--drophover)}
+.strip div:hover svg{transform:translateY(-4px) rotate(-4deg)}
 .strip div:last-child{border:0}
-.strip svg{width:34px;height:34px;display:block;margin:0 auto 6px}
+.strip svg{width:34px;height:34px;display:block;margin:0 auto 6px;transition:transform .25s var(--ease)}
 .strip svg [stroke="#121212"]{stroke:var(--ink)}
 .strip svg [fill="#121212"]{fill:var(--ink)}
 .strip small{display:block;font-weight:500;color:var(--muted);letter-spacing:0;text-transform:none;font-size:11px}
@@ -95,20 +124,20 @@ section{padding:56px 0}
 .sec-head h2{font-size:clamp(28px,4.5vw,44px)}
 .sec-head h2 em{font-style:normal;color:var(--red)}
 .chips{display:flex;gap:8px;flex-wrap:wrap}
-.chip{border:2px solid var(--ink);background:transparent;color:var(--ink);border-radius:999px;padding:7px 15px;font:700 13px 'DM Sans',sans-serif;cursor:pointer}
+.chip{border:2px solid var(--ink);background:transparent;color:var(--ink);border-radius:999px;padding:7px 15px;font:700 13px 'DM Sans',sans-serif;cursor:pointer;transition:background .15s,color .15s,transform .15s}
+.chip:hover{transform:translateY(-2px)}
 .chip[aria-pressed="true"]{background:var(--ink);color:var(--on-ink)}
 
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:20px}
 .card{background:var(--paper);border:2px solid var(--ink);border-radius:var(--radius);overflow:hidden;display:flex;flex-direction:column;box-shadow:5px 5px 0 var(--ink);transition:transform .12s,box-shadow .12s}
 .card:hover{transform:translate(-2px,-2px);box-shadow:8px 8px 0 var(--ink)}
-.card .art{height:170px;display:grid;place-items:center;border-bottom:2px solid var(--ink)}
-.card .art svg{height:118px;width:auto}
+.card .art{height:170px;display:grid;place-items:center;border-bottom:2px solid var(--ink);overflow:hidden}
+.card .art svg{height:118px;width:auto;transition:transform .4s var(--ease)}
+.card:hover .art svg{transform:scale(1.12) rotate(-4deg)}
 .card .body{padding:16px 18px 18px;display:flex;flex-direction:column;gap:8px;flex:1}
 .card h3{font-size:20px}
 .card p{margin:0;color:var(--muted);font-size:14px;flex:1}
-.card .price{font-family:'Archivo Black',sans-serif;font-size:20px;color:var(--red)}
-.card .price small{font:500 12px 'DM Sans',sans-serif;color:var(--muted)}
-.card .row{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:6px}
+.card .row{display:flex;justify-content:flex-end;align-items:center;gap:10px;margin-top:6px}
 
 /* steps */
 .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
@@ -151,13 +180,15 @@ html[data-theme="dark"] .msg.info{background:#3a3112;color:#f3e3a8}
 .overlay{position:fixed;inset:0;background:rgba(10,10,10,.55);z-index:50;display:none;align-items:center;justify-content:center;padding:16px}
 .overlay.open{display:flex}
 .modal{background:var(--cream);border:2px solid var(--ink);border-radius:22px;max-width:760px;width:100%;max-height:92vh;overflow:auto;position:relative;box-shadow:8px 8px 0 var(--ink)}
+.overlay.open .modal{animation:pop .35s var(--ease)}
+@keyframes pop{from{opacity:0;transform:translateY(24px) scale(.96)}to{opacity:1;transform:none}}
 .modal .mh{display:flex;gap:16px;align-items:center;padding:20px 22px;border-bottom:2px solid var(--ink)}
 .modal .mh svg{height:70px;width:auto}
 html[data-theme="dark"] .modal .mh svg{background:#f3ecdc;border-radius:14px;padding:6px}
 .modal .mh h2{font-size:26px}
 .modal .mh p{margin:4px 0 0;color:var(--muted);font-size:14px}
 .modal .mb{padding:20px 22px}
-.modal .mf{padding:16px 22px;border-top:2px solid var(--ink);display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;position:sticky;bottom:0;background:var(--cream)}
+.modal .mf{padding:16px 22px;border-top:2px solid var(--ink);display:flex;justify-content:flex-end;align-items:center;gap:12px;flex-wrap:wrap;position:sticky;bottom:0;background:var(--cream)}
 .x{position:absolute;right:12px;top:12px;width:36px;height:36px;border-radius:50%;border:2px solid var(--ink);background:var(--field);color:var(--ink);font-size:20px;cursor:pointer;line-height:1;z-index:2}
 .opt{margin-bottom:16px}
 .opts{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
@@ -169,10 +200,8 @@ html[data-theme="dark"] .modal .mh svg{background:#f3ecdc;border-radius:14px;pad
 .qty button{border:0;background:none;color:var(--ink);width:36px;height:36px;font-size:18px;font-weight:700;cursor:pointer}
 .qty input{width:48px;text-align:center;border:0;font:700 15px 'DM Sans',sans-serif;background:none;color:var(--ink)}
 .qty input::-webkit-inner-spin-button{display:none}
-.total{font-family:'Archivo Black',sans-serif;font-size:26px;color:var(--red)}
-.total small{display:block;font:500 12px 'DM Sans',sans-serif;color:var(--muted)}
 
-.drawer{position:fixed;top:0;right:0;bottom:0;width:min(480px,100%);background:var(--cream);z-index:60;border-left:2px solid var(--ink);transform:translateX(105%);transition:transform .25s;display:flex;flex-direction:column}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(480px,100%);background:var(--cream);z-index:60;border-left:2px solid var(--ink);transform:translateX(105%);transition:transform .35s var(--ease);display:flex;flex-direction:column}
 .drawer.open{transform:none}
 .drawer .dh{padding:18px 20px;border-bottom:2px solid var(--ink);display:flex;justify-content:space-between;align-items:center}
 .drawer .dh h2{font-size:24px}
@@ -184,8 +213,7 @@ html[data-theme="dark"] .modal .mh svg{background:#f3ecdc;border-radius:14px;pad
 .ci .r{display:flex;justify-content:space-between;align-items:center;margin-top:8px}
 .ci .rm{border:0;background:none;color:var(--red);font-weight:700;cursor:pointer;font-size:13px}
 .sum{border-top:2px solid var(--ink);margin-top:14px;padding-top:12px;font-size:14px}
-.sum div{display:flex;justify-content:space-between;padding:2px 0}
-.sum .g{font-family:'Archivo Black',sans-serif;font-size:20px;margin-top:6px;color:var(--red)}
+.sum div{display:flex;justify-content:space-between;padding:2px 0;font-weight:700}
 .empty{text-align:center;color:var(--muted);padding:40px 0}
 
 .toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,40px);background:var(--ink);color:var(--on-ink);padding:12px 20px;border-radius:999px;z-index:80;opacity:0;transition:.25s;font-weight:700;font-size:14px}
@@ -194,14 +222,18 @@ html[data-theme="dark"] .modal .mh svg{background:#f3ecdc;border-radius:14px;pad
 footer{background:var(--solid);color:#fff;padding:44px 0 30px}
 footer .cols{display:flex;gap:30px;flex-wrap:wrap;justify-content:space-between;align-items:center}
 footer .brand b{color:#fff}
-footer .insta{display:inline-flex;align-items:center;gap:10px;text-decoration:none;font-weight:700;border:2px solid #fff;border-radius:999px;padding:10px 18px}
+footer .insta{display:inline-flex;align-items:center;gap:10px;text-decoration:none;font-weight:700;border:2px solid #fff;border-radius:999px;padding:10px 18px;transition:background .15s,color .15s}
 footer .insta:hover{background:#fff;color:#121212}
-footer small{display:block;margin-top:26px;color:#a9a496}
+footer .bulkline{margin:30px 0 0;padding-top:22px;border-top:1px solid rgba(255,255,255,.18);text-align:center;font-size:16px;font-weight:500}
+footer .bulkline a{color:var(--yellow);font-weight:700}
+footer small{display:block;margin-top:18px;color:#a9a496;text-align:center}
 .spin{width:16px;height:16px;border:3px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:sp .7s linear infinite;display:inline-block}
 @keyframes sp{to{transform:rotate(360deg)}}
 </style>
 </head>
 <body>
+
+<div class="progress" id="progress" aria-hidden="true"></div>
 
 <!-- Shared SVG symbols -->
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
@@ -219,12 +251,11 @@ footer small{display:block;margin-top:26px;color:#a9a496}
   <symbol id="slash" viewBox="0 0 90 60"><path d="M5 30 L50 6" stroke="#d7263d" stroke-width="11" stroke-linecap="round"/><path d="M5 52 L66 20" stroke="#d7263d" stroke-width="11" stroke-linecap="round"/></symbol>
 </svg>
 
-<header class="top">
+<header class="top" id="hdr">
   <div class="wrap">
     <a class="brand" href="#top" aria-label="Print Buddy home"><svg><use href="#logo"/></svg><b>PRINT BUDDY</b></a>
     <nav class="links">
       <a href="#shop" class="hide-sm">Shop</a>
-      <a href="#bulk" class="hide-sm">Bulk</a>
       <a href="#custom" class="hide-sm">Custom</a>
       <a href="https://www.instagram.com/printbuddy_india/" target="_blank" rel="noopener" aria-label="Print Buddy on Instagram" class="hide-sm"><svg width="22" height="22" style="vertical-align:middle"><use href="#ig"/></svg></a>
       <button class="themebtn" id="themeBtn" type="button" aria-label="Switch to dark mode" title="Toggle dark mode">
@@ -238,25 +269,25 @@ footer small{display:block;margin-top:26px;color:#a9a496}
 
 <main id="top">
 <div class="hero">
-  <svg class="slash l"><use href="#slash"/></svg><svg class="slash r"><use href="#slash"/></svg>
+  <svg class="slash l" id="slashL"><use href="#slash"/></svg><svg class="slash r" id="slashR"><use href="#slash"/></svg>
   <div class="wrap">
-    <svg class="logo-big" viewBox="0 0 120 112" aria-hidden="true"><use href="#logo"/></svg>
-    <p class="wordmark">PRINT BUDDY</p>
-    <h1>Your ideas.<span>Your identity.</span></h1>
-    <p class="lead">From custom apparel to posters, printables and everything in between — we bring your ideas to life through print.</p>
-    <div class="cta">
+    <svg class="logo-big ha" style="--i:0" viewBox="0 0 120 112" aria-hidden="true"><use href="#logo"/></svg>
+    <p class="wordmark ha" style="--i:1">PRINT BUDDY</p>
+    <h1><span class="ln" style="--i:0;animation-delay:.35s;color:var(--ink)">Your ideas.</span><span class="ln" style="animation-delay:.5s">Your identity.</span></h1>
+    <p class="lead ha" style="--i:5">From custom apparel to posters, printables and everything in between — we bring your ideas to life through print.</p>
+    <div class="cta ha" style="--i:6">
       <a class="btn red" href="#shop">Start shopping</a>
       <a class="btn ghost" href="https://www.instagram.com/printbuddy_india/" target="_blank" rel="noopener"><svg width="18" height="18"><use href="#ig"/></svg> Follow @printbuddy_india</a>
     </div>
-    <div class="cats"><span>Custom apparel</span><i>●</i><span>Printables</span><i>●</i><span>Posters</span><i>●</i><span>And more</span></div>
-    <div class="script">Made for your crew.</div>
+    <div class="cats ha" style="--i:7"><span>Custom apparel</span><i>●</i><span>Printables</span><i>●</i><span>Posters</span><i>●</i><span>And more</span></div>
+    <div class="script ha" style="--i:8">Made for your crew.</div>
 
     <div class="strip" aria-label="What we print">
-      <div><svg viewBox="0 0 100 100"><path d="M22 14 L36 8 Q50 20 64 8 L78 14 L92 32 L78 40 L74 34 V88 H26 V34 L22 40 L8 32 Z" fill="#fff" stroke="#121212" stroke-width="5" stroke-linejoin="round"/><path d="M50 44l4 9 10 1-8 6 3 10-9-6-9 6 3-10-8-6 10-1z" fill="#d7263d"/></svg>Custom apparel</div>
-      <div><svg viewBox="0 0 100 100"><rect x="20" y="8" width="60" height="84" rx="5" fill="#fff" stroke="#121212" stroke-width="5"/><path d="M32 30h36M32 44h36M32 58h36M32 72h22" stroke="#121212" stroke-width="5" stroke-linecap="round"/></svg>Printables<small>Stickers, cards, notebooks &amp; more</small></div>
-      <div><svg viewBox="0 0 100 100"><rect x="18" y="8" width="64" height="84" rx="4" fill="#fff" stroke="#121212" stroke-width="5"/><rect x="26" y="16" width="48" height="68" fill="#d7263d"/><path d="M26 84 L44 52 L56 70 L64 60 L74 84z" fill="#fff"/><circle cx="36" cy="32" r="5" fill="#fff"/><circle cx="62" cy="32" r="5" fill="#fff"/></svg>Posters<small>A3, A4 &amp; custom sizes</small></div>
-      <div><svg viewBox="0 0 100 100"><circle cx="50" cy="30" r="13" fill="#d7263d"/><path d="M26 80q0-30 24-30t24 30z" fill="#d7263d"/><circle cx="20" cy="46" r="9" fill="#121212"/><path d="M4 84q0-22 16-22t16 22z" fill="#121212"/><circle cx="80" cy="46" r="9" fill="#121212"/><path d="M64 84q0-22 16-22t16 22z" fill="#121212"/></svg>Bulk orders<small>Teams, events, colleges &amp; more</small></div>
-      <div><svg viewBox="0 0 100 100"><path d="M50 12a26 26 0 0 0-14 48v10h28V60a26 26 0 0 0-14-48z" fill="#fff" stroke="#121212" stroke-width="5" stroke-linejoin="round"/><path d="M40 82h20M44 92h12" stroke="#121212" stroke-width="5" stroke-linecap="round"/><path d="M50 2v4M14 24l4 3M86 24l-4 3" stroke="#d7263d" stroke-width="5" stroke-linecap="round"/></svg>Custom requests<small>Just ask!</small></div>
+      <div class="rv" style="--d:.0s"><svg viewBox="0 0 100 100"><path d="M22 14 L36 8 Q50 20 64 8 L78 14 L92 32 L78 40 L74 34 V88 H26 V34 L22 40 L8 32 Z" fill="#fff" stroke="#121212" stroke-width="5" stroke-linejoin="round"/><path d="M50 44l4 9 10 1-8 6 3 10-9-6-9 6 3-10-8-6 10-1z" fill="#d7263d"/></svg>Custom apparel</div>
+      <div class="rv" style="--d:.08s"><svg viewBox="0 0 100 100"><rect x="20" y="8" width="60" height="84" rx="5" fill="#fff" stroke="#121212" stroke-width="5"/><path d="M32 30h36M32 44h36M32 58h36M32 72h22" stroke="#121212" stroke-width="5" stroke-linecap="round"/></svg>Printables<small>Stickers, cards, notebooks &amp; more</small></div>
+      <div class="rv" style="--d:.16s"><svg viewBox="0 0 100 100"><rect x="18" y="8" width="64" height="84" rx="4" fill="#fff" stroke="#121212" stroke-width="5"/><rect x="26" y="16" width="48" height="68" fill="#d7263d"/><path d="M26 84 L44 52 L56 70 L64 60 L74 84z" fill="#fff"/><circle cx="36" cy="32" r="5" fill="#fff"/><circle cx="62" cy="32" r="5" fill="#fff"/></svg>Posters<small>A3, A4 &amp; custom sizes</small></div>
+      <div class="rv" style="--d:.24s"><svg viewBox="0 0 100 100"><circle cx="50" cy="30" r="13" fill="#d7263d"/><path d="M26 80q0-30 24-30t24 30z" fill="#d7263d"/><circle cx="20" cy="46" r="9" fill="#121212"/><path d="M4 84q0-22 16-22t16 22z" fill="#121212"/><circle cx="80" cy="46" r="9" fill="#121212"/><path d="M64 84q0-22 16-22t16 22z" fill="#121212"/></svg>Bulk orders<small>Teams, events, colleges &amp; more</small></div>
+      <div class="rv" style="--d:.32s"><svg viewBox="0 0 100 100"><path d="M50 12a26 26 0 0 0-14 48v10h28V60a26 26 0 0 0-14-48z" fill="#fff" stroke="#121212" stroke-width="5" stroke-linejoin="round"/><path d="M40 82h20M44 92h12" stroke="#121212" stroke-width="5" stroke-linecap="round"/><path d="M50 2v4M14 24l4 3M86 24l-4 3" stroke="#d7263d" stroke-width="5" stroke-linecap="round"/></svg>Custom requests<small>Just ask!</small></div>
     </div>
   </div>
 </div>
@@ -264,8 +295,8 @@ footer small{display:block;margin-top:26px;color:#a9a496}
 <section id="shop">
   <div class="wrap">
     <div class="sec-head">
-      <h2>The <em>shop</em></h2>
-      <div class="chips" id="filters" role="group" aria-label="Filter products">
+      <h2 class="rv rv-l">The <em>shop</em></h2>
+      <div class="chips rv rv-r" id="filters" role="group" aria-label="Filter products">
         <button class="chip" data-f="all" aria-pressed="true">All</button>
         <button class="chip" data-f="apparel" aria-pressed="false">Apparel</button>
         <button class="chip" data-f="posters" aria-pressed="false">Posters</button>
@@ -273,56 +304,23 @@ footer small{display:block;margin-top:26px;color:#a9a496}
       </div>
     </div>
     <div class="grid" id="grid"></div>
-    <p class="msg info" style="margin-top:22px" id="priceNote"></p>
   </div>
 </section>
 
 <section style="padding-top:10px">
   <div class="wrap">
-    <div class="sec-head"><h2>How it <em>works</em></h2></div>
+    <div class="sec-head"><h2 class="rv">How it <em>works</em></h2></div>
     <div class="steps">
-      <div class="step"><b>1</b><h3>Pick &amp; customise</h3><p>Choose a product, size and options, then upload your design.</p></div>
-      <div class="step"><b>2</b><h3>Send your order</h3><p>Add to cart and place your order request. Your files go straight to our print desk.</p></div>
-      <div class="step"><b>3</b><h3>We confirm &amp; print</h3><p>We check your artwork, confirm the final price and payment with you, then print and deliver.</p></div>
+      <div class="step rv rv-z" style="--d:0s"><b>1</b><h3>Pick &amp; customise</h3><p>Choose a product, size and options, then upload your design.</p></div>
+      <div class="step rv rv-z" style="--d:.12s"><b>2</b><h3>Send your order</h3><p>Add to cart and place your order request. Your files go straight to our print desk.</p></div>
+      <div class="step rv rv-z" style="--d:.24s"><b>3</b><h3>We confirm &amp; print</h3><p>We check your artwork, confirm the details with you, then print and deliver.</p></div>
     </div>
   </div>
 </section>
 
-<section id="bulk">
+<section id="custom" style="padding-top:20px">
   <div class="wrap two">
-    <div>
-      <h2 style="font-size:clamp(28px,4.5vw,44px)">Bulk orders for <span style="color:var(--red)">teams, colleges &amp; events.</span></h2>
-      <p class="lede">Matching tees for the whole crew, fest posters, batch stickers, ID cards and notebooks. Tell us what you need and we'll send you a quote.</p>
-      <div class="script" style="font-size:26px">Made for your crew.</div>
-    </div>
-    <form class="panel" id="bulkForm" novalidate>
-      <div class="f2">
-        <div class="field"><label for="b_name">Your name *</label><input id="b_name" name="name" required autocomplete="name"></div>
-        <div class="field"><label for="b_phone">Phone / WhatsApp *</label><input id="b_phone" name="phone" required inputmode="tel" autocomplete="tel"></div>
-      </div>
-      <div class="f2">
-        <div class="field"><label for="b_email">Email *</label><input id="b_email" name="email" type="email" required autocomplete="email"></div>
-        <div class="field"><label for="b_org">Team / college / event</label><input id="b_org" name="organisation"></div>
-      </div>
-      <div class="f2">
-        <div class="field"><label for="b_prod">What do you need?</label>
-          <select id="b_prod" name="product"><option>T-shirts</option><option>Hoodies</option><option>Posters</option><option>Stickers</option><option>Cards / ID cards</option><option>Notebooks</option><option>A mix of things</option></select></div>
-        <div class="field"><label for="b_qty">Approx. quantity</label><input id="b_qty" name="quantity" type="number" min="10" placeholder="e.g. 50"></div>
-      </div>
-      <div class="field"><label for="b_text">Details / text to be printed *</label><textarea id="b_text" name="details" placeholder="Sizes split, colours, names/numbers, deadline…"></textarea></div>
-      <div class="field"><span class="lbl">Artwork / reference files</span>
-        <label class="drop"><input type="file" multiple data-list="bulkFiles"><b>Tap to upload files</b><span>Images, PDF, AI, PSD, SVG, ZIP</span></label>
-        <ul class="filelist" id="bulkFiles"></ul></div>
-      <input class="hp" name="_honey" tabindex="-1" autocomplete="off">
-      <button class="btn red" type="submit">Request a bulk quote</button>
-      <div id="bulkMsg"></div>
-    </form>
-  </div>
-</section>
-
-<section id="custom" style="padding-top:0">
-  <div class="wrap two">
-    <form class="panel" id="customForm" novalidate>
+    <form class="panel rv rv-l" id="customForm" novalidate>
       <div class="f2">
         <div class="field"><label for="c_name">Your name *</label><input id="c_name" name="name" required autocomplete="name"></div>
         <div class="field"><label for="c_phone">Phone / WhatsApp *</label><input id="c_phone" name="phone" required inputmode="tel" autocomplete="tel"></div>
@@ -336,9 +334,9 @@ footer small{display:block;margin-top:26px;color:#a9a496}
       <button class="btn red" type="submit">Send custom request</button>
       <div id="customMsg"></div>
     </form>
-    <div>
+    <div class="rv rv-r">
       <h2 style="font-size:clamp(28px,4.5vw,44px)">Got something else <span style="color:var(--red)">in mind?</span></h2>
-      <p class="lede">Caps, tote bags, banners, calendars, wedding stationery — if it can be printed, just ask. Send us your idea and we'll get back with options and a price.</p>
+      <p class="lede">Caps, tote bags, banners, calendars, wedding stationery — if it can be printed, just ask. Send us your idea and we'll get back to you.</p>
       <a class="btn" href="https://www.instagram.com/printbuddy_india/" target="_blank" rel="noopener"><svg width="18" height="18"><use href="#ig"/></svg> Or DM us on Instagram</a>
     </div>
   </div>
@@ -347,14 +345,15 @@ footer small{display:block;margin-top:26px;color:#a9a496}
 
 <footer>
   <div class="wrap">
-    <div class="cols">
+    <div class="cols rv">
       <div>
         <a class="brand" href="#top"><svg><use href="#logo"/></svg><b>PRINT BUDDY</b></a>
         <p style="margin:10px 0 0;color:#d9d4c7">Your idea. Our print. Your way.</p>
       </div>
       <a class="insta" href="https://www.instagram.com/printbuddy_india/" target="_blank" rel="noopener"><svg width="22" height="22"><use href="#ig"/></svg> @printbuddy_india</a>
     </div>
-    <small>#printbuddy #customprinting #customapparel #posterprinting #printables · © <span id="yr"></span> Print Buddy</small>
+    <p class="bulkline rv">Contact us for bulk orders — <a href="https://www.instagram.com/printbuddy_india/" target="_blank" rel="noopener">DM us on Instagram</a> or <a href="mailto:sudarshansaxena718@gmail.com">send an email</a>.</p>
+    <small>© <span id="yr"></span> Print Buddy</small>
   </div>
 </footer>
 
@@ -368,16 +367,15 @@ footer small{display:block;margin-top:26px;color:#a9a496}
       <div class="opt" id="pm_custom" style="display:none">
         <span class="lbl">Custom size (inches)</span>
         <div class="f2" style="margin-top:6px"><div class="field" style="margin:0"><input id="pm_w" type="number" min="3" max="60" step="0.5" placeholder="Width"></div><div class="field" style="margin:0"><input id="pm_h" type="number" min="3" max="60" step="0.5" placeholder="Height"></div></div>
-        <small style="color:var(--muted)" id="pm_customhint"></small>
       </div>
-      <div class="opt"><span class="lbl">Quantity</span><div style="margin-top:6px"><div class="qty"><button type="button" id="pm_minus" aria-label="Decrease">−</button><input id="pm_qty" type="number" min="1" max="999" value="1" aria-label="Quantity"><button type="button" id="pm_plus" aria-label="Increase">+</button></div> <small id="pm_bulkhint" style="margin-left:8px;color:var(--muted)"></small></div></div>
+      <div class="opt"><span class="lbl">Quantity</span><div style="margin-top:6px"><div class="qty"><button type="button" id="pm_minus" aria-label="Decrease">−</button><input id="pm_qty" type="number" min="1" max="999" value="1" aria-label="Quantity"><button type="button" id="pm_plus" aria-label="Increase">+</button></div></div></div>
       <div class="field"><span class="lbl">Your design / image *</span>
         <label class="drop"><input type="file" id="pm_file" multiple data-list="pm_files"><b>Tap to upload your design</b><span>PNG, JPG, PDF, AI, PSD, SVG, ZIP · keep total under <span class="maxmb"></span> MB</span></label>
         <ul class="filelist" id="pm_files"></ul></div>
-      <div class="field"><label for="pm_notes">Placement &amp; notes</label><textarea id="pm_notes" placeholder="e.g. logo on left chest, design on back, colours…"></textarea></div>
+      <div class="field"><label for="pm_notes">Custom instructions</label><textarea id="pm_notes" placeholder="e.g. logo on left chest, design on back, colours…"></textarea></div>
       <div id="pm_err"></div>
     </div>
-    <div class="mf"><div class="total" id="pm_total">₹0<small id="pm_unit"></small></div><button class="btn red" id="pm_add">Add to cart</button></div>
+    <div class="mf"><button class="btn red" id="pm_add">Add to cart</button></div>
   </div>
 </div>
 
@@ -398,10 +396,6 @@ footer small{display:block;margin-top:26px;color:#a9a496}
 var CONFIG = {
   email: 'sudarshansaxena718@gmail.com',     // where orders + files are forwarded
   instagram: 'https://www.instagram.com/printbuddy_india/',
-  shipping: 60,            // flat delivery fee (₹)
-  freeShippingOver: 999,   // free delivery above this subtotal (₹)
-  bulkQty: 10,             // quantity at which bulk discount applies
-  bulkDiscount: 0,         // 0 = no bulk discount for now (e.g. 0.10 for 10% off)
   maxTotalMB: 5            // total upload limit per submission
 };
 
@@ -416,48 +410,82 @@ var ICONS = {
 };
 var TINT = {apparel:'#ffe9a8', posters:'#cfe0ff', printables:'#d6f3da'};
 
-function sizes(){return ['S','M','L','XL','XXL'].map(function(s){return {label:s,add:0}});}
-function cols(a){return a.map(function(c){return {label:c,add:0}});}
+function L(a){return a.map(function(c){return {label:c}});}
 
 var PRODUCTS = [
- {id:'tshirt', name:'Custom T-Shirt', cat:'apparel', icon:'tshirt', base:499,
-  desc:'Soft 180 GSM cotton tee, printed with your design.',
-  options:[{key:'Size',values:sizes()},{key:'Colour',values:cols(['White','Black','Navy','Red','Grey'])},
-           {key:'Print',values:[{label:'Front only',add:0},{label:'Front + Back',add:150}]}]},
- {id:'hoodie', name:'Custom Hoodie', cat:'apparel', icon:'hoodie', base:999,
-  desc:'Cosy fleece hoodie, perfect for teams, batches and clubs.',
-  options:[{key:'Size',values:sizes()},{key:'Colour',values:cols(['Black','Navy','Grey','Maroon'])},
-           {key:'Print',values:[{label:'Front only',add:0},{label:'Front + Back',add:200}]}]},
- {id:'poster', name:'Custom Poster', cat:'posters', icon:'poster', base:0,
-  desc:'Sharp, vibrant prints on thick paper. A4, A3, A2 or any custom size.',
-  options:[{key:'Size',values:[{label:'A4',sub:'8.3×11.7 in',add:99},{label:'A3',sub:'11.7×16.5 in',add:179},{label:'A2',sub:'16.5×23.4 in',add:349},{label:'Custom size',sub:'you choose',add:0,custom:true}]},
-           {key:'Finish',values:[{label:'Matte',add:0},{label:'Gloss',add:0}]}]},
- {id:'stickers', name:'Custom Stickers', cat:'printables', icon:'stickers', base:0,
-  desc:'Die-cut vinyl stickers — waterproof, scratch-resistant, any shape.',
-  options:[{key:'Pack',values:[{label:'10 pcs',add:99},{label:'25 pcs',add:199},{label:'50 pcs',add:349},{label:'100 pcs',add:599}]},
-           {key:'Finish',values:[{label:'Glossy',add:0},{label:'Matte',add:0}]}]},
- {id:'cards', name:'Custom Cards', cat:'printables', icon:'cards', base:0,
-  desc:'Business cards, greeting cards, invites and ID cards on premium card stock.',
-  options:[{key:'Pack',values:[{label:'50 cards',add:249},{label:'100 cards',add:399},{label:'200 cards',add:649}]},
-           {key:'Finish',values:[{label:'Matte',add:0},{label:'Glossy',add:0},{label:'Soft-touch',add:100}]}]},
- {id:'notebook', name:'Custom Notebook', cat:'printables', icon:'notebook', base:0,
-  desc:'Your cover design, your name or logo — spiral-bound notebooks.',
-  options:[{key:'Size',values:[{label:'A5',add:149},{label:'A4',add:219}]},
-           {key:'Pages',values:[{label:'80 pages',add:0},{label:'120 pages',add:50},{label:'160 pages',add:100}]},
-           {key:'Ruling',values:[{label:'Ruled',add:0},{label:'Plain',add:0},{label:'Dotted',add:0}]}]}
+ {id:'tshirt', name:'Custom T-Shirt', cat:'apparel', icon:'tshirt',
+  desc:'A comfy cotton tee, printed with your design.',
+  options:[{key:'Size',values:L(['S','M','L','XL','XXL'])},{key:'Colour',values:L(['White','Black','Navy','Red','Grey'])},
+           {key:'Print',values:L(['Front only','Front + Back'])}]},
+ {id:'hoodie', name:'Custom Hoodie', cat:'apparel', icon:'hoodie',
+  desc:'Cosy hoodie, perfect for teams, batches and clubs.',
+  options:[{key:'Size',values:L(['S','M','L','XL','XXL'])},{key:'Colour',values:L(['Black','Navy','Grey','Maroon'])},
+           {key:'Print',values:L(['Front only','Front + Back'])}]},
+ {id:'poster', name:'Custom Poster', cat:'posters', icon:'poster',
+  desc:'Sharp, vibrant prints. A4, A3, A2 or any custom size.',
+  options:[{key:'Size',values:[{label:'A4',sub:'8.3×11.7 in'},{label:'A3',sub:'11.7×16.5 in'},{label:'A2',sub:'16.5×23.4 in'},{label:'Custom size',sub:'you choose',custom:true}]},
+           {key:'Finish',values:L(['Matte','Gloss'])}]},
+ {id:'stickers', name:'Custom Stickers', cat:'printables', icon:'stickers',
+  desc:'Die-cut vinyl stickers in any shape.',
+  options:[{key:'Pack',values:L(['10 pcs','25 pcs','50 pcs','100 pcs'])},
+           {key:'Finish',values:L(['Glossy','Matte'])}]},
+ {id:'cards', name:'Custom Cards', cat:'printables', icon:'cards',
+  desc:'Business cards, greeting cards, invites and ID cards.',
+  options:[{key:'Pack',values:L(['50 cards','100 cards','200 cards'])},
+           {key:'Finish',values:L(['Matte','Glossy','Soft-touch'])}]},
+ {id:'notebook', name:'Custom Notebook', cat:'printables', icon:'notebook',
+  desc:'Your cover design, your name or logo.',
+  options:[{key:'Size',values:L(['A5','A4'])},
+           {key:'Pages',values:L(['80 pages','120 pages','160 pages'])},
+           {key:'Ruling',values:L(['Ruled','Plain','Dotted'])}]}
 ];
 
 /* ================= helpers ================= */
 var $ = function(s,r){return (r||document).querySelector(s)};
 var $$ = function(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))};
 function esc(s){return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
-function inr(n){return '₹'+Math.round(n).toLocaleString('en-IN')}
 function slug(s,n){return String(s).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,n||28)||'file'}
 function toast(m){var t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(function(){t.classList.remove('show')},2400)}
 function fmtSize(b){return b>1048576?(b/1048576).toFixed(1)+' MB':Math.max(1,Math.round(b/1024))+' KB'}
-function customPrice(w,h){return Math.max(149,Math.round(w*h*0.9))}
 $$('.maxmb').forEach(function(e){e.textContent=CONFIG.maxTotalMB});
 $('#yr').textContent=new Date().getFullYear();
+
+/* ================= scroll animations ================= */
+var reduceMotion=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+var io=null;
+if('IntersectionObserver' in window && !reduceMotion){
+  io=new IntersectionObserver(function(entries){
+    entries.forEach(function(en){
+      if(!en.isIntersecting) return;
+      var el=en.target; io.unobserve(el);
+      el.classList.add('in');
+      /* once finished, drop the reveal classes so hover effects work normally */
+      setTimeout(function(){el.classList.remove('rv','rv-l','rv-r','rv-z','in');el.style.removeProperty('--d')},1300);
+    });
+  },{threshold:.12,rootMargin:'0px 0px -6% 0px'});
+}
+function observeReveals(root){
+  $$('.rv',root).forEach(function(el){
+    if(io) io.observe(el); else el.classList.add('in');
+  });
+}
+observeReveals(document);
+
+/* progress bar, sticky header shadow, hero parallax */
+var bar=$('#progress'), hdr=$('#hdr'), sl=$('#slashL'), sr=$('#slashR'), ticking=false;
+function onScroll(){
+  var y=window.pageYOffset, max=document.documentElement.scrollHeight-window.innerHeight;
+  bar.style.transform='scaleX('+(max>0?Math.min(1,y/max):0)+')';
+  hdr.classList.toggle('scrolled',y>10);
+  if(!reduceMotion && y<900){
+    sl.style.translate='0 '+(y*.25)+'px';
+    sr.style.translate='0 '+(-y*.18)+'px';
+  }
+  ticking=false;
+}
+window.addEventListener('scroll',function(){if(!ticking){ticking=true;requestAnimationFrame(onScroll)}},{passive:true});
+window.addEventListener('resize',onScroll);
+onScroll();
 
 /* ================= dark mode ================= */
 function applyTheme(t){
@@ -474,14 +502,13 @@ $('#themeBtn').addEventListener('click',function(){
 });
 
 /* ================= smooth scroll to sections ================= */
-var reduceMotion=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
 function scrollToHash(hash){
   var y=0;
   if(hash!=='#top'){
     var el=document.querySelector(hash); if(!el) return false;
-    var inner=el.querySelector('.wrap')||el;   // land on the content, not the section's empty padding
-    var hdr=$('header.top').offsetHeight;
-    y=inner.getBoundingClientRect().top+window.pageYOffset-hdr-16;
+    var inner=el.querySelector('.wrap')||el;
+    var h=$('header.top').offsetHeight;
+    y=inner.getBoundingClientRect().top+window.pageYOffset-h-16;
   }
   window.scrollTo({top:Math.max(0,y),behavior:reduceMotion?'auto':'smooth'});
   return true;
@@ -497,25 +524,17 @@ document.addEventListener('click',function(e){
 });
 
 /* ================= shop grid ================= */
-function fromPrice(p){
-  var total=p.base;
-  p.options.forEach(function(o){
-    var adds=o.values.filter(function(v){return !v.custom}).map(function(v){return v.add});
-    var nz=adds.filter(function(a){return a>0});
-    total+= nz.length===adds.length ? Math.min.apply(null,adds) : 0;
-  });
-  return total;
-}
 function renderGrid(f){
   var g=$('#grid'); g.innerHTML='';
+  var i=0;
   PRODUCTS.filter(function(p){return f==='all'||p.cat===f}).forEach(function(p){
-    var d=document.createElement('article'); d.className='card';
+    var d=document.createElement('article'); d.className='card rv rv-z'; d.style.setProperty('--d',(i++%4)*.09+'s');
     d.innerHTML='<div class="art" style="background:'+TINT[p.cat]+'">'+ICONS[p.icon]+'</div>'+
       '<div class="body"><h3>'+esc(p.name)+'</h3><p>'+esc(p.desc)+'</p>'+
-      '<div class="row"><div class="price"><small>from </small>'+inr(fromPrice(p))+'</div>'+
-      '<button class="btn red sm" data-id="'+p.id+'">Customise</button></div></div>';
+      '<div class="row"><button class="btn red sm" data-id="'+p.id+'">Customise</button></div></div>';
     g.appendChild(d);
   });
+  observeReveals(g);
 }
 $('#filters').addEventListener('click',function(e){
   var b=e.target.closest('.chip'); if(!b) return;
@@ -523,12 +542,6 @@ $('#filters').addEventListener('click',function(e){
   renderGrid(b.dataset.f);
 });
 $('#grid').addEventListener('click',function(e){var b=e.target.closest('[data-id]'); if(b) openProduct(b.dataset.id)});
-(function(){
-  var n='Prices are per item in ₹ and include printing.';
-  if(CONFIG.bulkDiscount>0) n+=' <b>'+Math.round(CONFIG.bulkDiscount*100)+'% off</b> when you order '+CONFIG.bulkQty+'+ of the same item.';
-  n+=' Delivery '+inr(CONFIG.shipping)+', <b>free above '+inr(CONFIG.freeShippingOver)+'</b>. Final price &amp; delivery are confirmed with you before printing.';
-  $('#priceNote').innerHTML=n;
-})();
 renderGrid('all');
 
 /* ================= file lists ================= */
@@ -549,8 +562,7 @@ function bindFileInput(input,listEl,store){
   });
   store.redraw=draw;
 }
-var bulkStore={files:[]}, customStore={files:[]}, pmStore={files:[]};
-bindFileInput($('input[data-list="bulkFiles"]'),$('#bulkFiles'),bulkStore);
+var customStore={files:[]}, pmStore={files:[]};
 bindFileInput($('input[data-list="customFiles"]'),$('#customFiles'),customStore);
 bindFileInput($('#pm_file'),$('#pm_files'),pmStore);
 
@@ -578,9 +590,7 @@ function buildOpts(){
     o.values.forEach(function(v,vi){
       var b=document.createElement('button'); b.type='button';
       b.setAttribute('aria-pressed',cur.sel[oi]===vi);
-      var price = (v.add>0 && cur.p.base===0 && o.values.every(function(x){return x.add>0||x.custom})) ? inr(v.add) : (v.add>0?'+'+inr(v.add):'');
-      b.innerHTML=esc(v.label)+(v.sub?'<small>'+esc(v.sub)+'</small>':'')+(price&&!v.sub?'<small>'+price+'</small>':(price&&v.sub?'<small>'+esc(v.sub)+' · '+price+'</small>':''));
-      if(v.sub&&price) b.innerHTML=esc(v.label)+'<small>'+esc(v.sub)+' · '+price+'</small>';
+      b.innerHTML=esc(v.label)+(v.sub?'<small>'+esc(v.sub)+'</small>':'');
       b.onclick=function(){cur.sel[oi]=vi; $$('button',w).forEach(function(x,i){x.setAttribute('aria-pressed',i===vi)}); recalc()};
       w.appendChild(b);
     });
@@ -588,32 +598,10 @@ function buildOpts(){
   });
 }
 function isCustomSize(){return cur.p.options.some(function(o,i){return o.values[cur.sel[i]].custom})}
-function unitPrice(){
-  var t=cur.p.base, err=null;
-  cur.p.options.forEach(function(o,i){
-    var v=o.values[cur.sel[i]];
-    if(v.custom){
-      var w=parseFloat($('#pm_w').value), h=parseFloat($('#pm_h').value);
-      if(w>0&&h>0) t+=customPrice(w,h); else err='Enter width and height';
-    } else t+=v.add;
-  });
-  return {unit:t,err:err};
-}
-function lineTotal(unit,qty){
-  var gross=unit*qty, disc=(CONFIG.bulkDiscount>0&&qty>=CONFIG.bulkQty)?gross*CONFIG.bulkDiscount:0;
-  return {gross:gross,disc:disc,net:gross-disc};
-}
 function recalc(){
   cur.qty=Math.max(1,Math.min(999,parseInt($('#pm_qty').value,10)||1));
-  var cs=isCustomSize();
-  $('#pm_custom').style.display=cs?'block':'none';
-  $('#pm_customhint').textContent=cs?'Priced at about ₹0.90 per sq. inch (minimum ₹149). Final price is confirmed before printing.':'';
-  var u=unitPrice(), lt=lineTotal(u.unit,cur.qty);
-  $('#pm_total').firstChild.nodeValue = u.err ? '—' : inr(lt.net);
-  $('#pm_unit').textContent = u.err ? u.err : inr(u.unit)+' each'+(lt.disc?' · '+Math.round(CONFIG.bulkDiscount*100)+'% bulk discount applied':'');
-  $('#pm_bulkhint').textContent = (CONFIG.bulkDiscount>0&&cur.qty<CONFIG.bulkQty) ? 'Order '+CONFIG.bulkQty+'+ to save '+Math.round(CONFIG.bulkDiscount*100)+'%' : '';
+  $('#pm_custom').style.display=isCustomSize()?'block':'none';
 }
-['pm_w','pm_h'].forEach(function(id){$('#'+id).addEventListener('input',recalc)});
 $('#pm_qty').addEventListener('input',recalc);
 $('#pm_minus').onclick=function(){$('#pm_qty').value=Math.max(1,(parseInt($('#pm_qty').value,10)||1)-1);recalc()};
 $('#pm_plus').onclick=function(){$('#pm_qty').value=Math.min(999,(parseInt($('#pm_qty').value,10)||1)+1);recalc()};
@@ -625,8 +613,10 @@ var cart=[];
 function optSummary(it){return it.opts.map(function(o){return o.key+': '+o.value}).join(', ')}
 $('#pm_add').onclick=function(){
   var err=$('#pm_err'); err.innerHTML='';
-  var u=unitPrice();
-  if(u.err){err.innerHTML='<div class="msg err">'+esc(u.err)+' for your custom size.</div>';return}
+  if(isCustomSize()){
+    var w=parseFloat($('#pm_w').value), h=parseFloat($('#pm_h').value);
+    if(!(w>0&&h>0)){err.innerHTML='<div class="msg err">Enter width and height for your custom size.</div>';return}
+  }
   var notes=$('#pm_notes').value.trim();
   if(!pmStore.files.length){err.innerHTML='<div class="msg err">Please upload your design / image.</div>';return}
   var opts=cur.p.options.map(function(o,i){
@@ -634,33 +624,25 @@ $('#pm_add').onclick=function(){
     if(v.custom) val='Custom '+$('#pm_w').value+' × '+$('#pm_h').value+' in';
     return {key:o.key,value:val};
   });
-  cart.push({pid:cur.p.id,name:cur.p.name,icon:cur.p.icon,opts:opts,unit:u.unit,qty:cur.qty,notes:notes,files:pmStore.files.slice()});
+  cart.push({pid:cur.p.id,name:cur.p.name,icon:cur.p.icon,opts:opts,qty:cur.qty,notes:notes,files:pmStore.files.slice()});
   closeProduct(); renderCart(); openCart(); toast('Added to cart');
+  var c=$('#cartCount'); c.classList.remove('bump'); void c.offsetWidth; c.classList.add('bump');
 };
-function totals(){
-  var sub=0,disc=0;
-  cart.forEach(function(it){var l=lineTotal(it.unit,it.qty); sub+=l.gross; disc+=l.disc});
-  var after=sub-disc, ship=!cart.length?0:(after>=CONFIG.freeShippingOver?0:CONFIG.shipping);
-  return {sub:sub,disc:disc,ship:ship,total:after+ship};
-}
 function renderCart(){
-  $('#cartCount').textContent=cart.reduce(function(a,i){return a+i.qty},0);
+  var totalQty=cart.reduce(function(a,i){return a+i.qty},0);
+  $('#cartCount').textContent=totalQty;
   var b=$('#cartBody');
   if(!cart.length){b.innerHTML='<div class="empty"><p>Your cart is empty.</p><a class="btn red sm" href="#shop" id="cartShop">Browse products</a></div>';return}
   var h='';
   cart.forEach(function(it,i){
-    var l=lineTotal(it.unit,it.qty);
-    h+='<div class="ci"><div class="t"><span>'+esc(it.name)+'</span><span>'+inr(l.net)+'</span></div>'+
+    h+='<div class="ci"><div class="t"><span>'+esc(it.name)+'</span><span>× '+it.qty+'</span></div>'+
       '<div class="d">'+esc(optSummary(it))+'</div>'+
+      (it.notes?'<div class="d">📝 '+esc(it.notes)+'</div>':'')+
       (it.files.length?'<div class="d">📎 '+it.files.map(function(f){return esc(f.name)}).join(', ')+'</div>':'')+
       '<div class="r"><div class="qty"><button data-a="m" data-i="'+i+'" aria-label="Decrease">−</button><input value="'+it.qty+'" readonly aria-label="Quantity"><button data-a="p" data-i="'+i+'" aria-label="Increase">+</button></div>'+
       '<button class="rm" data-a="r" data-i="'+i+'">Remove</button></div></div>';
   });
-  var t=totals();
-  h+='<div class="sum"><div><span>Subtotal</span><span>'+inr(t.sub)+'</span></div>'+
-     (t.disc?'<div><span>Bulk discount</span><span>−'+inr(t.disc)+'</span></div>':'')+
-     '<div><span>Delivery</span><span>'+(t.ship?inr(t.ship):'Free')+'</span></div>'+
-     '<div class="g"><span>Total</span><span>'+inr(t.total)+'</span></div></div>'+
+  h+='<div class="sum"><div><span>Total items</span><span>'+totalQty+'</span></div></div>'+
      '<form id="checkout" style="margin-top:18px" novalidate>'+
      '<h3 style="font-size:18px;margin-bottom:12px">Delivery details</h3>'+
      '<div class="field"><label for="o_name">Full name *</label><input id="o_name" required autocomplete="name"></div>'+
@@ -669,7 +651,7 @@ function renderCart(){
      '<div class="field"><label for="o_addr">Delivery address *</label><textarea id="o_addr" required autocomplete="street-address" placeholder="House/flat, street, area, city, PIN code"></textarea></div>'+
      '<div class="field"><label for="o_notes">Order notes</label><textarea id="o_notes" placeholder="Deadline, anything else we should know"></textarea></div>'+
      '<input class="hp" id="o_honey" tabindex="-1" autocomplete="off">'+
-     '<p class="msg info" style="margin:0 0 12px;font-size:13px">No payment is taken on this page. We’ll review your files and contact you to confirm the final price and payment.</p>'+
+     '<p class="msg info" style="margin:0 0 12px;font-size:13px">No payment is taken on this page. We’ll review your files and get in touch to confirm your order.</p>'+
      '<button class="btn red" type="submit" style="width:100%" id="placeBtn">Place order request</button><div id="orderMsg"></div></form>';
   var keep=snapshotCheckout(); b.innerHTML=h; restoreCheckout(keep);
 }
@@ -709,8 +691,7 @@ function prepareFiles(orderId,groups){
   });
   return {list:out,bytes:bytes};
 }
-/* FormSubmit's /ajax/ endpoint only reads JSON, so uploaded files showed up as names only.
-   Posting the multipart form to the normal endpoint makes it attach the real files.
+/* Posting the multipart form to FormSubmit's normal endpoint makes it attach the real files.
    (no-cors = the browser can't read the reply, so "sent" means the request left successfully.) */
 function send(opts){
   var fd=new FormData();
@@ -746,30 +727,25 @@ document.addEventListener('submit',function(e){
   var groups=cart.map(function(it,i){return {tag:'item'+(i+1)+'-'+slug(it.pid)+'-'+slug(it.opts.map(function(o){return o.value}).join('-'),22),files:it.files}});
   var prep=prepareFiles(orderId,groups), sizeErr=checkSize(prep.bytes);
   if(sizeErr){msg.innerHTML='<div class="msg err">'+esc(sizeErr)+'</div>';return}
-  var t=totals(), lines=[];
+  var lines=[];
   cart.forEach(function(it,i){
-    var l=lineTotal(it.unit,it.qty);
     var names=prep.list.filter(function(x){return x.group===groups[i]}).map(function(x){return x.name});
     lines.push('ITEM '+(i+1)+': '+it.name+'\n'+
       '  Options: '+optSummary(it)+'\n'+
-      '  Qty: '+it.qty+' × '+inr(it.unit)+' = '+inr(l.gross)+(l.disc?' (−'+inr(l.disc)+' bulk discount = '+inr(l.net)+')':'')+'\n'+
-      '  Notes: '+(it.notes||'—')+'\n'+
+      '  Qty: '+it.qty+'\n'+
+      '  Custom instructions: '+(it.notes||'—')+'\n'+
       '  Files: '+(names.length?names.join(', '):'none'));
   });
   var fields={
     'Order ID':orderId,'Customer name':name,'Phone':phone,'Email':email,'Delivery address':addr,'Order notes':notes||'—',
-    'Items':'\n'+lines.join('\n\n'),
-    'Subtotal':inr(t.sub)};
-  if(t.disc) fields['Bulk discount']=inr(t.disc);
-  fields['Delivery']=t.ship?inr(t.ship):'Free';
-  fields['TOTAL']=inr(t.total);
+    'Items':'\n'+lines.join('\n\n')};
   fields['Attached files']=prep.list.length?prep.list.map(function(x){return x.name}).join(', '):'none';
   fields['Submitted']=new Date().toLocaleString('en-IN',{timeZone:'Asia/Kolkata'})+' IST';
   setBusy(btn,true);
-  send({orderId:orderId,subject:'New Print Buddy order '+orderId+' — '+inr(t.total),fields:fields,files:prep.list,replyTo:email})
+  send({orderId:orderId,subject:'New Print Buddy order '+orderId+' — '+name,fields:fields,files:prep.list,replyTo:email})
    .then(function(){
      cart=[]; renderCart();
-     $('#cartBody').innerHTML='<div class="msg ok" style="margin-top:20px"><h3 style="font-size:20px;margin-bottom:8px">Order request sent! 🎉</h3>Your order ID is <b>'+esc(orderId)+'</b>. We’ll review your files and contact you on <b>'+esc(phone)+'</b> to confirm the price and payment.</div><p style="text-align:center"><a class="btn ghost sm" href="'+CONFIG.instagram+'" target="_blank" rel="noopener">Follow @printbuddy_india</a></p>';
+     $('#cartBody').innerHTML='<div class="msg ok" style="margin-top:20px"><h3 style="font-size:20px;margin-bottom:8px">Order request sent! 🎉</h3>Your order ID is <b>'+esc(orderId)+'</b>. We’ll review your files and contact you on <b>'+esc(phone)+'</b> to confirm your order.</div><p style="text-align:center"><a class="btn ghost sm" href="'+CONFIG.instagram+'" target="_blank" rel="noopener">Follow @printbuddy_india</a></p>';
    })
    .catch(function(err){
      setBusy(btn,false,'Place order request');
@@ -777,7 +753,7 @@ document.addEventListener('submit',function(e){
    });
 });
 
-/* ----- bulk + custom forms ----- */
+/* ----- custom request form ----- */
 function wireSimpleForm(formId,msgId,store,prefix,tagName,subject,reqKeys){
   var form=$(formId);
   form.addEventListener('submit',function(e){
@@ -808,13 +784,9 @@ function wireSimpleForm(formId,msgId,store,prefix,tagName,subject,reqKeys){
       .catch(function(err){setBusy(btn,false,label); msg.innerHTML=failHtml(err.message||'Something went wrong while sending.')});
   });
 }
-wireSimpleForm('#bulkForm','#bulkMsg',bulkStore,'PB-BULK','bulk','New BULK enquiry',['name','phone','email','details']);
 wireSimpleForm('#customForm','#customMsg',customStore,'PB-CUSTOM','custom','New CUSTOM request',['name','phone','email','request']);
 
 renderCart();
-
-/* tiny test hook (harmless in production) */
-window.__PB={prepareFiles:prepareFiles,renameFile:renameFile,newOrderId:newOrderId,CONFIG:CONFIG};
 })();
 </script>
 </body>
