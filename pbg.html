@@ -20,6 +20,7 @@
       --printer-green: #4ECB71;
       --text-muted: #5A5852;
       --border-color: #E2DEC9;
+      --spring-ease: cubic-bezier(0.22, 1, 0.36, 1);
     }
 
     html {
@@ -48,18 +49,62 @@
       font-family: 'Caveat', cursive;
     }
 
+    /* Smooth Scroll Reveal Animations */
+    .reveal {
+      opacity: 0;
+      transform: translateY(32px) scale(0.98);
+      filter: blur(4px);
+      transition: opacity 0.75s var(--spring-ease),
+                  transform 0.75s var(--spring-ease),
+                  filter 0.75s var(--spring-ease);
+      will-change: opacity, transform, filter;
+    }
+
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+      filter: blur(0);
+    }
+
+    .delay-1 { transition-delay: 0.08s; }
+    .delay-2 { transition-delay: 0.16s; }
+    .delay-3 { transition-delay: 0.24s; }
+    .delay-4 { transition-delay: 0.32s; }
+
+    @keyframes floatSlow {
+      0%, 100% { transform: translateY(0px) rotate(0deg); }
+      50% { transform: translateY(-7px) rotate(1deg); }
+    }
+
+    @keyframes badgeFloat {
+      0%, 100% { transform: rotate(-6deg) translateY(0px); }
+      50% { transform: rotate(-4deg) translateY(-4px); }
+    }
+
+    @keyframes popBump {
+      0% { transform: scale(1); }
+      40% { transform: scale(1.22); }
+      100% { transform: scale(1); }
+    }
+
+    .bump {
+      animation: popBump 0.35s var(--spring-ease);
+    }
+
     /* Sticky Navbar */
     header {
       position: sticky;
       top: 0;
       z-index: 100;
-      background-color: rgba(246, 244, 234, 0.95);
-      backdrop-filter: blur(8px);
+      background-color: rgba(246, 244, 234, 0.88);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
       border-bottom: 2px solid var(--border-color);
       padding: 0.85rem 5%;
       display: flex;
       justify-content: space-between;
       align-items: center;
+      transition: box-shadow 0.3s var(--spring-ease);
     }
 
     .nav-brand {
@@ -90,12 +135,12 @@
       border-radius: 999px;
       font-weight: 600;
       font-size: 0.88rem;
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      transition: transform 0.25s var(--spring-ease), box-shadow 0.25s var(--spring-ease);
     }
 
     .insta-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(220, 39, 67, 0.35);
+      transform: translateY(-2px) scale(1.02);
+      box-shadow: 0 6px 16px rgba(220, 39, 67, 0.35);
     }
 
     .cart-toggle-btn {
@@ -110,11 +155,12 @@
       display: flex;
       align-items: center;
       gap: 0.5rem;
-      transition: background 0.2s;
+      transition: background 0.25s, transform 0.25s var(--spring-ease);
     }
 
     .cart-toggle-btn:hover {
       background-color: var(--brand-red);
+      transform: translateY(-2px);
     }
 
     .cart-count {
@@ -123,6 +169,7 @@
       border-radius: 50%;
       padding: 0.1rem 0.45rem;
       font-size: 0.75rem;
+      display: inline-block;
     }
 
     /* Hero Section */
@@ -144,9 +191,9 @@
       border: 2px solid var(--brand-black);
       padding: 0.55rem 0.75rem;
       border-radius: 8px;
-      transform: rotate(-6deg);
       margin-bottom: 1.25rem;
       box-shadow: 3px 3px 0px var(--brand-black);
+      animation: badgeFloat 4s ease-in-out infinite;
     }
 
     .printer-logo-svg {
@@ -154,7 +201,8 @@
       height: auto;
       margin: 0 auto 0.85rem;
       display: block;
-      filter: drop-shadow(0 6px 12px rgba(0,0,0,0.08));
+      filter: drop-shadow(0 8px 16px rgba(0,0,0,0.09));
+      animation: floatSlow 5s ease-in-out infinite;
     }
 
     .hero-brand-title {
@@ -194,11 +242,12 @@
     .hero-subnav a {
       color: var(--brand-black);
       text-decoration: none;
-      transition: color 0.2s;
+      transition: color 0.2s, transform 0.2s;
     }
 
     .hero-subnav a:hover {
       color: var(--brand-red);
+      transform: translateY(-1px);
     }
 
     .hero-subnav .dot {
@@ -227,11 +276,11 @@
       padding: 0 0.5rem;
       text-decoration: none;
       color: inherit;
-      transition: transform 0.2s;
+      transition: transform 0.3s var(--spring-ease);
     }
 
     .cat-item:hover {
-      transform: translateY(-3px);
+      transform: translateY(-5px);
     }
 
     .cat-item:last-child {
@@ -242,6 +291,11 @@
       width: 40px;
       height: 40px;
       margin-bottom: 0.5rem;
+      transition: transform 0.3s var(--spring-ease);
+    }
+
+    .cat-item:hover svg {
+      transform: scale(1.1);
     }
 
     .cat-item h4 {
@@ -288,7 +342,7 @@
 
     .products-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
       gap: 1.5rem;
     }
 
@@ -301,12 +355,13 @@
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      transition: transform 0.2s ease;
+      transition: transform 0.35s var(--spring-ease), box-shadow 0.35s var(--spring-ease);
       scroll-margin-top: 90px;
     }
 
     .product-card:hover {
-      transform: translateY(-3px);
+      transform: translateY(-5px);
+      box-shadow: 8px 8px 0px var(--brand-black);
     }
 
     .product-header {
@@ -314,7 +369,7 @@
       justify-content: space-between;
       align-items: flex-start;
       gap: 0.75rem;
-      margin-bottom: 0.4rem;
+      margin-bottom: 0.35rem;
     }
 
     .product-title {
@@ -329,12 +384,13 @@
       font-weight: 900;
       color: var(--brand-red);
       white-space: nowrap;
+      transition: transform 0.2s var(--spring-ease);
     }
 
     .product-desc {
-      font-size: 0.83rem;
+      font-size: 0.82rem;
       color: var(--text-muted);
-      margin-bottom: 1rem;
+      margin-bottom: 0.9rem;
     }
 
     .controls-stack {
@@ -345,7 +401,7 @@
 
     .variant-qty-row {
       display: grid;
-      grid-template-columns: 1fr 78px;
+      grid-template-columns: 1fr 74px;
       gap: 0.5rem;
     }
 
@@ -354,14 +410,14 @@
     input[type="number"],
     textarea {
       width: 100%;
-      padding: 0.62rem 0.75rem;
+      padding: 0.6rem 0.75rem;
       border: 1.5px solid #CCC8B8;
       border-radius: 8px;
       font-family: inherit;
-      font-size: 0.86rem;
+      font-size: 0.85rem;
       background: #FAF9F5;
       color: var(--brand-black);
-      transition: border-color 0.2s, background 0.2s;
+      transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
     }
 
     select:focus,
@@ -370,31 +426,118 @@
       outline: none;
       border-color: var(--brand-red);
       background: #FFF;
+      box-shadow: 0 0 0 3px rgba(196, 22, 37, 0.1);
     }
 
-    /* Custom Reference Image Dropzone (3rd inside card) */
-    .upload-box {
+    /* Visual Color Swatches & Option Pills (Idea #2) */
+    .visual-selectors {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      background: #FAF9F4;
+      padding: 0.6rem 0.7rem;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+    }
+
+    .selector-row {
       display: flex;
       align-items: center;
-      justify-content: center;
+      justify-content: space-between;
       gap: 0.5rem;
-      border: 1.5px dashed var(--brand-black);
-      background: var(--bg-cream);
-      padding: 0.65rem 0.8rem;
-      border-radius: 8px;
-      font-size: 0.82rem;
-      font-weight: 600;
-      cursor: pointer;
-      text-align: center;
-      transition: background 0.2s, border-color 0.2s;
+      flex-wrap: wrap;
     }
 
-    .upload-box:hover {
+    .swatches-group {
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+    }
+
+    .color-swatch {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      border: 2px solid var(--brand-black);
+      cursor: pointer;
+      transition: transform 0.2s var(--spring-ease), box-shadow 0.2s;
+      position: relative;
+    }
+
+    .color-swatch:hover {
+      transform: scale(1.12);
+    }
+
+    .color-swatch.active {
+      transform: scale(1.16);
+      box-shadow: 0 0 0 2px #FFF, 0 0 0 4px var(--brand-red);
+    }
+
+    .swatch-name-tag {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--text-muted);
+    }
+
+    .pills-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+    }
+
+    .option-pill {
+      background: #FFFFFF;
+      border: 1.5px solid #CCC8B8;
+      border-radius: 6px;
+      padding: 0.22rem 0.55rem;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--brand-black);
+      cursor: pointer;
+      transition: all 0.18s var(--spring-ease);
+    }
+
+    .option-pill:hover {
+      border-color: var(--brand-black);
+      transform: translateY(-1px);
+    }
+
+    .option-pill.active {
+      background: var(--brand-black);
+      color: #FFFFFF;
+      border-color: var(--brand-black);
+      transform: translateY(-1px);
+    }
+
+    /* Reference Image Upload + Live Thumbnail Preview (Idea #1 & #3rd position) */
+    .upload-zone {
+      position: relative;
+      border: 1.5px dashed var(--brand-black);
+      background: var(--bg-cream);
+      border-radius: 8px;
+      overflow: hidden;
+      transition: background 0.25s, border-color 0.25s;
+    }
+
+    .upload-zone:hover {
       background: #EFECE0;
       border-color: var(--brand-red);
     }
 
-    .upload-box input[type="file"] {
+    .upload-label {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.65rem 0.8rem;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: center;
+    }
+
+    .upload-label input[type="file"] {
       display: none;
     }
 
@@ -402,7 +545,82 @@
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
-      max-width: 230px;
+      max-width: 220px;
+    }
+
+    /* Live Image Preview Container */
+    .live-preview-box {
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.65rem;
+      padding: 0.55rem 0.75rem;
+      background: #FFFDF8;
+      border-top: 1px solid var(--border-color);
+      animation: fadeIn 0.3s var(--spring-ease);
+    }
+
+    .live-preview-box.active {
+      display: flex;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .preview-thumb-wrap {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      min-width: 0;
+    }
+
+    .preview-thumb {
+      width: 44px;
+      height: 44px;
+      object-fit: cover;
+      border-radius: 6px;
+      border: 1.5px solid var(--brand-black);
+      background: #FFF;
+      flex-shrink: 0;
+    }
+
+    .preview-meta {
+      font-size: 0.74rem;
+      line-height: 1.3;
+      min-width: 0;
+    }
+
+    .preview-meta strong {
+      display: block;
+      color: var(--brand-black);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .preview-meta span {
+      color: #28A745;
+      font-weight: 600;
+    }
+
+    .clear-preview-btn {
+      background: #FDECEC;
+      color: var(--brand-red);
+      border: 1px solid var(--brand-red);
+      border-radius: 6px;
+      padding: 0.2rem 0.5rem;
+      font-size: 0.72rem;
+      font-weight: 700;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: background 0.2s;
+    }
+
+    .clear-preview-btn:hover {
+      background: var(--brand-red);
+      color: #FFF;
     }
 
     .add-to-cart-btn {
@@ -417,7 +635,7 @@
       font-size: 0.88rem;
       cursor: pointer;
       box-shadow: 3px 3px 0px var(--brand-black);
-      transition: all 0.15s ease;
+      transition: all 0.2s var(--spring-ease);
       margin-top: 0.85rem;
     }
 
@@ -425,6 +643,11 @@
       background: var(--brand-red-dark);
       transform: translate(1px, 1px);
       box-shadow: 2px 2px 0px var(--brand-black);
+    }
+
+    .add-to-cart-btn:active {
+      transform: translate(3px, 3px);
+      box-shadow: 0px 0px 0px var(--brand-black);
     }
 
     /* Checkout Panel */
@@ -449,9 +672,10 @@
     }
 
     .cart-items-list {
-      max-height: 260px;
+      max-height: 290px;
       overflow-y: auto;
       margin-bottom: 1rem;
+      padding-right: 2px;
     }
 
     .cart-item {
@@ -462,6 +686,25 @@
       margin-bottom: 0.6rem;
       font-size: 0.82rem;
       position: relative;
+      display: flex;
+      gap: 0.65rem;
+      align-items: flex-start;
+      animation: fadeIn 0.3s var(--spring-ease);
+    }
+
+    .cart-item-thumb {
+      width: 42px;
+      height: 42px;
+      border-radius: 6px;
+      object-fit: cover;
+      border: 1.5px solid var(--brand-black);
+      background: #FFF;
+      flex-shrink: 0;
+    }
+
+    .cart-item-body {
+      flex: 1;
+      min-width: 0;
     }
 
     .cart-item-title {
@@ -470,16 +713,29 @@
       padding-right: 1.2rem;
     }
 
+    .cart-item-specs {
+      display: inline-block;
+      background: #FFF;
+      border: 1px solid #DCD7C4;
+      border-radius: 4px;
+      padding: 0.1rem 0.4rem;
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: var(--brand-black);
+      margin-top: 0.2rem;
+    }
+
     .cart-item-meta {
       color: var(--text-muted);
       margin-top: 0.2rem;
       font-size: 0.76rem;
+      word-break: break-word;
     }
 
     .remove-item-btn {
       position: absolute;
-      top: 0.5rem;
-      right: 0.55rem;
+      top: 0.45rem;
+      right: 0.5rem;
       background: none;
       border: none;
       color: var(--brand-red);
@@ -518,11 +774,12 @@
       font-weight: 800;
       font-size: 0.92rem;
       cursor: pointer;
-      transition: background 0.2s, transform 0.15s;
+      transition: background 0.25s, transform 0.2s var(--spring-ease);
     }
 
     .submit-order-btn:hover:not(:disabled) {
       background: var(--brand-red);
+      transform: translateY(-2px);
     }
 
     .submit-order-btn:disabled {
@@ -602,14 +859,14 @@
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
         @printbuddy_india
       </a>
-      <a href="#checkout-section" class="cart-toggle-btn">
+      <a href="#checkout-section" class="cart-toggle-btn" id="bag-nav-btn">
         🛒 Bag <span class="cart-count" id="nav-cart-count">0</span>
       </a>
     </div>
   </header>
 
   <!-- Hero Section -->
-  <section class="hero">
+  <section class="hero reveal">
     <div class="hero-badge-top-left">
       GOOD<br>THINGS<br>TAKE<br>TIME <span style="color: var(--brand-red);">☺</span>
     </div>
@@ -684,18 +941,14 @@
     <div class="products-grid" id="products-grid"></div>
 
     <!-- Bag & Checkout Sidebar -->
-    <aside class="checkout-panel" id="checkout-section">
+    <aside class="checkout-panel reveal delay-2" id="checkout-section">
       <div class="checkout-header">
         <h3>🛍️ Your Bag</h3>
         <span id="sidebar-item-count" style="font-size: 0.8rem; font-weight: 700; color: var(--brand-red);">0 Items</span>
       </div>
 
       <form id="order-form" onsubmit="submitOrderSilently(event)">
-        <div class="cart-items-list" id="cart-items-container">
-          <p style="color: var(--text-muted); font-size: 0.85rem; text-align: center; padding: 1.5rem 0;">
-            Your bag is empty. Add your custom items from the catalog!
-          </p>
-        </div>
+        <div class="cart-items-list" id="cart-items-container"></div>
 
         <div class="cart-total-row">
           <span>Total</span>
@@ -703,10 +956,10 @@
         </div>
 
         <div class="customer-inputs">
-          <input type="text" id="cust-name" placeholder="Your Full Name *" required>
-          <input type="text" id="cust-phone" placeholder="Phone / WhatsApp Number *" required>
-          <input type="text" id="cust-insta" placeholder="Instagram Handle or Email *" required>
-          <textarea id="cust-address" rows="2" placeholder="Delivery Address *" required></textarea>
+          <input type="text" id="cust-name" placeholder="Your Full Name *" required oninput="saveCustomerDraft()">
+          <input type="text" id="cust-phone" placeholder="Phone / WhatsApp Number *" required oninput="saveCustomerDraft()">
+          <input type="text" id="cust-insta" placeholder="Instagram Handle or Email *" required oninput="saveCustomerDraft()">
+          <textarea id="cust-address" rows="2" placeholder="Delivery Address *" required oninput="saveCustomerDraft()"></textarea>
         </div>
 
         <button type="submit" class="submit-order-btn" id="submit-btn">
@@ -719,7 +972,7 @@
   </main>
 
   <!-- Footer -->
-  <footer>
+  <footer class="reveal">
     <div class="footer-stamp">CREATE • PRINT • REPEAT</div>
     <h3 style="margin-bottom: 0.5rem;">PRINT BUDDY</h3>
     <p style="color: #B8B5A8; font-size: 0.9rem; margin-bottom: 1.25rem;">
@@ -742,7 +995,15 @@
           { label: "Heavyweight Pullover Hoodie", price: 999 },
           { label: "Custom Canvas Tote Bag", price: 249 }
         ],
-        placeholder: "Custom instructions (e.g., color, size S-XXL, front/back placement, text to print)..."
+        colors: [
+          { name: "Pitch Black", hex: "#181818" },
+          { name: "Crisp White", hex: "#FFFFFF" },
+          { name: "Vintage Cream", hex: "#F3EFE0" },
+          { name: "Crimson Red", hex: "#C41625" },
+          { name: "Navy Blue", hex: "#1E2D4A" }
+        ],
+        pills: ["S", "M", "L", "XL", "XXL"],
+        placeholder: "Custom instructions (e.g., front chest logo, full back print, text to print)..."
       },
       {
         id: "posters",
@@ -755,7 +1016,8 @@
           { label: "Set of 5 A3 Posters", price: 549 },
           { label: "Custom Giant Poster (24 × 36 in)", price: 399 }
         ],
-        placeholder: "Custom instructions (e.g., matte/glossy finish, white border or borderless)..."
+        pills: ["Matte Finish", "Glossy Finish", "Borderless", "White Border"],
+        placeholder: "Custom instructions (e.g., portrait/landscape, collage theme, drive link)..."
       },
       {
         id: "printables",
@@ -768,7 +1030,8 @@
           { label: "Custom Polaroid Prints (Set of 20)", price: 199 },
           { label: "Custom Cards (Pack of 10)", price: 229 }
         ],
-        placeholder: "Custom instructions (e.g., glossy/holographic finish, cover text, cut style)..."
+        pills: ["Glossy Vinyl", "Matte Vinyl", "Holographic", "Ruled Pages", "Blank Pages"],
+        placeholder: "Custom instructions (e.g., polaroid caption text, notebook name, cut style)..."
       },
       {
         id: "bulk_orders",
@@ -780,7 +1043,14 @@
           { label: "Event ID Cards + Posters Pack (25 pcs)", price: 2499 },
           { label: "Startup / Team Swag Kit (10 Kits)", price: 6499 }
         ],
-        placeholder: "Custom instructions (e.g., size breakdown, team names/numbers, event deadline)..."
+        colors: [
+          { name: "Pitch Black", hex: "#181818" },
+          { name: "Crisp White", hex: "#FFFFFF" },
+          { name: "Vintage Cream", hex: "#F3EFE0" },
+          { name: "Navy Blue", hex: "#1E2D4A" }
+        ],
+        pills: ["Mixed Sizes (S-XXL)", "Front + Back Print", "Individual Names"],
+        placeholder: "Custom instructions (e.g., size breakdown like 3S/4M/3L, college/event name)..."
       },
       {
         id: "custom_requests",
@@ -792,16 +1062,38 @@
           { label: "Acrylic Keychains (Pack of 5)", price: 299 },
           { label: "Special Custom Print Request", price: 199 }
         ],
+        pills: ["Glossy Finish", "Matte Finish", "Double-Sided", "Gift Wrapped"],
         placeholder: "Describe what you want printed, dimensions, material & any details..."
       }
     ];
 
+    const STORAGE_KEY = "printbuddy_saved_bag_v2";
+    const DRAFT_KEY = "printbuddy_customer_draft_v2";
+
     let cart = [];
+    // Track selected color & pill per product card
+    let cardSelections = {};
+    // Track current preview dataURL per card
+    let cardPreviews = {};
+
+    function initSelections() {
+      PRODUCTS.forEach(prod => {
+        cardSelections[prod.id] = {
+          color: prod.colors ? prod.colors[0].name : null,
+          pill: prod.pills ? prod.pills[0] : null
+        };
+      });
+    }
 
     function renderProducts() {
       const grid = document.getElementById("products-grid");
-      grid.innerHTML = PRODUCTS.map(prod => `
-        <div class="product-card" id="card-${prod.id}">
+      grid.innerHTML = PRODUCTS.map((prod, idx) => {
+        const delayClass = `delay-${(idx % 4) + 1}`;
+        const hasColors = Array.isArray(prod.colors) && prod.colors.length > 0;
+        const hasPills = Array.isArray(prod.pills) && prod.pills.length > 0;
+
+        return `
+        <div class="product-card reveal ${delayClass}" id="card-${prod.id}">
           <div>
             <div class="product-header">
               <h3 class="product-title">${prod.title}</h3>
@@ -810,22 +1102,67 @@
             <p class="product-desc">${prod.desc}</p>
 
             <div class="controls-stack">
-              <!-- 1 & 2: Variant & Quantity (no numbered labels) -->
+              <!-- Variant & Quantity -->
               <div class="variant-qty-row">
                 <select id="variant-${prod.id}" onchange="updateCardPrice('${prod.id}')">
                   ${prod.options.map((opt, i) => `<option value="${i}">${opt.label} — ₹${opt.price}</option>`).join("")}
                 </select>
-                <input type="number" id="qty-${prod.id}" value="1" min="1" max="500" title="Quantity" onchange="updateCardPrice('${prod.id}')">
+                <input type="number" id="qty-${prod.id}" value="1" min="1" max="500" title="Quantity" oninput="updateCardPrice('${prod.id}')">
               </div>
 
-              <!-- 3: Reference Image Upload Third -->
-              <label class="upload-box">
-                <span>📎</span>
-                <span class="upload-status" id="file-label-${prod.id}">Upload Reference Image</span>
-                <input type="file" id="file-${prod.id}" accept="image/*,.pdf,.psd,.ai,.svg,.zip" onchange="handleFileSelect('${prod.id}')">
-              </label>
+              <!-- Visual Color Swatches & Quick Option Pills -->
+              ${(hasColors || hasPills) ? `
+                <div class="visual-selectors">
+                  ${hasColors ? `
+                    <div class="selector-row">
+                      <div class="swatches-group" id="swatches-${prod.id}">
+                        ${prod.colors.map((c, cIdx) => `
+                          <button type="button"
+                            class="color-swatch ${cIdx === 0 ? 'active' : ''}"
+                            style="background-color: ${c.hex};"
+                            title="${c.name}"
+                            onclick="selectColor('${prod.id}', '${c.name}', this)">
+                          </button>
+                        `).join("")}
+                      </div>
+                      <span class="swatch-name-tag" id="color-label-${prod.id}">${prod.colors[0].name}</span>
+                    </div>
+                  ` : ""}
 
-              <!-- 4: Custom Instructions Last -->
+                  ${hasPills ? `
+                    <div class="pills-group" id="pills-${prod.id}">
+                      ${prod.pills.map((p, pIdx) => `
+                        <button type="button"
+                          class="option-pill ${pIdx === 0 ? 'active' : ''}"
+                          onclick="selectPill('${prod.id}', '${p}', this)">
+                          ${p}
+                        </button>
+                      `).join("")}
+                    </div>
+                  ` : ""}
+                </div>
+              ` : ""}
+
+              <!-- 3rd: Reference Image Upload + Instant Live Thumbnail Preview -->
+              <div class="upload-zone" id="upload-zone-${prod.id}">
+                <label class="upload-label">
+                  <span>📎</span>
+                  <span class="upload-status" id="file-label-${prod.id}">Upload Reference Image</span>
+                  <input type="file" id="file-${prod.id}" accept="image/*,.pdf,.psd,.ai,.svg,.zip" onchange="handleFileSelect('${prod.id}')">
+                </label>
+                <div class="live-preview-box" id="preview-box-${prod.id}">
+                  <div class="preview-thumb-wrap">
+                    <img src="" alt="Preview" class="preview-thumb" id="preview-img-${prod.id}">
+                    <div class="preview-meta">
+                      <strong id="preview-name-${prod.id}">design.png</strong>
+                      <span>✓ Ready to print</span>
+                    </div>
+                  </div>
+                  <button type="button" class="clear-preview-btn" onclick="clearSelectedFile('${prod.id}')">✕</button>
+                </div>
+              </div>
+
+              <!-- 4th/Last: Custom Instructions -->
               <textarea id="text-${prod.id}" rows="2" placeholder="${prod.placeholder}"></textarea>
             </div>
           </div>
@@ -834,17 +1171,64 @@
             Add to Bag
           </button>
         </div>
-      `).join("");
+      `}).join("");
+    }
+
+    function selectColor(prodId, colorName, btnEl) {
+      cardSelections[prodId].color = colorName;
+      const group = document.getElementById(`swatches-${prodId}`);
+      group.querySelectorAll(".color-swatch").forEach(b => b.classList.remove("active"));
+      btnEl.classList.add("active");
+      document.getElementById(`color-label-${prodId}`).textContent = colorName;
+    }
+
+    function selectPill(prodId, pillValue, btnEl) {
+      cardSelections[prodId].pill = pillValue;
+      const group = document.getElementById(`pills-${prodId}`);
+      group.querySelectorAll(".option-pill").forEach(b => b.classList.remove("active"));
+      btnEl.classList.add("active");
     }
 
     function handleFileSelect(prodId) {
       const fileInput = document.getElementById(`file-${prodId}`);
       const labelEl = document.getElementById(`file-label-${prodId}`);
+      const previewBox = document.getElementById(`preview-box-${prodId}`);
+      const previewImg = document.getElementById(`preview-img-${prodId}`);
+      const previewName = document.getElementById(`preview-name-${prodId}`);
+
       if (fileInput.files && fileInput.files[0]) {
-        labelEl.textContent = fileInput.files[0].name;
+        const file = fileInput.files[0];
+        labelEl.textContent = "Change Reference Image";
+        previewName.textContent = file.name;
+
+        if (file.type.startsWith("image/")) {
+          const reader = new FileReader();
+          reader.onload = function(e) {
+            cardPreviews[prodId] = e.target.result;
+            previewImg.src = e.target.result;
+            previewBox.classList.add("active");
+          };
+          reader.readAsDataURL(file);
+        } else {
+          // Non-image file (e.g. PDF/PSD/ZIP) icon placeholder
+          const svgPlaceholder = "data:image/svg+xml;utf8," + encodeURIComponent(
+            `<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="#C41625" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>`
+          );
+          cardPreviews[prodId] = svgPlaceholder;
+          previewImg.src = svgPlaceholder;
+          previewBox.classList.add("active");
+        }
       } else {
-        labelEl.textContent = "Upload Reference Image";
+        clearSelectedFile(prodId);
       }
+    }
+
+    function clearSelectedFile(prodId) {
+      const fileInput = document.getElementById(`file-${prodId}`);
+      fileInput.value = "";
+      delete cardPreviews[prodId];
+      document.getElementById(`file-label-${prodId}`).textContent = "Upload Reference Image";
+      document.getElementById(`preview-box-${prodId}`).classList.remove("active");
     }
 
     function updateCardPrice(prodId) {
@@ -852,7 +1236,11 @@
       const variantIdx = document.getElementById(`variant-${prodId}`).value;
       const qty = Math.max(1, parseInt(document.getElementById(`qty-${prodId}`).value || "1", 10));
       const unitPrice = prod.options[variantIdx].price;
-      document.getElementById(`price-display-${prodId}`).textContent = `₹${unitPrice * qty}`;
+      const priceEl = document.getElementById(`price-display-${prodId}`);
+      priceEl.textContent = `₹${unitPrice * qty}`;
+      priceEl.classList.remove("bump");
+      void priceEl.offsetWidth;
+      priceEl.classList.add("bump");
     }
 
     function sanitizeToken(str) {
@@ -863,13 +1251,99 @@
         .slice(0, 30);
     }
 
-    function buildFormattedFileName(prodId, variantLabel, originalName, index) {
+    function buildFormattedFileName(prodId, variantLabel, specsLabel, originalName, index) {
       const custName = sanitizeToken(document.getElementById("cust-name")?.value || "Customer");
       const cleanProd = sanitizeToken(prodId.toUpperCase());
       const cleanVariant = sanitizeToken(variantLabel);
+      const cleanSpecs = sanitizeToken(specsLabel);
       const ext = originalName.includes(".") ? originalName.substring(originalName.lastIndexOf(".")) : "";
       const base = sanitizeToken(originalName.replace(/\.[^/.]+$/, ""));
-      return `PrintBuddy_Item${index}_${cleanProd}_${cleanVariant}_${custName}_${base}${ext}`;
+      return `PrintBuddy_Item${index}_${cleanProd}_${cleanVariant}_${cleanSpecs}_${custName}_${base}${ext}`;
+    }
+
+    // Convert DataURL back into a File object if restored from localStorage
+    function dataURLtoFile(dataurl, filename) {
+      try {
+        const arr = dataurl.split(",");
+        const mimeMatch = arr[0].match(/:(.*?);/);
+        if (!mimeMatch) return null;
+        const mime = mimeMatch[1];
+        const bstr = atob(arr[1]);
+        let n = bstr.length;
+        const u8arr = new Uint8Array(n);
+        while (n--) {
+          u8arr[n] = bstr.charCodeAt(n);
+        }
+        return new File([u8arr], filename, { type: mime });
+      } catch (e) {
+        return null;
+      }
+    }
+
+    function saveCartToLocalStorage() {
+      try {
+        const serializable = cart.map(item => ({
+          uid: item.uid,
+          prodId: item.prodId,
+          title: item.title,
+          variantLabel: item.variantLabel,
+          specsLabel: item.specsLabel,
+          qty: item.qty,
+          lineTotal: item.lineTotal,
+          customText: item.customText,
+          originalFileName: item.originalFileName || null,
+          previewDataUrl: item.previewDataUrl || null
+        }));
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(serializable));
+      } catch (e) {
+        // Ignore storage quota warnings for huge files
+      }
+    }
+
+    function loadCartFromLocalStorage() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return;
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) {
+          cart = parsed.map(item => {
+            let restoredFile = null;
+            if (item.previewDataUrl && item.previewDataUrl.startsWith("data:image/") && item.originalFileName) {
+              restoredFile = dataURLtoFile(item.previewDataUrl, item.originalFileName);
+            }
+            return {
+              ...item,
+              originalFile: restoredFile
+            };
+          });
+        }
+      } catch (e) {
+        cart = [];
+      }
+    }
+
+    function saveCustomerDraft() {
+      try {
+        const draft = {
+          name: document.getElementById("cust-name").value,
+          phone: document.getElementById("cust-phone").value,
+          insta: document.getElementById("cust-insta").value,
+          address: document.getElementById("cust-address").value
+        };
+        localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+      } catch (e) {}
+    }
+
+    function loadCustomerDraft() {
+      try {
+        const raw = localStorage.getItem(DRAFT_KEY);
+        if (!raw) return;
+        const draft = JSON.parse(raw);
+        if (draft.name) document.getElementById("cust-name").value = draft.name;
+        if (draft.phone) document.getElementById("cust-phone").value = draft.phone;
+        if (draft.insta) document.getElementById("cust-insta").value = draft.insta;
+        if (draft.address) document.getElementById("cust-address").value = draft.address;
+      } catch (e) {}
     }
 
     function addToCart(prodId) {
@@ -886,34 +1360,49 @@
         return;
       }
 
+      const sel = cardSelections[prodId] || {};
+      const specsParts = [];
+      if (sel.color) specsParts.push(sel.color);
+      if (sel.pill) specsParts.push(sel.pill);
+      const specsLabel = specsParts.join(" • ");
+
       cart.push({
         uid: Date.now() + Math.random(),
         prodId: prod.id,
         title: prod.title,
         variantLabel: variant.label,
+        specsLabel: specsLabel,
         qty: qty,
         lineTotal: variant.price * qty,
         customText: customText || "Refer to uploaded image",
-        originalFile: selectedFile
+        originalFile: selectedFile,
+        originalFileName: selectedFile ? selectedFile.name : null,
+        previewDataUrl: cardPreviews[prodId] || null
       });
 
-      // Reset card fields
+      // Reset card inputs
       document.getElementById(`text-${prodId}`).value = "";
-      fileInput.value = "";
-      document.getElementById(`file-label-${prodId}`).textContent = "Upload Reference Image";
+      clearSelectedFile(prodId);
       document.getElementById(`qty-${prodId}`).value = "1";
       updateCardPrice(prodId);
 
-      // Hide any previous feedback banner when modifying bag
+      // Animate Bag button in navbar
+      const bagBtn = document.getElementById("bag-nav-btn");
+      bagBtn.classList.remove("bump");
+      void bagBtn.offsetWidth;
+      bagBtn.classList.add("bump");
+
       const fb = document.getElementById("order-feedback");
       fb.className = "order-feedback";
       fb.textContent = "";
 
+      saveCartToLocalStorage();
       renderCart();
     }
 
     function removeFromCart(uid) {
       cart = cart.filter(item => item.uid !== uid);
+      saveCartToLocalStorage();
       renderCart();
     }
 
@@ -936,15 +1425,18 @@
       }
 
       let total = 0;
-      container.innerHTML = cart.map((item, idx) => {
+      container.innerHTML = cart.map(item => {
         total += item.lineTotal;
         return `
           <div class="cart-item">
-            <button type="button" class="remove-item-btn" onclick="removeFromCart(${item.uid})">✕</button>
-            <div class="cart-item-title">${item.title}</div>
-            <div class="cart-item-meta">${item.variantLabel} × ${item.qty} — <strong>₹${item.lineTotal}</strong></div>
-            <div class="cart-item-meta">${item.customText}</div>
-            ${item.originalFile ? `<div class="cart-item-meta">📎 ${item.originalFile.name}</div>` : ""}
+            ${item.previewDataUrl ? `<img src="${item.previewDataUrl}" class="cart-item-thumb" alt="Thumb">` : ""}
+            <div class="cart-item-body">
+              <button type="button" class="remove-item-btn" onclick="removeFromCart(${item.uid})">✕</button>
+              <div class="cart-item-title">${item.title}</div>
+              <div class="cart-item-meta">${item.variantLabel} × ${item.qty} — <strong>₹${item.lineTotal}</strong></div>
+              ${item.specsLabel ? `<div class="cart-item-specs">${item.specsLabel}</div>` : ""}
+              <div class="cart-item-meta">${item.customText}</div>
+            </div>
           </div>
         `;
       }).join("");
@@ -973,7 +1465,6 @@
       feedback.className = "order-feedback";
 
       const formData = new FormData();
-      // Target email kept completely in background logic
       const targetEndpoint = "https://formsubmit.co/ajax/sudarshansaxena718@gmail.com";
 
       formData.append("_subject", `New Print Buddy Order - ${name} (₹${total})`);
@@ -990,14 +1481,20 @@
         let assignedFileName = "None";
 
         if (item.originalFile) {
-          assignedFileName = buildFormattedFileName(item.prodId, item.variantLabel, item.originalFile.name, itemNum);
+          assignedFileName = buildFormattedFileName(
+            item.prodId,
+            item.variantLabel,
+            item.specsLabel || "Standard",
+            item.originalFileName || item.originalFile.name,
+            itemNum
+          );
           const renamedFile = new File([item.originalFile], assignedFileName, { type: item.originalFile.type });
           formData.append(`File_Item_${itemNum}`, renamedFile, assignedFileName);
         }
 
         formData.append(
           `Item_${itemNum}`,
-          `${item.title} (${item.variantLabel}) | Qty: ${item.qty} | ₹${item.lineTotal} | Instructions: ${item.customText} | File: ${assignedFileName}`
+          `${item.title} (${item.variantLabel}) | Specs: ${item.specsLabel || "N/A"} | Qty: ${item.qty} | ₹${item.lineTotal} | Instructions: ${item.customText} | File: ${assignedFileName}`
         );
       });
 
@@ -1012,8 +1509,10 @@
 
         if (response.ok) {
           cart = [];
+          localStorage.removeItem(STORAGE_KEY);
           renderCart();
           document.getElementById("order-form").reset();
+          localStorage.removeItem(DRAFT_KEY);
           feedback.className = "order-feedback success";
           feedback.textContent = "🎉 Order received! We'll reach out to you shortly to confirm your prints.";
         } else {
@@ -1028,7 +1527,26 @@
       }
     }
 
+    // Smooth Scroll Reveal Observer
+    function initScrollAnimations() {
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("visible");
+          }
+        });
+      }, { threshold: 0.12 });
+
+      document.querySelectorAll(".reveal").forEach(el => observer.observe(el));
+    }
+
+    // Initialize everything
+    initSelections();
     renderProducts();
+    loadCartFromLocalStorage();
+    loadCustomerDraft();
+    renderCart();
+    initScrollAnimations();
   </script>
 </body>
 </html>
