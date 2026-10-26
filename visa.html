@@ -1,1 +1,1868 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>World Financial Football</title>
+<style>
+/* =====================================================================
+   WORLD FINANCIAL FOOTBALL - PART 1 OF 3  (foundation, menus, setup, settings)
+   Theme: deep navy + gold + pitch green. No emoji or images are required,
+   so it renders on old browsers / old Windows too.
+   ===================================================================== */
+:root{
+  --navy:#0a1233; --navy2:#111b4a; --blue:#1a1f71; --blue2:#2a35a8;
+  --gold:#f7b600; --gold2:#ffd35a; --green:#1f9d4a; --pitch:#2e7d32;
+  --red:#e0344a; --ink:#eef1ff; --mute:#9aa6d6; --card:rgba(255,255,255,.06);
+  --line:rgba(255,255,255,.12); --radius:14px;
+  --font:"Trebuchet MS","Segoe UI",Tahoma,Arial,sans-serif;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--navy);color:var(--ink);font-family:var(--font);overflow:hidden}
+button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
+#app{position:fixed;left:0;top:0;right:0;bottom:0;
+  background:radial-gradient(1200px 700px at 50% -10%,#27348f 0%,var(--navy2) 45%,var(--navy) 100%)}
+.screen{position:absolute;left:0;top:0;right:0;bottom:0;display:none;overflow-y:auto;overflow-x:hidden;padding:18px 16px 40px}
+.screen.active{display:block;animation:fadein .25s ease}
+@keyframes fadein{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.wrap{max-width:880px;margin:0 auto}
+h1,h2,h3{margin:0}
+.muted{color:var(--mute)}
+.small{font-size:.85rem}
 
+/* buttons */
+.btn{display:inline-block;border:0;border-radius:12px;padding:12px 20px;font-weight:700;cursor:pointer;
+  background:var(--card);border:1px solid var(--line);transition:transform .08s,background .15s,opacity .15s}
+.btn:hover{background:rgba(255,255,255,.12)}
+.btn:active{transform:scale(.97)}
+.btn[disabled]{opacity:.4;cursor:not-allowed}
+.btn.primary{background:linear-gradient(180deg,var(--gold2),var(--gold));color:#2b2100;border-color:#c99100;
+  box-shadow:0 4px 0 #a97800,0 8px 18px rgba(0,0,0,.35)}
+.btn.primary:hover{filter:brightness(1.06)}
+.btn.primary:active{box-shadow:0 1px 0 #a97800;transform:translateY(3px)}
+.btn.danger{background:rgba(224,52,74,.18);border-color:rgba(224,52,74,.6)}
+.btn.small{padding:7px 12px;font-size:.85rem;border-radius:9px}
+.btn.big{padding:16px 26px;font-size:1.15rem}
+.row{display:flex;flex-wrap:wrap;align-items:center}
+.row.gap>*{margin:0 8px 8px 0}
+.spread{justify-content:space-between}
+.grow{flex:1 1 auto}
+
+/* cards */
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px;margin-bottom:14px}
+.card h3{font-size:.8rem;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:10px}
+.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.topbar h2{font-size:1.35rem}
+
+/* menu */
+.hero{text-align:center;padding:34px 0 18px}
+.logo-ball{width:92px;height:92px;border-radius:50%;margin:0 auto 14px;position:relative;
+  background:radial-gradient(circle at 35% 30%,#fff 0%,#e9e9e9 55%,#bdbdbd 100%);
+  box-shadow:0 10px 30px rgba(0,0,0,.5);animation:bob 2.4s ease-in-out infinite}
+.logo-ball:before,.logo-ball:after{content:"";position:absolute;background:#222;opacity:.85}
+.logo-ball:before{left:50%;top:50%;width:30px;height:30px;margin:-15px 0 0 -15px;
+  clip-path:polygon(50% 0,100% 38%,82% 100%,18% 100%,0 38%)}
+.logo-ball:after{left:6px;top:20px;width:16px;height:16px;border-radius:50%;box-shadow:58px 4px 0 #222,28px 56px 0 #222}
+@keyframes bob{50%{transform:translateY(-8px)}}
+.title{font-size:2.3rem;font-weight:900;letter-spacing:.03em;text-shadow:0 3px 0 rgba(0,0,0,.35)}
+.title span{color:var(--gold)}
+.tagline{color:var(--mute);margin-top:6px}
+.menu-list{max-width:420px;margin:22px auto 0}
+.menu-list .btn{display:block;width:100%;margin-bottom:12px;text-align:center}
+.warn{background:rgba(247,182,0,.12);border:1px solid rgba(247,182,0,.5);color:var(--gold2);
+  border-radius:12px;padding:10px 14px;margin:0 auto 6px;max-width:420px;font-size:.9rem;text-align:center}
+
+/* segmented control */
+.seg{display:flex;flex-wrap:wrap}
+.seg button{flex:1 1 auto;min-width:90px;margin:0 6px 6px 0;padding:10px 12px;border-radius:10px;cursor:pointer;
+  background:rgba(255,255,255,.05);border:1px solid var(--line);font-weight:700;text-align:center}
+.seg button small{display:block;font-weight:400;color:var(--mute);font-size:.72rem}
+.seg button.on{background:linear-gradient(180deg,var(--blue2),var(--blue));border-color:var(--gold);box-shadow:0 0 0 1px var(--gold) inset}
+
+/* team badge + slots */
+.badge{display:inline-flex;align-items:center;justify-content:center;border-radius:50%;font-weight:900;
+  letter-spacing:.03em;border:2px solid rgba(255,255,255,.7);flex:0 0 auto;text-shadow:0 1px 1px rgba(0,0,0,.35)}
+.slots{display:flex;flex-wrap:wrap}
+.slot{flex:1 1 240px;margin:0 8px 8px 0;display:flex;align-items:center;padding:12px;border-radius:12px;cursor:pointer;
+  background:rgba(0,0,0,.25);border:2px dashed var(--line);text-align:left}
+.slot.filled{border-style:solid;border-color:var(--gold)}
+.slot .badge{margin-right:12px}
+.slot .nm{font-weight:800}
+.slot .sb{font-size:.78rem;color:var(--mute)}
+
+/* settings */
+.tabs{display:flex;margin-bottom:12px;border-bottom:1px solid var(--line)}
+.tabs button{background:none;border:0;padding:10px 16px;cursor:pointer;font-weight:700;color:var(--mute);border-bottom:3px solid transparent}
+.tabs button.on{color:var(--ink);border-bottom-color:var(--gold)}
+.setrow{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--line)}
+.setrow:last-child{border-bottom:0}
+.setrow .lbl b{display:block}
+.setrow .lbl span{font-size:.8rem;color:var(--mute)}
+.switch{position:relative;width:48px;height:26px;flex:0 0 auto}
+.switch input{opacity:0;width:0;height:0;position:absolute}
+.switch i{position:absolute;left:0;top:0;right:0;bottom:0;background:#3a4170;border-radius:26px;cursor:pointer;transition:.2s}
+.switch i:before{content:"";position:absolute;left:3px;top:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:.2s}
+.switch input:checked+i{background:var(--green)}
+.switch input:checked+i:before{transform:translateX(22px)}
+select,input[type=text],input[type=number],textarea{background:rgba(0,0,0,.3);border:1px solid var(--line);
+  border-radius:9px;padding:9px 11px;width:100%;outline:none}
+select{width:auto;min-width:130px}
+select option{background:#111b4a;color:#fff}
+input:focus,textarea:focus,select:focus{border-color:var(--gold)}
+textarea{min-height:70px;resize:vertical}
+.field{margin-bottom:12px}
+.field>label{display:block;font-size:.78rem;color:var(--mute);margin-bottom:5px;text-transform:uppercase;letter-spacing:.08em}
+.optrow{display:flex;align-items:center;margin-bottom:8px}
+.optrow input[type=radio]{margin:0 10px 0 0;width:20px;height:20px;accent-color:var(--green);flex:0 0 auto}
+.optrow .btn{margin-left:8px}
+.errors{background:rgba(224,52,74,.15);border:1px solid rgba(224,52,74,.6);border-radius:10px;padding:8px 12px;margin-bottom:10px;font-size:.88rem}
+.errors div+div{margin-top:3px}
+.qitem{padding:12px;border:1px solid var(--line);border-radius:12px;margin-bottom:10px;background:rgba(0,0,0,.2)}
+.qitem .qt{font-weight:700;margin-bottom:6px}
+.chip{display:inline-block;font-size:.7rem;padding:2px 8px;border-radius:20px;background:rgba(255,255,255,.1);margin-right:5px;letter-spacing:.04em}
+.chip.gold{background:rgba(247,182,0,.2);color:var(--gold2)}
+.qitem ol{margin:6px 0 8px 20px;padding:0;font-size:.9rem;color:var(--mute)}
+.qitem li.ok{color:#6ff0a0;font-weight:700}
+.matrix{border-collapse:collapse;width:100%;font-size:.85rem}
+.matrix td,.matrix th{border:1px solid var(--line);padding:6px 8px;text-align:center}
+.matrix th{color:var(--mute);font-weight:600}
+.matrix td.zero{color:var(--red)}
+
+/* modal + toast */
+#modal-root{position:fixed;left:0;top:0;right:0;bottom:0;z-index:50;pointer-events:none}
+.overlay{position:absolute;left:0;top:0;right:0;bottom:0;background:rgba(3,6,20,.78);display:flex;align-items:center;
+  justify-content:center;padding:14px;pointer-events:auto;animation:fadein .18s}
+.modal{background:linear-gradient(180deg,#1c2766,#10184a);border:1px solid var(--gold);border-radius:16px;width:100%;
+  max-width:640px;max-height:92vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.6)}
+.modal header{padding:14px 18px;font-weight:800;font-size:1.1rem;border-bottom:1px solid var(--line)}
+.modal .mbody{padding:16px 18px;overflow:auto}
+.modal footer{padding:12px 18px;border-top:1px solid var(--line);display:flex;justify-content:flex-end;flex-wrap:wrap}
+.modal footer .btn{margin-left:8px}
+.teamgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));grid-gap:8px;margin-top:10px}
+.teamcell{display:flex;align-items:center;padding:8px;border-radius:10px;background:rgba(0,0,0,.25);
+  border:1px solid var(--line);cursor:pointer;font-size:.82rem;font-weight:700;text-align:left}
+.teamcell:hover{border-color:var(--gold);background:rgba(247,182,0,.1)}
+.teamcell .badge{margin-right:8px}
+.prevopt{display:block;width:100%;text-align:left;margin-bottom:8px;padding:12px;border-radius:10px;cursor:pointer;
+  background:rgba(255,255,255,.07);border:2px solid var(--line);font-weight:700}
+.prevopt.right{border-color:#38d97a;background:rgba(56,217,122,.18)}
+.prevopt.wrong{border-color:var(--red);background:rgba(224,52,74,.2)}
+#toast-root{position:fixed;left:0;right:0;bottom:22px;z-index:60;display:flex;flex-direction:column;align-items:center;pointer-events:none}
+.toast{background:#0c1340;border:1px solid var(--gold);padding:10px 18px;border-radius:30px;margin-top:8px;font-weight:700;
+  box-shadow:0 8px 24px rgba(0,0,0,.5);animation:fadein .2s}
+.stub{border:2px dashed var(--gold);border-radius:14px;padding:18px;background:rgba(247,182,0,.07)}
+pre.dump{background:rgba(0,0,0,.35);border-radius:10px;padding:12px;overflow:auto;font-size:.8rem;max-height:260px}
+@media (max-width:520px){.title{font-size:1.7rem}.seg button{min-width:70px}}
+</style>
+</head>
+<body>
+<div id="app">
+  <section class="screen" id="screen-menu"></section>
+  <section class="screen" id="screen-setup"></section>
+  <section class="screen" id="screen-settings"></section>
+  <section class="screen" id="screen-match"></section>      <!-- PART 2 renders the pitch + HUD here -->
+  <section class="screen" id="screen-tournament"></section> <!-- PART 3 renders the bracket here -->
+</div>
+<div id="modal-root"></div>
+<div id="toast-root"></div>
+
+<script>
+/* =====================================================================
+   PART 1 JAVASCRIPT.  Everything hangs off the global WFF namespace so
+   later parts can extend or override modules without touching this code.
+   ===================================================================== */
+(function(){
+'use strict';
+var WFF = window.WFF = { VERSION:'1.0.0-part1', booted:false, parts:{1:true}, _ready:[] };
+
+/* ---------------- tiny utilities ---------------- */
+function h(tag, props){
+  var e = document.createElement(tag);
+  if(props){ for(var k in props){ var v = props[k];
+    if(k==='class') e.className = v;
+    else if(k==='text') e.textContent = v;
+    else if(k==='value') e.value = v;
+    else if(k==='checked') e.checked = !!v;
+    else if(k==='disabled') { if(v) e.disabled = true; }
+    else if(k.slice(0,2)==='on') e.addEventListener(k.slice(2).toLowerCase(), v);
+    else if(k==='style') e.setAttribute('style', v);
+    else if(v!==false && v!=null) e.setAttribute(k, v===true?'':v);
+  } }
+  var kids = Array.prototype.slice.call(arguments, 2);
+  (function add(list){ list.forEach(function(c){
+    if(c==null || c===false) return;
+    if(Array.isArray(c)) return add(c);
+    e.appendChild(c.nodeType ? c : document.createTextNode(String(c)));
+  }); })(kids);
+  return e;
+}
+function $(s, r){ return (r||document).querySelector(s); }
+function clamp(n,a,b){ return Math.max(a, Math.min(b, n)); }
+function uid(){ return 'q' + Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+function shuffle(a){ a = a.slice(); for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i]; a[i]=a[j]; a[j]=t; } return a; }
+function hashStr(s){ var x=2166136261; for(var i=0;i<s.length;i++){ x^=s.charCodeAt(i); x=Math.imul(x,16777619); } return x>>>0; }
+function lum(hex){ var n=parseInt(hex.slice(1),16); var r=n>>16&255,g=n>>8&255,b=n&255; return (0.299*r+0.587*g+0.114*b)/255; }
+function hsl2hex(hh,s,l){ s/=100; l/=100; var k=function(n){return (n+hh/30)%12;}, a=s*Math.min(l,1-l);
+  var f=function(n){ var c=l-a*Math.max(-1,Math.min(k(n)-3,Math.min(9-k(n),1))); return Math.round(255*c).toString(16).padStart(2,'0'); };
+  return '#'+f(0)+f(8)+f(4); }
+WFF.h = h; WFF.$ = $; WFF.util = { clamp:clamp, uid:uid, shuffle:shuffle, hashStr:hashStr, lum:lum };
+WFF.onReady = function(fn){ if(WFF.booted) fn(); else WFF._ready.push(fn); };
+
+/* ---------------- event bus ---------------- */
+WFF.Bus = { _l:{},
+  on:function(e,f){ (this._l[e]=this._l[e]||[]).push(f); var self=this; return function(){ self.off(e,f); }; },
+  off:function(e,f){ this._l[e]=(this._l[e]||[]).filter(function(x){return x!==f;}); },
+  emit:function(e,d){ (this._l[e]||[]).slice().forEach(function(f){ try{ f(d); }catch(err){ console.error(err); } }); }
+};
+
+/* ---------------- persistent store (localStorage with memory fallback) ---------------- */
+WFF.Store = { _mem:{},
+  get:function(key, def){ try{ var v=localStorage.getItem('wff.v1.'+key); if(v!=null) return JSON.parse(v); }catch(e){}
+    return (key in this._mem) ? this._mem[key] : def; },
+  set:function(key, val){ this._mem[key]=val; try{ localStorage.setItem('wff.v1.'+key, JSON.stringify(val)); return true; }catch(e){ return false; } },
+  remove:function(key){ delete this._mem[key]; try{ localStorage.removeItem('wff.v1.'+key); }catch(e){} }
+};
+
+/* ---------------- constants ---------------- */
+WFF.Const = {
+  CATEGORIES:[ {id:'personal', label:'Personal Finance', sub:'Budgeting, saving, credit'},
+               {id:'business', label:'Small Business',   sub:'Starting and running a business'} ],
+  DIFFICULTIES:[ {id:'easy', label:'Easy', sub:'Kids'}, {id:'medium', label:'Medium', sub:'Teens'}, {id:'hard', label:'Hard', sub:'Adults'} ],
+  TYPES:[ {id:'mc', label:'Multiple choice'}, {id:'tf', label:'True / False'} ],
+  GENDERS:[ {id:'men', label:"Men's team"}, {id:'women', label:"Women's team"} ],
+  LANGS:[ ['en','English'],['es','Español'],['pt','Português'],['fr','Français'],['de','Deutsch'],['it','Italiano'],['nl','Nederlands'],
+          ['ar','العربية'],['ru','Русский'],['ja','日本語'],['ko','한국어'],['zh','中文'],['hi','हिन्दी'] ],
+  CPU_LEVELS:[ {id:'easy', label:'Rookie'}, {id:'normal', label:'Pro'}, {id:'hard', label:'Legend'} ],
+  MAX_OPTIONS:4, MIN_OPTIONS:2
+};
+
+/* ---------------- settings ---------------- */
+WFF.Settings = {
+  defaults:{ sound:true, music:true, hints:true, powerups:true, superShot:true, reduceMotion:false,
+             timer:20, matchMinutes:3, cpuLevel:'normal', gender:'men', difficulty:'medium', language:'en' },
+  _s:null,
+  all:function(){ if(!this._s) this._s = Object.assign({}, this.defaults, WFF.Store.get('settings', {})); return this._s; },
+  get:function(k){ return this.all()[k]; },
+  set:function(k,v){ this.all()[k]=v; WFF.Store.set('settings', this._s); WFF.Bus.emit('settings', {key:k, value:v}); },
+  reset:function(){ this._s = Object.assign({}, this.defaults); WFF.Store.set('settings', this._s); WFF.Bus.emit('settings', {reset:true}); }
+};
+
+/* ---------------- i18n stub (PART 3 fills the dictionaries) ---------------- */
+WFF.I18n = { dict:{}, lang:function(){ return WFF.Settings.get('language'); },
+  t:function(key, fallback){ var d=this.dict[this.lang()]; return (d && d[key]) || fallback || key; } };
+
+/* ---------------- country / team data ----------------
+   ~210 entries as FIFA-style code:name. Badge colours come from a small table,
+   everything else gets a deterministic generated colour pair. */
+var RAW = 'AFG:Afghanistan|ALB:Albania|ALG:Algeria|ASA:American Samoa|AND:Andorra|ANG:Angola|AIA:Anguilla|ATG:Antigua and Barbuda|ARG:Argentina|ARM:Armenia|ARU:Aruba|AUS:Australia|AUT:Austria|AZE:Azerbaijan|BAH:Bahamas|BHR:Bahrain|BAN:Bangladesh|BRB:Barbados|BLR:Belarus|BEL:Belgium|BLZ:Belize|BEN:Benin|BER:Bermuda|BHU:Bhutan|BOL:Bolivia|BIH:Bosnia and Herzegovina|BOT:Botswana|BRA:Brazil|VGB:British Virgin Islands|BRU:Brunei|BUL:Bulgaria|BFA:Burkina Faso|BDI:Burundi|CAM:Cambodia|CMR:Cameroon|CAN:Canada|CPV:Cape Verde|CAY:Cayman Islands|CTA:Central African Republic|CHA:Chad|CHI:Chile|CHN:China|COL:Colombia|COM:Comoros|CGO:Congo|COD:DR Congo|COK:Cook Islands|CRC:Costa Rica|CIV:C\u00f4te d\'Ivoire|CRO:Croatia|CUB:Cuba|CUW:Cura\u00e7ao|CYP:Cyprus|CZE:Czechia|DEN:Denmark|DJI:Djibouti|DMA:Dominica|DOM:Dominican Republic|ECU:Ecuador|EGY:Egypt|SLV:El Salvador|ENG:England|EQG:Equatorial Guinea|ERI:Eritrea|EST:Estonia|SWZ:Eswatini|ETH:Ethiopia|FRO:Faroe Islands|FIJ:Fiji|FIN:Finland|FRA:France|GAB:Gabon|GAM:Gambia|GEO:Georgia|GER:Germany|GHA:Ghana|GIB:Gibraltar|GRE:Greece|GRN:Grenada|GUM:Guam|GUA:Guatemala|GUI:Guinea|GNB:Guinea-Bissau|GUY:Guyana|HAI:Haiti|HON:Honduras|HKG:Hong Kong|HUN:Hungary|ISL:Iceland|IND:India|IDN:Indonesia|IRN:Iran|IRQ:Iraq|IRL:Ireland|ISR:Israel|ITA:Italy|JAM:Jamaica|JPN:Japan|JOR:Jordan|KAZ:Kazakhstan|KEN:Kenya|KVX:Kosovo|KUW:Kuwait|KGZ:Kyrgyzstan|LAO:Laos|LVA:Latvia|LBN:Lebanon|LES:Lesotho|LBR:Liberia|LBY:Libya|LIE:Liechtenstein|LTU:Lithuania|LUX:Luxembourg|MAC:Macau|MAD:Madagascar|MWI:Malawi|MAS:Malaysia|MDV:Maldives|MLI:Mali|MLT:Malta|MTN:Mauritania|MRI:Mauritius|MEX:Mexico|MDA:Moldova|MNG:Mongolia|MNE:Montenegro|MSR:Montserrat|MAR:Morocco|MOZ:Mozambique|MYA:Myanmar|NAM:Namibia|NEP:Nepal|NED:Netherlands|NCL:New Caledonia|NZL:New Zealand|NCA:Nicaragua|NIG:Niger|NGA:Nigeria|PRK:North Korea|MKD:North Macedonia|NIR:Northern Ireland|NOR:Norway|OMA:Oman|PAK:Pakistan|PLE:Palestine|PAN:Panama|PNG:Papua New Guinea|PAR:Paraguay|PER:Peru|PHI:Philippines|POL:Poland|POR:Portugal|PUR:Puerto Rico|QAT:Qatar|ROU:Romania|RUS:Russia|RWA:Rwanda|SKN:Saint Kitts and Nevis|LCA:Saint Lucia|VIN:Saint Vincent and the Grenadines|SAM:Samoa|SMR:San Marino|STP:S\u00e3o Tom\u00e9 and Pr\u00edncipe|KSA:Saudi Arabia|SCO:Scotland|SEN:Senegal|SRB:Serbia|SEY:Seychelles|SLE:Sierra Leone|SIN:Singapore|SVK:Slovakia|SVN:Slovenia|SOL:Solomon Islands|SOM:Somalia|RSA:South Africa|KOR:South Korea|SSD:South Sudan|ESP:Spain|SRI:Sri Lanka|SDN:Sudan|SUR:Suriname|SWE:Sweden|SUI:Switzerland|SYR:Syria|TAH:Tahiti|TPE:Chinese Taipei|TJK:Tajikistan|TAN:Tanzania|THA:Thailand|TLS:Timor-Leste|TOG:Togo|TGA:Tonga|TRI:Trinidad and Tobago|TUN:Tunisia|TUR:T\u00fcrkiye|TKM:Turkmenistan|TCA:Turks and Caicos Islands|UGA:Uganda|UKR:Ukraine|UAE:United Arab Emirates|USA:United States|VIR:US Virgin Islands|URU:Uruguay|UZB:Uzbekistan|VAN:Vanuatu|VEN:Venezuela|VIE:Vietnam|WAL:Wales|YEM:Yemen|ZAM:Zambia|ZIM:Zimbabwe';
+var KIT = { ARG:['#75aadb','#ffffff'],BRA:['#ffdf00','#009c3b'],GER:['#ffffff','#111111'],FRA:['#0055a4','#ef4135'],ESP:['#aa151b','#f1bf00'],
+  ENG:['#ffffff','#cf081f'],ITA:['#0066cc','#ffffff'],NED:['#ff6600','#ffffff'],POR:['#006600','#ff0000'],USA:['#002868','#bf0a30'],
+  MEX:['#006847','#ce1126'],JPN:['#ffffff','#bc002d'],KOR:['#cd2e3a','#0047a0'],IND:['#ff9933','#138808'],AUS:['#00843d','#ffcd00'],
+  CAN:['#d52b1e','#ffffff'],BEL:['#e30613','#111111'],CRO:['#ff0000','#ffffff'],URU:['#5eb6e4','#ffffff'],COL:['#fcd116','#003893'],
+  CHI:['#d52b1e','#0039a6'],NGA:['#008751','#ffffff'],SEN:['#00853f','#fdef42'],GHA:['#ce1126','#fcd116'],MAR:['#c1272d','#006233'],
+  EGY:['#ce1126','#111111'],KSA:['#006c35','#ffffff'],QAT:['#8a1538','#ffffff'],SUI:['#d52b1e','#ffffff'],SWE:['#006aa7','#fecc00'],
+  DEN:['#c8102e','#ffffff'],POL:['#ffffff','#dc143c'],CMR:['#007a5e','#ce1126'],RSA:['#007749','#ffb81c'],SCO:['#0065bd','#ffffff'],
+  WAL:['#c8102e','#00ab39'],IRL:['#169b62','#ffffff'],TUR:['#e30a17','#ffffff'],GRE:['#0d5eaf','#ffffff'],RUS:['#ffffff','#d52b1e'],
+  CHN:['#de2910','#ffde00'],PER:['#d91023','#ffffff'],ECU:['#ffdd00','#034ea2'],PAR:['#d52b1e','#0038a8'],JAM:['#111111','#fed100'],
+  CRC:['#002b7f','#ce1126'],UKR:['#0057b8','#ffd700'],PAK:['#01411c','#ffffff'],BAN:['#006a4e','#f42a41'],IDN:['#ce1126','#ffffff'],
+  THA:['#a51931','#2d2a4a'],VIE:['#da251d','#ffcd00'],PHI:['#0038a8','#ce1126'],NZL:['#111111','#ffffff'],IRN:['#239f40','#da0000'],
+  ALG:['#006233','#ffffff'],TUN:['#e70013','#ffffff'],CIV:['#f77f00','#009e60'],SRB:['#c6363c','#0c4076'],CZE:['#d7141a','#11457e'],
+  AUT:['#ed2939','#ffffff'],HUN:['#ce2939','#477050'],ROU:['#002b7f','#fcd116'],NOR:['#ba0c2f','#00205b'],FIN:['#ffffff','#003580'],ISL:['#02529c','#dc1e35'] };
+var ELITE = 'ARG BRA FRA ENG ESP GER POR NED ITA BEL CRO URU USA MEX JPN COL MAR SEN DEN SUI'.split(' ');
+
+WFF.Data = { countries:[], byCode:{}, languages:WFF.Const.LANGS };
+RAW.split('|').forEach(function(p){
+  var i = p.indexOf(':'), code = p.slice(0,i), name = p.slice(i+1);
+  var kit = KIT[code], hs = hashStr(code);
+  var c1 = kit ? kit[0] : hsl2hex(hs%360, 62, 45), c2 = kit ? kit[1] : hsl2hex((hs>>8)%360, 55, 62);
+  var rating = 38 + (hs % 28) + (ELITE.indexOf(code)>=0 ? 28 : 0) + (kit ? 6 : 0);
+  var c = { code:code, name:name, c1:c1, c2:c2, rating:clamp(rating, 30, 98) };
+  WFF.Data.countries.push(c); WFF.Data.byCode[code] = c;
+});
+WFF.Data.countries.sort(function(a,b){ return a.name.localeCompare(b.name); });
+/* team(code, gender) -> plain object every other module should use for a side in a match */
+WFF.Data.team = function(code, gender){
+  var c = WFF.Data.byCode[code]; if(!c) return null;
+  var g = gender==='women' ? 'women' : 'men';
+  return { code:c.code, name:c.name, gender:g, label:c.name + (g==='women' ? " (W)" : ""), c1:c.c1, c2:c.c2,
+           rating: clamp(c.rating + (g==='women' ? ((hashStr(c.code+'w')%9)-4) : 0), 30, 99) };
+};
+WFF.Data.randomTeam = function(gender, excludeCode){
+  var list = WFF.Data.countries.filter(function(c){ return c.code!==excludeCode; });
+  return WFF.Data.team(list[Math.floor(Math.random()*list.length)].code, gender);
+};
+
+/* =====================================================================
+   QUESTIONS  -  ships EMPTY on purpose. Users add their own in Settings.
+   Question object:
+   { id, type:'mc'|'tf', category:'personal'|'business', difficulty:'easy'|'medium'|'hard',
+     text, options:[string,...2..4] (tf is always ['True','False']), correct:index,
+     hint:'', explanation:'' }
+   ===================================================================== */
+WFF.Questions = {
+  _q:null,
+  all:function(){ if(!this._q) this._q = WFF.Store.get('questions', []); return this._q; },
+  _save:function(){ WFF.Store.set('questions', this._q); WFF.Bus.emit('questions'); },
+  get:function(id){ return this.all().filter(function(q){return q.id===id;})[0] || null; },
+  /* returns array of error strings (empty = valid) */
+  validate:function(q){
+    var e = [];
+    if(!q || typeof q!=='object') return ['Not a question object'];
+    if(!q.text || !String(q.text).trim()) e.push('Question text is empty.');
+    if(['mc','tf'].indexOf(q.type)<0) e.push('Type must be multiple choice or true/false.');
+    if(['personal','business'].indexOf(q.category)<0) e.push('Pick a category.');
+    if(['easy','medium','hard'].indexOf(q.difficulty)<0) e.push('Pick a difficulty.');
+    if(q.type==='mc'){
+      var o = (q.options||[]).map(function(x){return String(x).trim();});
+      if(o.length<2 || o.length>4) e.push('Multiple choice needs 2 to 4 options.');
+      if(o.some(function(x){return !x;})) e.push('Every option needs text.');
+      if(new Set(o.map(function(x){return x.toLowerCase();})).size!==o.length) e.push('Options must be different from each other.');
+      if(!(q.correct>=0 && q.correct<o.length)) e.push('Mark which option is correct.');
+    } else if(q.type==='tf'){
+      if(!(q.correct===0 || q.correct===1)) e.push('Choose True or False as the correct answer.');
+    }
+    return e;
+  },
+  normalize:function(q){
+    var n = { id:q.id || uid(), type:q.type, category:q.category, difficulty:q.difficulty, text:String(q.text).trim(),
+              options: q.type==='tf' ? ['True','False'] : q.options.map(function(x){return String(x).trim();}),
+              correct:q.correct|0, hint:String(q.hint||'').trim(), explanation:String(q.explanation||'').trim() };
+    return n;
+  },
+  add:function(q){ var err=this.validate(q); if(err.length) return {ok:false, errors:err};
+    var n=this.normalize(Object.assign({}, q, {id:uid()})); this.all().push(n); this._save(); return {ok:true, q:n}; },
+  update:function(id,q){ var err=this.validate(q); if(err.length) return {ok:false, errors:err};
+    var list=this.all(), i=list.findIndex(function(x){return x.id===id;}); if(i<0) return {ok:false, errors:['Question not found.']};
+    list[i]=this.normalize(Object.assign({}, q, {id:id})); this._save(); return {ok:true, q:list[i]}; },
+  remove:function(id){ this._q = this.all().filter(function(q){return q.id!==id;}); this._save(); },
+  clear:function(){ this._q = []; this._save(); },
+  count:function(f){ f=f||{}; return this.all().filter(function(q){
+    return (!f.category||q.category===f.category) && (!f.difficulty||q.difficulty===f.difficulty) && (!f.type||q.type===f.type); }).length; },
+  exportJSON:function(){ return JSON.stringify({ app:'world-financial-football', version:1, questions:this.all() }, null, 2); },
+  /* mode: 'merge' (default) or 'replace'. returns {added, skipped, errors:[]} */
+  importJSON:function(text, mode){
+    var data; try{ data = JSON.parse(text); }catch(e){ return {added:0, skipped:0, errors:['That is not valid JSON.']}; }
+    var arr = Array.isArray(data) ? data : (data && data.questions);
+    if(!Array.isArray(arr)) return {added:0, skipped:0, errors:['Expected an array of questions or {"questions":[...]}.']};
+    var added=0, skipped=0, self=this, seen = {};
+    if(mode==='replace') this._q = [];
+    this.all().forEach(function(q){ seen[(q.category+'|'+q.text).toLowerCase()] = 1; });
+    arr.forEach(function(q){
+      if(self.validate(q).length){ skipped++; return; }
+      var key=(q.category+'|'+String(q.text).trim()).toLowerCase();
+      if(seen[key]){ skipped++; return; } seen[key]=1;
+      self._q.push(self.normalize(Object.assign({}, q, {id:uid()}))); added++;
+    });
+    this._save(); return {added:added, skipped:skipped, errors:[]};
+  },
+  /* createPool: the object the match engine should use. It never repeats a question until the
+     candidate set is exhausted, shuffles MC options, and falls back to the nearest difficulty. */
+  createPool:function(opts){
+    opts = opts || {}; var self = this, used = {}, shuffleOpts = opts.shuffleOptions!==false;
+    var order = ['easy','medium','hard'];
+    function candidates(diff){ return self.all().filter(function(q){
+      return (!opts.category || q.category===opts.category) && (!diff || q.difficulty===diff); }); }
+    function prep(q){ var c = JSON.parse(JSON.stringify(q));
+      if(c.type==='mc' && shuffleOpts){ var idx = shuffle(c.options.map(function(_,i){return i;}));
+        c.options = idx.map(function(i){return q.options[i];}); c.correct = idx.indexOf(q.correct); }
+      c.correctText = c.options[c.correct]; return c; }
+    return {
+      /* next('easy'|'medium'|'hard'|undefined) -> prepared question or null when the bank has nothing for this category */
+      next:function(diff){
+        var tries = diff ? order.slice().sort(function(a,b){ return Math.abs(order.indexOf(a)-order.indexOf(diff)) - Math.abs(order.indexOf(b)-order.indexOf(diff)); }) : [undefined];
+        for(var t=0;t<tries.length;t++){
+          var list = candidates(tries[t]); if(!list.length) continue;
+          var fresh = list.filter(function(q){return !used[q.id];});
+          if(!fresh.length){ list.forEach(function(q){ delete used[q.id]; }); fresh = list; }
+          var pick = fresh[Math.floor(Math.random()*fresh.length)]; used[pick.id]=1; return prep(pick);
+        }
+        return null;
+      },
+      size:function(){ return candidates().length; },
+      reset:function(){ used = {}; }
+    };
+  }
+};
+
+/* =====================================================================
+   UI helpers: modal, toast, badge, segmented control, switch row
+   ===================================================================== */
+var UI = WFF.UI = {};
+UI.toast = function(msg){ var t=h('div',{class:'toast',text:msg}); $('#toast-root').appendChild(t);
+  setTimeout(function(){ if(t.parentNode) t.parentNode.removeChild(t); }, 2600); };
+UI.modal = function(o){
+  var root = $('#modal-root'), ov = h('div',{class:'overlay'}), closed=false;
+  function close(){ if(closed) return; closed=true; document.removeEventListener('keydown', onKey); if(ov.parentNode) ov.parentNode.removeChild(ov); if(o.onClose) o.onClose(); }
+  function onKey(e){ if(e.key==='Escape') close(); }
+  var foot = h('footer');
+  (o.actions||[]).forEach(function(a){
+    foot.appendChild(h('button',{class:'btn '+(a.kind||''), text:a.label, onClick:function(){ var r = a.onClick ? a.onClick(close) : undefined; if(r!==false && !a.keep) close(); }}));
+  });
+  var m = h('div',{class:'modal'}, o.title ? h('header',{text:o.title}) : null, h('div',{class:'mbody'}, o.body), (o.actions&&o.actions.length)?foot:null);
+  ov.appendChild(m);
+  ov.addEventListener('mousedown', function(e){ if(e.target===ov && o.dismissable!==false) close(); });
+  document.addEventListener('keydown', onKey); root.appendChild(ov);
+  return close;
+};
+UI.confirm = function(title, text, okLabel, onOk, danger){
+  UI.modal({ title:title, body:h('p',{text:text}), actions:[ {label:'Cancel'}, {label:okLabel||'OK', kind:danger?'danger':'primary', onClick:onOk} ] });
+};
+UI.badge = function(team, size){
+  size = size || 40;
+  var fg = lum(team.c1) > .6 ? '#111' : '#fff';
+  return h('span',{class:'badge', style:'width:'+size+'px;height:'+size+'px;font-size:'+Math.round(size*0.3)+'px;color:'+fg+
+    ';background:linear-gradient(135deg,'+team.c1+' 0%,'+team.c1+' 55%,'+team.c2+' 55%,'+team.c2+' 100%)', text:team.code});
+};
+/* seg(options[{id,label,sub}], value, onChange) -> element with .set(value) */
+UI.seg = function(options, value, onChange){
+  var el = h('div',{class:'seg'}), cur = value;
+  function paint(){ Array.prototype.forEach.call(el.children, function(b){ b.className = b.getAttribute('data-id')===String(cur) ? 'on' : ''; }); }
+  options.forEach(function(o){
+    el.appendChild(h('button',{type:'button','data-id':o.id, onClick:function(){ cur=o.id; paint(); onChange(o.id); }}, o.label, o.sub ? h('small',{text:o.sub}) : null));
+  });
+  el.set = function(v){ cur=v; paint(); }; paint(); return el;
+};
+UI.switchRow = function(label, sub, key){
+  var inp = h('input',{type:'checkbox', checked:WFF.Settings.get(key), onChange:function(){ WFF.Settings.set(key, inp.checked); }});
+  return h('div',{class:'setrow'}, h('div',{class:'lbl'}, h('b',{text:label}), sub?h('span',{text:sub}):null), h('label',{class:'switch'}, inp, h('i')));
+};
+UI.selectRow = function(label, sub, key, options, parse){
+  var sel = h('select',{onChange:function(){ WFF.Settings.set(key, parse ? parse(sel.value) : sel.value); }},
+    options.map(function(o){ return h('option',{value:o[0], text:o[1]}); }));
+  sel.value = String(WFF.Settings.get(key));
+  return h('div',{class:'setrow'}, h('div',{class:'lbl'}, h('b',{text:label}), sub?h('span',{text:sub}):null), sel);
+};
+
+/* ---------------- router ---------------- */
+WFF.Router = { current:null,
+  show:function(name){ var all = document.querySelectorAll('.screen'); for(var i=0;i<all.length;i++) all[i].classList.remove('active');
+    var s = $('#screen-'+name); if(s){ s.classList.add('active'); s.scrollTop = 0; } this.current = name; WFF.Bus.emit('screen', name); } };
+
+/* =====================================================================
+   MENU
+   ===================================================================== */
+WFF.Menu = {
+  render:function(){
+    var root = $('#screen-menu'); root.innerHTML = '';
+    var total = WFF.Questions.count();
+    var wrap = h('div',{class:'wrap'},
+      h('div',{class:'hero'}, h('div',{class:'logo-ball'}),
+        h('div',{class:'title'}, 'WORLD ', h('span',{text:'FINANCIAL'}), ' FOOTBALL'),
+        h('div',{class:'tagline',text:'Answer money questions. Move down the pitch. Score goals.'})),
+      total===0 ? h('div',{class:'warn'}, 'The question bank is empty. Add your own questions in Settings > Custom Questions before kicking off.') : null,
+      h('div',{class:'menu-list'},
+        h('button',{class:'btn primary big', onClick:function(){ WFF.Setup.open('quick'); }, text:'Quick Match'}),
+        h('button',{class:'btn big', onClick:function(){ WFF.Setup.open('tournament'); }, text:'Tournament (16 teams)'}),
+        h('button',{class:'btn', onClick:function(){ WFF.Settings_UI.open(total===0?'questions':'general'); }, text:'Settings'}),
+        h('button',{class:'btn', onClick:function(){ WFF.Menu.howTo(); }, text:'How to Play'})));
+    root.appendChild(wrap);
+  },
+  howTo:function(){
+    var li = function(t){ return h('li',{style:'margin-bottom:6px',text:t}); };
+    UI.modal({ title:'How to Play', body:h('div',null,
+      h('ol',{style:'margin:0 0 0 18px;padding:0'},
+        li('Pick Quick Match (one match) or Tournament (16-team knockout).'),
+        li("Choose a men's or women's national team, a question category and a difficulty."),
+        li('Answer a question to push the ball down the pitch. Wrong answers hand possession to your rival.'),
+        li('Reach the attacking third and answer correctly to take a shot at goal.'),
+        li('Power-ups help in a tight spot, and a full Super Shot meter makes your next shot unstoppable.'),
+        li('All questions are yours: add them under Settings > Custom Questions.'))),
+      actions:[{label:'Got it', kind:'primary'}] });
+  }
+};
+
+/* =====================================================================
+   SETUP (shared by Quick Match and Tournament)
+   cfg = { mode:'quick'|'tournament', players:1|2, gender, category, difficulty,
+           teamA:Team, teamB:Team|null, settings:{...snapshot}, onEnd:fn|undefined }
+   ===================================================================== */
+WFF.Setup = {
+  cfg:null,
+  open:function(mode){
+    var S = WFF.Settings.all();
+    this.cfg = { mode:mode, players:1, gender:S.gender, category:'personal', difficulty:S.difficulty, teamA:null, teamB:null };
+    this.render(); WFF.Router.show('setup');
+  },
+  render:function(){
+    var self = this, cfg = this.cfg, root = $('#screen-setup'); root.innerHTML = '';
+    var isT = cfg.mode==='tournament';
+    function slot(label, key, teamOf){
+      var t = cfg[key];
+      return h('div',{class:'slot'+(t?' filled':''), onClick:function(){ self.pickTeam(key); }},
+        t ? UI.badge(t,44) : h('span',{class:'badge',style:'width:44px;height:44px;border-style:dashed;color:var(--mute)',text:'?'}),
+        h('div',null, h('div',{class:'nm',text: t ? t.label : 'Choose team'}), h('div',{class:'sb',text:label})));
+    }
+    var genderSeg = UI.seg(WFF.Const.GENDERS, cfg.gender, function(v){ cfg.gender=v;
+      ['teamA','teamB'].forEach(function(k){ if(cfg[k]) cfg[k] = WFF.Data.team(cfg[k].code, v); }); self.render(); });
+    var catSeg = UI.seg(WFF.Const.CATEGORIES.map(function(c){return {id:c.id,label:c.label,sub:c.sub};}), cfg.category, function(v){ cfg.category=v; self.render(); });
+    var diffSeg = UI.seg(WFF.Const.DIFFICULTIES, cfg.difficulty, function(v){ cfg.difficulty=v; });
+    var playSeg = UI.seg([{id:1,label:'1 Player',sub:'vs CPU'},{id:2,label:'2 Players',sub:'same device'}], cfg.players, function(v){ cfg.players=v; self.render(); });
+
+    var qn = WFF.Questions.count({category:cfg.category});
+    var ready = !!cfg.teamA && (isT || true) && qn>0;
+    root.appendChild(h('div',{class:'wrap'},
+      h('div',{class:'topbar'}, h('button',{class:'btn small',text:'< Back',onClick:function(){ WFF.Router.show('menu'); }}),
+        h('h2',{text: isT ? 'Tournament Setup' : 'Quick Match Setup'}), h('span')),
+      isT ? null : h('div',{class:'card'}, h('h3',{text:'Players'}), playSeg),
+      h('div',{class:'card'}, h('h3',{text:'Team type'}), genderSeg),
+      h('div',{class:'card'}, h('h3',{text:'Question category'}), catSeg,
+        h('div',{class:'small '+(qn?'muted':''),style:qn?'':'color:var(--gold2)'},
+          qn ? (qn+' question'+(qn===1?'':'s')+' available in this category.') : 'No questions in this category yet. Add some in Settings > Custom Questions.')),
+      h('div',{class:'card'}, h('h3',{text:'Difficulty'}), diffSeg),
+      h('div',{class:'card'}, h('h3',{text: isT ? 'Your team' : (cfg.players===2 ? 'Teams' : 'Teams')}),
+        h('div',{class:'slots'},
+          slot(isT ? 'Tap to choose your nation' : (cfg.players===2 ? 'Player 1' : 'You'), 'teamA'),
+          isT ? null : slot(cfg.players===2 ? 'Player 2' : 'CPU rival (random if left empty)', 'teamB')),
+        h('div',{class:'row gap'},
+          h('button',{class:'btn small',text:'Random for me',onClick:function(){ cfg.teamA = WFF.Data.randomTeam(cfg.gender, cfg.teamB && cfg.teamB.code); self.render(); }}),
+          isT ? null : h('button',{class:'btn small',text:'Random rival',onClick:function(){ cfg.teamB = WFF.Data.randomTeam(cfg.gender, cfg.teamA && cfg.teamA.code); self.render(); }}))),
+      h('div',{style:'text-align:center;margin-top:18px'},
+        h('button',{class:'btn primary big', disabled:!ready, text: isT ? 'Start Tournament' : 'Kick Off', onClick:function(){ self.start(); }}),
+        !ready ? h('div',{class:'small muted',style:'margin-top:8px',text: !cfg.teamA ? 'Choose your team to continue.' : 'Add at least one question for this category to continue.'}) : null)));
+  },
+  pickTeam:function(key){
+    var self = this, cfg = this.cfg, closeFn;
+    var grid = h('div',{class:'teamgrid'});
+    var search = h('input',{type:'text',placeholder:'Search 200+ nations...'});
+    function fill(){ grid.innerHTML=''; var q = search.value.trim().toLowerCase();
+      WFF.Data.countries.filter(function(c){ return !q || c.name.toLowerCase().indexOf(q)>=0 || c.code.toLowerCase()===q; }).forEach(function(c){
+        var t = WFF.Data.team(c.code, cfg.gender);
+        grid.appendChild(h('div',{class:'teamcell',onClick:function(){ cfg[key]=t; closeFn(); self.render(); }}, UI.badge(t,30), h('span',{text:c.name})));
+      }); }
+    search.addEventListener('input', fill); fill();
+    closeFn = UI.modal({ title:(cfg.gender==='women'?"Women's":"Men's")+' team', body:h('div',null,search,grid), actions:[{label:'Close'}] });
+    setTimeout(function(){ search.focus(); }, 30);
+  },
+  start:function(){
+    var cfg = this.cfg;
+    if(!cfg.teamA) return;
+    if(!cfg.teamB && cfg.mode==='quick') cfg.teamB = WFF.Data.randomTeam(cfg.gender, cfg.teamA.code);
+    if(cfg.teamB && cfg.teamB.code===cfg.teamA.code && cfg.mode==='quick'){ UI.toast('Pick two different teams.'); return; }
+    var final = Object.assign({}, cfg, { settings:Object.assign({}, WFF.Settings.all()) });
+    WFF.Bus.emit('setup:start', final);
+    if(final.mode==='tournament') WFF.Tournament.start(final); else WFF.Match.start(final);
+  }
+};
+
+/* =====================================================================
+   SETTINGS SCREEN  (General | Custom Questions | Data)
+   ===================================================================== */
+WFF.Settings_UI = {
+  tab:'general', editingId:null, draft:null, filter:{category:'', difficulty:'', q:''},
+  open:function(tab){ this.tab = tab || 'general'; this.render(); WFF.Router.show('settings'); },
+  render:function(){
+    var self = this, root = $('#screen-settings'); root.innerHTML='';
+    var tabs = h('div',{class:'tabs'});
+    [['general','General'],['questions','Custom Questions'],['data','Backup']].forEach(function(t){
+      tabs.appendChild(h('button',{class:self.tab===t[0]?'on':'',text:t[1],onClick:function(){ self.tab=t[0]; self.render(); }})); });
+    var body = h('div');
+    root.appendChild(h('div',{class:'wrap'},
+      h('div',{class:'topbar'}, h('button',{class:'btn small',text:'< Back',onClick:function(){ WFF.Menu.render(); WFF.Router.show('menu'); }}), h('h2',{text:'Settings'}), h('span')),
+      tabs, body));
+    if(this.tab==='general') this.renderGeneral(body);
+    else if(this.tab==='questions') this.renderQuestions(body);
+    else this.renderData(body);
+  },
+  renderGeneral:function(body){
+    var self = this, C = WFF.Const;
+    body.appendChild(h('div',{class:'card'}, h('h3',{text:'Gameplay'}),
+      UI.selectRow('Answer timer','Seconds to answer each question','timer',[[0,'Off'],[10,'10 s'],[15,'15 s'],[20,'20 s'],[30,'30 s'],[45,'45 s']], Number),
+      UI.selectRow('Match length','Total minutes of play','matchMinutes',[[2,'2 min'],[3,'3 min'],[5,'5 min'],[10,'10 min']], Number),
+      UI.selectRow('CPU skill','How often the CPU answers correctly','cpuLevel', C.CPU_LEVELS.map(function(c){return [c.id,c.label];})),
+      UI.selectRow('Default difficulty','Used when a new match is set up','difficulty', C.DIFFICULTIES.map(function(c){return [c.id,c.label+' ('+c.sub+')'];})),
+      UI.selectRow('Default team type','','gender', C.GENDERS.map(function(c){return [c.id,c.label];})),
+      UI.switchRow('Hints','Allow a hint on questions that have one','hints'),
+      UI.switchRow('Power-ups','Skip, 50/50, extra time and more','powerups'),
+      UI.switchRow('Super Shot mode','Build the meter for an unstoppable shot','superShot')));
+    body.appendChild(h('div',{class:'card'}, h('h3',{text:'Sound and display'}),
+      UI.switchRow('Sound effects','','sound'), UI.switchRow('Music','','music'),
+      UI.switchRow('Reduce motion','Calmer animations','reduceMotion'),
+      UI.selectRow('Language','Game text language (translations arrive in a later update)','language', C.LANGS)));
+    body.appendChild(h('div',{style:'text-align:right'}, h('button',{class:'btn danger',text:'Reset settings',onClick:function(){
+      UI.confirm('Reset settings','Restore every setting to its default?','Reset',function(){ WFF.Settings.reset(); self.render(); UI.toast('Settings reset'); }, true); }})));
+  },
+
+  /* ---------- custom questions ---------- */
+  newDraft:function(){ return { type:'mc', category:'personal', difficulty:'medium', text:'', options:['',''], correct:0, hint:'', explanation:'' }; },
+  renderQuestions:function(body){
+    var self = this; if(!this.draft) this.draft = this.newDraft();
+    var formCard = h('div',{class:'card'}), listCard = h('div',{class:'card'}), statCard = h('div',{class:'card'});
+    body.appendChild(statCard); body.appendChild(formCard); body.appendChild(listCard);
+    this.paintStats(statCard); this.paintForm(formCard); this.paintList(listCard);
+    this._cards = {stat:statCard, form:formCard, list:listCard};
+  },
+  refreshQuestionViews:function(){ if(!this._cards) return; this.paintStats(this._cards.stat); this.paintList(this._cards.list); },
+  paintStats:function(card){
+    card.innerHTML=''; card.appendChild(h('h3',{text:'Question bank'}));
+    var C = WFF.Const, t = h('table',{class:'matrix'}), hr = h('tr', null, h('th',{text:''}));
+    C.DIFFICULTIES.forEach(function(d){ hr.appendChild(h('th',{text:d.label})); }); hr.appendChild(h('th',{text:'Total'})); t.appendChild(hr);
+    C.CATEGORIES.forEach(function(c){ var r = h('tr',null,h('th',{text:c.label}));
+      C.DIFFICULTIES.forEach(function(d){ var n = WFF.Questions.count({category:c.id,difficulty:d.id}); r.appendChild(h('td',{class:n?'':'zero',text:n})); });
+      r.appendChild(h('td',{text:WFF.Questions.count({category:c.id})})); t.appendChild(r); });
+    card.appendChild(t);
+    card.appendChild(h('div',{class:'small muted',style:'margin-top:8px',text:'The game picks questions by category and difficulty. Aim for at least 10 per row for variety; if a difficulty is empty, the nearest one is used.'}));
+  },
+  paintForm:function(card){
+    var self = this, d = this.draft, C = WFF.Const; card.innerHTML='';
+    card.appendChild(h('h3',{text: this.editingId ? 'Edit question' : 'Add a question'}));
+    var errBox = h('div');
+    var optsBox = h('div');
+    function paintOpts(){
+      optsBox.innerHTML='';
+      if(d.type==='tf'){
+        ['True','False'].forEach(function(lbl,i){
+          optsBox.appendChild(h('div',{class:'optrow'}, h('input',{type:'radio',name:'correct',checked:d.correct===i,onChange:function(){ d.correct=i; }}), h('b',{text:lbl}))); });
+        return; }
+      d.options.forEach(function(val,i){
+        var inp = h('input',{type:'text',value:val,placeholder:'Option '+(i+1),onInput:function(){ d.options[i]=inp.value; }});
+        optsBox.appendChild(h('div',{class:'optrow'},
+          h('input',{type:'radio',name:'correct',checked:d.correct===i,title:'Mark as correct answer',onChange:function(){ d.correct=i; }}), inp,
+          d.options.length>C.MIN_OPTIONS ? h('button',{class:'btn small danger',type:'button',text:'X',onClick:function(){
+            d.options.splice(i,1); if(d.correct>=d.options.length) d.correct=d.options.length-1; else if(d.correct>i) d.correct--; paintOpts(); }}) : null)); });
+      if(d.options.length<C.MAX_OPTIONS) optsBox.appendChild(h('button',{class:'btn small',type:'button',text:'+ Add option',onClick:function(){ d.options.push(''); paintOpts(); }}));
+      optsBox.appendChild(h('div',{class:'small muted',style:'margin-top:6px',text:'Select the round button next to the correct answer.'}));
+    }
+    var typeSeg = UI.seg(C.TYPES, d.type, function(v){ d.type=v; if(v==='tf'){ if(d.correct>1) d.correct=0; } else { if(d.options.length<2) d.options=['','']; if(d.correct>=d.options.length) d.correct=0; } paintOpts(); });
+    var catSeg = UI.seg(C.CATEGORIES.map(function(c){return {id:c.id,label:c.label};}), d.category, function(v){ d.category=v; });
+    var diffSeg = UI.seg(C.DIFFICULTIES, d.difficulty, function(v){ d.difficulty=v; });
+    var text = h('textarea',{placeholder:'Type the question here...',value:d.text,onInput:function(){ d.text=text.value; }});
+    var hint = h('input',{type:'text',value:d.hint,placeholder:'Optional hint (shown when the player uses a hint)',onInput:function(){ d.hint=hint.value; }});
+    var expl = h('input',{type:'text',value:d.explanation,placeholder:'Optional explanation shown after answering',onInput:function(){ d.explanation=expl.value; }});
+    paintOpts();
+    card.appendChild(h('div',{class:'field'},h('label',{text:'Type'}),typeSeg));
+    card.appendChild(h('div',{class:'field'},h('label',{text:'Category'}),catSeg));
+    card.appendChild(h('div',{class:'field'},h('label',{text:'Difficulty'}),diffSeg));
+    card.appendChild(h('div',{class:'field'},h('label',{text:'Question'}),text));
+    card.appendChild(h('div',{class:'field'},h('label',{text:'Answer options'}),optsBox));
+    card.appendChild(h('div',{class:'field'},h('label',{text:'Hint'}),hint));
+    card.appendChild(h('div',{class:'field'},h('label',{text:'Explanation'}),expl));
+    card.appendChild(errBox);
+    card.appendChild(h('div',{class:'row gap'},
+      h('button',{class:'btn primary',type:'button',text:this.editingId?'Save changes':'Add question',onClick:function(){
+        var res = self.editingId ? WFF.Questions.update(self.editingId, d) : WFF.Questions.add(d);
+        if(!res.ok){ errBox.innerHTML=''; errBox.appendChild(h('div',{class:'errors'}, res.errors.map(function(e){return h('div',{text:e});}))); return; }
+        UI.toast(self.editingId?'Question updated':'Question added');
+        // keep type/category/difficulty for fast bulk entry, clear the rest
+        var keep = { type:d.type, category:d.category, difficulty:d.difficulty };
+        self.editingId=null; self.draft = Object.assign(self.newDraft(), keep, d.type==='tf'?{options:['True','False']}:{});
+        self.paintForm(card); self.refreshQuestionViews(); }}),
+      (this.editingId || d.text) ? h('button',{class:'btn',type:'button',text:this.editingId?'Cancel edit':'Clear form',onClick:function(){ self.editingId=null; self.draft=self.newDraft(); self.paintForm(card); }}) : null));
+  },
+  paintList:function(card){
+    var self = this, C = WFF.Const, f = this.filter; card.innerHTML='';
+    card.appendChild(h('h3',{text:'Your questions'}));
+    var cat = h('select',{onChange:function(){ f.category=cat.value; self.paintList(card); }}, h('option',{value:'',text:'All categories'}), C.CATEGORIES.map(function(c){return h('option',{value:c.id,text:c.label});}));
+    var dif = h('select',{onChange:function(){ f.difficulty=dif.value; self.paintList(card); }}, h('option',{value:'',text:'All difficulties'}), C.DIFFICULTIES.map(function(c){return h('option',{value:c.id,text:c.label});}));
+    var sr = h('input',{type:'text',placeholder:'Search...',value:f.q,style:'max-width:200px',onInput:function(){ f.q=sr.value; clearTimeout(self._t); self._t=setTimeout(function(){ self.paintListItems(items); },150); }});
+    cat.value=f.category; dif.value=f.difficulty;
+    card.appendChild(h('div',{class:'row gap',style:'margin-bottom:10px'}, cat, dif, sr));
+    var items = h('div'); card.appendChild(items); this.paintListItems(items);
+  },
+  paintListItems:function(items){
+    var self = this, f = this.filter, C = WFF.Const; items.innerHTML='';
+    var list = WFF.Questions.all().filter(function(q){
+      return (!f.category||q.category===f.category) && (!f.difficulty||q.difficulty===f.difficulty) && (!f.q || q.text.toLowerCase().indexOf(f.q.toLowerCase())>=0); });
+    if(!list.length){ items.appendChild(h('div',{class:'muted',text: WFF.Questions.count() ? 'No questions match this filter.' : 'No questions yet. Use the form above to add your first one.'})); return; }
+    list.slice().reverse().forEach(function(q){
+      var catL = C.CATEGORIES.filter(function(c){return c.id===q.category;})[0].label;
+      items.appendChild(h('div',{class:'qitem'},
+        h('div',{class:'qt',text:q.text}),
+        h('div',null, h('span',{class:'chip gold',text:catL}), h('span',{class:'chip',text:q.difficulty}), h('span',{class:'chip',text:q.type==='tf'?'True/False':'Multiple choice'})),
+        h('ol',null, q.options.map(function(o,i){ return h('li',{class:i===q.correct?'ok':'',text:o}); })),
+        h('div',{class:'row gap'},
+          h('button',{class:'btn small',text:'Test',onClick:function(){ self.preview(q); }}),
+          h('button',{class:'btn small',text:'Edit',onClick:function(){ self.editingId=q.id; self.draft=JSON.parse(JSON.stringify(q)); self.paintForm(self._cards.form); self._cards.form.scrollIntoView(); }}),
+          h('button',{class:'btn small danger',text:'Delete',onClick:function(){ UI.confirm('Delete question','Delete this question permanently?','Delete',function(){
+            WFF.Questions.remove(q.id); if(self.editingId===q.id){ self.editingId=null; self.draft=self.newDraft(); self.paintForm(self._cards.form); } self.refreshQuestionViews(); }, true); }}))));
+    });
+  },
+  preview:function(q){
+    var done = false, box = h('div'), info = h('div',{class:'small',style:'margin-top:8px'});
+    box.appendChild(h('p',{style:'font-weight:700;font-size:1.05rem',text:q.text}));
+    var btns = q.options.map(function(o,i){
+      var b = h('button',{class:'prevopt',type:'button',text:o,onClick:function(){ if(done) return; done=true;
+        btns.forEach(function(x,j){ if(j===q.correct) x.className='prevopt right'; else if(j===i) x.className='prevopt wrong'; });
+        info.textContent = (i===q.correct ? 'Correct! ' : 'Not quite. ') + (q.explanation||''); }}); box.appendChild(b); return b; });
+    if(q.hint) box.appendChild(h('div',{class:'small muted',text:'Hint: '+q.hint}));
+    box.appendChild(info);
+    UI.modal({ title:'Test question', body:box, actions:[{label:'Close'}] });
+  },
+
+  /* ---------- backup ---------- */
+  renderData:function(body){
+    var self = this, area = h('textarea',{style:'min-height:130px',placeholder:'Paste exported question JSON here to import...'});
+    var file = h('input',{type:'file',accept:'.json,application/json',style:'display:none',onChange:function(){
+      var f = file.files[0]; if(!f) return; var r = new FileReader(); r.onload=function(){ area.value = r.result; UI.toast('File loaded. Choose Merge or Replace.'); }; r.readAsText(f); file.value=''; }});
+    function doImport(mode){
+      var res = WFF.Questions.importJSON(area.value, mode);
+      if(res.errors.length){ UI.toast(res.errors[0]); return; }
+      UI.toast('Imported '+res.added+' question'+(res.added===1?'':'s')+(res.skipped?(', skipped '+res.skipped):'')); area.value=''; }
+    body.appendChild(h('div',{class:'card'}, h('h3',{text:'Export'}),
+      h('p',{class:'muted small',text:'Download all your custom questions so you can back them up or share them.'}),
+      h('div',{class:'row gap'},
+        h('button',{class:'btn primary',text:'Download questions (.json)',onClick:function(){
+          var blob = new Blob([WFF.Questions.exportJSON()],{type:'application/json'}), a = h('a',{href:URL.createObjectURL(blob),download:'wff-questions.json'});
+          document.body.appendChild(a); a.click(); setTimeout(function(){ document.body.removeChild(a); URL.revokeObjectURL(a.href); },500); }}),
+        h('button',{class:'btn',text:'Show JSON',onClick:function(){ area.value = WFF.Questions.exportJSON(); }}))));
+    body.appendChild(h('div',{class:'card'}, h('h3',{text:'Import'}), area, file,
+      h('div',{class:'row gap',style:'margin-top:10px'},
+        h('button',{class:'btn',text:'Choose file...',onClick:function(){ file.click(); }}),
+        h('button',{class:'btn primary',text:'Merge into bank',onClick:function(){ doImport('merge'); }}),
+        h('button',{class:'btn danger',text:'Replace bank',onClick:function(){ UI.confirm('Replace bank','This deletes your current questions and loads the pasted ones.','Replace',function(){ doImport('replace'); },true); }}))));
+    body.appendChild(h('div',{class:'card'}, h('h3',{text:'Danger zone'}),
+      h('button',{class:'btn danger',text:'Delete ALL questions',onClick:function(){ UI.confirm('Delete all questions','Remove every custom question? This cannot be undone.','Delete all',function(){ WFF.Questions.clear(); UI.toast('Question bank emptied'); }, true); }})));
+  }
+};
+
+/* =====================================================================
+   PLACEHOLDER MODULES - PART 2 replaces WFF.Match, PART 3 replaces WFF.Tournament.
+   They are looked up at click time, so redefining them later is enough.
+   ===================================================================== */
+WFF.Match = { isStub:true,
+  start:function(cfg){
+    var root = $('#screen-match'); root.innerHTML='';
+    var pool = WFF.Questions.createPool({category:cfg.category}), sample = pool.next(cfg.difficulty);
+    root.appendChild(h('div',{class:'wrap'}, h('div',{class:'topbar'}, h('button',{class:'btn small',text:'< Menu',onClick:function(){ WFF.Router.show('menu'); }}), h('h2',{text:'Match (placeholder)'}), h('span')),
+      h('div',{class:'stub'}, h('h3',{style:'color:var(--gold);margin-bottom:8px',text:'Match engine arrives in Part 2'}),
+        h('p',{text:cfg.teamA.label+'  vs  '+(cfg.teamB?cfg.teamB.label:'?')}),
+        h('p',{class:'muted small',text:'This stub proves the setup handoff works. Part 2 must overwrite WFF.Match.start(cfg).'}),
+        h('pre',{class:'dump',text:JSON.stringify({ cfg:cfg, samplePreparedQuestion:sample }, null, 2)}),
+        cfg.onEnd ? h('button',{class:'btn',text:'Debug: finish with random score',onClick:function(){ var a=Math.floor(Math.random()*4), b=Math.floor(Math.random()*4); if(a===b) a++; cfg.onEnd({winner:a>b?'A':'B',score:[a,b]}); }}) : null)));
+    WFF.Router.show('match');
+  } };
+WFF.Tournament = { isStub:true,
+  start:function(cfg){
+    var root = $('#screen-tournament'); root.innerHTML='';
+    root.appendChild(h('div',{class:'wrap'}, h('div',{class:'topbar'}, h('button',{class:'btn small',text:'< Menu',onClick:function(){ WFF.Router.show('menu'); }}), h('h2',{text:'Tournament (placeholder)'}), h('span')),
+      h('div',{class:'stub'}, h('h3',{style:'color:var(--gold);margin-bottom:8px',text:'Tournament mode arrives in Part 3'}),
+        h('p',{class:'muted small',text:'Part 3 builds the 16-team bracket and calls WFF.Match.start(cfg) with cfg.onEnd.'}),
+        h('pre',{class:'dump',text:JSON.stringify(cfg, null, 2)}))));
+    WFF.Router.show('tournament');
+  } };
+/* audio stub: PART 3 replaces with a WebAudio synthesiser. Other parts can already call WFF.Audio.play('goal'). */
+WFF.Audio = { play:function(name){ WFF.Bus.emit('audio', name); }, music:function(on){ WFF.Bus.emit('music', on); } };
+
+/* ---------------- boot ---------------- */
+WFF.boot = function(){
+  if(WFF.booted) return;
+  WFF.Menu.render(); WFF.Router.show('menu');
+  WFF.Bus.on('questions', function(){ if(WFF.Router.current==='menu') WFF.Menu.render(); });
+  WFF.booted = true; WFF._ready.forEach(function(f){ try{ f(); }catch(e){ console.error(e); } }); WFF._ready = [];
+};
+if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', WFF.boot); else WFF.boot();
+})();
+</script>
+
+
+<style>
+/* ======================= PART 2 CSS: match screen ======================= */
+.mwrap{max-width:1180px;margin:0 auto}
+.msb{display:flex;align-items:center;justify-content:space-between;background:linear-gradient(180deg,#0e1650,#0a1033);
+  border:1px solid var(--line);border-radius:14px;padding:10px 14px;margin-bottom:10px}
+.ms-team{display:flex;align-items:center;flex:1 1 0;min-width:0}
+.ms-team.t1{flex-direction:row-reverse;text-align:right}
+.ms-info{margin:0 12px;min-width:0}
+.ms-name{font-weight:800;font-size:.95rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ms-score{font-size:2.2rem;font-weight:900;min-width:44px;text-align:center;color:var(--gold2);text-shadow:0 2px 0 rgba(0,0,0,.4)}
+.ms-meter{display:flex;margin-top:5px}
+.ms-team.t1 .ms-meter{justify-content:flex-end}
+.ms-meter i{width:16px;height:7px;margin-right:3px;border-radius:3px;background:rgba(255,255,255,.14)}
+.ms-team.t1 .ms-meter i{margin:0 0 0 3px}
+.ms-meter i.on{background:#6aa8ff}
+.ms-meter.full i{background:var(--gold);box-shadow:0 0 8px var(--gold)}
+.ms-mid{flex:0 0 auto;text-align:center;padding:0 10px}
+.ms-clock{font-size:1.5rem;font-weight:900;letter-spacing:.06em;font-variant-numeric:tabular-nums}
+.ms-half{font-size:.72rem;color:var(--mute);text-transform:uppercase;letter-spacing:.1em}
+.ms-poss{font-size:.72rem;color:var(--gold2);margin-top:2px;min-height:1em}
+.mmain{display:flex;flex-wrap:wrap;align-items:flex-start}
+.mpitch{flex:1 1 560px;min-width:0;margin:0 12px 12px 0}
+.mpitch canvas{display:block;width:100%;border-radius:14px;border:1px solid var(--line);background:#14204f}
+.mpanel{flex:0 1 380px;min-width:290px;flex-grow:1;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px;min-height:300px}
+.mp-head{font-size:.75rem;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:8px}
+.mp-idle{font-size:1.05rem;font-weight:700;line-height:1.4;padding:6px 0}
+.dots{display:flex;align-items:center;margin:6px 0 10px}
+.dots b{font-size:.75rem;margin-right:8px;color:var(--mute)}
+.dots i{width:14px;height:14px;border-radius:50%;margin-right:5px;border:2px solid rgba(255,255,255,.4);display:inline-block}
+.dots i.s{background:#38d97a;border-color:#38d97a}.dots i.x{background:var(--red);border-color:var(--red)}
+.mtimer{height:8px;border-radius:6px;background:rgba(255,255,255,.12);overflow:hidden;margin:8px 0 12px}
+.mtimer i{display:block;height:100%;width:100%;background:linear-gradient(90deg,#38d97a,#ffd35a);border-radius:6px}
+.mtimer i.low{background:var(--red)}
+.mq-text{font-size:1.12rem;font-weight:700;line-height:1.4;margin-bottom:12px}
+.mopt{display:flex;align-items:center;width:100%;text-align:left;margin-bottom:8px;padding:12px;border-radius:12px;cursor:pointer;
+  background:rgba(255,255,255,.07);border:2px solid var(--line);font-weight:700;transition:transform .08s,background .15s}
+.mopt:hover:not([disabled]){background:rgba(255,255,255,.14)}
+.mopt:active:not([disabled]){transform:scale(.98)}
+.mopt kbd{flex:0 0 auto;width:26px;height:26px;border-radius:7px;background:rgba(0,0,0,.35);margin-right:10px;text-align:center;line-height:26px;font-size:.8rem;font-family:inherit}
+.mopt.gone{opacity:.22;pointer-events:none}
+.mopt.right{border-color:#38d97a;background:rgba(56,217,122,.22)}
+.mopt.wrong{border-color:var(--red);background:rgba(224,52,74,.25)}
+.mopt[disabled]{cursor:default}
+.mexp{font-size:.88rem;margin-top:6px;padding:8px 10px;border-radius:10px;background:rgba(0,0,0,.3)}
+.mhint{font-size:.88rem;color:var(--gold2);margin:4px 0 8px}
+.mpow{display:flex;flex-wrap:wrap;margin-top:10px;padding-top:10px;border-top:1px solid var(--line)}
+.mpow .btn{margin:0 6px 6px 0}
+.mover{position:fixed;left:0;top:0;right:0;bottom:0;z-index:45;background:rgba(3,6,20,.9);display:flex;align-items:center;justify-content:center;padding:14px;animation:fadein .2s}
+.mcard{background:linear-gradient(180deg,#1c2766,#10184a);border:1px solid var(--gold);border-radius:18px;padding:22px;max-width:560px;width:100%;max-height:94vh;overflow:auto;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.6)}
+.mcard h2{font-size:1.6rem;margin-bottom:10px;color:var(--gold2)}
+.mcard p{margin:6px 0}
+.mbtns{margin-top:16px}
+.mbtns .btn{margin:0 6px 8px}
+.bigscore{font-size:2.6rem;font-weight:900;margin:8px 0}
+.vs{display:flex;align-items:center;justify-content:center;margin:10px 0}
+.vs .badge{margin:0 12px}
+@media (max-width:860px){.mpitch{margin-right:0;flex-basis:100%}.mpanel{flex-basis:100%}.ms-score{font-size:1.7rem}.ms-name{font-size:.8rem}.ms-info{margin:0 7px}}
+</style>
+
+<script>
+/* =====================================================================
+   PART 2 JAVASCRIPT : WFF.Match  (the real match engine)
+   Overwrites the stub from Part 1 and adds WFF.Match.simulate().
+   ===================================================================== */
+(function(){
+'use strict';
+var WFF = window.WFF;
+if(!WFF || !WFF.h || !WFF.Match){ console.error('WFF Part 2 needs Part 1 to be loaded first.'); return; }
+var h = WFF.h, $ = WFF.$, U = WFF.util, UI = WFF.UI, S = WFF.Settings, Match = WFF.Match;
+
+/* ---------------- constants ---------------- */
+var SUPER_MAX = 5;                            // correct answers in a row (any question) needed to fill the Super Shot meter
+var ZONE_NAMES = ['Own box','Defensive third','Midfield','Attacking third','Penalty area','Shot on goal'];
+var ZONE_FRAC  = [0.08,0.24,0.46,0.66,0.80,0.90];   // ball x, as a fraction of the pitch measured from the attacker's own goal
+var ZONE_EDGE  = [0,0.16,0.34,0.56,0.74,0.86,1];    // zone band edges, same measure
+var DEF_CHANCE = [0.2,0.3,0.4,0.55,0.7];      // chance a defensive question follows a correct attacking answer, by current zone
+var POWERS = [{id:'fifty',label:'50/50'},{id:'skip',label:'Skip'},{id:'time',label:'+Time'},{id:'double',label:'Double Zone'}];
+var BASE = [{x:.2,y:.5},{x:.38,y:.25},{x:.38,y:.75},{x:.55,y:.5}];   // outfield formation, own perspective; index 3 = ball carrier
+var DIFFS = ['easy','medium','hard'];
+var KIND_LABEL = {attack:'Attack',defense:'Defend',shot:'Shot on goal',penalty:'Penalty kick'};
+
+Match.isStub = false;
+Match.timeScale = 1;              // test hook: multiplies game time (clock, timers, delays, animation)
+var m = null;                      // current match state (null when no match is running)
+
+/* ---------------- helpers ---------------- */
+function human(s){ return s===0 || m.cfg.players===2; }
+function nm(s){ return m.teams[s].name; }
+function later(ms, fn){ m.sched.push({t:ms, fn:fn}); }
+function frozen(){ return m.paused || !!m.overlay; }
+function diffIdx(zone, extra){
+  var base = Math.max(0, DIFFS.indexOf(m.cfg.difficulty));
+  var off = zone<=1 ? -1 : (zone<=3 ? 0 : 1);
+  return U.clamp(base+off+(extra||0), 0, 2);
+}
+function say(t){ m.status = t; if(m.phase!=='question' && m.phase!=='reveal') renderPanel(); }
+function absX(side, frac){ return side===0 ? frac : 1-frac; }
+function fmtClock(s){ s = Math.max(0, Math.ceil(s)); return Math.floor(s/60)+':'+('0'+(s%60)).slice(-2); }
+function newStat(){ return {correct:0, wrong:0, cur:0, streak:0, goals:0}; }
+
+/* ---------------- entry point ---------------- */
+Match.start = function(cfg){
+  Match.stop();
+  var pool = WFF.Questions.createPool({category:cfg.category});
+  if(!pool.next(cfg.difficulty)){
+    UI.modal({ title:'No questions yet', body:h('p',{text:'The question bank has no questions for "'+(cfg.category==='business'?'Small Business':'Personal Finance')+'". Add some in Settings > Custom Questions, then try again.'}),
+      actions:[{label:'Back to menu', onClick:function(){ WFF.Menu.render(); WFF.Router.show('menu'); }}, {label:'Open Custom Questions', kind:'primary', onClick:function(){ WFF.Settings_UI.open('questions'); }}] });
+    return;
+  }
+  pool.reset();
+  var minutes = Number(S.get('matchMinutes')) || 3;
+  var crowd = [], i;
+  for(i=0;i<260;i++) crowd.push({x:Math.random(), y:Math.random(), c:['#c9d3ff','#ffd35a','#ff7a8a','#7ad0ff','#9af0b4','#ffffff'][i%6], ph:Math.random()*6.28, top:i%3!==0});
+  m = {
+    cfg:cfg, pool:pool, teams:[cfg.teamA, cfg.teamB], score:[0,0], stats:[newStat(), newStat()], meter:[0,0],
+    pow:[{fifty:1,skip:1,time:1,double:1},{fifty:1,skip:1,time:1,double:1}], dbl:[false,false],
+    half:1, halfLen:minutes*30, clock:minutes*30, timeUp:false, poss:0, zone:2, phase:'intro', paused:false, overlay:null,
+    status:'', q:null, qSide:0, qKind:'attack', qDiff:'medium', cb:null, qLeft:0, qMax:0, picked:-1, elim:[], hintUsed:false, hintShown:false,
+    sched:[], pen:null, lastViewer:-1, over:false, persisted:false, result:null,
+    ball:{x:.5,y:.5,tx:.5,ty:.5,h:0,rate:4}, ky:[.5,.5], kyT:[.5,.5], pl:[[],[]], fx:[], trail:[], banner:null, flash:0, shake:0, cheer:0, superFx:0,
+    crowd:crowd, el:{}, W:0, H:0, dpr:1, last:0, t:0, raf:0, timerEl:null
+  };
+  for(var s=0;s<2;s++) for(i=0;i<4;i++) m.pl[s].push({x:absX(s,.3),y:BASE[i].y});
+  buildDom();
+  WFF.Router.show('match');
+  document.addEventListener('keydown', onKey);
+  m.last = 0; m.raf = requestAnimationFrame(loop);
+  setBall(); renderPanel(); updateHud();
+  var cfgMode = cfg.mode==='tournament' ? 'Tournament match' : 'Quick Match';
+  showOverlay(cfgMode, [
+    h('div',{class:'vs'}, UI.badge(m.teams[0],56), h('b',{text:'vs'}), UI.badge(m.teams[1],56)),
+    h('p',{style:'font-weight:800;font-size:1.1rem',text:m.teams[0].label+'  vs  '+m.teams[1].label}),
+    h('p',{class:'muted small',text:(cfg.category==='business'?'Small Business':'Personal Finance')+' questions, '+cfg.difficulty+' difficulty, '+minutes+' minute match'+(cfg.players===2?', two players on one device':'')+'.'}),
+    h('p',{class:'muted small',text:'Answer to move up the pitch. Wrong answers hand the ball over. Keys: 1-4 to answer, T/F on true/false, Esc to pause.'})
+  ], [{label:'Kick off', kind:'primary', fn:function(){ hideOverlay(); WFF.Audio.play('whistle'); kickoff(0); }}]);
+};
+
+Match.stop = function(){
+  if(!m) return;
+  cancelAnimationFrame(m.raf); document.removeEventListener('keydown', onKey);
+  hideOverlay(); m = null;
+};
+WFF.Bus.on('screen', function(n){ if(n!=='match') Match.stop(); });
+
+/* =====================================================================
+   DOM
+   ===================================================================== */
+function buildDom(){
+  var root = $('#screen-match'); root.innerHTML = ''; m.root = root; var e = m.el;
+  function side(i){
+    var t = m.teams[i];
+    e['score'+i] = h('div',{class:'ms-score',text:'0'});
+    var meter = e['meter'+i] = h('div',{class:'ms-meter'}); for(var k=0;k<SUPER_MAX;k++) meter.appendChild(h('i'));
+    return h('div',{class:'ms-team t'+i}, UI.badge(t,46), h('div',{class:'ms-info'}, h('div',{class:'ms-name',text:t.label}), S.get('superShot')?meter:null), e['score'+i]);
+  }
+  e.clock = h('div',{class:'ms-clock',text:fmtClock(m.clock)}); e.half = h('div',{class:'ms-half',text:'1st half'}); e.poss = h('div',{class:'ms-poss'});
+  m.cv = h('canvas'); m.ctx = m.cv.getContext('2d'); m.panel = h('div',{class:'mpanel'});
+  root.appendChild(h('div',{class:'mwrap'},
+    h('div',{class:'topbar',style:'margin-bottom:8px'}, h('button',{class:'btn small',text:'Pause (Esc)',onClick:function(){ togglePause(); }}), h('span',{class:'muted small',text:WFF.Const.CATEGORIES.filter(function(c){return c.id===m.cfg.category;})[0].label+' / '+m.cfg.difficulty}), h('span')),
+    h('div',{class:'msb'}, side(0), h('div',{class:'ms-mid'}, e.clock, e.half, e.poss), side(1)),
+    h('div',{class:'mmain'}, h('div',{class:'mpitch'}, m.cv), m.panel)));
+}
+function setText(el, v){ v = String(v); if(el.textContent!==v) el.textContent = v; }
+function updateHud(){
+  var e = m.el;
+  setText(e.score0, m.score[0]); setText(e.score1, m.score[1]); setText(e.clock, fmtClock(m.clock));
+  setText(e.half, m.pen ? 'Penalty shootout' : (m.half===1?'1st half':'2nd half'));
+  setText(e.poss, (m.over||m.phase==='intro') ? '' : (m.pen ? m.teams[m.poss].code+' to kick' : m.teams[m.poss].code+' ball: '+ZONE_NAMES[m.zone]));
+  for(var s=0;s<2;s++){ var mt = e['meter'+s]; if(!mt.parentNode) continue;
+    for(var k=0;k<SUPER_MAX;k++) mt.children[k].className = k<m.meter[s] ? 'on' : '';
+    mt.className = 'ms-meter'+(m.meter[s]>=SUPER_MAX?' full':''); }
+  if(m.timerEl && m.qMax>0){ var r = U.clamp(m.qLeft/m.qMax,0,1); m.timerEl.style.width = (r*100).toFixed(1)+'%'; m.timerEl.className = r<.25?'low':''; }
+}
+
+/* ---------------- overlays ---------------- */
+function showOverlay(title, nodes, btns){
+  hideOverlay();
+  var foot = h('div',{class:'mbtns'}, btns.map(function(b){ return h('button',{class:'btn '+(b.kind||''),text:b.label,onClick:b.fn}); }));
+  m.overlay = h('div',{class:'mover'}, h('div',{class:'mcard'}, h('h2',{text:title}), nodes, foot));
+  m.root.appendChild(m.overlay);
+}
+function hideOverlay(){ if(m && m.overlay){ if(m.overlay.parentNode) m.overlay.parentNode.removeChild(m.overlay); m.overlay = null; } }
+function gate(side, then){            // two-player "pass the device" screen
+  if(m.cfg.players!==2 || m.lastViewer===side){ m.lastViewer = side; then(); return; }
+  m.phase = 'gate'; m.lastViewer = side; renderPanel();
+  showOverlay('Pass the device', [ h('div',{class:'vs'}, UI.badge(m.teams[side],64)),
+    h('p',{style:'font-size:1.2rem;font-weight:800',text:'Pass the device to '+m.teams[side].label}), h('p',{class:'muted small',text:'Do not let the other player see the next question.'}) ],
+    [{label:'I am ready', kind:'primary', fn:function(){ hideOverlay(); then(); }}]);
+}
+
+/* ---------------- pause ---------------- */
+function togglePause(){
+  if(!m || m.over) return;
+  if(m.paused){ m.paused = false; hideOverlay(); return; }
+  if(m.overlay) return;
+  m.paused = true;
+  var btns = [{label:'Resume', kind:'primary', fn:function(){ m.paused=false; hideOverlay(); }}];
+  if(!m.cfg.onEnd) btns.push({label:'Restart', fn:function(){ UI.confirm('Restart match','Start this match again from 0-0?','Restart',function(){ var c=m.cfg; Match.start(c); }, true); }});
+  btns.push({label:'Settings', fn:function(){ UI.toast('Settings are available from the main menu.'); }});
+  btns.push({label:'Quit to menu', kind:'danger', fn:function(){ UI.confirm('Quit match','Leave this match? Progress will be lost.','Quit',function(){ Match.stop(); WFF.Menu.render(); WFF.Router.show('menu'); }, true); }});
+  showOverlay('Paused', [h('p',{class:'muted',text:m.teams[0].label+' '+m.score[0]+' - '+m.score[1]+' '+m.teams[1].label})], btns);
+}
+function onKey(e){
+  if(!m || WFF.Router.current!=='match') return;
+  if($('#modal-root').children.length) return;
+  if(e.key==='Escape'){ togglePause(); return; }
+  if(m.phase!=='question' || m.overlay || m.paused || !human(m.qSide)) return;
+  var k = String(e.key).toLowerCase(), q = m.q, i = -1;
+  if(k>='1' && k<='4') i = +k-1; else if(q.type==='tf'){ if(k==='t') i = 0; else if(k==='f') i = 1; }
+  if(i>=0 && i<q.options.length && m.elim.indexOf(i)<0) answer(i);
+}
+
+/* =====================================================================
+   QUESTION PANEL
+   ===================================================================== */
+function penDots(){
+  var box = h('div');
+  [0,1].forEach(function(s){
+    var row = h('div',{class:'dots'}, h('b',{text:m.teams[s].code}));
+    var n = Math.max(5, m.pen.log[s].length);
+    for(var i=0;i<n;i++){ var r = m.pen.log[s][i]; row.appendChild(h('i',{class: r===1?'s':(r===0?'x':'')})); }
+    box.appendChild(row); });
+  return box;
+}
+function renderPanel(){
+  if(!m) return; var p = m.panel; p.innerHTML = ''; m.timerEl = null;
+  if(m.pen) p.appendChild(penDots());
+  if((m.phase==='question' || m.phase==='reveal') && m.q){ p.appendChild(questionView()); updateHud(); return; }
+  p.appendChild(h('div',{class:'mp-head',text:m.pen?'Penalty shootout':ZONE_NAMES[m.zone]}));
+  p.appendChild(h('div',{class:'mp-idle',text:m.status||'Get ready...'}));
+  if(!m.pen && m.phase!=='intro'){
+    p.appendChild(h('div',{class:'small muted',style:'margin-top:10px',text:'Streaks: '+m.teams[0].code+' '+m.stats[0].cur+' / '+m.teams[1].code+' '+m.stats[1].cur+'. Correct answers move the ball forward; reach the penalty area and answer once more to shoot.'}));
+  }
+}
+function questionView(){
+  var q = m.q, side = m.qSide, rev = m.phase==='reveal', mine = human(side), box = h('div');
+  var kindText = KIND_LABEL[m.qKind];
+  box.appendChild(h('div',{class:'mp-head',text:kindText+' - '+m.teams[side].label}));
+  box.appendChild(h('div',null, h('span',{class:'chip gold',text:WFF.Const.CATEGORIES.filter(function(c){return c.id===q.category;})[0].label}), h('span',{class:'chip',text:q.difficulty}), h('span',{class:'chip',text:ZONE_NAMES[Math.min(5,m.zone)]})));
+  if(m.qMax>0){ var bar = h('div',{class:'mtimer'}, h('i')); m.timerEl = bar.firstChild; box.appendChild(bar); } else box.appendChild(h('div',{style:'height:12px'}));
+  box.appendChild(h('div',{class:'mq-text',text:q.text}));
+  q.options.forEach(function(o,i){
+    var cls = 'mopt'; if(m.elim.indexOf(i)>=0) cls += ' gone';
+    if(rev){ if(i===q.correct) cls += ' right'; else if(i===m.picked) cls += ' wrong'; }
+    var key = q.type==='tf' ? (i===0?'T':'F') : String(i+1);
+    box.appendChild(h('button',{class:cls,type:'button',disabled:rev,onClick:function(){ answer(i); }}, h('kbd',{text:key}), h('span',{text:o})));
+  });
+  if(rev){
+    var msg = m.picked<0 ? 'Time is up! ' : (m.picked===q.correct ? 'Correct! ' : 'Not quite. ');
+    box.appendChild(h('div',{class:'mexp'}, h('b',{text:msg}), q.explanation||''));
+  } else {
+    if(m.hintShown && q.hint) box.appendChild(h('div',{class:'mhint',text:'Hint: '+q.hint}));
+    if(S.get('hints') && q.hint && !m.hintShown){
+      box.appendChild(h('button',{class:'btn small',type:'button',disabled:m.hintUsed,text:m.hintUsed?'Hint used this possession':'Show hint',onClick:function(){ m.hintUsed = true; m.hintShown = true; renderPanel(); }}));
+    }
+    if(S.get('powerups')){
+      var row = h('div',{class:'mpow'}), pw = m.pow[side];
+      POWERS.forEach(function(P){
+        var off = pw[P.id]<=0 || (P.id==='double' && (m.qKind!=='attack' || m.dbl[side])) || (P.id==='fifty' && (q.type!=='mc' || q.options.length-m.elim.length<=2));
+        row.appendChild(h('button',{class:'btn small',type:'button',disabled:off,title:P.id==='double'?'Next correct attacking answer moves the ball two zones':'',text:P.label+' ('+pw[P.id]+')',onClick:function(){ usePow(P.id); }}));
+      });
+      box.appendChild(row);
+    }
+  }
+  if(!mine){ box.appendChild(h('div',{class:'small muted',style:'margin-top:8px',text:'CPU is thinking...'})); }
+  return box;
+}
+
+/* ---------------- asking and answering ---------------- */
+function ask(side, kind, dIdx, cb){
+  var q = m.pool.next(DIFFS[dIdx]);
+  if(!q){ cb(false); return; }
+  m.q = q; m.qSide = side; m.qKind = kind; m.qDiff = DIFFS[dIdx]; m.cb = cb; m.picked = -1; m.elim = []; m.hintShown = false;
+  var t = Number(S.get('timer')) || 0; m.qMax = t; m.qLeft = t;
+  m.phase = 'question'; renderPanel();
+}
+function answer(i){
+  if(!m || m.phase!=='question') return;
+  var q = m.q, ok = (i===q.correct), side = m.qSide;
+  m.picked = i; m.phase = 'reveal'; m.timerEl = null;
+  recordAnswer(side, ok); WFF.Audio.play(ok?'correct':'wrong');
+  renderPanel();
+  var cb = m.cb; later(1200 + (q.explanation?900:0), function(){ cb(ok); });
+}
+function recordAnswer(side, ok){
+  var st = m.stats[side];
+  if(ok){
+    st.correct++; st.cur++; if(st.cur>st.streak) st.streak = st.cur;
+    if(S.get('superShot')) m.meter[side] = Math.min(SUPER_MAX, m.meter[side]+1);
+    if(S.get('powerups') && human(side) && st.cur%3===0) earn(side);
+  } else { st.wrong++; st.cur = 0; m.meter[side] = 0; }
+}
+function earn(side){
+  var P = POWERS[Math.floor(Math.random()*POWERS.length)]; m.pow[side][P.id]++;
+  UI.toast(m.teams[side].code+' earned a power-up: '+P.label);
+}
+function usePow(id){
+  if(!m || m.phase!=='question' || !S.get('powerups')) return;
+  var side = m.qSide, pw = m.pow[side]; if(!human(side) || pw[id]<=0) return;
+  if(id==='fifty'){
+    var keep = m.q.options.length - m.elim.length, rem = Math.min(2, keep-2); if(rem<=0) return;
+    var wrong = U.shuffle(m.q.options.map(function(_,i){return i;}).filter(function(i){ return i!==m.q.correct && m.elim.indexOf(i)<0; }));
+    for(var k=0;k<rem;k++) m.elim.push(wrong[k]);
+  } else if(id==='skip'){
+    var nq = m.pool.next(m.qDiff); if(!nq) return;
+    m.q = nq; m.elim = []; m.hintShown = false; m.qLeft = m.qMax;
+  } else if(id==='time'){
+    if(m.qMax>0){ m.qLeft += 10; if(m.qLeft>m.qMax) m.qMax = m.qLeft; } else { m.clock += 15; if(m.clock>0) m.timeUp = false; }
+  } else if(id==='double'){
+    if(m.qKind!=='attack' || m.dbl[side]) return; m.dbl[side] = true; UI.toast('Double Zone armed: a correct answer moves the ball two zones');
+  }
+  pw[id]--; WFF.Audio.play('powerup'); renderPanel();
+}
+
+/* ---------------- CPU brain ---------------- */
+function cpuRoll(side, kind, dI){
+  var base = {easy:.45, normal:.62, hard:.8}[S.get('cpuLevel')] || .62;
+  var me = m.teams[side].rating, opp = m.teams[1-side].rating;
+  var p = base + U.clamp((me-opp)/260, -.12, .12) - dI*.05 - (kind==='defense'?.05:0);
+  return Math.random() < U.clamp(p, .12, .93);
+}
+function cpuStep(side, kind, dI, cb){
+  m.phase = 'cpu'; m.q = null;
+  say(nm(side)+(kind==='defense'?' defend...':(kind==='shot'||kind==='penalty'?' line up a shot...':' have the ball...')));
+  later(900+Math.random()*700, function(){
+    var ok = cpuRoll(side, kind, dI); recordAnswer(side, ok);
+    say(nm(side)+(ok?' answered correctly.':' got it wrong.')); WFF.Audio.play(ok?'correct':'wrong');
+    later(800, function(){ cb(ok); });
+  });
+}
+function actor(side, kind, dI, cb){      // a side answers a question: human sees it, CPU simulates
+  if(human(side)) gate(side, function(){ ask(side, kind, dI, cb); });
+  else cpuStep(side, kind, dI, cb);
+}
+
+/* =====================================================================
+   GAME FLOW
+   ===================================================================== */
+function setBall(){ m.ball.tx = absX(m.poss, ZONE_FRAC[m.zone]); m.ball.ty = .5; m.ball.rate = 4; }
+function kickoff(side){
+  m.poss = side; m.zone = 2; m.hintUsed = false; m.hintShown = false; m.q = null; setBall();
+  m.phase = 'ready'; say(nm(side)+' kick off from midfield.'); updateHud();
+  later(1000, turn);
+}
+function turn(){
+  if(!m || m.over) return;
+  if(m.timeUp) return endHalf();
+  var a = m.poss;
+  if(m.zone>=5) return shotStep(a);
+  say(nm(a)+' attack: '+ZONE_NAMES[m.zone]+'.');
+  actor(a, 'attack', diffIdx(m.zone), function(ok){ attackDone(a, ok); });
+}
+function attackDone(a, ok){
+  if(!ok) return turnover('Possession lost! '+nm(1-a)+' win the ball.');
+  var d = 1-a, step = m.dbl[a] ? 2 : 1; m.dbl[a] = false;
+  var tz = Math.min(5, m.zone+step);
+  if(Math.random() < DEF_CHANCE[Math.min(4,m.zone)]) defend(a, d, tz); else advance(tz);
+}
+function defend(a, d, tz){
+  say(nm(d)+' must defend this attack!');
+  actor(d, 'defense', diffIdx(m.zone, 0), function(ok){
+    if(ok) turnover('Great tackle! '+nm(d)+' stop the attack.'); else advance(tz);
+  });
+}
+function advance(tz){
+  m.zone = tz; m.hintUsed = false; setBall(); m.phase = 'anim'; WFF.Audio.play('kick');
+  say(nm(m.poss)+' move into the '+ZONE_NAMES[tz].toLowerCase()+'.');
+  later(900, turn);
+}
+function turnover(msg){
+  var oldZone = m.zone, d = 1-m.poss;
+  m.poss = d; m.zone = oldZone>=5 ? 0 : U.clamp(4-oldZone, 0, 3); m.hintUsed = false; m.hintShown = false; m.q = null;
+  setBall(); m.phase = 'anim'; WFF.Audio.play('kick'); say(msg);
+  later(1300, turn);
+}
+function keeperSave(a, extra){
+  var d = 1-a, lvl = {easy:-.04, normal:0, hard:.05}[S.get('cpuLevel')] || 0;
+  var p = .14 + (extra||0) + U.clamp((m.teams[d].rating-m.teams[a].rating)/400, -.08, .12) + (human(d)?0:lvl);
+  return Math.random() < U.clamp(p, .04, .38);
+}
+function shotStep(a){
+  if(S.get('superShot') && m.meter[a]>=SUPER_MAX){
+    m.meter[a] = 0; m.superFx = 2; WFF.Audio.play('supershot'); say('SUPER SHOT! '+nm(a)+' unleash an unstoppable strike!');
+    m.phase = 'anim'; return later(1100, function(){ resolveShot(a, 'goal', true); });
+  }
+  say(nm(a)+' have a shot on goal!');
+  actor(a, 'shot', diffIdx(5), function(ok){
+    if(!ok) resolveShot(a, 'wide'); else resolveShot(a, keeperSave(a)?'save':'goal');
+  });
+}
+function resolveShot(a, res, sup){
+  var d = 1-a; m.phase = 'anim'; m.q = null; var b = m.ball;
+  b.rate = 9; var goalX = a===0 ? 1.02 : -0.02, ty = .4+Math.random()*.2;
+  m.kyT[d] = res==='goal' && !sup ? (ty<.5 ? .62 : .38) : (res==='save' ? ty : .5);
+  WFF.Audio.play('kick');
+  if(res==='goal'){ b.tx = goalX; b.ty = ty; later(650, function(){ goal(a, sup); }); }
+  else if(res==='save'){ b.tx = absX(a,.955); b.ty = ty; say('Saved by the keeper!'); later(500, function(){ b.tx = absX(a,.8); b.ty = .3+Math.random()*.4; b.rate = 5; });
+    later(1500, function(){ m.poss = d; m.zone = 0; m.hintUsed = false; m.kyT[d] = .5; setBall(); say(nm(d)+' restart from their box.'); later(900, turn); }); }
+  else { b.tx = absX(a,1.01); b.ty = Math.random()<.5 ? .08 : .92; say('Shot goes wide!'); later(1500, function(){ m.poss = d; m.zone = 0; m.hintUsed = false; setBall(); say(nm(d)+' restart from their box.'); later(900, turn); }); }
+}
+function goal(a, sup){
+  m.score[a]++; m.stats[a].goals++; m.cheer = 3; m.flash = S.get('reduceMotion')?0:1; m.shake = S.get('reduceMotion')?0:.6;
+  m.banner = {text:sup?'SUPER GOAL!':'GOAL!', sub:nm(a)+'  '+m.score[0]+' - '+m.score[1], t:0, dur:2.4};
+  WFF.Audio.play('goal'); say('GOAL for '+nm(a)+'!');
+  if(!S.get('reduceMotion')) for(var i=0;i<90;i++) m.fx.push({x:.5, y:.45, vx:(Math.random()-.5)*1.4, vy:-Math.random()*1.2-.2, c:[m.teams[a].c1,m.teams[a].c2,'#ffd35a','#fff'][i%4], life:2+Math.random()});
+  later(2500, function(){ m.kyT = [.5,.5]; kickoff(1-a); });
+}
+
+/* ---------------- half time / full time ---------------- */
+function endHalf(){
+  m.timeUp = false; WFF.Audio.play('whistle');
+  if(m.half===1){
+    m.phase = 'break';
+    showOverlay('Half time', [ h('div',{class:'bigscore',text:m.score[0]+' - '+m.score[1]}), h('p',{text:m.teams[0].label+'  vs  '+m.teams[1].label}), h('p',{class:'muted small',text:'Correct so far: '+m.stats[0].correct+' / '+m.stats[1].correct}) ],
+      [{label:'Start second half', kind:'primary', fn:function(){ hideOverlay(); m.half = 2; m.clock = m.halfLen; m.zone = 2; kickoffSecond(); }}]);
+  } else {
+    if(m.score[0]===m.score[1]){
+      m.phase = 'break';
+      showOverlay('Full time: level!', [ h('div',{class:'bigscore',text:m.score[0]+' - '+m.score[1]}), h('p',{text:'It goes to a penalty shootout.'}) ],
+        [{label:'Start shootout', kind:'primary', fn:function(){ hideOverlay(); startShootout(); }}]);
+    } else finish();
+  }
+}
+function kickoffSecond(){ kickoff(1); }
+
+/* ---------------- penalty shootout ---------------- */
+function startShootout(){
+  m.pen = {n:[0,0], g:[0,0], log:[[],[]], next:0}; m.paused = false; m.timeUp = false;
+  m.zone = 5; m.kyT = [.5,.5]; penaltyTurn();
+}
+function penWinner(){
+  var n = m.pen.n, g = m.pen.g, ra = Math.max(0,5-n[0]), rb = Math.max(0,5-n[1]);
+  if(n[0]<5 || n[1]<5){ if(g[0]>g[1]+rb) return 0; if(g[1]>g[0]+ra) return 1; return -1; }
+  if(n[0]===n[1]){ if(g[0]!==g[1]) return g[0]>g[1]?0:1; if(n[0]>=12) return Math.random()<.5?0:1; }
+  return -1;
+}
+function penaltyTurn(){
+  if(!m || m.over) return;
+  var w = penWinner(); if(w>=0) return finish();
+  var k = m.pen.next; m.poss = k; m.zone = 5; m.hintUsed = false; m.q = null;
+  m.ball.tx = absX(k,.87); m.ball.ty = .5; m.ball.rate = 6; m.kyT = [.5,.5];
+  say(nm(k)+' step up to take a penalty.'); m.phase = 'ready';
+  later(900, function(){
+    actor(k, 'penalty', diffIdx(5), function(ok){
+      var res = !ok ? 'wide' : (keeperSave(k, -.02) ? 'save' : 'goal');
+      penResolve(k, res);
+    });
+  });
+}
+function penResolve(k, res){
+  var d = 1-k, b = m.ball; m.phase = 'anim'; m.q = null; b.rate = 9; WFF.Audio.play('kick');
+  var ty = .4+Math.random()*.2, goalX = k===0 ? 1.02 : -0.02;
+  m.kyT[d] = res==='goal' ? (ty<.5?.62:.38) : (res==='save' ? ty : .5);
+  if(res==='goal'){ b.tx = goalX; b.ty = ty; } else if(res==='save'){ b.tx = absX(k,.955); b.ty = ty; } else { b.tx = absX(k,1.01); b.ty = Math.random()<.5?.08:.92; }
+  later(700, function(){
+    var scored = res==='goal';
+    m.pen.n[k]++; m.pen.log[k].push(scored?1:0); if(scored){ m.pen.g[k]++; m.score_pen = true; m.cheer = 2; WFF.Audio.play('goal'); if(!S.get('reduceMotion')){ m.flash = .6; }
+      m.banner = {text:'SCORED!', sub:nm(k), t:0, dur:1.6}; } else { m.banner = {text:res==='save'?'SAVED!':'MISSED!', sub:nm(k), t:0, dur:1.6}; }
+    say(scored ? nm(k)+' score!' : (res==='save'?'The keeper saves it!':'The kick goes wide!'));
+    m.pen.next = d; renderPanel();
+    later(1700, penaltyTurn);
+  });
+}
+
+/* ---------------- finishing ---------------- */
+function buildResult(){
+  var pen = m.pen ? [m.pen.g[0], m.pen.g[1]] : null, st = m.stats;
+  var winner = pen ? (pen[0]>pen[1]?'A':'B') : (m.score[0]>m.score[1]?'A':'B');
+  function pack(s){ return {correct:st[s].correct, wrong:st[s].wrong, streak:st[s].streak, goals:st[s].goals}; }
+  return {winner:winner, score:m.score.slice(), penalties:pen, stats:{A:pack(0), B:pack(1)}};
+}
+function persist(res){
+  try{
+    var st = WFF.Store.get('stats', {matches:0, wins:0, goals:0, correct:0, answered:0}), sides = m.cfg.players===2 ? [0,1] : [0];
+    st.matches++; if(m.cfg.players!==2 && res.winner==='A') st.wins++;
+    sides.forEach(function(s){ st.goals += m.stats[s].goals; st.correct += m.stats[s].correct; st.answered += m.stats[s].correct + m.stats[s].wrong; });
+    WFF.Store.set('stats', st);
+  }catch(e){}
+}
+function finish(){
+  if(!m || m.over) return;
+  m.over = true; m.phase = 'over'; m.q = null; var res = m.result = buildResult();
+  if(!m.persisted){ m.persisted = true; persist(res); }
+  WFF.Audio.play(res.winner==='A' || m.cfg.players===2 ? 'win' : 'lose'); WFF.Audio.play('whistle');
+  updateHud(); renderPanel();
+  var cfg = m.cfg, win = res.winner==='A' ? m.teams[0] : m.teams[1];
+  function acc(s){ var t = res.stats[s]; var n = t.correct+t.wrong; return n ? Math.round(100*t.correct/n)+'%' : '-'; }
+  var tbl = h('table',{class:'matrix',style:'margin-top:10px'},
+    h('tr',null, h('th',{text:''}), h('th',{text:m.teams[0].code}), h('th',{text:m.teams[1].code})),
+    [['Goals', 'goals'],['Correct','correct'],['Wrong','wrong'],['Longest streak','streak']].map(function(r){ return h('tr',null, h('th',{text:r[0]}), h('td',{text:res.stats.A[r[1]]}), h('td',{text:res.stats.B[r[1]]})); }),
+    h('tr',null, h('th',{text:'Accuracy'}), h('td',{text:acc('A')}), h('td',{text:acc('B')})));
+  var btns = [];
+  Match.last = res;
+  WFF.Bus.emit('match:end', res);
+  if(cfg.onEnd){ btns.push({label:'Continue', kind:'primary', fn:function(){ Match.stop(); cfg.onEnd(res); }}); }
+  else { btns.push({label:'Rematch', kind:'primary', fn:function(){ Match.start(cfg); }}); btns.push({label:'Menu', fn:function(){ Match.stop(); WFF.Menu.render(); WFF.Router.show('menu'); }}); }
+  showOverlay('Full time', [ h('div',{class:'vs'}, UI.badge(m.teams[0],48), h('div',{class:'bigscore',style:'margin:0 10px',text:res.score[0]+' - '+res.score[1]}), UI.badge(m.teams[1],48)),
+    res.penalties ? h('p',{class:'muted',text:'Penalties: '+res.penalties[0]+' - '+res.penalties[1]}) : null,
+    h('p',{style:'font-size:1.15rem;font-weight:800;color:var(--gold2)',text:(cfg.players===2 ? win.label+' win!' : (res.winner==='A' ? 'You win! '+win.label : win.label+' win.'))}), tbl ], btns);
+}
+
+/* =====================================================================
+   HEADLESS SIMULATION (for CPU vs CPU tournament games)
+   ===================================================================== */
+Match.simulate = function(ta, tb, cfg){
+  var ra = ta.rating, rb = tb.rating, mins = Number(S.get('matchMinutes')) || 3;
+  function pois(l){ var L = Math.exp(-l), k = 0, p = 1; do{ k++; p *= Math.random(); }while(p>L); return k-1; }
+  var share = ra/(ra+rb), la = U.clamp(1.3*Math.pow(share*2,1.7), .2, 4.5), lb = U.clamp(1.3*Math.pow((1-share)*2,1.7), .2, 4.5);
+  var ga = pois(la), gb = pois(lb), pens = null;
+  if(ga===gb){
+    var pa = U.clamp(.72+(ra-rb)/600, .5, .9), pb = U.clamp(.72+(rb-ra)/600, .5, .9), a = 0, b = 0, i;
+    for(i=0;i<5;i++){ if(Math.random()<pa) a++; if(Math.random()<pb) b++; }
+    for(i=0;i<10 && a===b;i++){ if(Math.random()<pa) a++; if(Math.random()<pb) b++; }
+    if(a===b){ if(Math.random()<.5) a++; else b++; }
+    pens = [a,b];
+  }
+  function side(r, goals){
+    var n = Math.round(mins*4 + Math.random()*6), p = U.clamp(.42 + (r-60)/200 + Math.random()*.12, .25, .92), c = Math.round(n*p);
+    return {correct:c, wrong:n-c, streak:1+Math.floor(Math.random()*Math.min(Math.max(c,1),6)), goals:goals};
+  }
+  var winner = pens ? (pens[0]>pens[1]?'A':'B') : (ga>gb?'A':'B');
+  return {winner:winner, score:[ga,gb], penalties:pens, stats:{A:side(ra,ga), B:side(rb,gb)}};
+};
+
+/* =====================================================================
+   MAIN LOOP + RENDERING
+   ===================================================================== */
+function loop(ts){
+  if(!m) return;
+  m.raf = requestAnimationFrame(loop);
+  var raw = Math.min(.1, m.last ? (ts-m.last)/1000 : .016); m.last = ts;
+  var dt = frozen() ? 0 : raw*Match.timeScale;
+  m.t += raw;
+  try{
+    if(dt>0){
+      // delayed actions
+      var i, due = [];
+      for(i=0;i<m.sched.length;i++) m.sched[i].t -= dt*1000;
+      due = m.sched.filter(function(s){return s.t<=0;}); m.sched = m.sched.filter(function(s){return s.t>0;});
+      var cur = m;
+      for(i=0;i<due.length;i++){ if(m!==cur || !m) break; due[i].fn(); }
+      if(!m || m!==cur) return;
+      // match clock (not running during the shootout or between phases)
+      if(!m.pen && !m.timeUp && (m.phase==='question'||m.phase==='reveal'||m.phase==='anim'||m.phase==='cpu')){
+        m.clock -= dt; if(m.clock<=0){ m.clock = 0; m.timeUp = true; }
+      }
+      // answer timer
+      if(m.phase==='question' && m.qMax>0 && human(m.qSide)){ m.qLeft -= dt; if(m.qLeft<=0){ m.qLeft = 0; answer(-1); } }
+    }
+    if(!m) return;
+    updateHud(); fit(); step(dt); draw();
+  }catch(err){ console.error(err); }
+}
+function fit(){
+  var c = m.cv, w = c.parentNode.clientWidth; if(!w) return;
+  var hh = Math.round(w*(w<560?.62:.5)), d = window.devicePixelRatio || 1;
+  if(m.W!==w || m.H!==hh || m.dpr!==d){ m.W = w; m.H = hh; m.dpr = d; c.style.height = hh+'px'; c.width = Math.round(w*d); c.height = Math.round(hh*d); }
+}
+function step(dt){
+  var b = m.ball, r = Math.min(1, dt*b.rate), dx = b.tx-b.x;
+  b.x += dx*r; b.y += (b.ty-b.y)*r;
+  b.h = S.get('reduceMotion') ? 0 : Math.min(1, Math.abs(dx)*5);
+  if(m.superFx>0){ m.superFx -= dt; m.trail.push({x:b.x,y:b.y,a:1}); }
+  m.trail.forEach(function(t){ t.a -= dt*2.2; }); m.trail = m.trail.filter(function(t){ return t.a>0; });
+  m.flash = Math.max(0, m.flash - dt*1.6); m.shake = Math.max(0, m.shake - dt); m.cheer = Math.max(0, m.cheer - dt);
+  if(m.banner){ m.banner.t += dt; if(m.banner.t>m.banner.dur) m.banner = null; }
+  m.fx.forEach(function(p){ p.x += p.vx*dt*.4; p.y += p.vy*dt*.4; p.vy += dt*1.2; p.life -= dt; }); m.fx = m.fx.filter(function(p){ return p.life>0; });
+  for(var s=0;s<2;s++){
+    m.ky[s] += (m.kyT[s]-m.ky[s])*Math.min(1,dt*8);
+    var bf = m.pen ? .5 : (s===0 ? b.x : 1-b.x), dir = s===0 ? 1 : -1, rt = Math.min(1, dt*3);
+    for(var i=0;i<4;i++){
+      var f = BASE[i].x*.55 + bf*.45; if(s===m.poss && !m.pen) f += .07; f = U.clamp(f,.08,.92);
+      var ax = absX(s,f), ay = BASE[i].y + (b.y-.5)*.3;
+      if(i===3 && s===m.poss){ ax = b.x - dir*(m.pen?.05:.028); ay = m.pen ? .5 : b.y; }
+      var p = m.pl[s][i]; p.x += (ax-p.x)*rt; p.y += (ay-p.y)*rt;
+    }
+  }
+}
+
+/* ---------------- drawing ---------------- */
+function draw(){
+  var c = m.ctx, W = m.W, H = m.H; if(!W) return;
+  var reduce = S.get('reduceMotion'), u = W/900;
+  c.setTransform(m.dpr,0,0,m.dpr,0,0); c.clearRect(0,0,W,H);
+  c.save();
+  if(m.shake>0 && !reduce) c.translate((Math.random()-.5)*m.shake*14, (Math.random()-.5)*m.shake*14);
+  var px0 = W*.045, px1 = W*.955, py0 = H*.15, py1 = H*.88, PW = px1-px0, PH = py1-py0;
+  function X(x){ return px0+PW*x; } function Y(y){ return py0+PH*y; }
+  // stands + crowd
+  c.fillStyle = '#10163f'; c.fillRect(0,0,W,H);
+  var bob = reduce ? 0 : (m.cheer>0 ? 4 : 1.2);
+  m.crowd.forEach(function(d){
+    var yy = d.top ? d.y*py0*.86+4 : py1+10+d.y*(H-py1-16);
+    c.fillStyle = d.c; c.globalAlpha = .75; c.beginPath(); c.arc(d.x*W, yy+Math.sin(m.t*(m.cheer>0?9:3)+d.ph)*bob, 2.6*u+.6, 0, 6.283); c.fill();
+  }); c.globalAlpha = 1;
+  // grass
+  for(var i=0;i<12;i++){ c.fillStyle = i%2 ? '#2f8a3b' : '#2a7d35'; c.fillRect(px0+PW*i/12, py0, PW/12+1, PH); }
+  // current zone highlight
+  if(!m.pen && (m.phase!=='intro' && m.phase!=='over')){
+    var e0 = ZONE_EDGE[m.zone], e1 = ZONE_EDGE[m.zone+1], xa = absX(m.poss,e0), xb = absX(m.poss,e1);
+    c.fillStyle = 'rgba(255,211,90,.16)'; c.fillRect(X(Math.min(xa,xb)), py0, PW*Math.abs(xb-xa), PH);
+  }
+  // lines
+  c.strokeStyle = 'rgba(255,255,255,.85)'; c.lineWidth = Math.max(1.5,2*u); c.strokeRect(px0,py0,PW,PH);
+  c.beginPath(); c.moveTo(X(.5),py0); c.lineTo(X(.5),py1); c.stroke();
+  c.beginPath(); c.arc(X(.5),Y(.5),PH*.15,0,6.283); c.stroke();
+  c.beginPath(); c.arc(X(.5),Y(.5),3*u+1,0,6.283); c.fillStyle = '#fff'; c.fill();
+  [0,1].forEach(function(s){
+    var sg = s===0 ? 1 : -1, x0 = s===0 ? px0 : px1;
+    c.strokeRect(s===0 ? x0 : x0-PW*.14, Y(.22), PW*.14, PH*.56);
+    c.strokeRect(s===0 ? x0 : x0-PW*.05, Y(.37), PW*.05, PH*.26);
+    c.beginPath(); c.arc(x0+sg*PW*.1, Y(.5), 2.5*u+1, 0, 6.283); c.fill();
+    var gd = PW*.028; c.fillStyle = 'rgba(255,255,255,.18)'; c.fillRect(s===0 ? x0-gd : x0, Y(.4), gd, PH*.2);
+    c.strokeStyle = '#fff'; c.strokeRect(s===0 ? x0-gd : x0, Y(.4), gd, PH*.2); c.strokeStyle = 'rgba(255,255,255,.85)';
+  });
+  // players
+  var pr = Math.max(7, PH*.042);
+  [0,1].forEach(function(s){
+    var t = m.teams[s];
+    m.pl[s].forEach(function(p,i){ drawPlayer(c, X(p.x), Y(p.y), pr, t.c1, t.c2, !reduce && m.phase!=='intro' ? Math.sin(m.t*8+i*2+s)*1.5 : 0); });
+    drawPlayer(c, X(s===0 ? .03 : .97), Y(m.ky[s]), pr, '#ffd23a', '#222', 0);
+  });
+  // ball trail + ball
+  m.trail.forEach(function(t){ c.globalAlpha = Math.max(0,t.a)*.6; c.fillStyle = '#ffd35a'; c.beginPath(); c.arc(X(t.x),Y(t.y),pr*.7*t.a+2,0,6.283); c.fill(); }); c.globalAlpha = 1;
+  var bx = X(m.ball.x), by = Y(m.ball.y), br = Math.max(4, PH*.03), lift = m.ball.h*PH*.1;
+  c.fillStyle = 'rgba(0,0,0,.35)'; c.beginPath(); c.ellipse(bx, by+br*.9, br*(1-m.ball.h*.2), br*.4, 0, 0, 6.283); c.fill();
+  c.fillStyle = '#fff'; c.beginPath(); c.arc(bx, by-lift, br, 0, 6.283); c.fill();
+  c.strokeStyle = '#222'; c.lineWidth = 1; c.stroke();
+  c.fillStyle = '#222'; c.beginPath(); c.arc(bx, by-lift, br*.38, 0, 6.283); c.fill();
+  // possession arrow + attack direction
+  if(m.phase!=='intro' && !m.over){
+    var tc = m.teams[m.poss], dir = m.poss===0 ? 1 : -1, ay = by-lift-br-pr*1.1+(reduce?0:Math.sin(m.t*4)*3);
+    c.fillStyle = tc.c1; c.strokeStyle = '#fff'; c.lineWidth = 2; c.beginPath(); c.moveTo(bx,ay+pr*.7); c.lineTo(bx-pr*.6,ay-pr*.2); c.lineTo(bx+pr*.6,ay-pr*.2); c.closePath(); c.fill(); c.stroke();
+    c.strokeStyle = 'rgba(255,255,255,.55)'; c.lineWidth = 2.5; for(var k=1;k<=3;k++){ var cx = bx+dir*(br*2+k*pr*.9); c.beginPath(); c.moveTo(cx-dir*pr*.35,by-pr*.45); c.lineTo(cx,by); c.lineTo(cx-dir*pr*.35,by+pr*.45); c.stroke(); }
+  }
+  // confetti
+  m.fx.forEach(function(p){ c.globalAlpha = Math.min(1,p.life); c.fillStyle = p.c; c.fillRect(X(p.x),Y(p.y),5*u+2,3*u+2); }); c.globalAlpha = 1;
+  c.restore();
+  if(m.flash>0){ c.fillStyle = 'rgba(255,255,255,'+(m.flash*.5)+')'; c.fillRect(0,0,W,H); }
+  if(m.banner){
+    var bn = m.banner, k2 = Math.min(1,bn.t/.25), fade = Math.min(1,(bn.dur-bn.t)/.4), sc = reduce ? 1 : (.6+.4*k2);
+    c.save(); c.globalAlpha = Math.max(0,fade); c.translate(W/2,H*.45); c.scale(sc,sc); c.textAlign = 'center';
+    c.font = '900 '+Math.round(W*.09)+'px Trebuchet MS,Arial,sans-serif'; c.lineWidth = 8; c.strokeStyle = 'rgba(0,0,0,.65)'; c.strokeText(bn.text,0,0); c.fillStyle = '#ffd35a'; c.fillText(bn.text,0,0);
+    c.font = '800 '+Math.round(W*.032)+'px Trebuchet MS,Arial,sans-serif'; c.lineWidth = 5; c.strokeText(bn.sub,0,W*.06); c.fillStyle = '#fff'; c.fillText(bn.sub,0,W*.06);
+    c.restore();
+  }
+}
+function drawPlayer(c, x, y, r, c1, c2, bob){
+  c.fillStyle = 'rgba(0,0,0,.3)'; c.beginPath(); c.ellipse(x, y+r*.9, r*.9, r*.35, 0, 0, 6.283); c.fill();
+  c.fillStyle = c1; c.beginPath(); c.arc(x, y+bob, r, 0, 6.283); c.fill();
+  c.fillStyle = c2; c.beginPath(); c.arc(x, y+bob, r, -1.2, 1.2); c.closePath(); c.fill();
+  c.strokeStyle = '#fff'; c.lineWidth = 1.5; c.beginPath(); c.arc(x, y+bob, r, 0, 6.283); c.stroke();
+  c.fillStyle = '#f2c9a0'; c.beginPath(); c.arc(x, y+bob-r*.15, r*.42, 0, 6.283); c.fill();
+}
+
+/* test hook (also handy for Part 3 debugging) */
+Match._test = { state:function(){ return m; }, answer:function(i){ answer(i); }, startShootout:function(){ if(m){ hideOverlay(); startShootout(); } }, finish:function(){ finish(); } };
+})();
+</script>
+
+
+
+<style>
+/* ======================= PART 3 CSS ======================= */
+:focus-visible{outline:3px solid var(--gold2);outline-offset:2px}
+.btn:focus-visible,.mopt:focus-visible,.seg button:focus-visible{outline:3px solid var(--gold2);outline-offset:2px}
+.tbw{overflow-x:auto;padding-bottom:6px}
+.tb{display:flex;align-items:stretch;min-width:760px}
+.tcol{flex:1 1 0;display:flex;flex-direction:column;justify-content:space-around;margin-right:10px;min-width:160px}
+.tcol:last-child{margin-right:0}
+.tcol h4{margin:0 0 6px;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--mute);text-align:center}
+.tcol.now h4{color:var(--gold2)}
+.tm{background:rgba(0,0,0,.25);border:1px solid var(--line);border-radius:10px;margin:5px 0;padding:3px 5px}
+.tm.you{border-color:var(--gold);box-shadow:0 0 0 1px rgba(247,182,0,.4)}
+.tr{display:flex;align-items:center;padding:4px 3px;font-size:.8rem}
+.tr .nm{flex:1 1 auto;margin:0 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tr .sc{font-weight:900;min-width:20px;text-align:right}
+.tr.win{font-weight:800;color:var(--gold2)}
+.tr.out{opacity:.5}
+.tr.tbd{color:var(--mute);font-style:italic}
+.tstatus{text-align:center}
+.tstatus h2{color:var(--gold2);margin-bottom:6px}
+@media (max-width:760px){.tb{flex-direction:column;min-width:0}.tcol{margin-right:0;margin-bottom:12px}}
+.trophy-cv{display:block;margin:0 auto;max-width:100%}
+.stat-big{font-size:1.8rem;font-weight:900;color:var(--gold2)}
+.stgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));grid-gap:10px;margin-top:10px}
+.stgrid>div{background:rgba(0,0,0,.25);border:1px solid var(--line);border-radius:12px;padding:10px}
+.stgrid small{display:block;color:var(--mute);font-size:.72rem;text-transform:uppercase;letter-spacing:.08em}
+[dir=rtl] .tcol{margin-right:0;margin-left:10px}
+[dir=rtl] .slot .badge{margin-right:0;margin-left:12px}
+</style>
+
+<script>
+/* =====================================================================
+   PART 3 JAVASCRIPT : WFF.Tournament, WFF.Audio, WFF.I18n, Stats, tutorial, a11y
+   ===================================================================== */
+(function(){
+'use strict';
+var WFF = window.WFF;
+if(!WFF || !WFF.Match || WFF.Match.isStub){ console.error('WFF Part 3 needs Parts 1 and 2.'); return; }
+var h = WFF.h, $ = WFF.$, U = WFF.util, UI = WFF.UI, S = WFF.Settings;
+
+/* =====================================================================
+   1. AUDIO  (WebAudio synthesiser, created lazily on the first user gesture)
+   ===================================================================== */
+var AC = null, master = null, musicGain = null, musicTimer = null, musicOn = false, nextNote = 0, step = 0;
+function ctx(){
+  if(AC) return AC;
+  try{ var C = window.AudioContext || window.webkitAudioContext; if(!C) return null;
+    AC = new C(); master = AC.createGain(); master.gain.value = .55; master.connect(AC.destination);
+    musicGain = AC.createGain(); musicGain.gain.value = .07; musicGain.connect(master);
+  }catch(e){ AC = null; }
+  return AC;
+}
+function tone(f, t0, dur, type, vol, f2, dest){
+  try{ var c = AC, o = c.createOscillator(), g = c.createGain();
+    o.type = type || 'sine'; o.frequency.setValueAtTime(f, t0); if(f2) o.frequency.exponentialRampToValueAtTime(f2, t0+dur);
+    g.gain.setValueAtTime(0.0001, t0); g.gain.exponentialRampToValueAtTime(vol||.3, t0+.015); g.gain.exponentialRampToValueAtTime(0.0001, t0+dur);
+    o.connect(g); g.connect(dest || master); o.start(t0); o.stop(t0+dur+.05);
+  }catch(e){}
+}
+function noise(t0, dur, vol, freq, q){
+  try{ var c = AC, n = Math.max(1, Math.floor(c.sampleRate*dur)), buf = c.createBuffer(1, n, c.sampleRate), d = buf.getChannelData(0);
+    for(var i=0;i<n;i++) d[i] = (Math.random()*2-1)*(1-i/n);
+    var s = c.createBufferSource(), f = c.createBiquadFilter(), g = c.createGain();
+    s.buffer = buf; f.type = 'bandpass'; f.frequency.value = freq||800; f.Q.value = q||.7; g.gain.value = vol||.3;
+    s.connect(f); f.connect(g); g.connect(master); s.start(t0);
+  }catch(e){}
+}
+var SFX = {
+  kick:function(t){ noise(t,.08,.5,300,1); tone(150,t,.12,'sine',.5,50); },
+  correct:function(t){ tone(660,t,.1,'triangle',.3); tone(880,t+.09,.18,'triangle',.3); },
+  wrong:function(t){ tone(190,t,.35,'sawtooth',.22,90); },
+  whistle:function(t){ tone(2600,t,.12,'square',.08); tone(2750,t+.13,.3,'square',.08); tone(2600,t+.45,.12,'square',.08); },
+  goal:function(t){ noise(t,1.4,.38,900,.5); [523,659,784,1047].forEach(function(f,i){ tone(f,t+i*.1,.3,'triangle',.28); }); },
+  powerup:function(t){ [440,587,784].forEach(function(f,i){ tone(f,t+i*.07,.12,'square',.13); }); },
+  supershot:function(t){ tone(180,t,.7,'sawtooth',.18,1800); noise(t+.5,.5,.3,1500,1); },
+  tick:function(t){ tone(1200,t,.04,'square',.1); },
+  win:function(t){ [523,659,784,1047,1319].forEach(function(f,i){ tone(f,t+i*.14,.3,'triangle',.3); }); },
+  lose:function(t){ [392,370,349,294].forEach(function(f,i){ tone(f,t+i*.2,.4,'sine',.28); }); }
+};
+var CH = [[220,261.6,329.6],[174.6,220,261.6],[261.6,329.6,392],[196,246.9,293.7]];   // Am F C G
+function musicTick(){
+  if(!musicOn || !AC) return;
+  var spb = .26;   // seconds per eighth note
+  while(nextNote < AC.currentTime + .7){
+    var ch = CH[Math.floor(step/8)%4], n = ch[[0,1,2,1,0,2,1,2][step%8]];
+    tone(n*2, nextNote, spb*1.6, 'triangle', .6, null, musicGain);
+    if(step%8===0) tone(ch[0]/2, nextNote, spb*7, 'sine', .8, null, musicGain);
+    nextNote += spb; step++;
+  }
+}
+function startMusic(){
+  if(musicOn || !S.get('music')) return; var c = ctx(); if(!c) return;
+  try{ if(c.state==='suspended') c.resume(); }catch(e){}
+  musicOn = true; nextNote = c.currentTime+.1; step = 0; musicTick(); musicTimer = setInterval(musicTick, 250);
+}
+function stopMusic(){ musicOn = false; if(musicTimer){ clearInterval(musicTimer); musicTimer = null; } }
+WFF.Audio = {
+  play:function(name){
+    WFF.Bus.emit('audio', name);
+    if(!S.get('sound') || !SFX[name]) return;
+    var c = ctx(); if(!c) return;
+    try{ if(c.state==='suspended') c.resume(); SFX[name](c.currentTime+.01); }catch(e){}
+  },
+  music:function(on){ WFF.Bus.emit('music', on); if(on) startMusic(); else stopMusic(); }
+};
+function unlock(){ if(!ctx()) return; try{ if(AC.state==='suspended') AC.resume(); }catch(e){} if(S.get('music')) startMusic(); }
+['pointerdown','keydown','touchstart'].forEach(function(ev){ document.addEventListener(ev, unlock, {passive:true}); });
+WFF.Bus.on('settings', function(d){
+  if(d.reset){ if(S.get('music')) startMusic(); else stopMusic(); return; }
+  if(d.key==='music'){ if(d.value) startMusic(); else stopMusic(); }
+});
+
+/* =====================================================================
+   2. TOURNAMENT
+   ===================================================================== */
+var T = WFF.Tournament; T.isStub = false;
+var ROUNDS = ['Round of 16','Quarter-finals','Semi-finals','Final'];
+var ORDER = [0,15,7,8,4,11,3,12,2,13,5,10,6,9,1,14];      // standard bracket seeding positions
+var st = null;
+function tr(s){ return WFF.I18n.t(String(s).toLowerCase(), s); }
+function load(){ var s = WFF.Store.get('tournament', null); return (s && s.rounds && s.rounds.length) ? s : null; }
+function save(){ WFF.Store.set('tournament', st); }
+function team(code){ return WFF.Data.team(code, st.gender); }
+function allDecided(r){ return r.every(function(m){ return !!m.w; }); }
+function involves(m){ return m.a===st.you || m.b===st.you; }
+function setResult(m, score, pens, w){ m.s = score; m.p = pens; m.w = w; }
+
+T.hasSaved = function(){ var s = load(); return !!(s && s.status==='playing'); };
+T.start = function(cfg){
+  var you = cfg.teamA, g = cfg.gender;
+  var others = WFF.Data.countries.filter(function(c){ return c.code!==you.code; }).map(function(c){ return {code:c.code, v:WFF.Data.team(c.code,g).rating + Math.random()*35}; })
+    .sort(function(a,b){ return b.v-a.v; }).slice(0,15).map(function(o){ return o.code; });
+  var seeded = [you.code].concat(others).map(function(c){ return WFF.Data.team(c,g); }).sort(function(a,b){ return b.rating-a.rating; }).map(function(t){ return t.code; });
+  var r0 = []; for(var i=0;i<8;i++) r0.push({a:seeded[ORDER[2*i]], b:seeded[ORDER[2*i+1]], w:null, s:null, p:null});
+  st = {gender:g, category:cfg.category, difficulty:cfg.difficulty, you:you.code, settings:cfg.settings||Object.assign({},S.all()), rounds:[r0], cur:0, status:'playing', champion:null, outRound:-1};
+  save(); T.render(); WFF.Router.show('tournament'); WFF.Audio.play('whistle');
+};
+T.resume = function(){ var s = load(); if(!s) return false; st = s; T.render(); WFF.Router.show('tournament'); return true; };
+
+function simRound(r, includeYou){
+  r.forEach(function(m){
+    if(m.w) return; if(!includeYou && involves(m)) return;
+    var res = WFF.Match.simulate(team(m.a), team(m.b), {});
+    setResult(m, res.score, res.penalties, res.winner==='A' ? m.a : m.b);
+  });
+}
+function nextRound(){
+  var r = st.rounds[st.cur], nr = [];
+  for(var i=0;i<r.length;i+=2) nr.push({a:r[i].w, b:r[i+1].w, w:null, s:null, p:null});
+  st.rounds.push(nr); st.cur++;
+}
+function afterYourMatch(m){
+  var lost = m.w!==st.you;
+  if(lost){ st.status = 'eliminated'; st.outRound = st.cur; }
+  simRound(st.rounds[st.cur], lost);
+  while(allDecided(st.rounds[st.cur])){
+    if(st.cur===3){ st.champion = st.rounds[3][0].w; if(!lost && st.champion===st.you) st.status = 'champion'; break; }
+    nextRound(); simRound(st.rounds[st.cur], lost);
+  }
+}
+function playNext(){
+  if(!st || st.status!=='playing') return;
+  var r = st.rounds[st.cur], mi = -1; r.forEach(function(m,i){ if(!m.w && involves(m) && mi<0) mi = i; });
+  if(mi<0) return;
+  var m = r[mi], opp = m.a===st.you ? m.b : m.a, A = team(st.you), B = team(opp);
+  UI.modal({ title:tr(ROUNDS[st.cur]), body:h('div',{style:'text-align:center'},
+      h('div',{class:'vs'}, UI.badge(A,56), h('b',{text:'vs'}), UI.badge(B,56)),
+      h('p',{style:'font-weight:800;font-size:1.1rem',text:A.label+'  vs  '+B.label}),
+      h('p',{class:'muted small',text:'Rating '+A.rating+' vs '+B.rating})),
+    actions:[{label:'Cancel'}, {label:'Kick Off', kind:'primary', onClick:function(){
+      WFF.Match.start({ mode:'tournament', players:1, gender:st.gender, category:st.category, difficulty:st.difficulty, teamA:A, teamB:B,
+        settings:Object.assign({}, st.settings), onEnd:function(res){
+          var youWon = res.winner==='A', yourScore = res.score, yourPens = res.penalties;
+          var sc = m.a===st.you ? yourScore : [yourScore[1],yourScore[0]], pn = yourPens ? (m.a===st.you ? yourPens : [yourPens[1],yourPens[0]]) : null;
+          setResult(m, sc, pn, youWon ? st.you : opp);
+          afterYourMatch(m); save(); T.render(); WFF.Router.show('tournament');
+          if(st.status==='champion') setTimeout(ceremony, 400);
+        }});
+    }}] });
+}
+
+function matchBox(m, idx){
+  function row(code, i){
+    if(!code) return h('div',{class:'tr tbd'}, h('span',{class:'nm',text:'To be decided'}));
+    var t = team(code), cls = 'tr'+(m.w ? (m.w===code?' win':' out') : '');
+    var sc = m.s ? String(m.s[i]) + (m.p ? ' ('+m.p[i]+')' : '') : '';
+    return h('div',{class:cls}, UI.badge(t,22), h('span',{class:'nm',text:t.name}), h('span',{class:'sc',text:sc}));
+  }
+  return h('div',{class:'tm'+(involves(m)?' you':'')}, row(m.a,0), row(m.b,1));
+}
+T.render = function(){
+  var root = $('#screen-tournament'); root.innerHTML = ''; if(!st) return;
+  var yourT = team(st.you), status;
+  if(st.status==='playing'){
+    var r = st.rounds[st.cur], m = r.filter(function(x){ return !x.w && involves(x); })[0], opp = m ? team(m.a===st.you ? m.b : m.a) : null;
+    status = h('div',{class:'card tstatus'}, h('h3',{text:tr(ROUNDS[st.cur])}),
+      h('div',{class:'vs'}, UI.badge(yourT,52), h('b',{text:'vs'}), opp ? UI.badge(opp,52) : null),
+      h('p',{style:'font-weight:800',text:yourT.label+(opp?'  vs  '+opp.label:'')}),
+      h('button',{class:'btn primary big',text:tr('Play next match'),onClick:playNext}));
+  } else if(st.status==='champion'){
+    status = h('div',{class:'card tstatus'}, h('h2',{text:tr('Champion!')}), h('p',{text:yourT.label+' won the tournament.'}),
+      h('button',{class:'btn primary',text:'Watch ceremony',onClick:ceremony}));
+  } else {
+    var ch = team(st.champion);
+    status = h('div',{class:'card tstatus'}, h('h2',{text:'Eliminated'}), h('p',{text:yourT.label+' went out in the '+tr(ROUNDS[st.outRound]).toLowerCase()+'.'}),
+      h('p',{class:'muted',text:'Champions: '+ch.label}));
+  }
+  var cols = h('div',{class:'tb'});
+  for(var i=0;i<4;i++){
+    var rr = st.rounds[i], col = h('div',{class:'tcol'+(i===st.cur&&st.status==='playing'?' now':'')}, h('h4',{text:tr(ROUNDS[i])}));
+    if(rr) rr.forEach(function(mm,idx){ col.appendChild(matchBox(mm,idx)); });
+    else for(var k=0;k<(8>>i);k++) col.appendChild(h('div',{class:'tm'}, h('div',{class:'tr tbd'},h('span',{class:'nm',text:'To be decided'})), h('div',{class:'tr tbd'},h('span',{class:'nm',text:'To be decided'}))));
+    cols.appendChild(col);
+  }
+  var btns = [h('button',{class:'btn small',text:'< Menu',onClick:function(){ WFF.Menu.render(); WFF.Router.show('menu'); }})];
+  root.appendChild(h('div',{class:'wrap',style:'max-width:1100px'},
+    h('div',{class:'topbar'}, btns[0], h('h2',{text:tr('Tournament (16 teams)')}), h('span')),
+    status, h('div',{class:'tbw'}, cols),
+    h('div',{class:'row gap',style:'margin-top:12px'},
+      st.status==='playing' ? h('button',{class:'btn danger',text:tr('Quit tournament'),onClick:function(){ UI.confirm('Quit tournament','Abandon this tournament? Progress will be lost.','Quit',function(){ WFF.Store.remove('tournament'); st = null; WFF.Menu.render(); WFF.Router.show('menu'); }, true); }}) :
+        [h('button',{class:'btn primary',text:'New tournament',onClick:function(){ WFF.Store.remove('tournament'); WFF.Setup.open('tournament'); }}), h('button',{class:'btn',text:tr('Menu'),onClick:function(){ WFF.Menu.render(); WFF.Router.show('menu'); }})])));
+  WFF.I18n.apply();
+};
+
+/* ---------- trophy ceremony (canvas) ---------- */
+function ceremony(){
+  var cv = h('canvas',{class:'trophy-cv',width:340,height:300,role:'img','aria-label':'Gold trophy with confetti'}), alive = true, parts = [], t = 0;
+  var reduce = S.get('reduceMotion'), c = cv.getContext('2d'), team0 = team(st.you);
+  for(var i=0;i<(reduce?0:120);i++) parts.push({x:Math.random()*340, y:-Math.random()*300, vy:40+Math.random()*80, vx:(Math.random()-.5)*40, c:['#ffd35a',team0.c1,team0.c2,'#fff','#6aa8ff'][i%5], r:Math.random()*6});
+  function trophy(){
+    c.fillStyle = '#ffd35a'; c.strokeStyle = '#c99100'; c.lineWidth = 3;
+    c.beginPath(); c.moveTo(105,70); c.lineTo(235,70); c.quadraticCurveTo(235,170,170,185); c.quadraticCurveTo(105,170,105,70); c.closePath(); c.fill(); c.stroke();
+    c.beginPath(); c.arc(105,100,28,Math.PI*.5,Math.PI*1.5); c.stroke(); c.beginPath(); c.arc(235,100,28,-Math.PI*.5,Math.PI*.5); c.stroke();
+    c.fillRect(158,185,24,40); c.strokeRect(158,185,24,40); c.fillRect(120,225,100,22); c.strokeRect(120,225,100,22);
+    c.fillStyle = 'rgba(255,255,255,.45)'; c.fillRect(122,80,10,70);
+    c.fillStyle = team0.c1; c.beginPath(); c.arc(170,120,22,0,6.283); c.fill(); c.fillStyle = team0.c2; c.beginPath(); c.arc(170,120,22,-1.2,1.2); c.closePath(); c.fill();
+    c.fillStyle = '#fff'; c.font = '900 14px Trebuchet MS,Arial'; c.textAlign = 'center'; c.fillText(team0.code,170,125);
+  }
+  function frame(){
+    if(!alive || !cv.parentNode) return; t += .016; c.clearRect(0,0,340,300);
+    parts.forEach(function(p){ p.y += p.vy*.016; p.x += p.vx*.016; if(p.y>300){ p.y = -10; p.x = Math.random()*340; } c.fillStyle = p.c; c.fillRect(p.x,p.y,p.r+3,p.r+1); });
+    c.save(); c.translate(0, reduce?0:Math.sin(t*3)*4); trophy(); c.restore(); requestAnimationFrame(frame);
+  }
+  var close = UI.modal({ title:tr('Champion!'), body:h('div',{style:'text-align:center'}, cv, h('p',{style:'font-size:1.2rem;font-weight:800;color:var(--gold2)',text:team0.label+' are world champions!'})),
+    actions:[{label:'Close', kind:'primary'}], onClose:function(){ alive = false; } });
+  WFF.Audio.play('win'); frame();
+  return close;
+}
+T.ceremony = ceremony;
+
+/* =====================================================================
+   3. STATS + MENU EXTENSIONS
+   ===================================================================== */
+T.showStats = function(){
+  var s = WFF.Store.get('stats', {matches:0,wins:0,goals:0,correct:0,answered:0});
+  var acc = s.answered ? Math.round(100*s.correct/s.answered)+'%' : '-';
+  function box(l,v){ return h('div',null, h('small',{text:l}), h('div',{class:'stat-big',text:v})); }
+  UI.modal({ title:tr('Stats'), body:h('div',null, h('div',{class:'stgrid'}, box('Matches',s.matches), box('Wins',s.wins), box('Goals',s.goals), box('Correct answers',s.correct), box('Answered',s.answered), box('Accuracy',acc)),
+    h('p',{class:'muted small',style:'margin-top:10px',text:'Totals count your own matches on this device.'})), actions:[{label:'Close', kind:'primary'}] });
+  WFF.I18n.apply();
+};
+var origMenu = WFF.Menu.render;
+WFF.Menu.render = function(){
+  origMenu.apply(this, arguments);
+  var list = $('#screen-menu .menu-list'); if(!list) return;
+  if(T.hasSaved()) list.insertBefore(h('button',{class:'btn big',text:'Resume Tournament',onClick:function(){ T.resume(); }}), list.children[2] || null);
+  list.appendChild(h('button',{class:'btn',text:tr('Stats'),onClick:function(){ T.showStats(); }}));
+  WFF.I18n.apply();
+};
+var origHow = WFF.Menu.howTo;
+WFF.Menu.howTo = function(){ origHow.apply(this, arguments); WFF.I18n.apply(); };
+
+/* =====================================================================
+   4. I18N : dictionary + translation layer
+   Keys are lowercase English UI strings. The layer translates matching text nodes in
+   #app, the modal root and the toast root, and restores English when switching back.
+   ===================================================================== */
+var LANGS = ['es','pt','fr','de','it','nl','ar','ru','ja','ko','zh','hi'];
+var ROWS = [
+'quick match|Partida rápida|Partida rápida|Match rapide|Schnelles Spiel|Partita veloce|Snelle wedstrijd|مباراة سريعة|Быстрый матч|クイックマッチ|빠른 경기|快速比赛|क्विक मैच',
+'tournament (16 teams)|Torneo (16 equipos)|Torneio (16 equipas)|Tournoi (16 équipes)|Turnier (16 Teams)|Torneo (16 squadre)|Toernooi (16 teams)|بطولة (16 فريقًا)|Турнир (16 команд)|トーナメント（16チーム）|토너먼트 (16팀)|锦标赛（16支球队）|टूर्नामेंट (16 टीमें)',
+'settings|Ajustes|Definições|Paramètres|Einstellungen|Impostazioni|Instellingen|الإعدادات|Настройки|設定|설정|设置|सेटिंग्स',
+'how to play|Cómo jugar|Como jogar|Comment jouer|Spielanleitung|Come giocare|Hoe te spelen|طريقة اللعب|Как играть|遊び方|게임 방법|玩法说明|कैसे खेलें',
+'< back|< Atrás|< Voltar|< Retour|< Zurück|< Indietro|< Terug|< رجوع|< Назад|< 戻る|< 뒤로|< 返回|< वापस',
+'< menu|< Menú|< Menu|< Menu|< Menü|< Menu|< Menu|< القائمة|< Меню|< メニュー|< 메뉴|< 菜单|< मेनू',
+'kick off|Saque inicial|Pontapé inicial|Coup d\'envoi|Anstoß|Calcio d\'inizio|Aftrap|ركلة البداية|Начать игру|キックオフ|킥오프|开球|किक ऑफ',
+'start tournament|Iniciar torneo|Iniciar torneio|Lancer le tournoi|Turnier starten|Avvia torneo|Start toernooi|ابدأ البطولة|Начать турнир|トーナメント開始|토너먼트 시작|开始锦标赛|टूर्नामेंट शुरू करें',
+'choose team|Elegir equipo|Escolher equipa|Choisir l\'équipe|Team wählen|Scegli squadra|Kies team|اختر فريقًا|Выбрать команду|チームを選ぶ|팀 선택|选择球队|टीम चुनें',
+'random for me|Aleatorio para mí|Aleatório para mim|Aléatoire pour moi|Zufällig für mich|Casuale per me|Willekeurig voor mij|عشوائي لي|Случайно для меня|ランダム（自分）|내 팀 무작위|随机选我的队|मेरे लिए रैंडम',
+'random rival|Rival aleatorio|Rival aleatório|Adversaire aléatoire|Zufälliger Gegner|Avversario casuale|Willekeurige tegenstander|خصم عشوائي|Случайный соперник|ランダム（相手）|상대 무작위|随机对手|रैंडम प्रतिद्वंद्वी',
+'players|Jugadores|Jogadores|Joueurs|Spieler|Giocatori|Spelers|اللاعبون|Игроки|プレイヤー|플레이어|玩家|खिलाड़ी',
+'team type|Tipo de equipo|Tipo de equipa|Type d\'équipe|Teamart|Tipo di squadra|Teamtype|نوع الفريق|Тип команды|チームの種類|팀 종류|球队类型|टीम का प्रकार',
+'question category|Categoría de preguntas|Categoria das perguntas|Catégorie de questions|Fragenkategorie|Categoria domande|Vraagcategorie|فئة الأسئلة|Категория вопросов|問題カテゴリ|질문 카테고리|题目类别|प्रश्न श्रेणी',
+'difficulty|Dificultad|Dificuldade|Difficulté|Schwierigkeit|Difficoltà|Moeilijkheid|الصعوبة|Сложность|難易度|난이도|难度|कठिनाई',
+'easy|Fácil|Fácil|Facile|Leicht|Facile|Makkelijk|سهل|Легко|かんたん|쉬움|简单|आसान',
+'medium|Medio|Médio|Moyen|Mittel|Medio|Gemiddeld|متوسط|Средне|ふつう|보통|中等|मध्यम',
+'hard|Difícil|Difícil|Difficile|Schwer|Difficile|Moeilijk|صعب|Сложно|むずかしい|어려움|困难|कठिन',
+'men\'s team|Equipo masculino|Equipa masculina|Équipe masculine|Männerteam|Squadra maschile|Mannenteam|فريق الرجال|Мужская команда|男子チーム|남자 팀|男子球队|पुरुष टीम',
+'women\'s team|Equipo femenino|Equipa feminina|Équipe féminine|Frauenteam|Squadra femminile|Vrouwenteam|فريق السيدات|Женская команда|女子チーム|여자 팀|女子球队|महिला टीम',
+'personal finance|Finanzas personales|Finanças pessoais|Finances personnelles|Persönliche Finanzen|Finanza personale|Persoonlijke financiën|التمويل الشخصي|Личные финансы|個人の家計|개인 금융|个人理财|व्यक्तिगत वित्त',
+'small business|Pequeña empresa|Pequeno negócio|Petite entreprise|Kleinunternehmen|Piccola impresa|Klein bedrijf|الأعمال الصغيرة|Малый бизнес|小規模ビジネス|소규모 사업|小型企业|छोटा व्यवसाय',
+'general|General|Geral|Général|Allgemein|Generale|Algemeen|عام|Общие|一般|일반|常规|सामान्य',
+'custom questions|Preguntas personalizadas|Perguntas personalizadas|Questions personnalisées|Eigene Fragen|Domande personalizzate|Eigen vragen|أسئلة مخصصة|Свои вопросы|カスタム問題|사용자 질문|自定义题目|कस्टम प्रश्न',
+'backup|Copia de seguridad|Cópia de segurança|Sauvegarde|Sicherung|Backup|Back-up|نسخ احتياطي|Резервная копия|バックアップ|백업|备份|बैकअप',
+'gameplay|Juego|Jogabilidade|Jeu|Spielablauf|Gioco|Gameplay|اللعب|Игровой процесс|ゲームプレイ|게임플레이|游戏玩法|गेमप्ले',
+'sound and display|Sonido y pantalla|Som e ecrã|Son et affichage|Ton und Anzeige|Audio e schermo|Geluid en weergave|الصوت والعرض|Звук и экран|サウンドと表示|소리 및 화면|声音与显示|ध्वनि और डिस्प्ले',
+'answer timer|Tiempo para responder|Tempo para responder|Temps de réponse|Antwortzeit|Tempo di risposta|Antwoordtimer|مؤقت الإجابة|Таймер ответа|回答タイマー|답변 타이머|答题计时|उत्तर टाइमर',
+'match length|Duración del partido|Duração do jogo|Durée du match|Spieldauer|Durata partita|Wedstrijdduur|مدة المباراة|Длительность матча|試合時間|경기 시간|比赛时长|मैच की अवधि',
+'cpu skill|Nivel de la CPU|Nível da CPU|Niveau de l\'IA|CPU-Stärke|Abilità CPU|CPU-niveau|مستوى الكمبيوتر|Уровень ИИ|CPUの強さ|CPU 실력|电脑水平|सीपीयू स्तर',
+'hints|Pistas|Dicas|Indices|Hinweise|Suggerimenti|Hints|تلميحات|Подсказки|ヒント|힌트|提示|संकेत',
+'power-ups|Potenciadores|Power-ups|Bonus|Power-ups|Potenziamenti|Power-ups|تعزيزات|Усиления|パワーアップ|파워업|道具|पावर-अप',
+'super shot mode|Modo Super Tiro|Modo Super Chute|Mode Super Tir|Super-Schuss-Modus|Modalità Super Tiro|Supershot-modus|وضع التسديدة الخارقة|Режим супер-удара|スーパーショットモード|슈퍼 슛 모드|超级射门模式|सुपर शॉट मोड',
+'sound effects|Efectos de sonido|Efeitos sonoros|Effets sonores|Soundeffekte|Effetti sonori|Geluidseffecten|المؤثرات الصوتية|Звуковые эффекты|効果音|효과음|音效|ध्वनि प्रभाव',
+'music|Música|Música|Musique|Musik|Musica|Muziek|الموسيقى|Музыка|音楽|음악|音乐|संगीत',
+'reduce motion|Reducir movimiento|Reduzir movimento|Réduire les animations|Weniger Bewegung|Riduci animazioni|Minder beweging|تقليل الحركة|Меньше анимации|動きを減らす|움직임 줄이기|减少动效|गति कम करें',
+'language|Idioma|Idioma|Langue|Sprache|Lingua|Taal|اللغة|Язык|言語|언어|语言|भाषा',
+'add question|Añadir pregunta|Adicionar pergunta|Ajouter la question|Frage hinzufügen|Aggiungi domanda|Vraag toevoegen|أضف سؤالًا|Добавить вопрос|問題を追加|질문 추가|添加题目|प्रश्न जोड़ें',
+'close|Cerrar|Fechar|Fermer|Schließen|Chiudi|Sluiten|إغلاق|Закрыть|閉じる|닫기|关闭|बंद करें',
+'cancel|Cancelar|Cancelar|Annuler|Abbrechen|Annulla|Annuleren|إلغاء|Отмена|キャンセル|취소|取消|रद्द करें',
+'paused|En pausa|Em pausa|En pause|Pausiert|In pausa|Gepauzeerd|متوقف مؤقتًا|Пауза|一時停止中|일시정지|已暂停|रुका हुआ',
+'resume|Reanudar|Retomar|Reprendre|Fortsetzen|Riprendi|Hervatten|استئناف|Продолжить|再開|계속|继续|जारी रखें',
+'restart|Reiniciar|Reiniciar|Recommencer|Neustart|Ricomincia|Opnieuw|إعادة البدء|Заново|やり直す|다시 시작|重新开始|फिर से शुरू',
+'quit to menu|Salir al menú|Sair para o menu|Quitter vers le menu|Zum Menü|Esci al menu|Naar menu|الخروج إلى القائمة|В меню|メニューへ戻る|메뉴로 나가기|返回菜单|मेनू पर जाएँ',
+'half time|Descanso|Intervalo|Mi-temps|Halbzeit|Intervallo|Rust|استراحة|Перерыв|ハーフタイム|하프타임|中场休息|हाफ टाइम',
+'start second half|Empezar la segunda parte|Iniciar o segundo tempo|Lancer la 2e mi-temps|Zweite Halbzeit starten|Inizia il secondo tempo|Start tweede helft|ابدأ الشوط الثاني|Начать второй тайм|後半を始める|후반 시작|开始下半场|दूसरा हाफ शुरू करें',
+'full time|Final del partido|Fin de jogo|Fin du match|Abpfiff|Fine partita|Eindsignaal|نهاية المباراة|Конец матча|試合終了|경기 종료|全场结束|पूर्ण समय',
+'rematch|Revancha|Revanche|Revanche|Rückspiel|Rivincita|Revanche|إعادة المباراة|Реванш|再戦|재대결|再来一场|दोबारा खेलें',
+'menu|Menú|Menu|Menu|Menü|Menu|Menu|القائمة|Меню|メニュー|메뉴|菜单|मेनू',
+'continue|Continuar|Continuar|Continuer|Weiter|Continua|Doorgaan|متابعة|Продолжить|続ける|계속하기|继续|आगे बढ़ें',
+'show hint|Ver pista|Mostrar dica|Voir l\'indice|Hinweis zeigen|Mostra suggerimento|Toon hint|إظهار التلميح|Показать подсказку|ヒントを見る|힌트 보기|显示提示|संकेत दिखाएँ',
+'i am ready|Estoy listo|Estou pronto|Je suis prêt|Ich bin bereit|Sono pronto|Ik ben klaar|أنا جاهز|Я готов|準備OK|준비 완료|我准备好了|मैं तैयार हूँ',
+'pass the device|Pasa el dispositivo|Passe o dispositivo|Passez l\'appareil|Gerät weitergeben|Passa il dispositivo|Geef het apparaat door|مرّر الجهاز|Передайте устройство|端末を渡してください|기기를 넘겨주세요|请传递设备|डिवाइस आगे दें',
+'stats|Estadísticas|Estatísticas|Statistiques|Statistiken|Statistiche|Statistieken|الإحصائيات|Статистика|統計|통계|统计|आँकड़े',
+'play next match|Jugar el siguiente partido|Jogar a próxima partida|Jouer le prochain match|Nächstes Spiel spielen|Gioca la prossima partita|Speel volgende wedstrijd|العب المباراة التالية|Играть следующий матч|次の試合へ|다음 경기 시작|进行下一场|अगला मैच खेलें',
+'quit tournament|Salir del torneo|Sair do torneio|Quitter le tournoi|Turnier beenden|Esci dal torneo|Stop toernooi|الخروج من البطولة|Выйти из турнира|トーナメントをやめる|토너먼트 나가기|退出锦标赛|टूर्नामेंट छोड़ें',
+'resume tournament|Reanudar torneo|Retomar torneio|Reprendre le tournoi|Turnier fortsetzen|Riprendi torneo|Toernooi hervatten|استئناف البطولة|Продолжить турнир|トーナメントを再開|토너먼트 이어하기|继续锦标赛|टूर्नामेंट जारी रखें',
+'new tournament|Nuevo torneo|Novo torneio|Nouveau tournoi|Neues Turnier|Nuovo torneo|Nieuw toernooi|بطولة جديدة|Новый турнир|新しいトーナメント|새 토너먼트|新锦标赛|नया टूर्नामेंट',
+'round of 16|Octavos de final|Oitavas de final|Huitièmes de finale|Achtelfinale|Ottavi di finale|Achtste finale|دور الـ16|1/8 финала|ベスト16|16강|十六强|अंतिम 16',
+'quarter-finals|Cuartos de final|Quartas de final|Quarts de finale|Viertelfinale|Quarti di finale|Kwartfinale|ربع النهائي|Четвертьфинал|準々決勝|8강|八强|क्वार्टर फाइनल',
+'semi-finals|Semifinales|Meias-finais|Demi-finales|Halbfinale|Semifinali|Halve finale|نصف النهائي|Полуфинал|準決勝|4강|四强|सेमीफाइनल',
+'final|Final|Final|Finale|Finale|Finale|Finale|النهائي|Финал|決勝|결승|决赛|फाइनल',
+'champion!|¡Campeón!|Campeão!|Champion !|Meister!|Campione!|Kampioen!|بطل!|Чемпион!|優勝！|우승!|冠军！|चैंपियन!',
+'to be decided|Por decidir|A decidir|À déterminer|Offen|Da decidere|Nog te bepalen|يُحدد لاحقًا|Не определено|未定|미정|待定|तय होना बाकी',
+'got it|Entendido|Entendi|Compris|Verstanden|Capito|Begrepen|حسنًا|Понятно|OK|알겠어요|知道了|समझ गया',
+'answer money questions. move down the pitch. score goals.|Responde preguntas de dinero. Avanza por el campo. ¡Marca goles!|Responde a perguntas sobre dinheiro. Avança no campo. Marca golos!|Réponds aux questions d\'argent. Avance sur le terrain. Marque des buts !|Beantworte Geldfragen. Rücke vor. Schieße Tore!|Rispondi alle domande sui soldi. Avanza in campo. Segna gol!|Beantwoord geldvragen. Ga het veld op. Scoor doelpunten!|أجب عن أسئلة المال. تقدّم في الملعب. سجّل الأهداف!|Отвечайте на вопросы о деньгах, продвигайтесь по полю и забивайте голы!|お金のクイズに答えてピッチを進み、ゴールを決めよう。|돈 문제를 풀고 필드를 전진해 골을 넣으세요.|回答理财问题，推进球场，攻入进球！|पैसों के सवालों के जवाब दें, मैदान में आगे बढ़ें, गोल करें!'
+];
+var dict = {}; LANGS.forEach(function(l){ dict[l] = {}; });
+ROWS.forEach(function(r){ var p = r.split('|'); for(var i=0;i<LANGS.length;i++) dict[LANGS[i]][p[0]] = p[i+1]; });
+WFF.I18n.dict = dict;
+WFF.I18n.t = function(key, fallback){ var d = this.dict[this.lang()]; return (d && d[String(key).toLowerCase()]) || fallback || key; };
+
+var SKIP = {SCRIPT:1, STYLE:1, TEXTAREA:1, INPUT:1, CANVAS:1, PRE:1};
+function skipEl(el){ return !!(el.closest && el.closest('.qitem, .mq-text, .mopt, textarea, pre, .teamgrid, .slots .nm, .ms-name')); }
+var busy = false;
+function translateTree(root){
+  if(!root) return; var lang = WFF.I18n.lang(), d = dict[lang] || null;
+  var w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null, false), n, list = [];
+  while((n = w.nextNode())) list.push(n);
+  list.forEach(function(node){
+    var p = node.parentNode; if(!p || SKIP[p.nodeName] || skipEl(p)) return;
+    var cur = node.nodeValue, en;
+    if(node.__wffTr !== undefined && cur === node.__wffTr) en = node.__wffEn; else { en = cur; node.__wffTr = undefined; node.__wffEn = undefined; }
+    var key = en.trim().toLowerCase(), tx = d ? d[key] : null;
+    if(tx){ var lead = en.match(/^\s*/)[0], trail = en.match(/\s*$/)[0], out = lead + tx + trail; if(cur !== out) node.nodeValue = out; node.__wffEn = en; node.__wffTr = out; }
+    else if(node.__wffTr !== undefined && en !== cur){ node.nodeValue = en; node.__wffTr = undefined; node.__wffEn = undefined; }
+  });
+}
+function enhanceA11y(root){
+  try{
+    var q = function(s){ return (root||document).querySelectorAll(s); }, i, els;
+    els = q('.overlay:not([role]), .mover:not([role])'); for(i=0;i<els.length;i++){ els[i].setAttribute('role','dialog'); els[i].setAttribute('aria-modal','true'); }
+    els = q('canvas:not([aria-label])'); for(i=0;i<els.length;i++){ els[i].setAttribute('role','img'); els[i].setAttribute('aria-label','Football pitch'); }
+    els = q('.switch input:not([aria-label])'); for(i=0;i<els.length;i++){ var lb = els[i].closest('.setrow'); els[i].setAttribute('aria-label', lb ? lb.textContent.slice(0,40) : 'toggle'); }
+    els = q('.optrow input[type=radio]:not([aria-label])'); for(i=0;i<els.length;i++) els[i].setAttribute('aria-label','Correct answer');
+    var tr0 = document.getElementById('toast-root'); if(tr0 && !tr0.getAttribute('aria-live')) tr0.setAttribute('aria-live','polite');
+  }catch(e){}
+}
+var pending = false;
+WFF.I18n.apply = function(){
+  if(busy) return; busy = true;
+  try{
+    var rtl = WFF.I18n.lang()==='ar'; var app = $('#app'); if(app){ if(rtl) app.setAttribute('dir','rtl'); else app.removeAttribute('dir'); }
+    var mr = $('#modal-root'); if(mr){ if(rtl) mr.setAttribute('dir','rtl'); else mr.removeAttribute('dir'); }
+    document.documentElement.setAttribute('lang', WFF.I18n.lang());
+    ['#app','#modal-root','#toast-root'].forEach(function(s){ translateTree($(s)); });
+    enhanceA11y();
+  }finally{ busy = false; }
+};
+function schedule(){ if(pending) return; pending = true; (window.requestAnimationFrame||setTimeout)(function(){ pending = false; WFF.I18n.apply(); }); }
+try{
+  var mo = new MutationObserver(function(){ if(!busy) schedule(); });
+  ['#app','#modal-root','#toast-root'].forEach(function(s){ var el = $(s); if(el) mo.observe(el, {childList:true, subtree:true, characterData:true}); });
+}catch(e){}
+WFF.Bus.on('settings', function(d){ if(d.reset || d.key==='language') WFF.I18n.apply(); });
+
+/* =====================================================================
+   5. BOOT-TIME POLISH : tutorial on first launch, re-render menu, music hint
+   ===================================================================== */
+WFF.onReady(function(){
+  WFF.Menu.render(); if(WFF.Router.current!=='menu') {}
+  WFF.I18n.apply();
+  if(!WFF.Store.get('tutorialSeen', false)){
+    WFF.Store.set('tutorialSeen', true);
+    setTimeout(function(){ if(WFF.Router.current==='menu') WFF.Menu.howTo(); }, 350);
+  }
+});
+if(WFF.booted){ WFF.Menu.render(); WFF.I18n.apply(); }
+})();
+</script>
+
+<!--
+=====================================================================================
+README  -  World Financial Football (single file, no external dependencies)
+-------------------------------------------------------------------------------------
+HOW TO PLAY  Pick Quick Match (1 or 2 players) or Tournament (16-team knockout). Answer
+questions to move the ball up the pitch. Reach the penalty area, answer once more to shoot.
+Wrong answers or a timeout hand the ball over. Keys: 1-4 to answer, T/F on true/false,
+Esc to pause.
+
+THE QUESTION BANK IS EMPTY ON PURPOSE.  Open Settings > Custom Questions to add questions
+(multiple choice with 2-4 options, or true/false, with category, difficulty, optional hint
+and explanation). Use Backup to export or import them as JSON:
+  { "questions":[ { "type":"mc", "category":"personal", "difficulty":"easy",
+      "text":"...", "options":["a","b","c"], "correct":0, "hint":"", "explanation":"" } ] }
+category is "personal" or "business"; difficulty "easy", "medium" or "hard"; type "tf"
+questions use "correct":0 for True or 1 for False. Questions are kept in your browser
+(localStorage), so use Backup before clearing site data. Aim for 10+ per category and
+difficulty. If a difficulty is empty the nearest one is used.
+
+HOW THE PARTS FIT
+  Part 1: namespace WFF, store, settings, countries and teams, question bank, menu, setup,
+          settings screens.
+  Part 2: WFF.Match (pitch, questions, CPU, power-ups, Super Shot, penalties) + simulate().
+  Part 3: WFF.Tournament (bracket, saved in localStorage so you can resume), WFF.Audio
+          (WebAudio synthesised sounds and music), WFF.I18n (13 languages via a text
+          translation layer; your own questions are never translated), stats, tutorial.
+
+KNOWN LIMITS
+  - Translations cover menus, setup, settings names and match/tournament headings; dynamic
+    sentences (match commentary, hints) stay in English.
+  - Sound needs one click or key press first (browser rule).
+  - Team strength is a rough rating, not real FIFA data; badges are generated colours.
+  - Everything is stored per browser/device; there is no online multiplayer.
+=====================================================================================
+-->
+
+
+
+</body>
+</html>
