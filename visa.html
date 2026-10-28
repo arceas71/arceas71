@@ -225,8 +225,7 @@ WFF.Store = { _mem:{},
 
 /* ---------------- constants ---------------- */
 WFF.Const = {
-  CATEGORIES:[ {id:'personal', label:'Personal Finance', sub:'Budgeting, saving, credit'},
-               {id:'business', label:'Small Business',   sub:'Starting and running a business'} ],
+  CATEGORIES:[],   /* replaced below by a live getter over WFF.Topics (user-created topics) */
   DIFFICULTIES:[ {id:'easy', label:'Easy', sub:'Kids'}, {id:'medium', label:'Medium', sub:'Teens'}, {id:'hard', label:'Hard', sub:'Adults'} ],
   TYPES:[ {id:'mc', label:'Multiple choice'}, {id:'tf', label:'True / False'} ],
   GENDERS:[ {id:'men', label:"Men's team"}, {id:'women', label:"Women's team"} ],
@@ -293,11 +292,79 @@ WFF.Data.randomTeam = function(gender, excludeCode){
 };
 
 /* =====================================================================
+   TOPICS  -  there are NO built-in topics. Users create their own in Settings > Topics
+   (or while importing a PDF). A question's `category` field holds its topic id.
+   ===================================================================== */
+WFF.Topics = {
+  _t:null,
+  all:function(){
+    if(!this._t){
+      this._t = WFF.Store.get('topics', null);
+      if(!Array.isArray(this._t)){          // first run of this version: keep any older questions reachable
+        var qs = WFF.Store.get('questions', []), legacy = {personal:'Personal Finance', business:'Small Business'}, t = [];
+        ['personal','business'].forEach(function(k){ if(qs.some(function(q){ return q.category===k; })) t.push({id:k, name:legacy[k]}); });
+        this._t = t; WFF.Store.set('topics', t);
+      }
+    }
+    return this._t;
+  },
+  _save:function(){ WFF.Store.set('topics', this._t); WFF.Bus.emit('topics'); WFF.Bus.emit('questions'); },
+  get:function(id){ return this.all().filter(function(t){ return t.id===id; })[0] || null; },
+  name:function(id){ var t = this.get(id); return t ? t.name : 'Unknown topic'; },
+  byName:function(n){ n = String(n||'').trim().toLowerCase(); return this.all().filter(function(t){ return t.name.toLowerCase()===n; })[0] || null; },
+  add:function(name){
+    name = String(name||'').trim().replace(/\s+/g,' ');
+    if(!name) return {ok:false, error:'Give the topic a name.'};
+    if(name.length>60) return {ok:false, error:'Topic names can be at most 60 characters.'};
+    if(this.byName(name)) return {ok:false, error:'You already have a topic with that name.'};
+    var t = {id:'t'+uid(), name:name}; this.all().push(t); this._save(); return {ok:true, topic:t};
+  },
+  rename:function(id, name){
+    name = String(name||'').trim().replace(/\s+/g,' ');
+    var t = this.get(id); if(!t) return {ok:false, error:'Topic not found.'};
+    if(!name) return {ok:false, error:'Give the topic a name.'};
+    var d = this.byName(name); if(d && d.id!==id) return {ok:false, error:'You already have a topic with that name.'};
+    t.name = name.slice(0,60); this._save(); return {ok:true};
+  },
+  remove:function(id){ this._t = this.all().filter(function(t){ return t.id!==id; }); WFF.Questions.removeTopic(id); this._save(); }
+};
+Object.defineProperty(WFF.Const, 'CATEGORIES', { configurable:true, enumerable:true, get:function(){
+  return WFF.Topics.all().map(function(t){ var n = WFF.Questions.count({category:t.id}); return {id:t.id, label:t.name, sub:n+' question'+(n===1?'':'s')}; }); } });
+
+/* ---------------- image store (IndexedDB with an in-memory cache) ----------------
+   Question images (diagrams cropped from PDFs, or uploaded by hand) live here as data URLs;
+   a question only keeps the image id in q.img. */
+WFF.ImgStore = {
+  cache:{}, _db:null, _ready:null,
+  _open:function(){
+    var self = this; if(this._ready) return this._ready;
+    this._ready = new Promise(function(res){
+      try{ var rq = indexedDB.open('wff-images', 1);
+        rq.onupgradeneeded = function(){ rq.result.createObjectStore('img'); };
+        rq.onsuccess = function(){ self._db = rq.result; res(self._db); }; rq.onerror = function(){ res(null); }; rq.onblocked = function(){ res(null); };
+      }catch(e){ res(null); } });
+    return this._ready;
+  },
+  _tx:function(mode, fn){ return this._open().then(function(db){ if(!db) return null; return new Promise(function(res){
+    try{ var tx = db.transaction('img', mode), st = tx.objectStore('img'), out = fn(st); tx.oncomplete = function(){ res(out && out.result!==undefined ? out.result : true); }; tx.onerror = function(){ res(null); }; tx.onabort = function(){ res(null); }; }catch(e){ res(null); } }); }); },
+  put:function(id, dataUrl){ this.cache[id] = dataUrl; return this._tx('readwrite', function(st){ return st.put(dataUrl, id); }).then(function(r){ return r!==null; }); },
+  get:function(id){ var self = this; if(!id) return Promise.resolve(''); if(id in this.cache) return Promise.resolve(this.cache[id]);
+    return this._tx('readonly', function(st){ return st.get(id); }).then(function(v){ if(typeof v==='string'){ self.cache[id] = v; return v; } return ''; }); },
+  del:function(id){ delete this.cache[id]; return this._tx('readwrite', function(st){ return st.delete(id); }); },
+  loadAll:function(){ var self = this; return this._open().then(function(db){ if(!db) return 0; return new Promise(function(res){
+    try{ var n = 0, rq = db.transaction('img','readonly').objectStore('img').openCursor();
+      rq.onsuccess = function(){ var c = rq.result; if(c){ if(typeof c.value==='string'){ self.cache[c.key] = c.value; n++; } c.continue(); } else res(n); }; rq.onerror = function(){ res(n); };
+    }catch(e){ res(0); } }); }); },
+  newId:function(){ return 'i'+uid(); }
+};
+WFF.ImgStore.loadAll();
+
+/* =====================================================================
    QUESTIONS  -  ships EMPTY on purpose. Users add their own in Settings.
    Question object:
-   { id, type:'mc'|'tf', category:'personal'|'business', difficulty:'easy'|'medium'|'hard',
+   { id, type:'mc'|'tf', category:<topic id>, difficulty:'easy'|'medium'|'hard',
      text, options:[string,...2..4] (tf is always ['True','False']), correct:index,
-     hint:'', explanation:'' }
+     hint:'', explanation:'', img:<optional image id in WFF.ImgStore>, src:<optional source note> }
    ===================================================================== */
 WFF.Questions = {
   _q:null,
@@ -310,7 +377,7 @@ WFF.Questions = {
     if(!q || typeof q!=='object') return ['Not a question object'];
     if(!q.text || !String(q.text).trim()) e.push('Question text is empty.');
     if(['mc','tf'].indexOf(q.type)<0) e.push('Type must be multiple choice or true/false.');
-    if(['personal','business'].indexOf(q.category)<0) e.push('Pick a category.');
+    if(!WFF.Topics.get(q.category)) e.push('Pick a topic (create one in Settings > Topics first).');
     if(['easy','medium','hard'].indexOf(q.difficulty)<0) e.push('Pick a difficulty.');
     if(q.type==='mc'){
       var o = (q.options||[]).map(function(x){return String(x).trim();});
@@ -327,6 +394,7 @@ WFF.Questions = {
     var n = { id:q.id || uid(), type:q.type, category:q.category, difficulty:q.difficulty, text:String(q.text).trim(),
               options: q.type==='tf' ? ['True','False'] : q.options.map(function(x){return String(x).trim();}),
               correct:q.correct|0, hint:String(q.hint||'').trim(), explanation:String(q.explanation||'').trim() };
+    if(q.img) n.img = String(q.img); if(q.src) n.src = String(q.src).slice(0,120);
     return n;
   },
   add:function(q){ var err=this.validate(q); if(err.length) return {ok:false, errors:err};
@@ -334,18 +402,36 @@ WFF.Questions = {
   update:function(id,q){ var err=this.validate(q); if(err.length) return {ok:false, errors:err};
     var list=this.all(), i=list.findIndex(function(x){return x.id===id;}); if(i<0) return {ok:false, errors:['Question not found.']};
     list[i]=this.normalize(Object.assign({}, q, {id:id})); this._save(); return {ok:true, q:list[i]}; },
-  remove:function(id){ this._q = this.all().filter(function(q){return q.id!==id;}); this._save(); },
-  clear:function(){ this._q = []; this._save(); },
+  _free:function(list){ var keep = {}; this._q.forEach(function(q){ if(q.img) keep[q.img] = 1; }); list.forEach(function(q){ if(q.img && !keep[q.img]) WFF.ImgStore.del(q.img); }); },
+  remove:function(id){ var gone = this.all().filter(function(q){return q.id===id;}); this._q = this.all().filter(function(q){return q.id!==id;}); this._free(gone); this._save(); },
+  removeTopic:function(tid){ var gone = this.all().filter(function(q){return q.category===tid;}); this._q = this.all().filter(function(q){return q.category!==tid;}); this._free(gone); this._save(); },
+  clear:function(){ var gone = this.all().slice(); this._q = []; this._free(gone); this._save(); },
+  /* add many at once (used by the PDF importer): returns {added, skipped} */
+  addMany:function(list){ var self = this, added = 0, skipped = 0, seen = {};
+    this.all().forEach(function(q){ seen[(q.category+'|'+q.text).toLowerCase()] = 1; });
+    list.forEach(function(q){ if(self.validate(q).length){ skipped++; return; } var k = (q.category+'|'+String(q.text).trim()).toLowerCase();
+      if(seen[k]){ skipped++; return; } seen[k] = 1; self._q.push(self.normalize(Object.assign({}, q, {id:uid()}))); added++; });
+    this._save(); return {added:added, skipped:skipped}; },
   count:function(f){ f=f||{}; return this.all().filter(function(q){
     return (!f.category||q.category===f.category) && (!f.difficulty||q.difficulty===f.difficulty) && (!f.type||q.type===f.type); }).length; },
-  exportJSON:function(){ return JSON.stringify({ app:'world-financial-football', version:1, questions:this.all() }, null, 2); },
+  exportJSON:function(){
+    var imgs = {}; this.all().forEach(function(q){ if(q.img && WFF.ImgStore.cache[q.img]) imgs[q.img] = WFF.ImgStore.cache[q.img]; });
+    return JSON.stringify({ app:'world-financial-football', version:2, topics:WFF.Topics.all(), questions:this.all(), images:imgs }, null, 2); },
   /* mode: 'merge' (default) or 'replace'. returns {added, skipped, errors:[]} */
   importJSON:function(text, mode){
     var data; try{ data = JSON.parse(text); }catch(e){ return {added:0, skipped:0, errors:['That is not valid JSON.']}; }
     var arr = Array.isArray(data) ? data : (data && data.questions);
     if(!Array.isArray(arr)) return {added:0, skipped:0, errors:['Expected an array of questions or {"questions":[...]}.']};
-    var added=0, skipped=0, self=this, seen = {};
-    if(mode==='replace') this._q = [];
+    var added=0, skipped=0, self=this, seen = {}, remap = {}, legacy = {personal:'Personal Finance', business:'Small Business'};
+    if(mode==='replace'){ this._free(this.all().slice()); this._q = []; WFF.Topics._t = []; }
+    if(data && Array.isArray(data.topics)) data.topics.forEach(function(t){ if(!t || !t.name) return;
+      var ex = WFF.Topics.byName(t.name); if(!ex){ var id = (t.id && !WFF.Topics.get(String(t.id))) ? String(t.id) : 't'+uid(); ex = {id:id, name:String(t.name).slice(0,60)}; WFF.Topics.all().push(ex); } remap[t.id] = ex.id; });
+    arr = arr.map(function(q){ if(!q) return q; q = Object.assign({}, q);
+      if(remap[q.category]) q.category = remap[q.category];
+      else if(!WFF.Topics.get(q.category) && legacy[q.category]){ var ex = WFF.Topics.byName(legacy[q.category]); if(!ex){ ex = {id:'t'+uid(), name:legacy[q.category]}; WFF.Topics.all().push(ex); } remap[q.category] = ex.id; q.category = ex.id; }
+      return q; });
+    WFF.Store.set('topics', WFF.Topics.all());
+    if(data && data.images && typeof data.images==='object') Object.keys(data.images).forEach(function(k){ if(typeof data.images[k]==='string' && data.images[k].indexOf('data:image/')===0) WFF.ImgStore.put(k, data.images[k]); });
     this.all().forEach(function(q){ seen[(q.category+'|'+q.text).toLowerCase()] = 1; });
     arr.forEach(function(q){
       if(self.validate(q).length){ skipped++; return; }
@@ -353,7 +439,7 @@ WFF.Questions = {
       if(seen[key]){ skipped++; return; } seen[key]=1;
       self._q.push(self.normalize(Object.assign({}, q, {id:uid()}))); added++;
     });
-    this._save(); return {added:added, skipped:skipped, errors:[]};
+    WFF.Bus.emit('topics'); this._save(); return {added:added, skipped:skipped, errors:[]};
   },
   /* createPool: the object the match engine should use. It never repeats a question until the
      candidate set is exhausted, shuffles MC options, and falls back to the nearest difficulty. */
@@ -448,12 +534,12 @@ WFF.Menu = {
     var wrap = h('div',{class:'wrap'},
       h('div',{class:'hero'}, h('div',{class:'logo-ball'}),
         h('div',{class:'title'}, 'WORLD ', h('span',{text:'FINANCIAL'}), ' FOOTBALL'),
-        h('div',{class:'tagline',text:'Answer money questions. Move down the pitch. Score goals.'})),
-      total===0 ? h('div',{class:'warn'}, 'The question bank is empty. Add your own questions in Settings > Custom Questions before kicking off.') : null,
+        h('div',{class:'tagline',text:'Answer questions on any topic. Move down the pitch. Score goals.'})),
+      total===0 ? h('div',{class:'warn'}, 'No questions yet. Create a topic, then add questions or import a Cambridge PDF in Settings before kicking off.') : null,
       h('div',{class:'menu-list'},
         h('button',{class:'btn primary big', onClick:function(){ WFF.Setup.open('quick'); }, text:'Quick Match'}),
         h('button',{class:'btn big', onClick:function(){ WFF.Setup.open('tournament'); }, text:'Tournament (16 teams)'}),
-        h('button',{class:'btn', onClick:function(){ WFF.Settings_UI.open(total===0?'questions':'general'); }, text:'Settings'}),
+        h('button',{class:'btn', onClick:function(){ WFF.Settings_UI.open(total===0?'topics':'general'); }, text:'Settings'}),
         h('button',{class:'btn', onClick:function(){ WFF.Menu.howTo(); }, text:'How to Play'})));
     root.appendChild(wrap);
   },
@@ -462,11 +548,11 @@ WFF.Menu = {
     UI.modal({ title:'How to Play', body:h('div',null,
       h('ol',{style:'margin:0 0 0 18px;padding:0'},
         li('Pick Quick Match (one match) or Tournament (16-team knockout).'),
-        li("Choose a men's or women's national team, a question category and a difficulty."),
+        li("Choose a men's or women's national team, one of your topics and a difficulty."),
         li('Answer a question to push the ball down the pitch. Wrong answers hand possession to your rival.'),
         li('Reach the attacking third and answer correctly to take a shot at goal.'),
         li('Power-ups help in a tight spot, and a full Super Shot meter makes your next shot unstoppable.'),
-        li('All questions are yours: add them under Settings > Custom Questions.'))),
+        li('All topics and questions are yours: create topics, type questions or import Cambridge MCQ PDFs under Settings.'))),
       actions:[{label:'Got it', kind:'primary'}] });
   }
 };
@@ -480,7 +566,7 @@ WFF.Setup = {
   cfg:null,
   open:function(mode){
     var S = WFF.Settings.all();
-    this.cfg = { mode:mode, players:1, gender:S.gender, category:'personal', difficulty:S.difficulty, teamA:null, teamB:null };
+    this.cfg = { mode:mode, players:1, gender:S.gender, category:(WFF.Topics.all()[0]||{}).id||'', difficulty:S.difficulty, teamA:null, teamB:null };
     this.render(); WFF.Router.show('setup');
   },
   render:function(){
@@ -494,7 +580,8 @@ WFF.Setup = {
     }
     var genderSeg = UI.seg(WFF.Const.GENDERS, cfg.gender, function(v){ cfg.gender=v;
       ['teamA','teamB'].forEach(function(k){ if(cfg[k]) cfg[k] = WFF.Data.team(cfg[k].code, v); }); self.render(); });
-    var catSeg = UI.seg(WFF.Const.CATEGORIES.map(function(c){return {id:c.id,label:c.label,sub:c.sub};}), cfg.category, function(v){ cfg.category=v; self.render(); });
+    var topics = WFF.Const.CATEGORIES; if(topics.length && !WFF.Topics.get(cfg.category)) cfg.category = topics[0].id; if(!topics.length) cfg.category = '';
+    var catSeg = UI.seg(topics.map(function(c){return {id:c.id,label:c.label,sub:c.sub};}), cfg.category, function(v){ cfg.category=v; self.render(); });
     var diffSeg = UI.seg(WFF.Const.DIFFICULTIES, cfg.difficulty, function(v){ cfg.difficulty=v; });
     var playSeg = UI.seg([{id:1,label:'1 Player',sub:'vs CPU'},{id:2,label:'2 Players',sub:'same device'}], cfg.players, function(v){ cfg.players=v; self.render(); });
 
@@ -505,9 +592,11 @@ WFF.Setup = {
         h('h2',{text: isT ? 'Tournament Setup' : 'Quick Match Setup'}), h('span')),
       isT ? null : h('div',{class:'card'}, h('h3',{text:'Players'}), playSeg),
       h('div',{class:'card'}, h('h3',{text:'Team type'}), genderSeg),
-      h('div',{class:'card'}, h('h3',{text:'Question category'}), catSeg,
+      topics.length ? h('div',{class:'card'}, h('h3',{text:'Topic'}), catSeg,
         h('div',{class:'small '+(qn?'muted':''),style:qn?'':'color:var(--gold2)'},
-          qn ? (qn+' question'+(qn===1?'':'s')+' available in this category.') : 'No questions in this category yet. Add some in Settings > Custom Questions.')),
+          qn ? (qn+' question'+(qn===1?'':'s')+' available in this topic.') : 'No questions in this topic yet. Add some in Settings > Custom Questions or import a PDF.')) :
+        h('div',{class:'card'}, h('h3',{text:'Topic'}), h('p',{class:'muted',text:'You have no topics yet. Create a topic, then add questions or import a Cambridge PDF to start playing.'}),
+          h('button',{class:'btn primary',text:'Create a topic',onClick:function(){ WFF.Settings_UI.open('topics'); }})),
       h('div',{class:'card'}, h('h3',{text:'Difficulty'}), diffSeg),
       h('div',{class:'card'}, h('h3',{text: isT ? 'Your team' : (cfg.players===2 ? 'Teams' : 'Teams')}),
         h('div',{class:'slots'},
@@ -518,7 +607,7 @@ WFF.Setup = {
           isT ? null : h('button',{class:'btn small',text:'Random rival',onClick:function(){ cfg.teamB = WFF.Data.randomTeam(cfg.gender, cfg.teamA && cfg.teamA.code); self.render(); }}))),
       h('div',{style:'text-align:center;margin-top:18px'},
         h('button',{class:'btn primary big', disabled:!ready, text: isT ? 'Start Tournament' : 'Kick Off', onClick:function(){ self.start(); }}),
-        !ready ? h('div',{class:'small muted',style:'margin-top:8px',text: !cfg.teamA ? 'Choose your team to continue.' : 'Add at least one question for this category to continue.'}) : null)));
+        !ready ? h('div',{class:'small muted',style:'margin-top:8px',text: !cfg.teamA ? 'Choose your team to continue.' : 'Add at least one question to the chosen topic to continue.'}) : null)));
   },
   pickTeam:function(key){
     var self = this, cfg = this.cfg, closeFn;
@@ -545,21 +634,23 @@ WFF.Setup = {
 };
 
 /* =====================================================================
-   SETTINGS SCREEN  (General | Custom Questions | Data)
+   SETTINGS SCREEN  (General | Topics | Custom Questions | Import PDF | Backup)
    ===================================================================== */
 WFF.Settings_UI = {
-  tab:'general', editingId:null, draft:null, filter:{category:'', difficulty:'', q:''},
+  tab:'general', editingId:null, draft:null, filter:{category:'', difficulty:'', q:''}, pdfTopic:'',
   open:function(tab){ this.tab = tab || 'general'; this.render(); WFF.Router.show('settings'); },
   render:function(){
     var self = this, root = $('#screen-settings'); root.innerHTML='';
     var tabs = h('div',{class:'tabs'});
-    [['general','General'],['questions','Custom Questions'],['data','Backup']].forEach(function(t){
+    [['general','General'],['topics','Topics'],['questions','Custom Questions'],['pdf','Import PDF'],['data','Backup']].forEach(function(t){
       tabs.appendChild(h('button',{class:self.tab===t[0]?'on':'',text:t[1],onClick:function(){ self.tab=t[0]; self.render(); }})); });
     var body = h('div');
     root.appendChild(h('div',{class:'wrap'},
       h('div',{class:'topbar'}, h('button',{class:'btn small',text:'< Back',onClick:function(){ WFF.Menu.render(); WFF.Router.show('menu'); }}), h('h2',{text:'Settings'}), h('span')),
       tabs, body));
     if(this.tab==='general') this.renderGeneral(body);
+    else if(this.tab==='topics') this.renderTopics(body);
+    else if(this.tab==='pdf') { if(WFF.PdfImport) WFF.PdfImport.render(body); else body.appendChild(h('div',{class:'card'},h('p',{text:'The PDF importer is not available.'}))); }
     else if(this.tab==='questions') this.renderQuestions(body);
     else this.renderData(body);
   },
@@ -583,9 +674,37 @@ WFF.Settings_UI = {
   },
 
   /* ---------- custom questions ---------- */
-  newDraft:function(){ return { type:'mc', category:'personal', difficulty:'medium', text:'', options:['',''], correct:0, hint:'', explanation:'' }; },
+  newDraft:function(){ return { type:'mc', category:(WFF.Topics.all()[0]||{}).id||'', difficulty:'medium', text:'', options:['',''], correct:0, hint:'', explanation:'', img:'' }; },
+  renderTopics:function(body){
+    var self = this, T = WFF.Topics, inp = h('input',{type:'text',placeholder:'New topic name, e.g. IGCSE Physics 0625',maxlength:60,style:'flex:1 1 220px;margin-right:8px'}), err = h('div');
+    function add(){ var r = T.add(inp.value); if(!r.ok){ err.innerHTML=''; err.appendChild(h('div',{class:'errors',style:'margin-top:8px'},h('div',{text:r.error}))); return; }
+      UI.toast('Topic created'); self.draft = null; self.render(); }
+    inp.addEventListener('keydown', function(e){ if(e.key==='Enter') add(); });
+    body.appendChild(h('div',{class:'card'}, h('h3',{text:'Create a topic'}),
+      h('p',{class:'muted small',style:'margin-top:0',text:'Topics are the subjects you play on. There are no built-in ones: make a topic, then add questions by hand or import a Cambridge MCQ PDF into it.'}),
+      h('div',{class:'row'}, inp, h('button',{class:'btn primary',text:'Create topic',onClick:add})), err));
+    var list = h('div',{class:'card'}, h('h3',{text:'Your topics'})); body.appendChild(list);
+    if(!T.all().length){ list.appendChild(h('div',{class:'muted',text:'No topics yet. Create your first one above.'})); return; }
+    T.all().forEach(function(t){
+      var n = WFF.Questions.count({category:t.id}), e = WFF.Questions.count({category:t.id,difficulty:'easy'}), md = WFF.Questions.count({category:t.id,difficulty:'medium'}), hd = WFF.Questions.count({category:t.id,difficulty:'hard'});
+      list.appendChild(h('div',{class:'qitem'}, h('div',{class:'qt',text:t.name}),
+        h('div',{class:'small muted',style:'margin-bottom:8px',text:n+' question'+(n===1?'':'s')+' (easy '+e+', medium '+md+', hard '+hd+')'}),
+        h('div',{class:'row gap'},
+          h('button',{class:'btn small',text:'Add questions',onClick:function(){ self.draft = self.newDraft(); self.draft.category = t.id; self.editingId = null; self.filter.category = t.id; self.tab = 'questions'; self.render(); }}),
+          h('button',{class:'btn small',text:'Import PDF',onClick:function(){ self.pdfTopic = t.id; self.tab = 'pdf'; self.render(); }}),
+          h('button',{class:'btn small',text:'Rename',onClick:function(){
+            var ri = h('input',{type:'text',value:t.name,maxlength:60}); var eb = h('div');
+            UI.modal({title:'Rename topic', body:h('div',null,ri,eb), actions:[{label:'Cancel'},{label:'Save',kind:'primary',onClick:function(){ var r = T.rename(t.id, ri.value); if(!r.ok){ eb.innerHTML=''; eb.appendChild(h('div',{class:'errors',style:'margin-top:8px'},h('div',{text:r.error}))); return false; } self.render(); }}]});
+            setTimeout(function(){ ri.focus(); ri.select(); }, 30); }}),
+          h('button',{class:'btn small danger',text:'Delete',onClick:function(){ UI.confirm('Delete topic','Delete the topic "'+t.name+'" and its '+n+' question'+(n===1?'':'s')+'? This cannot be undone.','Delete',function(){ T.remove(t.id); if(self.filter.category===t.id) self.filter.category=''; self.draft = null; self.render(); UI.toast('Topic deleted'); }, true); }}))));
+    });
+  },
   renderQuestions:function(body){
-    var self = this; if(!this.draft) this.draft = this.newDraft();
+    var self = this;
+    if(!WFF.Topics.all().length){ body.appendChild(h('div',{class:'card'}, h('h3',{text:'Custom Questions'}), h('p',{class:'muted',text:'Create a topic first, then add your questions to it.'}),
+      h('button',{class:'btn primary',text:'Create a topic',onClick:function(){ self.tab = 'topics'; self.render(); }}))); return; }
+    if(!this.draft) this.draft = this.newDraft();
+    if(!WFF.Topics.get(this.draft.category)) this.draft.category = WFF.Topics.all()[0].id;
     var formCard = h('div',{class:'card'}), listCard = h('div',{class:'card'}), statCard = h('div',{class:'card'});
     body.appendChild(statCard); body.appendChild(formCard); body.appendChild(listCard);
     this.paintStats(statCard); this.paintForm(formCard); this.paintList(listCard);
@@ -624,15 +743,24 @@ WFF.Settings_UI = {
     }
     var typeSeg = UI.seg(C.TYPES, d.type, function(v){ d.type=v; if(v==='tf'){ if(d.correct>1) d.correct=0; } else { if(d.options.length<2) d.options=['','']; if(d.correct>=d.options.length) d.correct=0; } paintOpts(); });
     var catSeg = UI.seg(C.CATEGORIES.map(function(c){return {id:c.id,label:c.label};}), d.category, function(v){ d.category=v; });
+    var imgBox = h('div'), imgIn = h('input',{type:'file',accept:'image/*',style:'display:none',onChange:function(){ var fl = imgIn.files[0]; if(!fl) return; var rd = new FileReader();
+      rd.onload = function(){ var im = new Image(); im.onload = function(){ var sc = Math.min(1, 1000/Math.max(im.width, im.height)), cv = document.createElement('canvas'); cv.width = Math.round(im.width*sc); cv.height = Math.round(im.height*sc);
+        var cx = cv.getContext('2d'); cx.fillStyle = '#fff'; cx.fillRect(0,0,cv.width,cv.height); cx.drawImage(im,0,0,cv.width,cv.height);
+        var id = WFF.ImgStore.newId(); WFF.ImgStore.put(id, cv.toDataURL('image/jpeg', .82)); d.img = id; paintImg(); }; im.src = rd.result; }; rd.readAsDataURL(fl); imgIn.value = ''; }});
+    function paintImg(){ imgBox.innerHTML = '';
+      if(d.img){ var pi = h('img',{style:'max-width:100%;max-height:160px;border-radius:8px;display:block;margin-bottom:8px;background:#fff'}); WFF.ImgStore.get(d.img).then(function(u){ if(u) pi.src = u; }); imgBox.appendChild(pi);
+        imgBox.appendChild(h('button',{class:'btn small danger',type:'button',text:'Remove image',onClick:function(){ d.img = ''; paintImg(); }})); }
+      else imgBox.appendChild(h('button',{class:'btn small',type:'button',text:'Add image (diagram, graph...)',onClick:function(){ imgIn.click(); }})); }
+    paintImg();
     var diffSeg = UI.seg(C.DIFFICULTIES, d.difficulty, function(v){ d.difficulty=v; });
     var text = h('textarea',{placeholder:'Type the question here...',value:d.text,onInput:function(){ d.text=text.value; }});
     var hint = h('input',{type:'text',value:d.hint,placeholder:'Optional hint (shown when the player uses a hint)',onInput:function(){ d.hint=hint.value; }});
     var expl = h('input',{type:'text',value:d.explanation,placeholder:'Optional explanation shown after answering',onInput:function(){ d.explanation=expl.value; }});
     paintOpts();
     card.appendChild(h('div',{class:'field'},h('label',{text:'Type'}),typeSeg));
-    card.appendChild(h('div',{class:'field'},h('label',{text:'Category'}),catSeg));
+    card.appendChild(h('div',{class:'field'},h('label',{text:'Topic'}),catSeg));
     card.appendChild(h('div',{class:'field'},h('label',{text:'Difficulty'}),diffSeg));
-    card.appendChild(h('div',{class:'field'},h('label',{text:'Question'}),text));
+    card.appendChild(h('div',{class:'field'},h('label',{text:'Question'}),text,imgBox,imgIn));
     card.appendChild(h('div',{class:'field'},h('label',{text:'Answer options'}),optsBox));
     card.appendChild(h('div',{class:'field'},h('label',{text:'Hint'}),hint));
     card.appendChild(h('div',{class:'field'},h('label',{text:'Explanation'}),expl));
@@ -651,7 +779,7 @@ WFF.Settings_UI = {
   paintList:function(card){
     var self = this, C = WFF.Const, f = this.filter; card.innerHTML='';
     card.appendChild(h('h3',{text:'Your questions'}));
-    var cat = h('select',{onChange:function(){ f.category=cat.value; self.paintList(card); }}, h('option',{value:'',text:'All categories'}), C.CATEGORIES.map(function(c){return h('option',{value:c.id,text:c.label});}));
+    var cat = h('select',{onChange:function(){ f.category=cat.value; self.paintList(card); }}, h('option',{value:'',text:'All topics'}), C.CATEGORIES.map(function(c){return h('option',{value:c.id,text:c.label});}));
     var dif = h('select',{onChange:function(){ f.difficulty=dif.value; self.paintList(card); }}, h('option',{value:'',text:'All difficulties'}), C.DIFFICULTIES.map(function(c){return h('option',{value:c.id,text:c.label});}));
     var sr = h('input',{type:'text',placeholder:'Search...',value:f.q,style:'max-width:200px',onInput:function(){ f.q=sr.value; clearTimeout(self._t); self._t=setTimeout(function(){ self.paintListItems(items); },150); }});
     cat.value=f.category; dif.value=f.difficulty;
@@ -664,9 +792,10 @@ WFF.Settings_UI = {
       return (!f.category||q.category===f.category) && (!f.difficulty||q.difficulty===f.difficulty) && (!f.q || q.text.toLowerCase().indexOf(f.q.toLowerCase())>=0); });
     if(!list.length){ items.appendChild(h('div',{class:'muted',text: WFF.Questions.count() ? 'No questions match this filter.' : 'No questions yet. Use the form above to add your first one.'})); return; }
     list.slice().reverse().forEach(function(q){
-      var catL = C.CATEGORIES.filter(function(c){return c.id===q.category;})[0].label;
+      var catL = WFF.Topics.name(q.category), thumb = null;
+      if(q.img){ thumb = h('img',{style:'max-width:100%;max-height:110px;border-radius:8px;margin:2px 0 6px;display:block;background:#fff'}); WFF.ImgStore.get(q.img).then(function(u){ if(u) thumb.src = u; }); }
       items.appendChild(h('div',{class:'qitem'},
-        h('div',{class:'qt',text:q.text}),
+        h('div',{class:'qt',text:q.text}), thumb,
         h('div',null, h('span',{class:'chip gold',text:catL}), h('span',{class:'chip',text:q.difficulty}), h('span',{class:'chip',text:q.type==='tf'?'True/False':'Multiple choice'})),
         h('ol',null, q.options.map(function(o,i){ return h('li',{class:i===q.correct?'ok':'',text:o}); })),
         h('div',{class:'row gap'},
@@ -679,6 +808,7 @@ WFF.Settings_UI = {
   preview:function(q){
     var done = false, box = h('div'), info = h('div',{class:'small',style:'margin-top:8px'});
     box.appendChild(h('p',{style:'font-weight:700;font-size:1.05rem',text:q.text}));
+    if(q.img){ var pim = h('img',{style:'max-width:100%;max-height:240px;border-radius:8px;display:block;margin:0 auto 10px;background:#fff'}); WFF.ImgStore.get(q.img).then(function(u){ if(u) pim.src = u; }); box.appendChild(pim); }
     var btns = q.options.map(function(o,i){
       var b = h('button',{class:'prevopt',type:'button',text:o,onClick:function(){ if(done) return; done=true;
         btns.forEach(function(x,j){ if(j===q.correct) x.className='prevopt right'; else if(j===i) x.className='prevopt wrong'; });
@@ -756,7 +886,7 @@ if(document.readyState==='loading') document.addEventListener('DOMContentLoaded'
 
 <style>
 /* ======================= PART 2 CSS: match screen ======================= */
-.mwrap{max-width:1180px;margin:0 auto}
+.mwrap{max-width:1180px;margin:0 auto}   /* (full-screen overrides are in the STADIUM block below) */
 .msb{display:flex;align-items:center;justify-content:space-between;background:linear-gradient(180deg,#0e1650,#0a1033);
   border:1px solid var(--line);border-radius:14px;padding:10px 14px;margin-bottom:10px}
 .ms-team{display:flex;align-items:center;flex:1 1 0;min-width:0}
@@ -811,6 +941,39 @@ if(document.readyState==='loading') document.addEventListener('DOMContentLoaded'
 .vs{display:flex;align-items:center;justify-content:center;margin:10px 0}
 .vs .badge{margin:0 12px}
 @media (max-width:860px){.mpitch{margin-right:0;flex-basis:100%}.mpanel{flex-basis:100%}.ms-score{font-size:1.7rem}.ms-name{font-size:.8rem}.ms-info{margin:0 7px}}
+
+/* ---------- STADIUM: the match is a full-screen scene; HUD and question pop-ups float over it ---------- */
+#screen-match{padding:0;overflow:hidden;background:#02030c}
+#screen-match.active{animation:mfade .4s ease}
+@keyframes mfade{from{opacity:0}to{opacity:1}}
+.mwrap{position:absolute;left:0;top:0;right:0;bottom:0;max-width:none;margin:0;overflow:hidden;user-select:none;-webkit-user-select:none}
+.mwrap>canvas{position:absolute;left:0;top:0;width:100%;height:100%;display:block;border:0;border-radius:0;background:#02030c}
+.mtop{position:absolute;left:0;right:0;top:0;z-index:3;display:flex;align-items:flex-start;justify-content:space-between;padding:10px 12px;pointer-events:none}
+.mtop>*{pointer-events:auto}
+.mtl,.mtr{flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:flex-start}
+.mtl .btn{margin:0 0 6px}
+.mtr{align-items:flex-end;text-align:right;pointer-events:none;text-shadow:0 1px 6px #000;font-weight:700}
+.mwrap .msb{flex:0 1 660px;margin:0;padding:6px 16px;border-radius:18px;background:rgba(6,8,30,.7);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.mwrap .ms-score{font-size:2rem}
+.mback{position:absolute;left:0;top:0;right:0;bottom:0;z-index:4;pointer-events:none;opacity:0;transition:opacity .4s;background:radial-gradient(ellipse at center,rgba(2,3,14,.4),rgba(2,3,14,.8))}
+.mback.on{opacity:1;pointer-events:auto}
+.mwrap .mpanel{position:absolute;z-index:5;left:50%;margin:0;min-height:0;overflow:auto}
+.mwrap .mpanel.pop{top:50%;transform:translate(-50%,-50%);width:min(840px,94vw);max-height:86vh;padding:20px 24px;border-radius:22px;
+  background:linear-gradient(180deg,rgba(24,30,92,.97),rgba(9,12,40,.98));border:1px solid rgba(0,229,255,.6);box-shadow:0 0 64px rgba(0,229,255,.28),0 26px 80px rgba(0,0,0,.7);animation:mpop .34s cubic-bezier(.2,.9,.3,1.15)}
+.mwrap .mpanel.tick{bottom:3.4vh;transform:translateX(-50%);width:auto;max-width:min(780px,92vw);padding:8px 20px;border-radius:30px;text-align:center;pointer-events:none;
+  background:rgba(6,8,30,.7);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);animation:mtick .3s ease}
+.mwrap .mpanel.hide{display:none}
+.mpanel.tick .mp-head{margin:0;font-size:.68rem}
+.mpanel.tick .mp-idle{font-size:1.02rem;padding:2px 0}
+.mpanel.tick .small{display:none}
+@keyframes mpop{from{opacity:0;transform:translate(-50%,-44%) scale(.93)}to{opacity:1;transform:translate(-50%,-50%) scale(1)}}
+@keyframes mtick{from{opacity:0}to{opacity:1}}
+.mpanel.pop .mq-text{font-size:clamp(1.15rem,2.3vw,1.6rem);margin-bottom:14px}
+.mpanel.pop .mopt{padding:14px;font-size:clamp(1rem,1.7vw,1.15rem)}
+.mopts{display:grid;grid-template-columns:1fr 1fr;grid-column-gap:10px}
+.mqimg{display:block;max-width:100%;max-height:34vh;margin:0 auto 14px;border-radius:10px;background:#fff}
+.mskip{position:absolute;z-index:6;right:14px;bottom:14px}
+@media (max-width:760px){.mopts{grid-template-columns:1fr}.mwrap .msb{padding:4px 8px}.mwrap .ms-score{font-size:1.5rem}.mtr{display:none}.mtop{flex-wrap:wrap}.mwrap .msb{flex:1 1 100%;order:1}.mtl{flex:1 1 100%;order:2;flex-direction:row;margin-top:6px}.mtl .btn{margin:0 6px 0 0}.mwrap .ms-name,.mwrap .ms-meter{display:none}.mwrap .ms-info{margin:0 4px}.mwrap .ms-mid{padding:0 6px}.mwrap .ms-team .badge{width:38px;height:38px}.mwrap .mpanel.pop{padding:14px 14px}}
 </style>
 
 <script>
@@ -859,7 +1022,7 @@ Match.start = function(cfg){
   Match.stop();
   var pool = WFF.Questions.createPool({category:cfg.category});
   if(!pool.next(cfg.difficulty)){
-    UI.modal({ title:'No questions yet', body:h('p',{text:'The question bank has no questions for "'+(cfg.category==='business'?'Small Business':'Personal Finance')+'". Add some in Settings > Custom Questions, then try again.'}),
+    UI.modal({ title:'No questions yet', body:h('p',{text:'The question bank has no questions for "'+WFF.Topics.name(cfg.category)+'". Add some in Settings > Custom Questions (or import a PDF), then try again.'}),
       actions:[{label:'Back to menu', onClick:function(){ WFF.Menu.render(); WFF.Router.show('menu'); }}, {label:'Open Custom Questions', kind:'primary', onClick:function(){ WFF.Settings_UI.open('questions'); }}] });
     return;
   }
@@ -873,10 +1036,10 @@ Match.start = function(cfg){
     half:1, halfLen:minutes*30, clock:minutes*30, timeUp:false, poss:0, zone:2, phase:'intro', paused:false, overlay:null,
     status:'', q:null, qSide:0, qKind:'attack', qDiff:'medium', cb:null, qLeft:0, qMax:0, picked:-1, elim:[], hintUsed:false, hintShown:false,
     sched:[], pen:null, lastViewer:-1, over:false, persisted:false, result:null,
-    ball:{x:.5,y:.5,tx:.5,ty:.5,h:0,rot:0,on:false}, cam:.5, viewW:1.06, car:[3,3], ref:{x:.45,y:.88,ph:0,face:1,spd:0,kick:0,jump:0,cel:false}, netT:[0,0], cheerSide:-1, dv:[0,0], kd:[0,0], kdir:[1,1], slideT:0, slideS:-1, ky:[.5,.5], kyT:[.5,.5], pl:[[],[]], fx:[], trail:[], banner:null, flash:0, shake:0, cheer:0, superFx:0,
-    crowd:crowd, el:{}, W:0, H:0, dpr:1, last:0, t:0, raf:0, timerEl:null
+    ball:{x:.5,y:.5,tx:.5,ty:.5,h:0,rot:0,on:false}, cam:.5, viewW:1.06, car:[3,3], ref:{x:-.12,y:.88,ph:0,face:1,spd:0,kick:0,jump:0,cel:false}, netT:[0,0], cheerSide:-1, dv:[0,0], kd:[0,0], kdir:[1,1], slideT:0, slideS:-1, ky:[.5,.5], kyT:[.5,.5], pl:[[],[]], fx:[], trail:[], banner:null, flash:0, shake:0, cheer:0, superFx:0,
+    crowd:crowd, qn:0, gt:0, rec:[], rpFrames:null, rpLive:false, rpEnd:0, rpT:0, rpI:0, rpA:0, shotGt:0, el:{}, W:0, H:0, dpr:1, last:0, t:0, raf:0, timerEl:null
   };
-  for(var s=0;s<2;s++) for(i=0;i<4;i++) m.pl[s].push({x:absX(s,.3),y:BASE[i].y,ph:i,face:s===0?1:-1,spd:0,kick:0,jump:0,cel:false});
+  for(var s=0;s<2;s++) for(i=0;i<4;i++) m.pl[s].push({x:absX(s,-.28),y:BASE[i].y,ph:i,face:s===0?1:-1,spd:0,kick:0,jump:0,cel:false});
   buildDom();
   WFF.Router.show('match');
   document.addEventListener('keydown', onKey);
@@ -886,9 +1049,9 @@ Match.start = function(cfg){
   showOverlay(cfgMode, [
     h('div',{class:'vs'}, UI.badge(m.teams[0],56), h('b',{text:'vs'}), UI.badge(m.teams[1],56)),
     h('p',{style:'font-weight:800;font-size:1.1rem',text:m.teams[0].label+'  vs  '+m.teams[1].label}),
-    h('p',{class:'muted small',text:(cfg.category==='business'?'Small Business':'Personal Finance')+' questions, '+cfg.difficulty+' difficulty, '+minutes+' minute match'+(cfg.players===2?', two players on one device':'')+'.'}),
+    h('p',{class:'muted small',text:WFF.Topics.name(cfg.category)+' questions, '+cfg.difficulty+' difficulty, '+minutes+' minute match'+(cfg.players===2?', two players on one device':'')+'.'}),
     h('p',{class:'muted small',text:'Answer to move up the pitch. Wrong answers hand the ball over. Keys: 1-4 to answer, T/F on true/false, Esc to pause.'})
-  ], [{label:'Kick off', kind:'primary', fn:function(){ hideOverlay(); WFF.Audio.play('whistle'); kickoff(0); }}]);
+  ], [{label:'Kick off', kind:'primary', fn:function(){ hideOverlay(); walkout(); }}]);
 };
 
 Match.stop = function(){
@@ -910,18 +1073,29 @@ function buildDom(){
     return h('div',{class:'ms-team t'+i}, UI.badge(t,46), h('div',{class:'ms-info'}, h('div',{class:'ms-name',text:t.label}), S.get('superShot')?meter:null), e['score'+i]);
   }
   e.clock = h('div',{class:'ms-clock',text:fmtClock(m.clock)}); e.half = h('div',{class:'ms-half',text:'1st half'}); e.poss = h('div',{class:'ms-poss'});
-  m.cv = h('canvas'); m.ctx = m.cv.getContext('2d'); m.panel = h('div',{class:'mpanel'});
-  root.appendChild(h('div',{class:'mwrap'},
-    h('div',{class:'topbar',style:'margin-bottom:8px'}, h('button',{class:'btn small',text:'Pause (Esc)',onClick:function(){ togglePause(); }}), h('span',{class:'muted small',text:WFF.Const.CATEGORIES.filter(function(c){return c.id===m.cfg.category;})[0].label+' / '+m.cfg.difficulty}), h('span')),
-    h('div',{class:'msb'}, side(0), h('div',{class:'ms-mid'}, e.clock, e.half, e.poss), side(1)),
-    h('div',{class:'mmain'}, h('div',{class:'mpitch'}, m.cv), m.panel)));
+  m.cv = h('canvas'); m.ctx = m.cv.getContext('2d'); m.panel = h('div',{class:'mpanel tick'}); e.back = h('div',{class:'mback'});
+  e.skip = h('button',{class:'btn mskip',type:'button',text:'Skip replay',style:'display:none',onClick:function(){ endReplay(); }});
+  root.appendChild(h('div',{class:'mwrap'}, m.cv, e.back,
+    h('div',{class:'mtop'},
+      h('div',{class:'mtl'}, h('button',{class:'btn small',type:'button',text:'Pause (Esc)',onClick:function(){ togglePause(); }}), h('button',{class:'btn small',type:'button',text:'Full screen',onClick:toggleFs})),
+      h('div',{class:'msb'}, side(0), h('div',{class:'ms-mid'}, e.clock, e.half, e.poss), side(1)),
+      h('div',{class:'mtr'}, h('span',{text:WFF.Topics.name(m.cfg.category)}), h('span',{class:'small muted',text:m.cfg.difficulty}))),
+    m.panel, e.skip));
+}
+function toggleFs(){
+  var d = document, el = d.documentElement, on = d.fullscreenElement || d.webkitFullscreenElement;
+  function fail(){ UI.toast('Full screen is not available in this browser.'); }
+  try{
+    if(on){ (d.exitFullscreen || d.webkitExitFullscreen).call(d); }
+    else { var rq = el.requestFullscreen || el.webkitRequestFullscreen; if(!rq) return fail(); var pr = rq.call(el); if(pr && pr.catch) pr.catch(fail); }
+  }catch(err){ fail(); }
 }
 function setText(el, v){ v = String(v); if(el.textContent!==v) el.textContent = v; }
 function updateHud(){
   var e = m.el;
   setText(e.score0, m.score[0]); setText(e.score1, m.score[1]); setText(e.clock, fmtClock(m.clock));
   setText(e.half, m.pen ? 'Penalty shootout' : (m.half===1?'1st half':'2nd half'));
-  setText(e.poss, (m.over||m.phase==='intro') ? '' : (m.pen ? m.teams[m.poss].code+' to kick' : m.teams[m.poss].code+' ball: '+ZONE_NAMES[m.zone]));
+  setText(e.poss, (m.over||m.phase==='intro'||m.phase==='walkout'||m.phase==='replay') ? '' : (m.pen ? m.teams[m.poss].code+' to kick' : m.teams[m.poss].code+' ball: '+ZONE_NAMES[m.zone]));
   for(var s=0;s<2;s++){ var mt = e['meter'+s]; if(!mt.parentNode) continue;
     for(var k=0;k<SUPER_MAX;k++) mt.children[k].className = k<m.meter[s] ? 'on' : '';
     mt.className = 'ms-meter'+(m.meter[s]>=SUPER_MAX?' full':''); }
@@ -978,10 +1152,18 @@ function penDots(){
     box.appendChild(row); });
   return box;
 }
+function setPanelMode(pop){
+  var p = m.panel, want = m.phase==='replay' ? 'hide' : (pop ? 'pop' : 'tick');
+  if(p.getAttribute('data-mode')!==want){ p.setAttribute('data-mode', want); p.className = 'mpanel '+want; }
+  if(pop && p.getAttribute('data-qn')!==String(m.qn)){ p.setAttribute('data-qn', String(m.qn)); p.classList.remove('pop'); void p.offsetWidth; p.classList.add('pop'); }
+  if(!pop) p.removeAttribute('data-qn');
+  m.el.back.className = 'mback'+(pop?' on':'');
+}
 function renderPanel(){
   if(!m) return; var p = m.panel; p.innerHTML = ''; m.timerEl = null;
+  var popup = (m.phase==='question' || m.phase==='reveal') && !!m.q; setPanelMode(popup);
   if(m.pen) p.appendChild(penDots());
-  if((m.phase==='question' || m.phase==='reveal') && m.q){ p.appendChild(questionView()); updateHud(); return; }
+  if(popup){ p.appendChild(questionView()); updateHud(); return; }
   p.appendChild(h('div',{class:'mp-head',text:m.pen?'Penalty shootout':ZONE_NAMES[m.zone]}));
   p.appendChild(h('div',{class:'mp-idle',text:m.status||'Get ready...'}));
   if(!m.pen && m.phase!=='intro'){
@@ -992,14 +1174,16 @@ function questionView(){
   var q = m.q, side = m.qSide, rev = m.phase==='reveal', mine = human(side), box = h('div');
   var kindText = KIND_LABEL[m.qKind];
   box.appendChild(h('div',{class:'mp-head',text:kindText+' - '+m.teams[side].label}));
-  box.appendChild(h('div',null, h('span',{class:'chip gold',text:WFF.Const.CATEGORIES.filter(function(c){return c.id===q.category;})[0].label}), h('span',{class:'chip',text:q.difficulty}), h('span',{class:'chip',text:ZONE_NAMES[Math.min(5,m.zone)]})));
+  box.appendChild(h('div',null, h('span',{class:'chip gold',text:WFF.Topics.name(q.category)}), h('span',{class:'chip',text:q.difficulty}), h('span',{class:'chip',text:ZONE_NAMES[Math.min(5,m.zone)]})));
   if(m.qMax>0){ var bar = h('div',{class:'mtimer'}, h('i')); m.timerEl = bar.firstChild; box.appendChild(bar); } else box.appendChild(h('div',{style:'height:12px'}));
   box.appendChild(h('div',{class:'mq-text',text:q.text}));
+  if(q.img){ var qim = h('img',{class:'mqimg',alt:'Question diagram'}); WFF.ImgStore.get(q.img).then(function(u){ if(u) qim.src = u; else qim.style.display = 'none'; }); box.appendChild(qim); }
+  var og = h('div',{class:'mopts'}); box.appendChild(og);
   q.options.forEach(function(o,i){
     var cls = 'mopt'; if(m.elim.indexOf(i)>=0) cls += ' gone';
     if(rev){ if(i===q.correct) cls += ' right'; else if(i===m.picked) cls += ' wrong'; }
     var key = q.type==='tf' ? (i===0?'T':'F') : String(i+1);
-    box.appendChild(h('button',{class:cls,type:'button',disabled:rev,onClick:function(){ answer(i); }}, h('kbd',{text:key}), h('span',{text:o})));
+    og.appendChild(h('button',{class:cls,type:'button',disabled:rev,onClick:function(){ answer(i); }}, h('kbd',{text:key}), h('span',{text:o})));
   });
   if(rev){
     var msg = m.picked<0 ? 'Time is up! ' : (m.picked===q.correct ? 'Correct! ' : 'Not quite. ');
@@ -1026,7 +1210,7 @@ function questionView(){
 function ask(side, kind, dIdx, cb){
   var q = m.pool.next(DIFFS[dIdx]);
   if(!q){ cb(false); return; }
-  m.q = q; m.qSide = side; m.qKind = kind; m.qDiff = DIFFS[dIdx]; m.cb = cb; m.picked = -1; m.elim = []; m.hintShown = false;
+  m.q = q; m.qn++; m.qSide = side; m.qKind = kind; m.qDiff = DIFFS[dIdx]; m.cb = cb; m.picked = -1; m.elim = []; m.hintShown = false;
   var t = Number(S.get('timer')) || 0; m.qMax = t; m.qLeft = t;
   m.phase = 'question'; renderPanel();
 }
@@ -1036,7 +1220,7 @@ function answer(i){
   m.picked = i; m.phase = 'reveal'; m.timerEl = null;
   recordAnswer(side, ok); WFF.Audio.play(ok?'correct':'wrong');
   renderPanel();
-  var cb = m.cb; later(1200 + (q.explanation?900:0), function(){ cb(ok); });
+  var cb = m.cb; later(1900 + (q.explanation?1500:0), function(){ cb(ok); });
 }
 function recordAnswer(side, ok){
   var st = m.stats[side];
@@ -1078,10 +1262,10 @@ function cpuRoll(side, kind, dI){
 function cpuStep(side, kind, dI, cb){
   m.phase = 'cpu'; m.q = null;
   say(nm(side)+(kind==='defense'?' defend...':(kind==='shot'||kind==='penalty'?' line up a shot...':' have the ball...')));
-  later(900+Math.random()*700, function(){
+  later(1500+Math.random()*900, function(){
     var ok = cpuRoll(side, kind, dI); recordAnswer(side, ok);
     say(nm(side)+(ok?' answered correctly.':' got it wrong.')); WFF.Audio.play(ok?'correct':'wrong');
-    later(800, function(){ cb(ok); });
+    later(1500, function(){ cb(ok); });
   });
 }
 function actor(side, kind, dI, cb){      // a side answers a question: human sees it, CPU simulates
@@ -1092,11 +1276,15 @@ function actor(side, kind, dI, cb){      // a side answers a question: human see
 /* =====================================================================
    GAME FLOW
    ===================================================================== */
-function setBall(side){ var tx = absX(m.poss, ZONE_FRAC[m.zone]), dist = Math.abs(tx-m.ball.x); kickTo(tx, .5, .3+dist*1.5, Math.min(.45, dist*1.2), 'out', side, true); }
+function setBall(side){ var tx = absX(m.poss, ZONE_FRAC[m.zone]), dist = Math.abs(tx-m.ball.x); kickTo(tx, .5, .8+dist*2.6, Math.min(.45, dist*1.2), 'out', side, true); }
 function kickoff(side){
   m.poss = side; m.zone = 2; m.hintUsed = false; m.hintShown = false; m.q = null; setBall();
   m.phase = 'ready'; say(nm(side)+' kick off from midfield.'); updateHud();
-  later(1000, turn);
+  later(2000, turn);
+}
+function walkout(){
+  m.phase = 'walkout'; m.zone = 2; m.poss = 0; m.cheer = 3; m.cheerSide = -1; say('The teams walk out. What an atmosphere!'); renderPanel(); WFF.Audio.play('whistle');
+  later(4600, function(){ WFF.Audio.play('whistle'); kickoff(0); });
 }
 function turn(){
   if(!m || m.over) return;
@@ -1121,13 +1309,13 @@ function defend(a, d, tz){
 function advance(tz){
   m.zone = tz; m.hintUsed = false; setBall(); m.phase = 'anim'; WFF.Audio.play('kick');
   say(nm(m.poss)+' move into the '+ZONE_NAMES[tz].toLowerCase()+'.');
-  later(900, turn);
+  later(2400, turn);
 }
 function turnover(msg){
   var oldZone = m.zone, d = 1-m.poss;
   m.poss = d; m.zone = oldZone>=5 ? 0 : U.clamp(4-oldZone, 0, 3); m.hintUsed = false; m.hintShown = false; m.q = null;
   setBall(); m.phase = 'anim'; WFF.Audio.play('kick'); say(msg);
-  later(1300, turn);
+  later(2900, turn);
 }
 function keeperSave(a, extra){
   var d = 1-a, lvl = {easy:-.04, normal:0, hard:.05}[S.get('cpuLevel')] || 0;
@@ -1137,7 +1325,7 @@ function keeperSave(a, extra){
 function shotStep(a){
   if(S.get('superShot') && m.meter[a]>=SUPER_MAX){
     m.meter[a] = 0; m.superFx = 2; WFF.Audio.play('supershot'); say('SUPER SHOT! '+nm(a)+' unleash an unstoppable strike!');
-    m.phase = 'anim'; return later(1100, function(){ resolveShot(a, 'goal', true); });
+    m.phase = 'anim'; return later(2000, function(){ resolveShot(a, 'goal', true); });
   }
   say(nm(a)+' have a shot on goal!');
   actor(a, 'shot', diffIdx(5), function(ok){
@@ -1148,18 +1336,51 @@ function resolveShot(a, res, sup){
   var d = 1-a; m.phase = 'anim'; m.q = null; var goalX = a===0 ? 1.03 : -0.03, ty = .45+Math.random()*.1;
   m.kyT[d] = res==='goal' && !sup ? (ty<.5 ? .62 : .38) : (res==='save' ? ty : .5);
   WFF.Audio.play('kick');
-  if(res==='goal'){ kickTo(goalX, ty, sup?.38:.5, .14, 'lin', a); m.slowT = 1.0; later(520, function(){ goal(a, sup); }); }
-  else if(res==='save'){ kickTo(absX(a,.955), ty, .45, .1, 'lin', a); say('Saved by the keeper!'); WFF.Audio.play('groan');
-    later(480, function(){ kickTo(absX(a,.78), .3+Math.random()*.4, .7, .5, 'out', d); });
-    later(1600, function(){ m.poss = d; m.zone = 0; m.hintUsed = false; m.kyT[d] = .5; setBall(d); say(nm(d)+' restart from their box.'); later(900, turn); }); }
-  else { kickTo(absX(a,1.05), Math.random()<.5 ? .2 : .8, .6, .28, 'lin', a); say('Shot goes wide!'); WFF.Audio.play('groan'); later(1500, function(){ m.poss = d; m.zone = 0; m.hintUsed = false; setBall(d); say(nm(d)+' restart from their box.'); later(900, turn); }); }
+  if(res==='goal'){ m.shotGt = m.gt; kickTo(goalX, ty, sup?.7:.95, .14, 'lin', a); m.slowT = .9; later(950, function(){ goal(a, sup); }); }
+  else if(res==='save'){ kickTo(absX(a,.955), ty, .85, .1, 'lin', a); say('Saved by the keeper!'); WFF.Audio.play('groan');
+    later(900, function(){ kickTo(absX(a,.78), .3+Math.random()*.4, 1.2, .5, 'out', d); });
+    later(3000, function(){ m.poss = d; m.zone = 0; m.hintUsed = false; m.kyT[d] = .5; setBall(d); say(nm(d)+' restart from their box.'); later(1800, turn); }); }
+  else { kickTo(absX(a,1.05), Math.random()<.5 ? .2 : .8, 1.0, .28, 'lin', a); say('Shot goes wide!'); WFF.Audio.play('groan'); later(2700, function(){ m.poss = d; m.zone = 0; m.hintUsed = false; setBall(d); say(nm(d)+' restart from their box.'); later(1800, turn); }); }
 }
 function goal(a, sup){
+  m.rpFrames = m.rec.filter(function(f){ return f.gt >= m.shotGt-.8; }); m.rpLive = true; m.rpEnd = m.gt+.9;
   m.score[a]++; m.stats[a].goals++; m.cheer = 3; m.cheerSide = a; m.netT[1-a] = 1; m.flash = S.get('reduceMotion')?0:1; m.shake = S.get('reduceMotion')?0:.6;
-  m.banner = {text:sup?'SUPER GOAL!':'GOAL!', sub:nm(a)+'  '+m.score[0]+' - '+m.score[1], t:0, dur:2.4};
+  m.banner = {text:sup?'SUPER GOAL!':'GOAL!', sub:nm(a)+'  '+m.score[0]+' - '+m.score[1], t:0, dur:3.2};
   WFF.Audio.play('goal'); say('GOAL for '+nm(a)+'!');
-  if(!S.get('reduceMotion')) for(var i=0;i<90;i++) m.fx.push({x:.5, y:.3, vx:(Math.random()-.5)*1.4, vy:-Math.random()*1.2-.2, c:[m.teams[a].c1,m.teams[a].c2,'#00e5ff','#ff2fd1','#fff'][i%5], life:2+Math.random()});
-  later(2500, function(){ m.kyT = [.5,.5]; kickoff(1-a); });
+  if(!S.get('reduceMotion')) for(var i=0;i<150;i++) m.fx.push({x:.5, y:.3, vx:(Math.random()-.5)*1.4, vy:-Math.random()*1.2-.2, c:[m.teams[a].c1,m.teams[a].c2,'#00e5ff','#ff2fd1','#fff'][i%5], life:2+Math.random()});
+  later(4000, function(){ startReplay(a); });
+}
+/* ---------------- goal replay: the last moments of the move, replayed in slow motion ---------------- */
+function startReplay(a){
+  if(!m || m.over) return;
+  var fr = m.rpFrames;
+  if(!fr || fr.length<8 || S.get('reduceMotion')){ m.kyT = [.5,.5]; kickoff(1-a); return; }
+  m.phase = 'replay'; m.rpT = 0; m.rpI = 0; m.rpA = a; m.banner = null; m.fx = []; m.cheer = 0; m.flash = 0; m.slowT = 0; m.trail = [];
+  m.el.skip.style.display = 'block'; renderPanel();
+}
+function endReplay(){
+  if(!m || m.phase!=='replay') return;
+  var a = m.rpA; m.el.skip.style.display = 'none'; m.rpFrames = null; m.rpLive = false; m.kyT = [.5,.5]; m.netT = [0,0]; m.ky = [.5,.5]; m.dv = [0,0]; m.kd = [0,0]; m.cheer = 0;
+  m.phase = 'ready'; kickoff(1-a);
+}
+function rec(){
+  var b = m.ball, f = {gt:m.gt, bx:b.x, by:b.y, bh:b.h, br:b.rot||0, on:b.on, lin:b.ease==='lin', cam:m.cam, vw:m.viewW, ky:m.ky.slice(), dv:m.dv.slice(), kdir:m.kdir.slice(), net:m.netT.slice(),
+    ref:[m.ref.x,m.ref.y,m.ref.ph,m.ref.face,m.ref.spd], pl:[[],[]]};
+  for(var s=0;s<2;s++) m.pl[s].forEach(function(p){ f.pl[s].push([p.x,p.y,p.ph,p.face,p.spd,p.kick,p.jump,p.cel?1:0]); });
+  m.rec.push(f); while(m.rec.length && m.rec[0].gt < m.gt-4) m.rec.shift();
+  if(m.rpLive){ m.rpFrames.push(f); if(m.gt>m.rpEnd) m.rpLive = false; }
+}
+function replayStep(dt){
+  var fr = m.rpFrames; if(!fr || !fr.length) return endReplay();
+  m.rpT += dt*.7; var t = fr[0].gt + m.rpT, last = fr[fr.length-1];
+  if(t >= last.gt+.5) return endReplay();
+  while(m.rpI < fr.length-1 && fr[m.rpI+1].gt <= t) m.rpI++;
+  var f = fr[m.rpI], b = m.ball, s, i;
+  b.x = f.bx; b.y = f.by; b.h = f.bh; b.rot = f.br; b.on = f.on; b.ease = f.lin ? 'lin' : 'out'; b.tx = b.x; b.ty = b.y;
+  m.cam = f.cam; m.viewW = f.vw; m.ref.x = f.ref[0]; m.ref.y = f.ref[1]; m.ref.ph = f.ref[2]; m.ref.face = f.ref[3]; m.ref.spd = f.ref[4];
+  for(s=0;s<2;s++){ m.ky[s] = f.ky[s]; m.dv[s] = f.dv[s]; m.kdir[s] = f.kdir[s]; m.netT[s] = f.net[s];
+    for(i=0;i<4;i++){ var p = m.pl[s][i], a = f.pl[s][i]; p.x = a[0]; p.y = a[1]; p.ph = a[2]; p.face = a[3]; p.spd = a[4]; p.kick = a[5]; p.jump = a[6]; p.cel = !!a[7]; } }
+  m.trail = b.on && b.ease==='lin' ? m.trail.concat([{x:b.x,y:b.y,h:b.h,a:.5}]).slice(-8) : [];
 }
 
 /* ---------------- half time / full time ---------------- */
@@ -1194,9 +1415,9 @@ function penaltyTurn(){
   if(!m || m.over) return;
   var w = penWinner(); if(w>=0) return finish();
   var k = m.pen.next; m.poss = k; m.zone = 5; m.hintUsed = false; m.q = null;
-  kickTo(absX(k,.87), .5, .5, .05, 'out', k); m.kyT = [.5,.5];
+  kickTo(absX(k,.87), .5, 1.0, .05, 'out', k); m.kyT = [.5,.5];
   say(nm(k)+' step up to take a penalty.'); m.phase = 'ready';
-  later(900, function(){
+  later(1800, function(){
     actor(k, 'penalty', diffIdx(5), function(ok){
       var res = !ok ? 'wide' : (keeperSave(k, -.02) ? 'save' : 'goal');
       penResolve(k, res);
@@ -1207,14 +1428,14 @@ function penResolve(k, res){
   var d = 1-k, b = m.ball; m.phase = 'anim'; m.q = null; WFF.Audio.play('kick');
   var ty = .45+Math.random()*.1, goalX = k===0 ? 1.03 : -0.03;
   m.kyT[d] = res==='goal' ? (ty<.5?.62:.38) : (res==='save' ? ty : .5);
-  if(res==='goal'){ kickTo(goalX, ty, .45, .12, 'lin', k); m.slowT = .8; later(450, function(){ m.netT[d] = 1; }); } else if(res==='save'){ kickTo(absX(k,.955), ty, .42, .1, 'lin', k); } else { kickTo(absX(k,1.05), Math.random()<.5?.2:.8, .5, .25, 'lin', k); }
-  later(700, function(){
+  if(res==='goal'){ kickTo(goalX, ty, .8, .12, 'lin', k); m.slowT = .8; later(800, function(){ m.netT[d] = 1; }); } else if(res==='save'){ kickTo(absX(k,.955), ty, .75, .1, 'lin', k); } else { kickTo(absX(k,1.05), Math.random()<.5?.2:.8, .9, .25, 'lin', k); }
+  later(1200, function(){
     var scored = res==='goal';
     m.pen.n[k]++; m.pen.log[k].push(scored?1:0); if(scored){ m.pen.g[k]++; m.score_pen = true; m.cheer = 2; WFF.Audio.play('goal'); if(!S.get('reduceMotion')){ m.flash = .6; }
       m.banner = {text:'SCORED!', sub:nm(k), t:0, dur:1.6}; } else { m.banner = {text:res==='save'?'SAVED!':'MISSED!', sub:nm(k), t:0, dur:1.6}; }
     say(scored ? nm(k)+' score!' : (res==='save'?'The keeper saves it!':'The kick goes wide!'));
     m.pen.next = d; renderPanel();
-    later(1700, penaltyTurn);
+    later(2800, penaltyTurn);
   });
 }
 
@@ -1298,7 +1519,7 @@ function loop(ts){
       for(i=0;i<due.length;i++){ if(m!==cur || !m) break; due[i].fn(); }
       if(!m || m!==cur) return;
       // match clock (not running during the shootout or between phases)
-      if(!m.pen && !m.timeUp && (m.phase==='question'||m.phase==='reveal'||m.phase==='anim'||m.phase==='cpu')){
+      if(!m.pen && !m.timeUp && (m.phase==='question'||m.phase==='reveal'||m.phase==='cpu')){
         m.clock -= dt; if(m.clock<=0){ m.clock = 0; m.timeUp = true; }
       }
       // answer timer
@@ -1309,9 +1530,9 @@ function loop(ts){
   }catch(err){ console.error(err); }
 }
 function fit(){
-  var c = m.cv, w = c.parentNode.clientWidth; if(!w) return;
-  var hh = Math.round(w*(w<560?.72:.56)), d = window.devicePixelRatio || 1;
-  if(m.W!==w || m.H!==hh || m.dpr!==d){ m.W = w; m.H = hh; m.dpr = d; c.style.height = hh+'px'; c.width = Math.round(w*d); c.height = Math.round(hh*d); }
+  var c = m.cv, w = c.parentNode.clientWidth, hh = c.parentNode.clientHeight; if(!w || !hh) return;
+  var d = Math.min(2, window.devicePixelRatio || 1);
+  if(m.W!==w || m.H!==hh || m.dpr!==d){ m.W = w; m.H = hh; m.dpr = d; c.width = Math.round(w*d); c.height = Math.round(hh*d); }
 }
 
 /* ---------------- animation: ball tween, camera, player motion ---------------- */
@@ -1327,6 +1548,8 @@ function kickTo(tx, ty, dur, peak, ease, side, pass){
   if(pass && !m.pen) pickReceiver(m.poss, tx);
 }
 function step(dt){
+  if(m.phase==='replay'){ replayStep(dt); return; }
+  if(dt>0) m.gt += dt;
   var b = m.ball, reduce = S.get('reduceMotion'), ox = b.x, oy = b.y, i, s;
   if(b.on){
     b.tw += dt; var k = Math.min(1, b.tw/b.td), e = b.ease==='lin' ? k : 1-(1-k)*(1-k);
@@ -1343,14 +1566,14 @@ function step(dt){
   if(m.banner){ m.banner.t += dt; if(m.banner.t>m.banner.dur) m.banner = null; }
   m.fx.forEach(function(p){ p.x += p.vx*dt*.4; p.y += p.vy*dt*.4; p.vy += dt*1.2; p.life -= dt; }); m.fx = m.fx.filter(function(p){ return p.life>0; });
   // camera follows the ball; zooms out for overlays
-  var wide = (m.phase==='intro' || m.phase==='break' || m.over), vwT = wide ? 1.06 : ((m.zone>=5 || m.pen) && m.phase!=='over' ? .5 : .62);
+  var wide = (m.phase==='intro' || m.phase==='walkout' || m.phase==='break' || m.over), vwT = wide ? 1.06 : ((m.zone>=5 || m.pen) && m.phase!=='over' ? .5 : .62);
   m.viewW += (vwT-m.viewW)*Math.min(1, dt*2.5);
   var half = m.viewW/2, lo = Math.min(.5, half-.1), hi = Math.max(.5, 1-half+.1);
   var ct = U.clamp(b.x + (b.tx-b.x)*.35, lo, hi); if(wide) ct = .5;
   m.cam += (ct-m.cam)*Math.min(1, dt*3);
   // referee trails the play
   var rf = m.ref, rpx = rf.x, rpy = rf.y, rr = Math.min(1, dt*2.2);
-  rf.x += (U.clamp(b.x-(b.tx>=b.x?.1:-.1),.06,.94)-rf.x)*rr; rf.y += (.9-rf.y)*rr; motion(rf, rpx, rpy, dt, b.x);
+  if(m.phase==='intro') rf.x = -.12; else rf.x += (U.clamp(b.x-(b.tx>=b.x?.1:-.1),.06,.94)-rf.x)*rr; rf.y += (.9-rf.y)*rr; motion(rf, rpx, rpy, dt, b.x);
   // players
   for(s=0;s<2;s++){
     var bf = m.pen ? .5 : (s===0 ? b.x : 1-b.x), dir = s===0 ? 1 : -1, celeb = m.cheer>0 && m.cheerSide===s && !m.pen;
@@ -1359,7 +1582,9 @@ function step(dt){
       var ax = absX(s,f), ay = BASE[i].y + (b.y-.5)*(press?.55:.3), carrier = (i===m.car[s] && s===m.poss);
       if(carrier){ ax = b.x - dir*(m.pen?.05:.026); ay = m.pen ? .5 : b.y; }
       if(celeb){ ax = absX(s, .84-.05*i); ay = .22+.17*i; }
-      var p = m.pl[s][i], px = p.x, py = p.y, rt = Math.min(1, dt*(celeb?4.5:(carrier?6.5:3)));
+      if(m.phase==='intro'){ ax = absX(s,-.28); ay = BASE[i].y; }
+      var p = m.pl[s][i], px = p.x, py = p.y, rt = Math.min(1, dt*(m.phase==='walkout'?1.05:(celeb?4.5:(carrier?6.5:3))));
+      if(m.phase==='intro') rt = 1;
       p.x += (ax-px)*rt; p.y += (ay-py)*rt;
       motion(p, px, py, dt, b.x);
       p.jump = celeb && !reduce ? Math.abs(Math.sin(m.t*8+i*1.3))*.32 : 0; p.cel = celeb;
@@ -1368,8 +1593,9 @@ function step(dt){
     if(m.kyT[s]!==.5 && Math.abs(m.kyT[s]-m.ky[s])>.04 && m.dv[s]<=0 && !m.kd[s]){ m.dv[s] = .8; m.kdir[s] = m.kyT[s]>m.ky[s] ? 1 : -1; m.kd[s] = 1; }
     if(m.kyT[s]===.5) m.kd[s] = 0;
     m.dv[s] = Math.max(0, m.dv[s]-dt); m.netT[s] = Math.max(0, m.netT[s]-dt*1.1);
-    m.ky[s] += (m.kyT[s]-m.ky[s])*Math.min(1, dt*(m.kd[s]?7:3));
+    m.ky[s] += (m.kyT[s]-m.ky[s])*Math.min(1, dt*(m.kd[s]?5:3));
   }
+  if(dt>0) rec();
 }
 
 function motion(p, px, py, dt, lookX){
@@ -1414,9 +1640,68 @@ function person(c, x, gy, S, p, t, idx, gk, extra){
   leg(a1, false); arm(b1, armsUp);
   c.restore();
 }
+/* ---------------- the stadium: roof, tiered stands full of people, banners, big screen ---------------- */
+function hash(n){ n = ((n^61)^(n>>>16))|0; n = (n+(n<<3))|0; n = n^(n>>>4); n = Math.imul(n,0x27d4eb2d); n = n^(n>>>15); return n>>>0; }
+var NEUTRAL = ['#c9d3ff','#ffd35a','#7ad0ff','#9af0b4','#ffffff','#ff7a8a','#b58cff'];
+function drawStands(c, W, H, yTop, cam, reduce){
+  var bot = yTop-H*.052, rows = 10, cheer = m.cheer>0, t = m.t, A = m.teams[0], B = m.teams[1], r, j, k;
+  var g = c.createLinearGradient(0,0,0,bot+H*.06); g.addColorStop(0,'#03040c'); g.addColorStop(.55,'#0b0e2c'); g.addColorStop(1,'#1d1448'); c.fillStyle = g; c.fillRect(-20,-20,W+40,bot+H*.08+20);
+  for(r=0;r<rows;r++){
+    k = r/(rows-1); var ry = H*.085+(bot-H*.085-H*.028)*k, fs = H*(.02+.0125*k), sp = fs*1.5, n = Math.ceil(W/sp)+4, par = cam*W*(.08+.12*k);
+    c.fillStyle = (r&1) ? '#0a0c25' : '#10133a'; c.fillRect(0, ry+fs*.5, W, fs*.6);
+    c.fillStyle = 'rgba(0,229,255,.07)'; c.fillRect(0, ry+fs*.5, W, 1.3);
+    for(j=0;j<n;j++){
+      var id = hash(r*1009+j*7+3), xx = (j*sp - par + r*sp*.41) % (n*sp); if(xx<0) xx += n*sp; xx -= sp*2;
+      if(xx<-sp || xx>W+sp) continue;
+      var sel = id%10, col = sel<4 ? A.c1 : (sel<8 ? B.c1 : NEUTRAL[id%7]), ph = ((id>>>8)%628)/100;
+      var up = cheer && ((id>>>4)%4!==0), wave = cheer ? Math.max(0, Math.sin(j*.42 - t*6.5 + r*.55)) : 0;
+      var lift = reduce ? 0 : (cheer ? Math.abs(Math.sin(t*8+ph))*fs*.26 + wave*fs*.2 : Math.sin(t*2.2+ph)*fs*.035), by = ry-lift, skin = SKIN[id%5];
+      if(up){ c.strokeStyle = skin; c.lineWidth = Math.max(1.2, fs*.15); c.lineCap = 'round'; var sw = reduce ? 0 : Math.sin(t*9+ph)*fs*.12;
+        c.beginPath(); c.moveTo(xx-fs*.3, by-fs*.1); c.lineTo(xx-fs*.5+sw, by-fs*.9); c.moveTo(xx+fs*.3, by-fs*.1); c.lineTo(xx+fs*.5-sw, by-fs*.9); c.stroke(); }
+      c.fillStyle = col; c.fillRect(xx-fs*.38, by-fs*.2, fs*.76, fs*.9);
+      if(((id>>>6)%6)===0){ c.fillStyle = sel<4 ? A.c2 : B.c2; c.fillRect(xx-fs*.38, by-fs*.2, fs*.76, fs*.15); }
+      c.fillStyle = skin; c.beginPath(); c.arc(xx, by-fs*.46, fs*.3, 0, 6.283); c.fill();
+      c.fillStyle = HAIR[(id>>>5)%5]; c.beginPath(); c.arc(xx, by-fs*.5, fs*.31, Math.PI*1.02, Math.PI*2.05); c.fill();
+      if(id%17===0 || (cheer && id%9===0)){ var fx = xx+fs*.5, fy = by-fs*1.35, wv = reduce ? 0 : Math.sin(t*6+ph)*fs*.18;
+        c.strokeStyle = '#ddd'; c.lineWidth = 1.2; c.beginPath(); c.moveTo(fx, by-fs*.4); c.lineTo(fx, fy); c.stroke();
+        c.fillStyle = (id&1) ? A.c1 : B.c1; c.beginPath(); c.moveTo(fx, fy); c.lineTo(fx+fs*.9+wv, fy+fs*.22); c.lineTo(fx, fy+fs*.5); c.closePath(); c.fill(); }
+    }
+    if(r===3 || r===7){ // vertical aisles
+      c.fillStyle = 'rgba(2,3,12,.55)'; var aw = fs*1.2, ax0 = (((W*.23) - par*1.1) % (W*.46)); for(j=-1;j<4;j++){ var axx = ax0 + j*W*.46; c.fillRect(axx, ry-fs*1.3, aw, fs*3.4); } }
+  }
+  // front wall with banners
+  var wy = bot-H*.026, wh = H*.034, wg = c.createLinearGradient(0,wy,0,wy+wh); wg.addColorStop(0,'#141842'); wg.addColorStop(1,'#07081c'); c.fillStyle = wg; c.fillRect(0, wy, W, wh+H*.04);
+  var bw2 = W*.17, span = bw2*6, off = (cam*W*.3) % span, ii;
+  for(ii=-1;ii<8;ii++){ var bx = ((ii*bw2 - off) % span + span) % span - bw2, tm = (ii&1) ? B : A;
+    c.fillStyle = tm.c1; c.fillRect(bx+4, wy+wh*.12, bw2-8, wh*.7); c.fillStyle = tm.c2; c.fillRect(bx+4, wy+wh*.12, bw2-8, wh*.12);
+    c.fillStyle = U.lum(tm.c1)<.55 ? '#fff' : '#111'; c.font = '900 '+Math.round(wh*.5)+'px Trebuchet MS,Arial'; c.textAlign = 'center'; c.fillText(tm.code, bx+bw2/2, wy+wh*.66); }
+  // roof with trusses, drawn over the top rows
+  var rf = c.createLinearGradient(0,0,0,H*.065); rf.addColorStop(0,'#010208'); rf.addColorStop(1,'rgba(3,4,14,.85)'); c.fillStyle = rf; c.fillRect(0,0,W,H*.065);
+  c.strokeStyle = 'rgba(120,160,255,.22)'; c.lineWidth = 1.2; c.beginPath();
+  for(j=0;j<=28;j++){ var tx = j*W/28; c.moveTo(tx,0); c.lineTo(tx+W/56,H*.05); c.lineTo(tx+W/28,0); } c.stroke();
+  c.fillStyle = 'rgba(0,229,255,.5)'; c.fillRect(0, H*.063, W, 2);
+  // big screen
+  var jw = Math.min(W*.24, H*.5), jh = jw*.34, jx = W*.5-jw/2-(cam-.5)*W*.05, jy = Math.max(H*.1, 84);
+  c.fillStyle = '#05060f'; c.fillRect(jx-6, jy-6, jw+12, jh+12); var sg = c.createLinearGradient(jx,jy,jx+jw,jy+jh); sg.addColorStop(0,'#14206e'); sg.addColorStop(1,'#42106a'); c.fillStyle = sg; c.fillRect(jx, jy, jw, jh);
+  c.textAlign = 'center'; c.fillStyle = '#fff';
+  var jtxt = m.phase==='replay' ? 'REPLAY' : (m.banner ? m.banner.text : m.teams[0].code+'  '+m.score[0]+' - '+m.score[1]+'  '+m.teams[1].code);
+  c.font = '900 '+Math.round(jh*.34)+'px Trebuchet MS,Arial'; c.shadowColor = '#00e5ff'; c.shadowBlur = reduce ? 0 : 10; c.fillText(jtxt, jx+jw/2, jy+jh*.58); c.shadowBlur = 0;
+  c.font = '700 '+Math.round(jh*.15)+'px Trebuchet MS,Arial'; c.fillStyle = '#9fb0ee'; c.fillText(fmtClock(m.clock), jx+jw/2, jy+jh*.88);
+}
+function drawFront(c, W, H, yBot, cam, reduce){
+  var cheer = m.cheer>0, t = m.t, base = yBot+H*.085, fs = H*.045, sp = fs*1.35, n = Math.ceil(W/sp)+3, par = cam*W*.5, j;
+  for(var r=0;r<2;r++){
+    for(j=0;j<n;j++){
+      var id = hash(r*733+j*5+11), xx = (j*sp - par*(1+r*.25) + r*sp*.5) % (n*sp); if(xx<0) xx += n*sp; xx -= sp;
+      var ph = ((id>>>8)%628)/100, bob = reduce ? 0 : (cheer ? Math.abs(Math.sin(t*8+ph))*fs*.3 : Math.sin(t*2+ph)*fs*.04), y = base+r*fs*.55-bob, col = (id&1) ? m.teams[0].c1 : m.teams[1].c1;
+      c.fillStyle = '#04050f'; c.beginPath(); c.arc(xx, y-fs*.1, fs*.34, 0, 6.283); c.fill(); c.fillRect(xx-fs*.55, y+fs*.2, fs*1.1, fs*1.2);
+      c.fillStyle = col; c.globalAlpha = .55; c.fillRect(xx-fs*.55, y+fs*.2, fs*1.1, fs*.1); c.globalAlpha = 1;
+    }
+  }
+}
 function draw(){
   var c = m.ctx, W = m.W, H = m.H; if(!W) return;
-  var reduce = S.get('reduceMotion'), cam = m.cam, vw = m.viewW, yTop = H*.34, yBot = H*.9, unit = H*.25, b = m.ball, i, s;
+  var reduce = S.get('reduceMotion'), cam = m.cam, vw = m.viewW, yTop = H*.37, yBot = H*.9, unit = Math.min(H*.215, W*.14), b = m.ball, i, s;
   function K(y){ return .68+.32*y; }
   function SX(x,y){ return W*.5+(x-cam)*(W/vw)*K(y); }
   function SY(y,z){ return yTop+(yBot-yTop)*y-(z||0)*unit*K(y); }
@@ -1425,13 +1710,8 @@ function draw(){
   c.save();
   if(m.shake>0 && !reduce) c.translate((Math.random()-.5)*m.shake*10, (Math.random()-.5)*m.shake*10);
   // stands
-  var g = c.createLinearGradient(0,0,0,yTop); g.addColorStop(0,'#04050d'); g.addColorStop(.7,'#0d1033'); g.addColorStop(1,'#241552'); c.fillStyle = g; c.fillRect(-20,-20,W+40,yTop+20);
-  var bob = reduce ? 0 : (m.cheer>0 ? 5 : 1.2), u = W/900;
-  m.crowd.forEach(function(d){
-    if(!d.top) return;
-    var xx = (((d.x - cam*.22)%1)+1)%1*W, yy = H*.03 + d.y*(yTop-H*.1);
-    c.fillStyle = d.c; c.globalAlpha = .55+.25*d.y; c.beginPath(); c.arc(xx, yy+Math.sin(m.t*(m.cheer>0?9:3)+d.ph)*bob, (2+2.2*d.y)*u+.6, 0, 6.283); c.fill();
-  }); c.globalAlpha = 1;
+  var u = W/900;
+  drawStands(c, W, H, yTop, cam, reduce);
   // floodlight beams and glow (additive)
   c.save(); c.globalCompositeOperation = 'lighter';
   [[.12,'rgba(0,229,255,'],[.38,'rgba(255,47,209,'],[.62,'rgba(0,229,255,'],[.88,'rgba(255,47,209,']].forEach(function(L2,li){
@@ -1456,7 +1736,7 @@ function draw(){
     c.fillStyle = (i&1) ? '#138447' : '#0f713c'; c.beginPath(); c.moveTo(p0[0],p0[1]); c.lineTo(p1[0],p1[1]); c.lineTo(p2[0],p2[1]); c.lineTo(p3[0],p3[1]); c.closePath(); c.fill();
   }
   // zone highlight for the team with the ball
-  if(!m.pen && m.phase!=='intro' && m.phase!=='over' && m.phase!=='break'){
+  if(!m.pen && m.phase!=='intro' && m.phase!=='walkout' && m.phase!=='replay' && m.phase!=='over' && m.phase!=='break'){
     var xa = absX(m.poss,ZONE_EDGE[m.zone]), xb = absX(m.poss,ZONE_EDGE[m.zone+1]), z0 = Math.min(xa,xb), z1 = Math.max(xa,xb);
     var q0 = PT(z0,0), q1 = PT(z1,0), q2 = PT(z1,1), q3 = PT(z0,1);
     c.fillStyle = 'rgba(0,229,255,.12)'; c.beginPath(); c.moveTo(q0[0],q0[1]); c.lineTo(q1[0],q1[1]); c.lineTo(q2[0],q2[1]); c.lineTo(q3[0],q3[1]); c.closePath(); c.fill();
@@ -1527,7 +1807,7 @@ function draw(){
   }});
   ents.sort(function(a,d){ return a.y-d.y; }); ents.forEach(function(e){ e.f(); });
   // possession arrow over the ball carrier
-  if(m.phase!=='intro' && m.phase!=='break' && !m.over){
+  if(m.phase!=='intro' && m.phase!=='walkout' && m.phase!=='replay' && m.phase!=='break' && !m.over){
     var cr = m.pl[m.poss][m.car[m.poss]], tc = m.teams[m.poss], sc2 = unit*K(cr.y), ax2 = SX(cr.x,cr.y), ay2 = SY(cr.y,0)-sc2*1.12-(reduce?0:Math.abs(Math.sin(m.t*4))*4), ar = Math.max(6, sc2*.1), dr2 = m.poss===0 ? 1 : -1;
     var rg = SY(cr.y,0), rrx = sc2*.3*(1+(reduce?0:Math.sin(m.t*5)*.08)); c.save(); c.shadowColor = '#00e5ff'; c.shadowBlur = reduce?0:12; c.strokeStyle = 'rgba(0,229,255,.9)'; c.lineWidth = 2.4; c.beginPath(); c.ellipse(ax2, rg, rrx, rrx*.32, 0, 0, 6.283); c.stroke(); c.restore();
     c.fillStyle = tc.c1; c.strokeStyle = '#fff'; c.lineWidth = 2; c.beginPath(); c.moveTo(ax2,ay2+ar*1.1); c.lineTo(ax2-ar,ay2-ar*.4); c.lineTo(ax2+ar,ay2-ar*.4); c.closePath(); c.fill(); c.stroke();
@@ -1536,7 +1816,7 @@ function draw(){
   // foreground boards and crowd
   c.fillStyle = '#05060f'; c.fillRect(-20, yBot+H*.012, W+40, H);
   for(i=-1;i<9;i++){ var fb = (((i*bw - cam*W*1.2/vw*.62 + scr*1.3)%(bw*8))+bw*8)%(bw*8)-bw, fc = BOARD[(((i+2)%5)+5)%5]; c.fillStyle = '#0b0d24'; c.fillRect(fb, yBot+H*.012, bw-3, H*.04); c.fillStyle = fc; c.globalAlpha = .9; c.fillRect(fb+4, yBot+H*.02, (bw-11)*.6, H*.012); c.fillRect(fb, yBot+H*.012, bw-3, H*.005); c.globalAlpha = 1; }
-  m.crowd.forEach(function(d){ if(d.top) return; var xx = (((d.x - cam*.5)%1)+1)%1*W, yy = yBot+H*.06+d.y*(H*.05); c.fillStyle = d.c; c.globalAlpha = .6; c.beginPath(); c.arc(xx, yy+Math.sin(m.t*(m.cheer>0?9:3)+d.ph)*bob, 3.4*u+.8, 0, 6.283); c.fill(); }); c.globalAlpha = 1;
+  drawFront(c, W, H, yBot, cam, reduce);
   // confetti (screen space)
   m.fx.forEach(function(p){ c.globalAlpha = Math.min(1,p.life); c.fillStyle = p.c; c.fillRect(W*p.x,H*p.y,5*u+2,3*u+2); }); c.globalAlpha = 1;
   c.restore();
@@ -1550,10 +1830,15 @@ function draw(){
     c.font = '800 '+Math.round(W*.032)+'px Trebuchet MS,Arial,sans-serif'; c.lineWidth = 5; c.strokeText(bn.sub,0,W*.06); c.fillStyle = '#fff'; c.fillText(bn.sub,0,W*.06);
     c.restore();
   }
+  if(m.phase==='replay'){
+    var bar = H*.07; c.fillStyle = '#000'; c.fillRect(0,0,W,bar); c.fillRect(0,H-bar,W,bar);
+    c.fillStyle = (Math.floor(m.t*2)%2) ? '#ff3d71' : '#ff9ab4'; c.beginPath(); c.arc(W*.04, H-bar/2, bar*.16, 0, 6.283); c.fill();
+    c.fillStyle = '#fff'; c.textAlign = 'left'; c.font = '900 '+Math.round(bar*.45)+'px Trebuchet MS,Arial'; c.fillText('REPLAY', W*.04+bar*.3, H-bar/2+bar*.16);
+  }
 }
 
 /* test hook (also handy for Part 3 debugging) */
-Match._test = { state:function(){ return m; }, answer:function(i){ answer(i); }, startShootout:function(){ if(m){ hideOverlay(); startShootout(); } }, finish:function(){ finish(); } };
+Match._test = { state:function(){ return m; }, endReplay:function(){ endReplay(); }, answer:function(i){ answer(i); }, startShootout:function(){ if(m){ hideOverlay(); startShootout(); } }, finish:function(){ finish(); } };
 })();
 </script>
 
@@ -1638,6 +1923,547 @@ Match._test = { state:function(){ return m; }, answer:function(i){ answer(i); },
 @media (prefers-reduced-motion:reduce){.logo-ball{animation:none}}
 </style>
 
+<script>
+/*PDFIMPORT-BEGIN*/
+/* =====================================================================
+   PDF IMPORT  -  Cambridge-style multiple-choice past papers -> questions
+   ---------------------------------------------------------------------
+   * pdf.js (text layer) and tesseract.js (OCR for scanned pages) are loaded lazily from public CDNs
+     the first time the importer runs, so the game itself still works offline.
+   * Pipeline: text items -> lines -> question starts (1,2,3... at the left margin) -> options A-D
+     -> answer key from the mark scheme (question number + letter pairs) -> diagram crops
+     (non-text ink on the page) -> preview/edit -> import into a topic.
+   * Everything is heuristic and every result is shown for review before it is imported.
+   ===================================================================== */
+(function(){
+'use strict';
+var WFF = window.WFF, h = WFF.h, UI = WFF.UI;
+var PDF = WFF.PdfImport = {};
+
+var CDN = {
+  pdf:    'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js',
+  worker: 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js',
+  tess:   'https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js',
+  tessWorker: 'https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/worker.min.js',
+  tessCore: 'https://cdn.jsdelivr.net/npm/tesseract.js-core@5.1.0',
+  tessLang: 'https://cdn.jsdelivr.net/npm/@tesseract.js-data/eng/4.0.0_best_int'
+};
+PDF.CDN = CDN;
+
+/* ---------------- script loading ---------------- */
+var loading = {};
+function loadScript(url){
+  if(loading[url]) return loading[url];
+  return loading[url] = new Promise(function(res, rej){
+    var s = document.createElement('script'); s.src = url; s.async = true;
+    s.onload = function(){ res(); }; s.onerror = function(){ delete loading[url]; rej(new Error('Could not load '+url+'. PDF import needs an internet connection the first time.')); };
+    document.head.appendChild(s); });
+}
+var pdfReady = null;
+function ensurePdf(){
+  if(pdfReady) return pdfReady;
+  pdfReady = (window.pdfjsLib ? Promise.resolve() : loadScript(CDN.pdf)).then(function(){
+    var lib = window.pdfjsLib; if(!lib) throw new Error('pdf.js did not load.');
+    return fetch(CDN.worker).then(function(r){ if(!r.ok) throw new Error('worker'); return r.blob(); })
+      .then(function(b){ lib.GlobalWorkerOptions.workerSrc = URL.createObjectURL(b); })
+      .catch(function(){ lib.GlobalWorkerOptions.workerSrc = CDN.worker; })
+      .then(function(){ return lib; });
+  }).catch(function(e){ pdfReady = null; throw e; });
+  return pdfReady;
+}
+var ocrWorker = null;
+function ensureOcr(progress){
+  if(ocrWorker) return ocrWorker;
+  ocrWorker = (window.Tesseract ? Promise.resolve() : loadScript(CDN.tess)).then(function(){
+    return window.Tesseract.createWorker('eng', 1, { workerPath:CDN.tessWorker, corePath:CDN.tessCore, langPath:CDN.tessLang, workerBlobURL:false,
+      logger:function(m){ if(progress && m && m.status==='recognizing text') progress(m.progress); } });
+  }).catch(function(e){ ocrWorker = null; throw e; });
+  return ocrWorker;
+}
+
+/* ---------------- text helpers: superscripts / subscripts ---------------- */
+var SUP = {'0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹','+':'⁺','-':'⁻','−':'⁻','=':'⁼','(':'⁽',')':'⁾','n':'ⁿ'};
+var SUB = {'0':'₀','1':'₁','2':'₂','3':'₃','4':'₄','5':'₅','6':'₆','7':'₇','8':'₈','9':'₉','+':'₊','-':'₋','−':'₋','=':'₌','(':'₍',')':'₎'};
+function mapAll(str, map){ var out = ''; for(var i=0;i<str.length;i++){ var c = map[str[i]]; if(!c) return null; out += c; } return out; }
+
+/* items -> one line of text; items are {s,x0,x1,b,sz} (b = baseline, y grows downwards) */
+function itemsToText(items){
+  var its = items.slice().sort(function(a,b){ return a.x0-b.x0; }); if(!its.length) return '';
+  var base = 0; its.forEach(function(i){ if(i.sz>base) base = i.sz; });
+  var baseB = 0, nb = 0; its.forEach(function(i){ if(i.sz>=base*.85){ baseB += i.b; nb++; } }); baseB /= Math.max(1,nb);
+  var out = '', prev = null;
+  its.forEach(function(it){
+    var s = it.s; if(!s) return;
+    var small = it.sz < base*.82, dy = baseB - it.b, txt = s;
+    if(small && s.trim()){
+      var core = s.trim();
+      if(dy > base*.18){ var m = mapAll(core, SUP); txt = m!==null ? m : '^'+(core.length>1?'('+core+')':core); }
+      else if(dy < base*.02 || dy < base*.1){ var m2 = mapAll(core, SUB); txt = m2!==null ? m2 : '_'+(core.length>1?'('+core+')':core); }
+      else txt = s;
+      if(txt!==s) txt = (/^\s/.test(s)?' ':'') + txt;
+    }
+    if(prev){
+      var gap = it.x0 - prev.x1, glued = (txt!==s) || (prev._conv);
+      if(gap > base*.2 && !glued && !/^\s/.test(txt) && !/\s$/.test(out)) out += ' ';
+      else if(gap > base*.45 && !/\s$/.test(out) && !/^\s/.test(txt)) out += ' ';
+    }
+    out += txt; it._conv = (txt!==s); prev = it;
+  });
+  return out.replace(/\s+/g,' ').trim();
+}
+
+/* items of one page -> lines (top to bottom, items left to right) */
+function groupLines(items){
+  var its = items.slice().sort(function(a,b){ return a.b-b.b || a.x0-b.x0; }), lines = [];
+  its.forEach(function(it){
+    var best = null, bd = 1e9;
+    for(var i=lines.length-1;i>=0 && i>=lines.length-6;i--){ var L = lines[i], tol = .6*Math.max(L.sz, it.sz), d = Math.abs(it.b-L.b);
+      var tolS = (it.sz<L.sz*.85 || L.sz<it.sz*.85) ? .95*Math.max(L.sz,it.sz) : tol;
+      if(d<=tolS && d<bd){ best = L; bd = d; } }
+    if(best){ best.items.push(it); if(it.sz>best.sz*.85){ best.b = (best.b*best.items.length + it.b)/(best.items.length+1); } if(it.sz>best.sz) best.sz = it.sz; }
+    else lines.push({items:[it], b:it.b, sz:it.sz});
+  });
+  lines.forEach(function(L){
+    L.items.sort(function(a,b){ return a.x0-b.x0; });
+    L.x0 = L.items[0].x0; L.x1 = Math.max.apply(null, L.items.map(function(i){return i.x1;}));
+    L.top = L.b - L.sz*.95; L.bot = L.b + L.sz*.3; L.p = L.items[0].p; L.text = itemsToText(L.items);
+  });
+  lines.sort(function(a,b){ return a.b-b.b; });
+  return lines;
+}
+
+/* ---------------- noise (headers, footers, instructions) ---------------- */
+var NOISE = [/©\s*UCLES/i, /\bUCLES\b/, /^\[?\s*Turn over\s*\]?$/i, /Turn over/i, /DO NOT WRITE/i, /^BLANK PAGE$/i, /^\*?\s*\d{8,}\s*\*?$/, /Cambridge (Assessment )?International/i,
+  /^Permission to reproduce/i, /^Page \d+/i, /^\d{4}\/\d{2}(\/[A-Z]\/[A-Z]\/\d{2})?$/, /^\d{4}\/\d{2}\/[A-Z]\/[A-Z]\/\d{2}/, /^This document has \w+ pages/i, /^\W*\d{1,2}\W*$/ ];
+function isNoise(L, pageH){
+  var t = L.text; if(!t) return true;
+  for(var i=0;i<NOISE.length;i++){ if(NOISE[i].test(t)){
+    if(NOISE[i].source==='^\\W*\\d{1,2}\\W*$') return (L.b > pageH*.93 || L.b < pageH*.05);   // bare page numbers only near the page edge
+    return true; } }
+  return false;
+}
+var STOP_AFTER = /^(BLANK PAGE|Permission to reproduce|The Periodic Table|DATA SHEET|Cambridge Assessment International Education is part)/i;
+
+/* ---------------- question-paper parsing ---------------- */
+function numStart(L, expected, margin, pageW){
+  var it = L.items[0], s = it.s.trim(), m = /^(\d{1,3})[.)]?$/.exec(s), m2 = !m && /^(\d{1,3})[.)]?\s+\S/.exec(s);
+  var n = m ? +m[1] : (m2 ? +m2[1] : -1); if(n!==expected) return false;
+  if(margin===null) return it.x0 < pageW*.24;
+  return Math.abs(it.x0 - margin) <= pageW*.035;
+}
+/* split lines (all pages, document order) into per-question line lists */
+function segment(pages){
+  var qs = [], expected = 1, margin = null, cur = null, stopped = false;
+  pages.forEach(function(pg, pi){
+    if(pi===0 && pages.length>1 && /instructions/i.test(pg.lines.map(function(L){ return L.text; }).join(' ')) && !pg.lines.some(function(L){ return /^[A-D]$/.test(L.items[0].s.trim()); })) return;   // cover page
+    pg.lines.forEach(function(L){
+      if(L.noise){ return; }
+      if(numStart(L, expected, margin, pg.w)){ if(margin===null) margin = L.items[0].x0; cur = {n:expected, lines:[L]}; qs.push(cur); expected++; stopped = false; return; }
+      if(!cur) return;
+      if(STOP_AFTER.test(L.text)){ stopped = true; return; }
+      if(!stopped) cur.lines.push(L);
+    });
+  });
+  return qs;
+}
+var LETTERS = ['A','B','C','D'];
+/* options + stem from the lines of one question */
+function parseQuestion(lines, pageWOf, firstNum){
+  var res = {stem:'', options:[], warn:[]}, mk = [], exp = 0, li, j;
+  for(li=0; li<lines.length && exp<4; li++){
+    var L = lines[li];
+    for(j=0;j<L.items.length && exp<4;j++){
+      var it = L.items[j], s = it.s.trim().replace(/[_.:)|]+$/,''); if(s!==LETTERS[exp]) continue;
+      var prev = L.items[j-1], first = (j===0) || (prev && it.x0-prev.x1 > L.sz*1.4); if(!first) continue;
+      if(exp===0 && li===0 && j<=1) continue;     // the question number and the first word of the stem ("A student...") are never an option
+      mk.push({li:li, j:j, it:it}); exp++; break;
+    }
+  }
+  var strict = mk.length===4;
+  if(!strict){ // loose: letters glued to their text ("A 3 N") on their own lines
+    mk = []; exp = 0;
+    for(li=0; li<lines.length && exp<4; li++){ var m = looseRe(LETTERS[exp]).exec(lines[li].text); if(m && li>0){ mk.push({li:li, j:0, loose:true}); exp++; } }
+  }
+  if(mk.length<2){ res.stem = cleanStem(joinLines(lines, 0, lines.length, null, firstNum)); res.warn.push('Could not find the answer options (A to D).'); return res; }
+  if(mk.length<4) res.warn.push('Only found '+mk.length+' of the 4 options.');
+  var a = mk[0], stemItems = [];
+  lines.forEach(function(L, i){ if(i<a.li) stemItems.push({L:L, items:L.items}); else if(i===a.li && a.j>0) stemItems.push({L:L, items:L.items.slice(0, a.j)}); });
+  res.stem = cleanStem(stemItems.map(function(x){ var its = x.items.slice(); if(x.L===lines[0] && firstNum) its = stripNumber(its, firstNum); return itemsToText(its); }).filter(Boolean).join(' '));
+  for(var k=0;k<mk.length;k++){
+    var from = mk[k], to = mk[k+1], parts = [], lastLine = null;
+    for(li=from.li; li<lines.length; li++){
+      if(to && (li>to.li || (from.loose && li===to.li))) break; var L2 = lines[li], its;
+      if(from.loose){ its = L2.items.slice(); if(li===from.li) its = stripLetter(its, LETTERS[k]); }
+      else { var s0 = (li===from.li) ? from.j+1 : 0, e0 = (to && li===to.li) ? to.j : L2.items.length; its = L2.items.slice(s0, e0); }
+      if(!to && li>from.li){ // continuation of the last option only while lines stay close together
+        var pl = lines[li-1]; if(L2.p!==pl.p || (L2.b-pl.b) > Math.max(pl.sz,L2.sz)*1.9 || L2.x0 < (from.it ? from.it.x1 : pl.x0) - pageWOf(L2.p)*.06) break; }
+      if(its.length) parts.push(itemsToText(its)); lastLine = L2;
+    }
+    res.options.push(cleanStem(parts.join(' ')));
+  }
+  return res;
+}
+function stripNumber(its, n){ var f = its[0], s = f.s.trim(); if(s===String(n) || s===n+'.' || s===n+')') return its.slice(1);
+  var m = new RegExp('^'+n+'[.)]?\\s+').exec(f.s); if(m){ var c = Object.assign({}, f); c.s = f.s.slice(m[0].length); return [c].concat(its.slice(1)); } return its; }
+function looseRe(l){ return new RegExp('^'+l+'(?:'+l.toLowerCase()+')?(?:[\\s.)_:|]+|(?=[a-z0-9+(\\-]))\\S'); }
+function stripLetter(its, l){ var f = its[0], t = f.s.trim().replace(/[_.:)|]+$/,''); if(t===l || t===l+l.toLowerCase()) return its.slice(1);
+  var m = new RegExp('^'+l+'(?:'+l.toLowerCase()+')?(?:[\\s.)_:|]+|(?=[a-z0-9+(\\-]))').exec(f.s); if(m){ var c = Object.assign({}, f); c.s = f.s.slice(m[0].length); return [c].concat(its.slice(1)); } return its; }
+function joinLines(lines, from, to, _x, firstNum){ var out = []; for(var i=from;i<to;i++){ var its = lines[i].items; if(i===0 && firstNum) its = stripNumber(its, firstNum); out.push(itemsToText(its)); } return out.join(' '); }
+function cleanStem(t){ return String(t||'').replace(/\s+/g,' ').replace(/\s+([,.;:?!])/g,'$1').replace(/\(\s+/g,'(').replace(/\s+\)/g,')').trim(); }
+
+/* ---------------- mark scheme: question number + letter pairs ---------------- */
+function parseKey(pages){
+  var toks = [];
+  pages.forEach(function(pg){ pg.lines.forEach(function(L){ if(L.noise) return; L.text.split(/\s+/).forEach(function(t){ if(t) toks.push(t); }); }); });
+  var key = {}, i, count = 0;
+  // sequential pass first (handles one answer per row, rows in order)
+  var exp = 1;
+  for(i=0;i<toks.length-1;i++){ if(toks[i]===String(exp) && /^[A-D]$/.test(toks[i+1])){ key[exp] = toks[i+1]; exp++; i++; count++; } }
+  // loose pass: any "number letter" pair (two-column tables, out-of-order rows), first occurrence wins
+  var loose = {}, lc = 0;
+  for(i=0;i<toks.length-1;i++){ var m = /^(\d{1,3})$/.exec(toks[i]); if(m && /^[A-D]$/.test(toks[i+1]) && +m[1]>=1 && +m[1]<=100 && !loose[+m[1]]){ loose[+m[1]] = toks[i+1]; lc++; } }
+  return lc>count ? loose : key;
+}
+
+/* ---------------- reading a PDF: text items, OCR fallback ---------------- */
+function pageItemsFromPdf(page, vp, tc){
+  var U = window.pdfjsLib.Util, out = [];
+  tc.items.forEach(function(it){
+    if(!it.str || !it.str.trim() && it.str.length===0) return;
+    var t = U.transform(vp.transform, it.transform), rot = Math.abs(t[1]) > Math.abs(t[0])*.2 || Math.abs(t[2]) > Math.abs(t[3])*.2;
+    if(rot) return;                       // rotated margin text and barcodes
+    var sz = Math.hypot(t[2], t[3]); if(sz<2) return;
+    out.push({s:it.str, x0:t[4], x1:t[4]+it.width*vp.scale, b:t[5], sz:sz, w:it.width*vp.scale});
+  });
+  return out;
+}
+function ocrItems(data){
+  var words = data.words || [], lines = [];
+  if(!words.length && data.blocks){ data.blocks.forEach(function(b){ (b.paragraphs||[]).forEach(function(p){ (p.lines||[]).forEach(function(l){ lines.push(l.words||[]); }); }); }); }
+  else if(words.length){ lines.push(words); }
+  var out = [];
+  lines.forEach(function(ws){
+    ws = ws.filter(function(w){ return w.text && w.text.trim() && w.bbox; }); if(!ws.length) return;
+    var hs = ws.map(function(w){ return w.bbox.y1-w.bbox.y0; }).sort(function(a,b){return a-b;}), bs = ws.map(function(w){ return w.bbox.y1; }).sort(function(a,b){return a-b;});
+    var mh = hs[hs.length>>1], mb = bs[bs.length>>1];
+    ws.forEach(function(w){ out.push({s:w.text, x0:w.bbox.x0, x1:w.bbox.x1, b:(data.words ? w.bbox.y1-(w.bbox.y1-w.bbox.y0-mh)*0 : mb), sz:mh*.82, w:w.bbox.x1-w.bbox.x0}); });
+  });
+  return out;
+}
+/* words from tesseract are not grouped per line when data.words is used: snap near baselines together */
+function snapBaselines(items){
+  var sorted = items.slice().sort(function(a,b){ return a.b-b.b; }), grp = [];
+  sorted.forEach(function(it){ var g = grp[grp.length-1]; if(g && Math.abs(it.b-g.b) < it.sz*.55){ g.list.push(it); g.b = g.list.reduce(function(s,x){return s+x.b;},0)/g.list.length; } else grp.push({b:it.b, list:[it]}); });
+  grp.forEach(function(g){ var szs = g.list.map(function(i){return i.sz;}).sort(function(a,b){return a-b;}), ms = szs[szs.length>>1]; g.list.forEach(function(i){ i.b = g.b; i.sz = ms; }); });
+  return items;
+}
+
+function renderPage(page, scale){
+  var vp = page.getViewport({scale:scale}), cv = document.createElement('canvas'); cv.width = Math.ceil(vp.width); cv.height = Math.ceil(vp.height);
+  var cx = cv.getContext('2d'); cx.fillStyle = '#fff'; cx.fillRect(0,0,cv.width,cv.height);
+  return page.render({canvasContext:cx, viewport:vp}).promise.then(function(){ return {cv:cv, vp:vp}; });
+}
+
+/* read every page: {w,h,scale,items,lines,scanned} */
+function readPdf(file, opts, progress){
+  return ensurePdf().then(function(lib){
+    return file.arrayBuffer().then(function(buf){ return lib.getDocument({data:buf}).promise; });
+  }).then(function(doc){
+    var pages = [], n = doc.numPages, i = 0;
+    function next(){
+      if(i>=n) return Promise.resolve({doc:doc, pages:pages});
+      var no = ++i; progress('Reading page '+no+' of '+n+'...', (no-1)/n);
+      return doc.getPage(no).then(function(page){
+        var sc = 1.5, vp = page.getViewport({scale:sc});
+        return page.getTextContent().then(function(tc){
+          var items = pageItemsFromPdf(page, vp, tc), chars = items.reduce(function(s,x){ return s+x.s.trim().length; }, 0);
+          var pg = {no:no, page:page, w:vp.width, h:vp.height, scale:sc, items:items, scanned:false};
+          if(chars < 25){
+            pg.scanned = true;
+            if(!opts.ocr){ pg.items = []; pages.push(pg); return next(); }
+            var osc = 2.2;
+            return renderPage(page, osc).then(function(r){
+              progress('Scanned page '+no+' of '+n+': running OCR (first time downloads the language data)...', (no-1)/n);
+              return ensureOcr(function(p){ progress('OCR page '+no+' of '+n+': '+Math.round(p*100)+'%', (no-1+p)/n); }).then(function(wk){
+                return wk.recognize(r.cv, {}, {blocks:true, text:true}); }).then(function(res){
+                pg.scale = osc; pg.w = r.cv.width; pg.h = r.cv.height; pg.items = snapBaselines(ocrItems(res.data)); pages.push(pg); return next(); });
+            });
+          }
+          pages.push(pg); return next();
+        });
+      });
+    }
+    return next();
+  });
+}
+function finishPages(pages){
+  pages.forEach(function(pg, idx){
+    pg.items.forEach(function(it){ it.p = idx; });
+    pg.lines = groupLines(pg.items);
+    pg.top = pg.h*.045; pg.bottom = pg.h*.94;
+    pg.lines.forEach(function(L){ L.noise = isNoise(L, pg.h); if(L.noise){ if(L.b < pg.h*.12) pg.top = Math.max(pg.top, L.bot+2); else if(L.b > pg.h*.85) pg.bottom = Math.min(pg.bottom, L.top-2); } });
+  });
+}
+
+/* ---------------- diagrams: ink that is not text ---------------- */
+function findInkBox(pg, cv, y0, y1, boxes){
+  var W = cv.width, x0 = Math.floor(W*.05), x1 = Math.ceil(W*.95); y0 = Math.max(0, Math.floor(y0)); y1 = Math.min(cv.height, Math.ceil(y1));
+  var w = x1-x0, hgt = y1-y0; if(w<20 || hgt<20) return null;
+  var img = cv.getContext('2d').getImageData(x0, y0, w, hgt).data, B = 6, bw = Math.ceil(w/B), bh = Math.ceil(hgt/B), cnt = new Uint16Array(bw*bh), px, py, i;
+  var mask = new Uint8Array(w*hgt);
+  boxes.forEach(function(b){ var ax = Math.max(0,Math.floor(b[0]-x0-3)), bx = Math.min(w,Math.ceil(b[2]-x0+3)), ay = Math.max(0,Math.floor(b[1]-y0-2)), by = Math.min(hgt,Math.ceil(b[3]-y0+2));
+    for(py=ay;py<by;py++) for(px=ax;px<bx;px++) mask[py*w+px] = 1; });
+  for(py=0;py<hgt;py++) for(px=0;px<w;px++){ if(mask[py*w+px]) continue; i = (py*w+px)*4; var lum = img[i]*.299+img[i+1]*.587+img[i+2]*.114; if(lum<185) cnt[((py/B)|0)*bw+((px/B)|0)]++; }
+  var act = new Uint8Array(bw*bh), bx2, by2;
+  for(by2=0;by2<bh;by2++) for(bx2=0;bx2<bw;bx2++) if(cnt[by2*bw+bx2]>=3){ for(var dy=-1;dy<=1;dy++) for(var dx=-1;dx<=1;dx++){ var yy = by2+dy, xx = bx2+dx; if(yy>=0&&yy<bh&&xx>=0&&xx<bw) act[yy*bw+xx] = 1; } }
+  var seen = new Uint8Array(bw*bh), found = [];
+  for(i=0;i<bw*bh;i++){ if(!act[i]||seen[i]) continue;
+    var st = [i], minx = 1e9, maxx = -1, miny = 1e9, maxy = -1, area = 0; seen[i] = 1;
+    while(st.length){ var c = st.pop(), cx = c%bw, cy = (c/bw)|0; area++; if(cx<minx) minx = cx; if(cx>maxx) maxx = cx; if(cy<miny) miny = cy; if(cy>maxy) maxy = cy;
+      for(var ey=-1;ey<=1;ey++) for(var ex=-1;ex<=1;ex++){ var yy2 = cy+ey, xx2 = cx+ex; if(yy2<0||yy2>=bh||xx2<0||xx2>=bw) continue; var ni = yy2*bw+xx2; if(act[ni] && !seen[ni]){ seen[ni] = 1; st.push(ni); } } }
+    var cw = (maxx-minx+1)*B, ch = (maxy-miny+1)*B;
+    if(cw>=36 && ch>=36 && area>=26) found.push([x0+minx*B, y0+miny*B, x0+(maxx+1)*B, y0+(maxy+1)*B]);
+  }
+  if(!found.length) return null;
+  var bb = [1e9,1e9,-1,-1]; found.forEach(function(f){ bb[0] = Math.min(bb[0],f[0]); bb[1] = Math.min(bb[1],f[1]); bb[2] = Math.max(bb[2],f[2]); bb[3] = Math.max(bb[3],f[3]); });
+  // pull in small labels that touch the drawing
+  boxes.forEach(function(b){ var bwid = b[2]-b[0]; if(bwid > W*.12 || (b[4]||'').length > 10) return; if(b[2]>bb[0]-4 && b[0]<bb[2]+4 && b[3]>bb[1]-4 && b[1]<bb[3]+4 && b[1]>=y0-2 && b[3]<=y1+2){ bb[0] = Math.min(bb[0],b[0]); bb[1] = Math.min(bb[1],b[1]); bb[2] = Math.max(bb[2],b[2]); bb[3] = Math.max(bb[3],b[3]); } });
+  var pad = 8, top = Math.max(y0,bb[1]-pad), bot = Math.min(y1,bb[3]+pad);
+  boxes.forEach(function(b){ if((b[4]||'').length<=10 && (b[2]-b[0])<=W*.12) return; if(b[2]<bb[0] || b[0]>bb[2]) return;      // long text lines must not be cut into the picture
+    if(b[3]<=bb[1]+2){ top = Math.max(top, b[3]+1); } else if(b[1]>=bb[3]-2){ bot = Math.min(bot, b[1]-1); } });
+  return [Math.max(x0,bb[0]-pad), top, Math.min(x1,bb[2]+pad), Math.max(top+10,bot)];
+}
+function textBoxes(pg){ return pg.items.map(function(it){ return [it.x0, it.b-it.sz*.95, it.x1, it.b+it.sz*.3, it.s.trim()]; }); }
+
+/* ---------------- the whole job ---------------- */
+PDF.extract = function(qpFile, msFile, opts, progress){
+  var out = {questions:[], warnings:[], key:null, qpName:qpFile.name};
+  var qpPages, msPages;
+  return readPdf(qpFile, opts, function(m,f){ progress(qpFile.name+': '+m, f*.5); }).then(function(r){
+    qpPages = r.pages; finishPages(qpPages); var qs = segment(qpPages);
+    if(!qs.length) throw new Error('No numbered questions were found in '+qpFile.name+'. Is this a multiple-choice question paper?');
+    if(qpPages.some(function(p){ return p.scanned; }) && !opts.ocr) out.warnings.push('Some pages look scanned and OCR is switched off, so they were skipped.');
+    var pageW = function(pi){ return qpPages[pi].w; };
+    qs.forEach(function(q){
+      var p = parseQuestion(q.lines, pageW, q.n);
+      q.stem = p.stem; q.options = p.options; q.warn = p.warn.slice(); q.page = q.lines[0].p+1; q.imgData = null; });
+    return {qs:qs, doc:r.doc};
+  }).then(function(st){
+    // diagrams
+    if(!opts.diagrams) return st;
+    var qs = st.qs, byPage = {};
+    qs.forEach(function(q, qi){
+      var first = q.lines[0], next = qs[qi+1], p0 = first.p, p1 = next ? next.lines[0].p : qpPages.length-1;
+      if(next && next.lines[0].top < qpPages[p1].top+qpPages[p1].h*.02 && p1>p0) p1--;     // next question starts at the very top of its page
+      var lastLine = q.lines[q.lines.length-1]; if(lastLine.p>p1) p1 = lastLine.p;
+      for(var p=p0;p<=p1;p++){ var pg = qpPages[p], y0 = (p===p0) ? first.top-first.sz*.3 : pg.top, y1 = (next && next.lines[0].p===p) ? next.lines[0].top-next.lines[0].sz*.3 : pg.bottom;
+        if(!next && p===p1){ var lastOnPage = q.lines.filter(function(L){ return L.p===p; }); y1 = Math.min(pg.bottom, (lastOnPage.length ? lastOnPage[lastOnPage.length-1].bot : y0) + pg.h*.4); }
+        if(y1-y0 < pg.h*.03) continue; (byPage[p] = byPage[p] || []).push({q:q, y0:y0, y1:y1}); }
+    });
+    var pageNos = Object.keys(byPage).map(Number).sort(function(a,b){return a-b;}), k = 0;
+    function nextPage(){
+      if(k>=pageNos.length) return Promise.resolve(st);
+      var pi = pageNos[k++], pg = qpPages[pi]; progress(qpFile.name+': looking for diagrams on page '+(pi+1)+'...', .5+.3*(k/pageNos.length));
+      return renderPage(pg.page, pg.scale).then(function(r){
+        var boxes = textBoxes(pg);
+        byPage[pi].forEach(function(seg){
+          var box = findInkBox(pg, r.cv, seg.y0, seg.y1, boxes); if(!box) return;
+          var cw = box[2]-box[0], ch = box[3]-box[1], c2 = document.createElement('canvas'), sc = Math.min(1, 900/cw);
+          c2.width = Math.max(1,Math.round(cw*sc)); c2.height = Math.max(1,Math.round(ch*sc)); var x = c2.getContext('2d'); x.fillStyle = '#fff'; x.fillRect(0,0,c2.width,c2.height);
+          x.drawImage(r.cv, box[0], box[1], cw, ch, 0, 0, c2.width, c2.height);
+          (seg.q.crops = seg.q.crops || []).push({cv:c2, p:pi, box:box});
+        });
+        r.cv.width = r.cv.height = 1; return nextPage();
+      });
+    }
+    return nextPage();
+  }).then(function(st){
+    // re-parse questions that have diagrams without the text that sits inside them (axis labels, circuit labels...)
+    st.qs.forEach(function(q){
+      if(!q.crops) return;
+      var items = []; q.lines.forEach(function(L){ L.items.forEach(function(it){ items.push(it); }); });
+      var keep = items.filter(function(it){ var cx = (it.x0+it.x1)/2, cy = it.b-it.sz*.35;
+        if(it.s.trim().length>10) return true;   // never drop real text, only short labels inside drawings
+        return !q.crops.some(function(c){ return c.p===it.p && cx>=c.box[0] && cx<=c.box[2] && cy>=c.box[1] && cy<=c.box[3]; }); });
+      var byP = {}; keep.forEach(function(it){ (byP[it.p] = byP[it.p] || []).push(it); });
+      var lines2 = []; Object.keys(byP).map(Number).sort(function(a,b){return a-b;}).forEach(function(p){ groupLines(byP[p]).forEach(function(L){ if(!L.noise && !isNoise(L, qpPages[p].h)) lines2.push(L); }); });
+      if(lines2.length){ var np = parseQuestion(lines2, function(pi){ return qpPages[pi].w; }, q.n); q.stem = np.stem; q.options = np.options; q.warn = np.warn.slice(); }
+      if(q.options.length<2){ q.options = ['','','','']; q.warn = ['The options look like drawings, so they are shown in the picture.']; }
+      // stack crops (one per page) into a single picture
+      var cvs = q.crops.map(function(c){ return c.cv; }), W = Math.max.apply(null, cvs.map(function(c){return c.width;})), H = cvs.reduce(function(s,c){return s+c.height+(s?8:0);}, 0);
+      var o = document.createElement('canvas'); o.width = W; o.height = H; var x = o.getContext('2d'); x.fillStyle = '#fff'; x.fillRect(0,0,W,H); var y = 0; cvs.forEach(function(c){ x.drawImage(c,0,y); y += c.height+8; });
+      q.imgData = o.toDataURL('image/jpeg', .88); q.crops = null;
+    });
+    return st;
+  }).then(function(st){
+    // answer key
+    if(!msFile) return st;
+    progress('Reading mark scheme '+msFile.name+'...', .85);
+    return readPdf(msFile, opts, function(m,f){ progress(msFile.name+': '+m, .85+f*.1); }).then(function(r){ msPages = r.pages; finishPages(msPages); out.key = parseKey(msPages); return st; });
+  }).then(function(st){
+    var total = st.qs.length;
+    st.qs.forEach(function(q, i){
+      var opts4 = q.options.slice(); while(opts4.length && opts4.length<4 && false) opts4.push('');
+      var imageOpts = false;
+      opts4 = opts4.map(function(o, k){ if(!o){ imageOpts = true; return 'Option '+LETTERS[k]; } return o; });
+      var warn = q.warn.slice();
+      if(imageOpts && !warn.some(function(w){ return /drawings/.test(w); })){ warn.push(q.imgData ? 'Some options are empty: they are probably drawings, shown in the picture.' : 'Some options are empty.'); }
+      var letter = out.key ? out.key[q.n] : null, correct = letter ? LETTERS.indexOf(letter) : -1;
+      if(out.key && !letter) warn.push('No answer found in the mark scheme for question '+q.n+'.');
+      if(!out.key) warn.push('No mark scheme: choose the correct answer yourself.');
+      if(correct>=opts4.length) { warn.push('The answer key says '+letter+' but only '+opts4.length+' options were found.'); correct = -1; }
+      if(!q.stem && q.imgData) q.stem = 'Study the diagram and answer the question.';
+      if(!q.stem) warn.push('No question text was found.');
+      var frac = i/total, diff = frac<.4 ? 'easy' : (frac<.75 ? 'medium' : 'hard');
+      out.questions.push({n:q.n, page:q.page, text:q.stem, options:opts4, correct:correct, difficulty:diff, img:q.imgData, useImg:!!q.imgData, warn:warn,
+        include: opts4.length>=2 && correct>=0 && !!q.stem});
+    });
+    if(out.key){ var qn = {}; st.qs.forEach(function(q){ qn[q.n] = 1; }); var extra = Object.keys(out.key).filter(function(k){ return !qn[k]; }).length;
+      if(extra) out.warnings.push('The mark scheme lists '+extra+' answers for questions that were not found in the paper.'); }
+    if(out.questions.length<10) out.warnings.push('Only '+out.questions.length+' questions were found; a full Cambridge MCQ paper has 30 to 40. Check the preview carefully.');
+    progress('Done', 1); return out;
+  });
+};
+/* exposed for tests */
+PDF._t = {readPdf:readPdf, finishPages:finishPages, findInkBox:findInkBox, textBoxes:textBoxes, groupLines:groupLines, itemsToText:itemsToText, parseQuestion:parseQuestion, parseKey:parseKey, segment:segment};
+
+/* ---------------- file roles ---------------- */
+function guessRole(name){ return /(^|[^a-z])(ms|mark ?scheme|markscheme|answers?)([^a-z]|$)/i.test(name.replace(/_/g,' ')) ? 'ms' : 'qp'; }
+function baseKey(name){ return name.toLowerCase().replace(/\.pdf$/,'').replace(/mark[ _-]?scheme|markscheme|(^|[^a-z])(qp|ms)([^a-z]|$)/g,' ').replace(/[^a-z0-9]/g,''); }
+function guessTopicName(name){ var s = name.replace(/\.pdf$/i,'').replace(/[_-]+/g,' ').replace(/\b(qp|ms|mark ?scheme)\b/ig,'').replace(/\s+/g,' ').trim(); return s || 'Imported paper'; }
+
+/* ---------------- UI ---------------- */
+var st = { files:[], busy:false, result:null, msg:'', frac:0, ocr:true, diagrams:true, topic:'', newName:'', error:'', set:0 };
+PDF.state = st;
+function topicOptions(sel){ return WFF.Topics.all().map(function(t){ return h('option',{value:t.id,text:t.name,selected:t.id===sel}); }); }
+
+PDF.render = function(body){
+  var self = this, SU = WFF.Settings_UI;
+  if(!st.topic && SU.pdfTopic) st.topic = SU.pdfTopic;
+  var drop = h('input',{type:'file',accept:'application/pdf,.pdf',multiple:true,style:'display:none',onChange:function(e){
+    Array.prototype.forEach.call(e.target.files, function(f){ if(!st.files.some(function(x){ return x.file.name===f.name && x.file.size===f.size; })) st.files.push({file:f, role:guessRole(f.name), ms:''}); });
+    e.target.value = ''; st.result = null; PDF.render.redo(); }});
+  var card = h('div',{class:'card'}, h('h3',{text:'Import Cambridge MCQ past papers (PDF)'}),
+    h('p',{class:'muted small',style:'margin-top:0',text:'Add a question paper PDF and its mark scheme PDF. The game separates the questions, finds options A to D, reads the answer key from the mark scheme, and crops diagrams. You review everything before it is imported. The PDF tools are downloaded from a CDN the first time, so this needs an internet connection.'}),
+    h('button',{class:'btn primary',type:'button',text:'Choose PDF files',onClick:function(){ drop.click(); }}), drop);
+  body.appendChild(card);
+  var list = h('div',{style:'margin-top:12px'}); card.appendChild(list);
+  var qps = st.files.filter(function(x){ return x.role==='qp'; }), mss = st.files.filter(function(x){ return x.role==='ms'; });
+  st.files.forEach(function(x, i){
+    var roleSel = h('select',{onChange:function(e){ x.role = e.target.value; st.result = null; PDF.render.redo(); }}, h('option',{value:'qp',text:'Question paper',selected:x.role==='qp'}), h('option',{value:'ms',text:'Mark scheme',selected:x.role==='ms'}));
+    var row = h('div',{class:'qitem'}, h('div',{class:'qt',text:x.file.name}), h('div',{class:'small muted',style:'margin-bottom:6px',text:(x.file.size/1048576).toFixed(1)+' MB'}),
+      h('div',{class:'row gap'}, roleSel));
+    if(x.role==='qp' && mss.length>1){
+      var auto = mss.filter(function(m){ return baseKey(m.file.name)===baseKey(x.file.name); })[0];
+      var msSel = h('select',{onChange:function(e){ x.ms = e.target.value; }}, h('option',{value:'',text:auto?'Mark scheme: auto ('+auto.file.name+')':'Mark scheme: choose...'}), mss.map(function(m){ return h('option',{value:m.file.name,text:m.file.name,selected:x.ms===m.file.name}); }));
+      row.lastChild.appendChild(msSel);
+    }
+    row.lastChild.appendChild(h('button',{class:'btn small danger',type:'button',text:'Remove',onClick:function(){ st.files.splice(i,1); st.result = null; PDF.render.redo(); }}));
+    list.appendChild(row);
+  });
+  if(st.files.length){
+    function chk(label, key){ return h('label',{class:'row',style:'margin:6px 0;display:flex;align-items:center'}, h('input',{type:'checkbox',checked:st[key],onChange:function(e){ st[key] = e.target.checked; }}), h('span',{style:'margin-left:8px',text:label})); }
+    card.appendChild(chk('Run OCR on scanned pages (downloads about 15 MB the first time, slower)','ocr'));
+    card.appendChild(chk('Detect diagrams and attach them to their questions as pictures','diagrams'));
+    var go = h('button',{class:'btn primary',type:'button',disabled:st.busy || !qps.length,text:st.busy?'Working...':'Extract questions',onClick:function(){ PDF.run(); }});
+    card.appendChild(h('div',{style:'margin-top:8px'}, go, !qps.length ? h('span',{class:'small muted',style:'margin-left:10px',text:'Add at least one question paper.'}) : null));
+  }
+  var prog = h('div',{style:'margin-top:12px;'+(st.busy||st.msg?'':'display:none')}, h('div',{class:'small',id:'pdf-msg',text:st.msg}), h('div',{class:'mtimer'}, h('i',{id:'pdf-bar',style:'width:'+Math.round(st.frac*100)+'%'})));
+  card.appendChild(prog);
+  if(st.error) card.appendChild(h('div',{class:'errors',style:'margin-top:10px'}, h('div',{text:st.error})));
+  PDF.render.redo = function(){ var b = body; b.innerHTML = ''; PDF.render(b); };
+  PDF.body = body;
+  if(st.result) PDF.renderResult(body);
+};
+PDF.render.redo = function(){};
+function progress(msg, frac){ st.msg = msg; st.frac = frac; var m = document.getElementById('pdf-msg'), b = document.getElementById('pdf-bar'); if(m) m.textContent = msg; if(b) b.style.width = Math.round(frac*100)+'%'; }
+
+PDF.run = function(){
+  if(st.busy) return; var qps = st.files.filter(function(x){ return x.role==='qp'; }), mss = st.files.filter(function(x){ return x.role==='ms'; });
+  if(!qps.length) return; st.busy = true; st.error = ''; st.result = null; st.msg = 'Starting...'; st.frac = 0; PDF.render.redo();
+  var all = {questions:[], warnings:[], names:[]}, i = 0, opts = {ocr:st.ocr, diagrams:st.diagrams};
+  function next(){
+    if(i>=qps.length) return Promise.resolve();
+    var q = qps[i++], ms = null;
+    if(q.ms) ms = (mss.filter(function(m){ return m.file.name===q.ms; })[0]||{}).file;
+    if(!ms) ms = (mss.filter(function(m){ return baseKey(m.file.name)===baseKey(q.file.name); })[0]||(mss.length===1 ? mss[0] : null)||{}).file || null;
+    return PDF.extract(q.file, ms, opts, function(m,f){ progress(m, (i-1+f)/qps.length); }).then(function(r){
+      r.questions.forEach(function(x){ x.src = q.file.name.replace(/\.pdf$/i,'')+' Q'+x.n; x.file = q.file.name; all.questions.push(x); });
+      r.warnings.forEach(function(w){ all.warnings.push(q.file.name+': '+w); }); all.names.push(q.file.name);
+      if(!ms) all.warnings.push(q.file.name+': no mark scheme was added, so answers must be chosen by hand.');
+    });
+  }
+  next().then(function loop(){ if(i<qps.length) return next().then(loop); }).then(function(){
+    st.result = all; st.busy = false; st.msg = ''; if(!st.newName) st.newName = guessTopicName(all.names[0]||'');
+    if(!st.topic) st.topic = '__new'; PDF.render.redo();
+  }).catch(function(e){ st.busy = false; st.error = (e && e.message) || String(e); st.msg = ''; console.error(e); PDF.render.redo(); });
+};
+
+PDF.renderResult = function(body){
+  var R = st.result, qs = R.questions, card = h('div',{class:'card'});
+  body.appendChild(card);
+  card.appendChild(h('h3',{text:'Preview and edit ('+qs.length+' questions found)'}));
+  R.warnings.forEach(function(w){ card.appendChild(h('div',{class:'warn',style:'margin-bottom:8px',text:w})); });
+  var topicSel = h('select',{onChange:function(e){ st.topic = e.target.value; newRow.style.display = st.topic==='__new' ? '' : 'none'; }}, h('option',{value:'__new',text:'+ Create a new topic',selected:st.topic==='__new'}), topicOptions(st.topic));
+  var newIn = h('input',{type:'text',value:st.newName,maxlength:60,placeholder:'New topic name',onInput:function(e){ st.newName = e.target.value; }});
+  var newRow = h('div',{style:'margin-top:6px;'+(st.topic==='__new'?'':'display:none')}, newIn);
+  card.appendChild(h('div',{class:'field'}, h('label',{text:'Import into topic'}), topicSel, newRow));
+  var keyIn = h('textarea',{rows:2,placeholder:'Optional: paste or fix an answer key, e.g.  1 D  2 B  3 A ...  or  1D 2B 3A'});
+  card.appendChild(h('div',{class:'field'}, h('label',{text:'Answer key (optional bulk fix)'}), keyIn,
+    h('button',{class:'btn small',type:'button',style:'margin-top:6px',text:'Apply answer key',onClick:function(){
+      var re = /(\d{1,3})\s*[:.)\-]?\s*([A-Da-d])(?![A-Za-z])/g, m, n = 0, bn = {}; while((m = re.exec(keyIn.value))){ bn[+m[1]] = m[2].toUpperCase(); }
+      qs.forEach(function(q){ if(bn[q.n]){ var k = 'ABCD'.indexOf(bn[q.n]); if(k<q.options.length){ q.correct = k; q.include = true; n++; } } });
+      UI.toast('Applied '+n+' answers'); PDF.render.redo(); }})));
+  var sel = qs.filter(function(q){ return q.include; }).length;
+  var count = h('b',{text:sel+' selected'});
+  function updateCount(){ count.textContent = qs.filter(function(q){ return q.include; }).length+' selected'; importBtn.textContent = 'Import '+qs.filter(function(q){ return q.include; }).length+' questions'; }
+  var importBtn = h('button',{class:'btn primary',type:'button',text:'Import '+sel+' questions',onClick:function(){ PDF.doImport(); }});
+  card.appendChild(h('div',{class:'row gap',style:'margin:8px 0'}, count,
+    h('button',{class:'btn small',type:'button',text:'Select all with an answer',onClick:function(){ qs.forEach(function(q){ q.include = q.correct>=0; }); PDF.render.redo(); }}),
+    h('button',{class:'btn small',type:'button',text:'Select none',onClick:function(){ qs.forEach(function(q){ q.include = false; }); PDF.render.redo(); }}), importBtn));
+  var wrap = h('div'); card.appendChild(wrap);
+  qs.forEach(function(q, qi){
+    var inc = h('input',{type:'checkbox',checked:q.include,onChange:function(e){ q.include = e.target.checked; updateCount(); }});
+    var dsel = h('select',{onChange:function(e){ q.difficulty = e.target.value; }}, ['easy','medium','hard'].map(function(d){ return h('option',{value:d,text:d,selected:q.difficulty===d}); }));
+    var ta = h('textarea',{rows:3,onInput:function(e){ q.text = e.target.value; }}); ta.value = q.text;
+    var item = h('div',{class:'qitem'},
+      h('div',{class:'row gap',style:'align-items:center'}, inc, h('b',{text:'Q'+q.n}), h('span',{class:'chip',text:q.file.replace(/\.pdf$/i,'')+' p.'+q.page}), dsel),
+      ta);
+    if(q.img){ var im = h('img',{src:q.img,style:'max-width:100%;max-height:200px;border-radius:8px;background:#fff;display:block;margin:6px 0'});
+      item.appendChild(im); item.appendChild(h('label',{style:'display:flex;align-items:center;margin-bottom:6px'}, h('input',{type:'checkbox',checked:q.useImg,onChange:function(e){ q.useImg = e.target.checked; im.style.opacity = q.useImg?1:.3; }}), h('span',{style:'margin-left:8px',text:'Show this picture with the question'}))); }
+    q.options.forEach(function(o, k){
+      var oi = h('input',{type:'text',value:o,onInput:function(e){ q.options[k] = e.target.value; }});
+      item.appendChild(h('div',{style:'display:flex;align-items:center;margin:3px 0'},
+        h('input',{type:'radio',name:'pdfc'+qi,checked:q.correct===k,onChange:function(){ q.correct = k; if(!q.include){ q.include = true; inc.checked = true; updateCount(); } }}),
+        h('b',{style:'margin:0 8px;width:16px',text:'ABCD'[k]}), oi));
+    });
+    if(q.warn.length) item.appendChild(h('div',{class:'small',style:'color:var(--gold2);margin-top:6px',text:q.warn.join(' ')}));
+    wrap.appendChild(item);
+  });
+};
+PDF.doImport = function(){
+  var R = st.result; if(!R) return;
+  var chosen = R.questions.filter(function(q){ return q.include; });
+  if(!chosen.length){ UI.toast('Select at least one question.'); return; }
+  var topicId = st.topic;
+  if(topicId==='__new' || !WFF.Topics.get(topicId)){
+    var ex = WFF.Topics.byName(st.newName), r = ex ? {ok:true, topic:ex} : WFF.Topics.add(st.newName);
+    if(!r.ok){ UI.toast(r.error); return; } topicId = r.topic.id;
+  }
+  var list = chosen.map(function(q){
+    var o = {type:'mc', category:topicId, difficulty:q.difficulty, text:String(q.text||'').trim(), options:q.options.map(function(x){ return String(x||'').trim(); }), correct:q.correct, hint:'', explanation:'', src:q.src};
+    if(q.img && q.useImg){ var id = WFF.ImgStore.newId(); WFF.ImgStore.put(id, q.img); o.img = id; }
+    return o; });
+  var bad = list.filter(function(q){ return WFF.Questions.validate(q).length; });
+  var res = WFF.Questions.addMany(list);
+  UI.toast('Imported '+res.added+' question'+(res.added===1?'':'s')+(res.skipped?' ('+res.skipped+' skipped: duplicates or invalid)':''));
+  st.result = null; st.files = []; st.topic = topicId; st.newName = '';
+  if(WFF.Settings_UI){ WFF.Settings_UI.pdfTopic = topicId; WFF.Settings_UI.filter.category = topicId; WFF.Settings_UI.tab = 'questions'; WFF.Settings_UI.render(); }
+};
+})();
+
+/*PDFIMPORT-END*/
+</script>
 <script>
 /* =====================================================================
    PART 3 JAVASCRIPT : WFF.Tournament, WFF.Audio, WFF.I18n, Stats, tutorial, a11y
@@ -2028,15 +2854,24 @@ questions to move the ball up the pitch. Reach the penalty area, answer once mor
 Wrong answers or a timeout hand the ball over. Keys: 1-4 to answer, T/F on true/false,
 Esc to pause.
 
-THE QUESTION BANK IS EMPTY ON PURPOSE.  Open Settings > Custom Questions to add questions
-(multiple choice with 2-4 options, or true/false, with category, difficulty, optional hint
-and explanation). Use Backup to export or import them as JSON:
-  { "questions":[ { "type":"mc", "category":"personal", "difficulty":"easy",
+THE QUESTION BANK IS EMPTY ON PURPOSE.  There are no built-in topics. In Settings, create a
+topic (Topics tab), then either type questions (Custom Questions: multiple choice with 2-4
+options, or true/false, with difficulty, optional hint, explanation and picture) or import a
+Cambridge MCQ past paper (Import PDF tab: question paper + mark scheme; options A-D, answer
+key, diagrams and scanned pages are handled; you review and edit before importing). The PDF
+tools (pdf.js, tesseract.js) are fetched from a CDN on first use, so that tab needs internet.
+Use Backup to export or import everything as JSON (version 2 also carries topics and pictures):
+  { "topics":[ {"id":"t1","name":"IGCSE Physics"} ],
+    "questions":[ { "type":"mc", "category":"t1", "difficulty":"easy",
       "text":"...", "options":["a","b","c"], "correct":0, "hint":"", "explanation":"" } ] }
-category is "personal" or "business"; difficulty "easy", "medium" or "hard"; type "tf"
-questions use "correct":0 for True or 1 for False. Questions are kept in your browser
-(localStorage), so use Backup before clearing site data. Aim for 10+ per category and
+category is a topic id (older files that use "personal" or "business" import as topics named
+Personal Finance / Small Business); difficulty "easy", "medium" or "hard"; type "tf" questions
+use "correct":0 for True or 1 for False. Questions are kept in your browser (localStorage,
+pictures in IndexedDB), so use Backup before clearing site data. Aim for 10+ per topic and
 difficulty. If a difficulty is empty the nearest one is used.
+
+MATCH SCREEN  The match is a full-screen stadium (Full screen button for true fullscreen).
+Questions appear as pop-ups over the pitch; goals are followed by a slow-motion replay.
 
 HOW THE PARTS FIT
   Part 1: namespace WFF, store, settings, countries and teams, question bank, menu, setup,
