@@ -449,7 +449,7 @@ WFF.Questions = {
     function candidates(diff){ return self.all().filter(function(q){
       return (!opts.category || q.category===opts.category) && (!diff || q.difficulty===diff); }); }
     function prep(q){ var c = JSON.parse(JSON.stringify(q));
-      if(c.type==='mc' && shuffleOpts){ var idx = shuffle(c.options.map(function(_,i){return i;}));
+      if(c.type==='mc' && shuffleOpts && !c.options.every(function(o){return /^Option [A-D]$/.test(o);})){ var idx = shuffle(c.options.map(function(_,i){return i;}));
         c.options = idx.map(function(i){return q.options[i];}); c.correct = idx.indexOf(q.correct); }
       c.correctText = c.options[c.correct]; return c; }
     return {
@@ -1037,7 +1037,7 @@ Match.start = function(cfg){
     status:'', q:null, qSide:0, qKind:'attack', qDiff:'medium', cb:null, qLeft:0, qMax:0, picked:-1, elim:[], hintUsed:false, hintShown:false,
     sched:[], pen:null, lastViewer:-1, over:false, persisted:false, result:null,
     ball:{x:.5,y:.5,tx:.5,ty:.5,h:0,rot:0,on:false}, cam:.5, viewW:1.06, car:[3,3], ref:{x:-.12,y:.88,ph:0,face:1,spd:0,kick:0,jump:0,cel:false}, netT:[0,0], cheerSide:-1, dv:[0,0], kd:[0,0], kdir:[1,1], slideT:0, slideS:-1, ky:[.5,.5], kyT:[.5,.5], pl:[[],[]], fx:[], trail:[], banner:null, flash:0, shake:0, cheer:0, superFx:0,
-    crowd:crowd, qn:0, gt:0, rec:[], rpFrames:null, rpLive:false, rpEnd:0, rpT:0, rpI:0, rpA:0, shotGt:0, el:{}, W:0, H:0, dpr:1, last:0, t:0, raf:0, timerEl:null
+    crowd:crowd, qn:0, qual:1, ema:16, adaptT:0, vgc:null, gt:0, rec:[], rpFrames:null, rpLive:false, rpEnd:0, rpT:0, rpI:0, rpA:0, shotGt:0, el:{}, W:0, H:0, dpr:1, last:0, t:0, raf:0, timerEl:null
   };
   for(var s=0;s<2;s++) for(i=0;i<4;i++) m.pl[s].push({x:absX(s,-.28),y:BASE[i].y,ph:i,face:s===0?1:-1,spd:0,kick:0,jump:0,cel:false});
   buildDom();
@@ -1509,6 +1509,10 @@ function loop(ts){
   var slow = (m.slowT>0 && !S.get('reduceMotion')) ? .4 : 1; if(m.slowT>0 && !frozen()) m.slowT = Math.max(0, m.slowT-raw);
   var dt = frozen() ? 0 : raw*Match.timeScale*slow;
   m.t += raw;
+  if(!frozen() && raw>0 && !document.hidden){          // dynamic resolution: keep the stadium smooth on slower devices
+    m.ema += (raw*1000 - m.ema)*.06; m.adaptT += raw;
+    if(m.adaptT>1.5){ m.adaptT = 0; if(m.ema>31 && m.qual>.5) m.qual = Math.max(.5, m.qual*.8); else if(m.ema<19 && m.qual<1) m.qual = Math.min(1, m.qual*1.15); }
+  }
   try{
     if(dt>0){
       // delayed actions
@@ -1531,8 +1535,8 @@ function loop(ts){
 }
 function fit(){
   var c = m.cv, w = c.parentNode.clientWidth, hh = c.parentNode.clientHeight; if(!w || !hh) return;
-  var d = Math.min(2, window.devicePixelRatio || 1);
-  if(m.W!==w || m.H!==hh || m.dpr!==d){ m.W = w; m.H = hh; m.dpr = d; c.width = Math.round(w*d); c.height = Math.round(hh*d); }
+  var d = Math.min(2, window.devicePixelRatio || 1) * m.qual; d = Math.round(d*100)/100;
+  if(m.W!==w || m.H!==hh || m.dpr!==d){ m.W = w; m.H = hh; m.dpr = d; c.width = Math.round(w*d); c.height = Math.round(hh*d); m.vgc = null; }
 }
 
 /* ---------------- animation: ball tween, camera, player motion ---------------- */
@@ -1821,7 +1825,9 @@ function draw(){
   m.fx.forEach(function(p){ c.globalAlpha = Math.min(1,p.life); c.fillStyle = p.c; c.fillRect(W*p.x,H*p.y,5*u+2,3*u+2); }); c.globalAlpha = 1;
   c.restore();
   // vignette
-  var vg = c.createRadialGradient(W/2,H*.55,H*.35,W/2,H*.55,W*.75); vg.addColorStop(0,'rgba(0,0,0,0)'); vg.addColorStop(1,'rgba(2,3,14,.55)'); c.fillStyle = vg; c.fillRect(0,0,W,H);
+  if(!m.vgc){ var vc = document.createElement('canvas'); vc.width = 160; vc.height = Math.max(40, Math.round(160*H/W)); var vx = vc.getContext('2d'), vW = vc.width, vH = vc.height;
+    var vg = vx.createRadialGradient(vW/2,vH*.55,vH*.35,vW/2,vH*.55,vW*.75); vg.addColorStop(0,'rgba(0,0,0,0)'); vg.addColorStop(1,'rgba(2,3,14,.55)'); vx.fillStyle = vg; vx.fillRect(0,0,vW,vH); m.vgc = vc; }
+  c.drawImage(m.vgc, 0, 0, W, H);
   if(m.flash>0){ c.fillStyle = 'rgba(255,255,255,'+(m.flash*.5)+')'; c.fillRect(0,0,W,H); }
   if(m.banner){
     var bn = m.banner, k2 = Math.min(1,bn.t/.25), fade = Math.min(1,(bn.dur-bn.t)/.4), sc3 = reduce ? 1 : (.6+.4*k2);
