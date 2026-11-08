@@ -50,6 +50,10 @@ input:focus-visible,button:focus-visible{outline:2px solid #00d09c;outline-offse
     <button onclick="skip(2592000)" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700">+30d</button>
     <button onclick="skip(31557600)" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700">+1y</button>
     <button onclick="skip(0,true)" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-coral/20 hover:text-coral">Reset clock</button>
+    <span class="w-px h-4 bg-slate-700 mx-1"></span>
+    <button onclick="setKey()" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700">API key</button>
+    <button onclick="syncAll()" class="px-2.5 py-1 rounded-lg bg-mint/15 text-mint hover:bg-mint/25">Sync real prices</button>
+    <span id="syncMsg" class="text-slate-400"></span>
   </div>
 </div>
 <main class="max-w-6xl mx-auto px-4 py-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -253,6 +257,7 @@ function tickClock(){
 function listenWorld(){
   if(clockOn)return;clockOn=true;
   onValue(ref(db,'.info/serverTimeOffset'),x=>{off=x.val()||0});
+  listenPrices();
   onValue(ref(db,'world/clock'),x=>{
     if(x.exists())S.clock=x.val();
     else set(ref(db,'world/clock'),{baseSim:T0,baseReal:serverTimestamp(),speed:60}).catch(()=>{});
@@ -266,6 +271,55 @@ async function setClock(speed,skipSec=0,reset=false){
   catch(e){toast('Blocked by database rules. Admin rules not set up yet.',true)}
 }
 window.skip=(sec,reset)=>setClock(undefined,sec,reset);
+
+/* ---------- REAL PRICES: admin fetches from Finnhub once, everyone reads the same numbers ---------- */
+const keyOf=s=>s.replace('.','_'),sleep=ms=>new Promise(r=>setTimeout(r,ms));
+function listenPrices(){
+  onValue(ref(db,'world/prices'),x=>{
+    const v=x.val()||{};
+    ASSETS.forEach(a=>{const r=v[keyOf(a.s)];if(r&&r.p>0){a.p=r.p;a.f0=f(a,r.t0||T0);a.real=true}});
+    S.mk=true;
+  },()=>{});
+}
+const FH_KEY='dbo9tehr01qo2f3bpjsg'; // default Finnhub key; the admin's "API key" button overrides it
+const getKey=()=>localStorage.getItem('ct_fh')||FH_KEY;
+window.setKey=()=>{
+  let k=prompt('Finnhub API key (kept only in this browser, never in the page):',getKey());
+  if(k===null)return;k=k.trim();if(k.length===40)k=k.slice(0,20);
+  localStorage.setItem('ct_fh',k);toast('API key saved.');syncPrices(false);
+};
+window.syncAll=()=>{if(confirm('Re-sync every price to the real market? Prices will jump for all players.'))syncPrices(true)};
+async function quote(a,key){
+  const sym=a.sec==='X'?'BINANCE:'+a.s+'USDT':a.s;
+  const r=await fetch(`https://finnhub.io/api/v1/quote?symbol=${encodeURIComponent(sym)}&token=${key}`);
+  if(r.status===401||r.status===403)throw new Error('key');
+  if(r.status===429)throw new Error('rate');
+  const j=await r.json();return j.c>0?j.c:null;
+}
+let syncing=false;
+async function syncPrices(all){
+  if(!S.admin||syncing)return;
+  const key=getKey();
+  if(!key){if(all)toast('Click "API key" first.',true);return}
+  syncing=true;
+  const todo=ASSETS.filter(a=>all||!a.real);let ok=0,i=0,bad='';
+  for(const a of todo){
+    $('syncMsg').textContent=`Syncing ${++i}/${todo.length}`;
+    for(let tries=0;tries<2;tries++){
+      try{const c=await quote(a,key);if(c){await set(ref(db,'world/prices/'+keyOf(a.s)),{p:c,t0:Math.floor(S.t)});ok++}break}
+      catch(e){
+        if(e.message==='key'){bad='Finnhub rejected the API key.';break}
+        if(/PERMISSION/i.test(e.message)){bad='Database rules block price writes. Add the new rules.';break}
+        await sleep(15000);
+      }
+    }
+    if(bad)break;
+    await sleep(1100); // stay under the free 60 requests/minute
+  }
+  syncing=false;
+  $('syncMsg').textContent=bad||`Synced ${ok} real prices`;
+  if(bad)toast(bad,true);
+}
 
 /* ---------- AUTH + USERNAME ---------- */
 onAuthStateChanged(auth,async user=>{
@@ -288,6 +342,7 @@ async function boot(user){
   S.ready=true;
   if(S.online){listenBoard();listenWorld();setStatus(true)}else{setStatus(false);S.clock={baseSim:d?.t??T0,baseReal:Date.now(),speed:60}}
   updateAuthUI();render();
+  if(S.admin){if(getKey())setTimeout(()=>syncPrices(false),5000);else toast('Admin: click "API key" to load real prices.')}
   if(!S.name)openName();else save();
 }
 
@@ -417,7 +472,7 @@ function render(){
   document.querySelectorAll('#filters [data-f]').forEach(b=>{b.className='shrink-0 px-2.5 py-1.5 rounded-lg '+(b.dataset.f===S.f?'bg-mint text-black':'bg-slate-800 text-slate-400 hover:text-white')});
 
   const a=A[S.sel],c=chg(a),own=S.hold[S.sel]?.qty||0;
-  $('cName').textContent=a.n;$('cTick').textContent=a.s+' · '+SECT[a.sec];
+  $('cName').textContent=a.n;$('cTick').textContent=a.s+' · '+SECT[a.sec]+(a.real?' · real price':'');
   $('cPrice').textContent=money(priceAt(a,S.t));
   $('cChg').textContent=pct(c);$('cChg').className='text-xs font-mono font-semibold '+(c>=0?'text-mint':'text-coral');
   $('cOwn').innerHTML=`You own <span class="text-white font-semibold">${own.toFixed(4)} ${a.s}</span><br>${money(own*priceAt(a,S.t))}`;
