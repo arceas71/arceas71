@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ChronoTrade | Stock Market & Time Simulator</title>
+    <title>ChronoTrade | Simple Stock & Time Simulator</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts: Inter & JetBrains Mono -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
-    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -21,11 +21,10 @@
                         mono: ['JetBrains Mono', 'monospace'],
                     },
                     colors: {
-                        slate: {
-                            850: '#141c2b',
-                            900: '#0f172a',
-                            950: '#080d1a',
-                        }
+                        bgdark: '#0b0e14',
+                        carddark: '#151922',
+                        mint: '#00d09c',
+                        coral: '#ff5252'
                     }
                 }
             }
@@ -33,1954 +32,862 @@
     </script>
     <style>
         body {
-            background-color: #080d1a;
-            color: #e2e8f0;
-            overflow-x: hidden;
+            background-color: #0b0e14;
+            color: #f1f5f9;
         }
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #0f172a;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #334155;
-            border-radius: 3px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #475569;
-        }
-        
-        /* Ticker tape animation */
-        @keyframes ticker {
-            0% { transform: translateX(100%); }
-            100% { transform: translateX(-100%); }
-        }
-        .animate-ticker {
-            display: inline-block;
-            white-space: nowrap;
-            animation: ticker 35s linear infinite;
-        }
-        .animate-ticker:hover {
-            animation-play-state: paused;
-        }
-
-        /* Flash animations for price ticks */
-        @keyframes flashGreen {
-            0% { background-color: rgba(16, 185, 129, 0.35); }
-            100% { background-color: transparent; }
-        }
-        @keyframes flashRed {
-            0% { background-color: rgba(244, 63, 94, 0.35); }
-            100% { background-color: transparent; }
-        }
-        .flash-up {
-            animation: flashGreen 0.6s ease-out;
-        }
-        .flash-down {
-            animation: flashRed 0.6s ease-out;
-        }
-        
-        input[type="range"] {
-            accent-color: #3b82f6;
-        }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #0b0e14; }
+        ::-webkit-scrollbar-thumb { background: #262d3d; border-radius: 3px; }
     </style>
 </head>
-<body class="min-h-screen flex flex-col font-sans antialiased selection:bg-blue-600 selection:text-white">
+<body class="min-h-screen flex flex-col font-sans antialiased selection:bg-mint selection:text-black">
 
-    <!-- TOP NAVIGATION & PORTFOLIO SUMMARY -->
-    <header class="bg-slate-900/90 backdrop-blur-md border-b border-slate-800 sticky top-0 z-30">
-        <div class="max-w-[1600px] mx-auto px-3 sm:px-6 py-2.5 flex flex-wrap items-center justify-between gap-4">
+    <!-- CLEAN MINIMALIST TOP BAR -->
+    <header class="border-b border-slate-800/80 bg-[#0b0e14]/90 backdrop-blur-md sticky top-0 z-30">
+        <div class="max-w-6xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
             
-            <!-- Brand & Simulated Clock -->
-            <div class="flex items-center space-x-4">
-                <div class="flex items-center space-x-2.5">
-                    <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-emerald-500 flex items-center justify-center shadow-lg shadow-blue-500/20">
-                        <i class="fa-solid fa-chart-line text-white text-lg"></i>
-                    </div>
-                    <div>
-                        <span class="font-bold text-lg tracking-tight text-white">Chrono<span class="text-blue-400">Trade</span></span>
-                        <span class="hidden sm:inline-block ml-1.5 text-[10px] font-mono uppercase px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20">Sim + Live API</span>
-                    </div>
-                </div>
-
-                <!-- Time Simulation Bar -->
-                <div class="flex flex-wrap items-center bg-slate-950 border border-slate-800 rounded-xl px-3 py-1.5 gap-3 shadow-inner">
-                    <!-- Live Simulated Date & HH:MM:SS Clock -->
-                    <div class="flex items-center space-x-2.5">
-                        <span id="simStatusDot" class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse shrink-0"></span>
-                        <div>
-                            <div class="flex items-center space-x-2">
-                                <span class="text-slate-400 text-[10px] uppercase tracking-wider font-semibold">Sim Clock</span>
-                                <span id="simRateBadge" class="px-2 py-0.5 text-[10px] font-mono font-bold rounded-md bg-blue-500/20 text-blue-300 border border-blue-500/40 shadow-sm">
-                                    ⏱️ 1 sec = 15 mins
-                                </span>
-                            </div>
-                            <div class="flex items-baseline space-x-2 mt-0.5">
-                                <span id="simDateDisplay" class="font-mono font-bold text-white text-xs sm:text-sm">2026-11-08</span>
-                                <span id="simTimeDisplay" class="font-mono font-semibold text-emerald-400 text-xs sm:text-sm">09:30:00</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="hidden sm:block h-8 w-px bg-slate-800"></div>
-
-                    <!-- Explicit Rate Preset Buttons (1 sec = X secs / mins / hours / days) -->
-                    <div class="flex flex-wrap items-center gap-1">
-                        <button onclick="setSimRate(0)" id="rateBtn0" title="Pause Simulation" class="px-2 py-1 rounded-lg text-[10px] font-mono transition bg-slate-800 text-slate-300 hover:bg-slate-700 flex flex-col items-center leading-tight">
-                            <span class="font-bold"><i class="fa-solid fa-pause mr-0.5"></i>Pause</span>
-                            <span class="text-[9px] text-slate-400">1s = 0s</span>
-                        </button>
-                        <button onclick="setSimRate(1)" id="rateBtn1" title="Real-Time: 1 real sec = 1 sim sec" class="px-2 py-1 rounded-lg text-[10px] font-mono transition bg-slate-800 text-slate-300 hover:bg-slate-700 flex flex-col items-center leading-tight">
-                            <span class="font-bold">1x Live</span>
-                            <span class="text-[9px] text-slate-400">1s = 1s</span>
-                        </button>
-                        <button onclick="setSimRate(30)" id="rateBtn30" title="Fast Seconds: 1 real sec = 30 sim secs" class="px-2 py-1 rounded-lg text-[10px] font-mono transition bg-slate-800 text-slate-300 hover:bg-slate-700 flex flex-col items-center leading-tight">
-                            <span class="font-bold">30x</span>
-                            <span class="text-[9px] text-slate-400">1s = 30s</span>
-                        </button>
-                        <button onclick="setSimRate(60)" id="rateBtn60" title="Minute Flow: 1 real sec = 1 sim min" class="px-2 py-1 rounded-lg text-[10px] font-mono transition bg-slate-800 text-slate-300 hover:bg-slate-700 flex flex-col items-center leading-tight">
-                            <span class="font-bold">60x</span>
-                            <span class="text-[9px] text-slate-400">1s = 1m</span>
-                        </button>
-                        <button onclick="setSimRate(900)" id="rateBtn900" title="Intraday Rush: 1 real sec = 15 sim mins" class="px-2 py-1 rounded-lg text-[10px] font-mono transition bg-blue-600 text-white font-semibold flex flex-col items-center leading-tight shadow">
-                            <span class="font-bold">900x</span>
-                            <span class="text-[9px] text-blue-100">1s = 15m</span>
-                        </button>
-                        <button onclick="setSimRate(3600)" id="rateBtn3600" title="Hourly Warp: 1 real sec = 1 sim hour" class="px-2 py-1 rounded-lg text-[10px] font-mono transition bg-slate-800 text-slate-300 hover:bg-slate-700 flex flex-col items-center leading-tight">
-                            <span class="font-bold">3.6kx</span>
-                            <span class="text-[9px] text-slate-400">1s = 1h</span>
-                        </button>
-                        <button onclick="setSimRate(21600)" id="rateBtn21600" title="Multi-Hour Warp: 1 real sec = 6 sim hours" class="px-2 py-1 rounded-lg text-[10px] font-mono transition bg-slate-800 text-slate-300 hover:bg-slate-700 flex flex-col items-center leading-tight">
-                            <span class="font-bold">21.6kx</span>
-                            <span class="text-[9px] text-slate-400">1s = 6h</span>
-                        </button>
-                        <button onclick="setSimRate(86400)" id="rateBtn86400" title="Daily Hyper: 1 real sec = 24 hours (1 day)" class="px-2 py-1 rounded-lg text-[10px] font-mono transition bg-slate-800 text-slate-300 hover:bg-slate-700 flex flex-col items-center leading-tight">
-                            <span class="font-bold">86.4kx</span>
-                            <span class="text-[9px] text-slate-400">1s = 24h</span>
-                        </button>
-                    </div>
-
-                    <!-- Fine-Grained Custom Rate Slider -->
-                    <div class="hidden xl:flex flex-col justify-center border-l border-slate-800 pl-3 pr-1 w-36">
-                        <div class="flex justify-between text-[9px] font-mono text-slate-400 mb-0.5">
-                            <span>Custom Warp</span>
-                            <span id="customSliderLabel" class="text-blue-400">15 mins/s</span>
-                        </div>
-                        <input type="range" id="customRateSlider" min="0" max="100" value="52" oninput="onCustomRateSlider(this.value)" class="w-full h-1.5 bg-slate-800 rounded-lg cursor-pointer">
-                    </div>
-
-                    <!-- Instant Time Jump Buttons -->
-                    <div class="hidden md:flex items-center space-x-1 border-l border-slate-800 pl-2">
-                        <button onclick="jumpSimTime(3600)" class="px-2 py-1 rounded-lg text-[11px] font-mono bg-slate-800/80 hover:bg-slate-700 text-slate-300 transition" title="Jump +1 Hour">+1H</button>
-                        <button onclick="jumpSimTime(86400)" class="px-2 py-1 rounded-lg text-[11px] font-mono bg-slate-800/80 hover:bg-slate-700 text-slate-300 transition" title="Jump +1 Day (24h)">+1D</button>
-                        <button onclick="jumpSimTime(86400 * 30)" class="px-2 py-1 rounded-lg text-[11px] font-mono bg-slate-800/80 hover:bg-slate-700 text-slate-300 transition" title="Jump +1 Month (30d)">+1M</button>
-                        <button onclick="jumpSimTime(86400 * 365)" class="px-2 py-1 rounded-lg text-[11px] font-mono bg-indigo-600/20 hover:bg-indigo-600/40 text-indigo-300 border border-indigo-500/30 transition" title="Jump +1 Year (365d)">+1Y</button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Portfolio KPI Metrics -->
-            <div class="flex flex-wrap items-center gap-4 sm:gap-6">
-                <div>
-                    <div class="text-[11px] text-slate-400 uppercase tracking-wider">Net Worth</div>
-                    <div id="kpiNetWorth" class="font-mono text-base sm:text-lg font-bold text-white">$100,000.00</div>
-                </div>
-                <div>
-                    <div class="text-[11px] text-slate-400 uppercase tracking-wider">Buying Power (Cash)</div>
-                    <div id="kpiCash" class="font-mono text-base sm:text-lg font-semibold text-emerald-400">$100,000.00</div>
-                </div>
-                <div>
-                    <div class="text-[11px] text-slate-400 uppercase tracking-wider">Total Return</div>
-                    <div id="kpiTotalReturn" class="font-mono text-sm sm:text-base font-semibold text-slate-300">$0.00 (0.00%)</div>
-                </div>
-
-                <!-- Action Buttons -->
-                <div class="flex items-center space-x-2">
-                    <button onclick="syncLivePrices()" id="syncBtn" class="px-3 py-1.5 rounded-xl bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 border border-emerald-500/30 text-xs font-medium flex items-center space-x-1.5 transition" title="Fetch real-time market prices now">
-                        <i id="syncIcon" class="fa-solid fa-satellite-dish"></i>
-                        <span class="hidden sm:inline">Sync Live API</span>
-                    </button>
-                    <button onclick="openSettingsModal()" class="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition" title="API Keys & Simulator Settings">
-                        <i class="fa-solid fa-Sliders"></i>
-                        <i class="fa-solid fa-gear"></i>
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Breaking News & Market Regime Ticker -->
-        <div class="bg-slate-950 border-t border-slate-800/80 px-4 py-1 flex items-center justify-between text-xs overflow-hidden">
-            <div class="flex items-center space-x-2 shrink-0 z-10 bg-slate-950 pr-3">
-                <span class="px-1.5 py-0.5 text-[10px] font-bold uppercase rounded bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center space-x-1">
+            <!-- Left: Brand -->
+            <div class="flex items-center space-x-2.5">
+                <div class="w-9 h-9 rounded-xl bg-mint flex items-center justify-center text-black font-bold text-lg shadow-lg shadow-mint/20">
                     <i class="fa-solid fa-bolt"></i>
-                    <span>Market Wire</span>
-                </span>
-                <span id="marketSentimentBadge" class="px-2 py-0.5 text-[10px] font-mono rounded bg-slate-800 text-slate-300">Regime: Neutral</span>
+                </div>
+                <span class="font-bold text-lg tracking-tight text-white">ChronoTrade</span>
             </div>
-            <div class="overflow-hidden w-full relative">
-                <div id="newsTickerText" class="text-slate-300 font-mono text-xs truncate">
-                    Welcome to ChronoTrade! Live Crypto prices synced via public API. Press 1x, 5x, or +1M to simulate market history & future events.
+
+            <!-- Center: Simple Time Speed Controls (1 sec = X secs / mins / hours / days) -->
+            <div class="flex flex-wrap items-center bg-carddark border border-slate-800 rounded-2xl px-3 py-1.5 gap-3">
+                <div class="flex items-center space-x-2">
+                    <span id="simDot" class="w-2 h-2 rounded-full bg-mint animate-pulse"></span>
+                    <div class="text-xs font-mono">
+                        <span id="simClockDisplay" class="text-white font-semibold">2026-11-08 09:30:00</span>
+                        <span id="simRateLabel" class="ml-1.5 px-2 py-0.5 rounded-md bg-mint/15 text-mint font-bold text-[11px]">
+                            1 sec = 1 min
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Compact simulation controls -->
+                <div class="flex items-center gap-2 text-xs font-mono">
+                    <select id="speedSelect" onchange="window.setSpeed(Number(this.value))"
+                        class="bg-bgdark border border-slate-700 rounded-lg px-3 py-2 text-slate-200 focus:outline-none focus:border-mint">
+                        <option value="0">Paused</option>
+                        <option value="1">1 sec = 1 sec</option>
+                        <option value="60" selected>1 sec = 1 min</option>
+                        <option value="3600">1 sec = 1 hour</option>
+                        <option value="86400">1 sec = 1 day</option>
+                    </select>
+                    <button onclick="window.skipTime(86400 * 365)"
+                        class="px-3 py-2 rounded-lg bg-slate-800 text-slate-300 hover:text-white transition"
+                        title="Fast-forward one year">+1 year</button>
                 </div>
             </div>
-            <div class="shrink-0 pl-3 hidden sm:flex items-center space-x-2 text-[11px] text-slate-400">
-                <span>APIs:</span>
-                <span id="apiStatusBadge" class="text-emerald-400 font-mono">Binance/CoinGecko Ready</span>
+
+            <!-- Right: Firebase Google Auth Login / Profile -->
+            <div id="authContainer" class="flex items-center space-x-2">
+                <!-- Logged Out View -->
+                <button id="googleLoginBtn" onclick="window.signInWithGoogle()" class="px-3.5 py-2 rounded-xl bg-white hover:bg-slate-100 text-slate-900 font-semibold text-xs flex items-center space-x-2 shadow transition">
+                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" class="w-4 h-4" alt="Google">
+                    <span>Sign in with Google</span>
+                </button>
+
+                <!-- Logged In View (Hidden by default) -->
+                <div id="userProfileBar" class="hidden items-center space-x-2.5 bg-carddark border border-slate-800 rounded-xl px-3 py-1.5">
+                    <img id="userAvatar" src="https://placehold.co/32x32/151922/00d09c?text=U" class="w-6 h-6 rounded-full" alt="Avatar">
+                    <div class="text-xs">
+                        <div id="userName" class="font-semibold text-white leading-none">Trader</div>
+                        <div id="cloudStatus" class="text-[10px] text-mint font-mono mt-0.5">● Cloud Saved</div>
+                    </div>
+                    <button onclick="window.signOutUser()" class="text-slate-400 hover:text-coral text-xs ml-2" title="Sign Out">
+                        <i class="fa-solid fa-right-from-bracket"></i>
+                    </button>
+                </div>
             </div>
+
         </div>
     </header>
 
-    <!-- MAIN WORKSPACE GRID -->
-    <main class="flex-1 max-w-[1600px] w-full mx-auto p-3 sm:p-5 grid grid-cols-1 lg:grid-cols-12 gap-5">
-        
-        <!-- LEFT COLUMN: WATCHLIST & ASSETS (3 Cols) -->
-        <section class="lg:col-span-3 flex flex-col bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
-            <div class="p-3.5 border-b border-slate-800 flex items-center justify-between">
-                <h2 class="font-semibold text-sm text-white flex items-center space-x-2">
-                    <i class="fa-solid fa-layer-group text-blue-400"></i>
-                    <span>Markets & Watchlist</span>
-                </h2>
-                <div class="flex space-x-1 text-[11px]">
-                    <button onclick="filterMarketList('ALL')" id="filterALL" class="px-2 py-0.5 rounded bg-blue-600 text-white font-medium">All</button>
-                    <button onclick="filterMarketList('STOCK')" id="filterSTOCK" class="px-2 py-0.5 rounded bg-slate-800 text-slate-400 hover:text-white">Stocks</button>
-                    <button onclick="filterMarketList('CRYPTO')" id="filterCRYPTO" class="px-2 py-0.5 rounded bg-slate-800 text-slate-400 hover:text-white">Crypto</button>
+    <!-- MAIN SIMPLE 2-COLUMN LAYOUT -->
+    <main class="flex-1 max-w-6xl w-full mx-auto px-4 py-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+        <!-- LEFT COLUMN: PORTFOLIO VALUE + ASSET PILLS + CLEAN CHART (8 Cols) -->
+        <div class="lg:col-span-8 flex flex-col space-y-6">
+
+            <!-- Hero Portfolio Net Worth Banner -->
+            <div class="bg-carddark border border-slate-800/90 rounded-3xl p-6 flex flex-wrap items-center justify-between gap-4">
+                <div>
+                    <div class="text-xs text-slate-400 font-medium uppercase tracking-wider mb-1">Total Portfolio Value</div>
+                    <div id="netWorthDisplay" class="text-3xl sm:text-4xl font-bold font-mono text-white">$100,000.00</div>
+                    <div id="profitDisplay" class="text-xs font-mono font-semibold text-mint mt-1">
+                        +$0.00 (0.00%) All Time
+                    </div>
+                </div>
+
+                <div class="flex flex-col sm:items-end space-y-2">
+                    <div class="text-xs text-slate-400">
+                        Buying Power (Cash): <span id="cashDisplay" class="font-mono font-bold text-white">$100,000.00</span>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <button onclick="window.addFreeCash(10000)" class="px-3 py-1.5 rounded-xl bg-mint/15 hover:bg-mint/25 text-mint font-mono text-xs font-semibold transition">
+                            +$10k Cash
+                        </button>
+                        <button onclick="window.syncLiveMarket()" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs transition" title="Pull latest live Crypto prices">
+                            <i id="syncSpinner" class="fa-solid fa-rotate mr-1"></i>Live API
+                        </button>
+                        <button onclick="window.resetAccount()" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-coral/20 hover:text-coral text-slate-400 text-xs transition">
+                            Reset
+                        </button>
+                    </div>
                 </div>
             </div>
 
-            <!-- Search Input -->
-            <div class="p-2.5 border-b border-slate-800/60 bg-slate-950/40">
-                <div class="relative">
-                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-500 text-xs"></i>
-                    <input type="text" id="tickerSearch" oninput="renderWatchlist()" placeholder="Search symbol or name (e.g. NVDA, BTC)..." 
-                        class="w-full bg-slate-900 border border-slate-800 rounded-xl pl-8 pr-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500">
-                </div>
-            </div>
-
-            <!-- Asset List -->
-            <div id="watchlistContainer" class="divide-y divide-slate-800/60 overflow-y-auto max-h-[420px] lg:max-h-[640px]">
+            <!-- 6 Simple Asset Pills -->
+            <div id="assetPillsRow" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2.5">
                 <!-- Populated by JS -->
             </div>
 
-            <!-- Quick Cash Injection / Bonus Footer -->
-            <div class="mt-auto p-3 bg-slate-950/70 border-t border-slate-800 flex items-center justify-between text-xs">
-                <span class="text-slate-400">Need more capital?</span>
-                <div class="flex space-x-1.5">
-                    <button onclick="injectCash(25000)" class="px-2.5 py-1 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 font-mono transition">+$25k</button>
-                    <button onclick="resetSimulator()" class="px-2.5 py-1 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 transition" title="Reset Account to $100k">Reset</button>
-                </div>
-            </div>
-        </section>
-
-        <!-- CENTER COLUMN: INTERACTIVE CHART & PORTFOLIO TABS (6 Cols) -->
-        <section class="lg:col-span-6 flex flex-col space-y-5">
-            
-            <!-- Chart Card -->
-            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-xl flex flex-col">
-                <!-- Selected Asset Header -->
-                <div class="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-800">
-                    <div class="flex items-center space-x-3">
-                        <div id="activeAssetBadge" class="w-10 h-10 rounded-xl bg-blue-600/20 border border-blue-500/30 flex items-center justify-center font-mono font-bold text-blue-400 text-sm">
-                            NVDA
+            <!-- Clean Chart Card -->
+            <div class="bg-carddark border border-slate-800/90 rounded-3xl p-6 flex flex-col">
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <div class="flex items-center space-x-2">
+                            <h2 id="chartAssetName" class="text-lg font-bold text-white">Bitcoin</h2>
+                            <span id="chartAssetTicker" class="text-xs font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-400">BTC</span>
                         </div>
-                        <div>
-                            <div class="flex items-center space-x-2">
-                                <h1 id="activeAssetName" class="font-bold text-base sm:text-lg text-white">NVIDIA Corporation</h1>
-                                <span id="activeAssetSector" class="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-slate-800 text-slate-400">AI & Semis</span>
-                            </div>
-                            <div class="flex items-center space-x-3 mt-0.5">
-                                <span id="activeAssetPrice" class="font-mono text-xl sm:text-2xl font-bold text-white">$138.60</span>
-                                <span id="activeAssetChange" class="font-mono text-xs sm:text-sm font-semibold text-emerald-400">+2.45%</span>
-                            </div>
+                        <div class="flex items-baseline space-x-2.5 mt-1">
+                            <span id="chartAssetPrice" class="text-2xl font-bold font-mono text-white">$76,400.00</span>
+                            <span id="chartAssetChange" class="text-xs font-mono font-semibold text-mint">+0.00%</span>
                         </div>
                     </div>
 
-                    <!-- Chart Mode & Timeframe Controls -->
-                    <div class="flex flex-wrap items-center gap-1.5">
-                        <!-- Mode Toggle: Asset Price vs Total Net Worth -->
-                        <div class="bg-slate-950 p-1 rounded-xl border border-slate-800 flex items-center text-xs mr-1">
-                            <button onclick="setChartViewMode('PRICE')" id="viewModePrice" class="px-2.5 py-1 rounded-lg bg-blue-600 text-white font-medium transition">Asset</button>
-                            <button onclick="setChartViewMode('PORTFOLIO')" id="viewModePortfolio" class="px-2.5 py-1 rounded-lg text-slate-400 hover:text-white transition">Net Worth</button>
-                        </div>
-
-                        <!-- Chart Style: Line vs Candle -->
-                        <div id="chartTypeToggleGroup" class="bg-slate-950 p-1 rounded-xl border border-slate-800 flex items-center text-xs mr-1">
-                            <button onclick="setChartStyle('LINE')" id="styleBtnLine" class="px-2 py-1 rounded-lg bg-slate-800 text-white transition" title="Area Line Chart"><i class="fa-solid fa-chart-area"></i></button>
-                            <button onclick="setChartStyle('CANDLE')" id="styleBtnCandle" class="px-2 py-1 rounded-lg text-slate-400 hover:text-white transition" title="Candlestick Chart"><i class="fa-solid fa-chart-column"></i></button>
-                        </div>
-
-                        <!-- Timeframe Range -->
-                        <div class="bg-slate-950 p-1 rounded-xl border border-slate-800 flex items-center text-xs font-mono">
-                            <button onclick="setChartTimeframe(30)" id="tfBtn30" class="px-2 py-1 rounded-lg text-slate-400 hover:text-white">1M</button>
-                            <button onclick="setChartTimeframe(90)" id="tfBtn90" class="px-2 py-1 rounded-lg bg-slate-800 text-white font-semibold">3M</button>
-                            <button onclick="setChartTimeframe(365)" id="tfBtn365" class="px-2 py-1 rounded-lg text-slate-400 hover:text-white">1Y</button>
-                            <button onclick="setChartTimeframe(9999)" id="tfBtn9999" class="px-2 py-1 rounded-lg text-slate-400 hover:text-white">ALL</button>
-                        </div>
+                    <!-- Owned Badge on Chart -->
+                    <div id="chartOwnedBadge" class="text-right font-mono text-xs text-slate-400">
+                        You own: <span class="text-white font-semibold">0 BTC</span>
                     </div>
                 </div>
 
-                <!-- Interactive Canvas Container -->
-                <div class="relative w-full h-[290px] sm:h-[340px] mt-3 select-none">
-                    <canvas id="marketChart" class="w-full h-full cursor-crosshair"></canvas>
-                    <!-- Floating Hover Legend -->
-                    <div id="chartTooltip" class="hidden absolute top-2 left-3 bg-slate-950/90 border border-slate-700 rounded-lg px-3 py-1.5 text-xs font-mono pointer-events-none shadow-lg">
-                    </div>
-                </div>
-
-                <!-- Asset Key Stats Footer -->
-                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-3 mt-2 border-t border-slate-800/80 text-xs">
-                    <div class="bg-slate-950/60 p-2.5 rounded-xl border border-slate-800/60">
-                        <span class="text-slate-400 block text-[10px] uppercase">Period High</span>
-                        <span id="statHigh" class="font-mono font-semibold text-white mt-0.5 block">$0.00</span>
-                    </div>
-                    <div class="bg-slate-950/60 p-2.5 rounded-xl border border-slate-800/60">
-                        <span class="text-slate-400 block text-[10px] uppercase">Period Low</span>
-                        <span id="statLow" class="font-mono font-semibold text-white mt-0.5 block">$0.00</span>
-                    </div>
-                    <div class="bg-slate-950/60 p-2.5 rounded-xl border border-slate-800/60">
-                        <span class="text-slate-400 block text-[10px] uppercase">Annual Volatility</span>
-                        <span id="statVol" class="font-mono font-semibold text-amber-400 mt-0.5 block">32.0%</span>
-                    </div>
-                    <div class="bg-slate-950/60 p-2.5 rounded-xl border border-slate-800/60">
-                        <span class="text-slate-400 block text-[10px] uppercase">Your Position</span>
-                        <span id="statPosition" class="font-mono font-semibold text-blue-400 mt-0.5 block">0 Shares ($0)</span>
-                    </div>
+                <!-- Smooth Line Chart Canvas -->
+                <div class="relative w-full h-[270px] sm:h-[310px] select-none">
+                    <canvas id="priceChart" class="w-full h-full cursor-crosshair"></canvas>
+                    <div id="chartHoverBox" class="hidden absolute top-2 left-2 bg-bgdark/90 border border-slate-700 rounded-xl px-3 py-1.5 text-xs font-mono pointer-events-none"></div>
                 </div>
             </div>
 
-            <!-- Bottom Tabbed Panel: Holdings, Pending Limit Orders, Trade Log, News Feed -->
-            <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl flex-1 flex flex-col">
-                <div class="flex border-b border-slate-800 bg-slate-950/50 px-3 pt-2 space-x-2 text-xs font-medium overflow-x-auto">
-                    <button onclick="switchBottomTab('HOLDINGS')" id="tabBtnHOLDINGS" class="px-3 py-2 border-b-2 border-blue-500 text-white flex items-center space-x-1.5">
-                        <i class="fa-solid fa-briefcase text-blue-400"></i>
-                        <span>Portfolio Holdings</span>
-                        <span id="holdingsCountBadge" class="ml-1 px-1.5 py-0.2 rounded-full bg-slate-800 text-[10px] font-mono">0</span>
+        </div>
+
+        <!-- RIGHT COLUMN: SIMPLE BUY/SELL CARD + YOUR INVESTMENTS (4 Cols) -->
+        <div class="lg:col-span-4 flex flex-col space-y-6">
+
+            <!-- Simple Trade Card -->
+            <div class="bg-carddark border border-slate-800/90 rounded-3xl p-6">
+                <!-- Buy / Sell Tabs -->
+                <div class="grid grid-cols-2 gap-2 p-1 bg-bgdark rounded-2xl mb-5">
+                    <button onclick="window.setTradeSide('BUY')" id="tabBuy" class="py-2.5 rounded-xl font-bold text-xs bg-mint text-black transition">
+                        Buy
                     </button>
-                    <button onclick="switchBottomTab('ORDERS')" id="tabBtnORDERS" class="px-3 py-2 border-b-2 border-transparent text-slate-400 hover:text-white flex items-center space-x-1.5">
-                        <i class="fa-solid fa-clock text-amber-400"></i>
-                        <span>Active Limit/Stop Orders</span>
-                        <span id="ordersCountBadge" class="ml-1 px-1.5 py-0.2 rounded-full bg-slate-800 text-[10px] font-mono">0</span>
-                    </button>
-                    <button onclick="switchBottomTab('HISTORY')" id="tabBtnHISTORY" class="px-3 py-2 border-b-2 border-transparent text-slate-400 hover:text-white flex items-center space-x-1.5">
-                        <i class="fa-solid fa-receipt text-emerald-400"></i>
-                        <span>Order History</span>
-                    </button>
-                    <button onclick="switchBottomTab('NEWS')" id="tabBtnNEWS" class="px-3 py-2 border-b-2 border-transparent text-slate-400 hover:text-white flex items-center space-x-1.5">
-                        <i class="fa-solid fa-newspaper text-purple-400"></i>
-                        <span>Market Events Feed</span>
+                    <button onclick="window.setTradeSide('SELL')" id="tabSell" class="py-2.5 rounded-xl font-bold text-xs text-slate-400 hover:text-white transition">
+                        Sell
                     </button>
                 </div>
 
-                <!-- Tab Content Container -->
-                <div class="p-3 overflow-x-auto flex-1 max-h-[280px] overflow-y-auto">
-                    <!-- Holdings Table -->
-                    <div id="tabPanelHOLDINGS">
-                        <table class="w-full text-left border-collapse text-xs">
-                            <thead>
-                                <tr class="text-slate-400 border-b border-slate-800 font-mono text-[11px] uppercase">
-                                    <th class="py-2 px-2">Asset</th>
-                                    <th class="py-2 px-2 text-right">Qty</th>
-                                    <th class="py-2 px-2 text-right">Avg Cost</th>
-                                    <th class="py-2 px-2 text-right">Price</th>
-                                    <th class="py-2 px-2 text-right">Mkt Value</th>
-                                    <th class="py-2 px-2 text-right">Unrealized P&L</th>
-                                    <th class="py-2 px-2 text-right">Action</th>
-                                </tr>
-                            </thead>
-                            <tbody id="holdingsTableBody" class="divide-y divide-slate-800/50 font-mono">
-                                <!-- Populated by JS -->
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <!-- Active Limit / Stop Orders -->
-                    <div id="tabPanelORDERS" class="hidden">
-                        <table class="w-full text-left border-collapse text-xs">
-                            <thead>
-                                <tr class="text-slate-400 border-b border-slate-800 font-mono text-[11px] uppercase">
-                                    <th class="py-2 px-2">Symbol</th>
-                                    <th class="py-2 px-2">Type</th>
-                                    <th class="py-2 px-2 text-right">Qty</th>
-                                    <th class="py-2 px-2 text-right">Trigger Price</th>
-                                    <th class="py-2 px-2 text-right">Current</th>
-                                    <th class="py-2 px-2 text-right">Cancel</th>
-                                </tr>
-                            </thead>
-                            <tbody id="activeOrdersBody" class="divide-y divide-slate-800/50 font-mono"></tbody>
-                        </table>
-                    </div>
-
-                    <!-- Transaction History -->
-                    <div id="tabPanelHISTORY" class="hidden">
-                        <table class="w-full text-left border-collapse text-xs">
-                            <thead>
-                                <tr class="text-slate-400 border-b border-slate-800 font-mono text-[11px] uppercase">
-                                    <th class="py-2 px-2">Sim Date</th>
-                                    <th class="py-2 px-2">Side</th>
-                                    <th class="py-2 px-2">Symbol</th>
-                                    <th class="py-2 px-2 text-right">Shares</th>
-                                    <th class="py-2 px-2 text-right">Exec Price</th>
-                                    <th class="py-2 px-2 text-right">Total</th>
-                                </tr>
-                            </thead>
-                            <tbody id="historyTableBody" class="divide-y divide-slate-800/50 font-mono"></tbody>
-                        </table>
-                    </div>
-
-                    <!-- Market Events Log -->
-                    <div id="tabPanelNEWS" class="hidden space-y-2">
-                        <div id="newsFeedList" class="space-y-2"></div>
-                    </div>
-                </div>
-            </div>
-
-        </section>
-
-        <!-- RIGHT COLUMN: ORDER EXECUTION TERMINAL & SCENARIO SIMULATOR (3 Cols) -->
-        <section class="lg:col-span-3 flex flex-col space-y-5">
-            
-            <!-- Order Execution Box -->
-            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-xl flex flex-col">
-                <div class="flex items-center justify-between mb-3">
-                    <h2 class="font-semibold text-sm text-white flex items-center space-x-2">
-                        <i class="fa-solid fa-bolt text-emerald-400"></i>
-                        <span>Order Terminal</span>
-                    </h2>
-                    <span id="orderTerminalSymbol" class="font-mono text-xs font-bold px-2 py-0.5 rounded bg-blue-500/20 text-blue-400 border border-blue-500/30">NVDA</span>
-                </div>
-
-                <!-- Buy / Sell Toggle -->
-                <div class="grid grid-cols-2 gap-1.5 p-1 bg-slate-950 rounded-xl border border-slate-800 mb-4">
-                    <button onclick="setOrderSide('BUY')" id="sideBtnBUY" class="py-2 rounded-lg font-semibold text-xs transition bg-emerald-600 text-white shadow">
-                        BUY / LONG
-                    </button>
-                    <button onclick="setOrderSide('SELL')" id="sideBtnSELL" class="py-2 rounded-lg font-semibold text-xs transition text-slate-400 hover:text-white">
-                        SELL
-                    </button>
-                </div>
-
-                <!-- Order Type Selector -->
-                <div class="mb-3">
-                    <label class="block text-[11px] uppercase tracking-wider text-slate-400 mb-1">Order Type</label>
-                    <div class="grid grid-cols-3 gap-1.5 text-xs font-mono">
-                        <button onclick="setOrderType('MARKET')" id="typeBtnMARKET" class="py-1.5 rounded-lg border border-blue-500 bg-blue-600/20 text-white font-medium">Market</button>
-                        <button onclick="setOrderType('LIMIT')" id="typeBtnLIMIT" class="py-1.5 rounded-lg border border-slate-800 bg-slate-950 text-slate-400 hover:text-white">Limit</button>
-                        <button onclick="setOrderType('STOP')" id="typeBtnSTOP" class="py-1.5 rounded-lg border border-slate-800 bg-slate-950 text-slate-400 hover:text-white">Stop-Loss</button>
+                <!-- Dollar Amount Input -->
+                <div class="mb-4">
+                    <label class="block text-xs text-slate-400 mb-1.5">Amount in USD ($)</label>
+                    <div class="relative">
+                        <span class="absolute left-4 top-3 font-mono text-slate-400 text-lg">$</span>
+                        <input type="number" id="tradeDollarInput" value="1000" min="1" step="any" oninput="window.updateTradePreview()"
+                            class="w-full bg-bgdark border border-slate-800 rounded-2xl pl-9 pr-4 py-3 font-mono text-xl font-bold text-white focus:outline-none focus:border-mint">
                     </div>
                 </div>
 
-                <!-- Trigger Price Input (Hidden for Market Orders) -->
-                <div id="limitPriceContainer" class="mb-3 hidden">
-                    <label id="limitPriceLabel" class="block text-[11px] uppercase tracking-wider text-slate-400 mb-1">Limit Trigger Price ($)</label>
-                    <input type="number" id="orderTriggerPrice" step="0.01" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 font-mono text-sm text-white focus:outline-none focus:border-blue-500">
+                <!-- Quick Dollar Buttons -->
+                <div class="grid grid-cols-4 gap-2 mb-5 font-mono text-xs">
+                    <button onclick="window.setQuickAmount(100)" class="py-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-200 transition">$100</button>
+                    <button onclick="window.setQuickAmount(1000)" class="py-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-200 transition">$1k</button>
+                    <button onclick="window.setQuickAmount(10000)" class="py-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-200 transition">$10k</button>
+                    <button onclick="window.setMaxAmount()" class="py-2 rounded-xl bg-mint/15 hover:bg-mint/25 text-mint font-bold transition">Max</button>
                 </div>
 
-                <!-- Quantity Input -->
-                <div class="mb-2">
-                    <div class="flex justify-between text-[11px] text-slate-400 mb-1">
-                        <span class="uppercase tracking-wider">Quantity (Shares / Units)</span>
-                        <span id="maxBuyableHint" class="font-mono text-slate-400">Max: 0</span>
-                    </div>
-                    <input type="number" id="orderQtyInput" value="10" min="0.0001" step="any" oninput="updateOrderEstimate()" 
-                        class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 font-mono text-base font-bold text-white focus:outline-none focus:border-blue-500">
+                <!-- Estimated Units Summary -->
+                <div class="flex justify-between items-center text-xs text-slate-400 mb-5 px-1">
+                    <span>Estimated Shares / Units</span>
+                    <span id="estUnitsDisplay" class="font-mono text-white font-semibold">0.0000</span>
                 </div>
 
-                <!-- Quick Allocation Buttons -->
-                <div class="grid grid-cols-4 gap-1.5 mb-4">
-                    <button onclick="setOrderFraction(0.10)" class="py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-mono text-xs transition">10%</button>
-                    <button onclick="setOrderFraction(0.25)" class="py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-mono text-xs transition">25%</button>
-                    <button onclick="setOrderFraction(0.50)" class="py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-mono text-xs transition">50%</button>
-                    <button onclick="setOrderFraction(1.00)" class="py-1 rounded-lg bg-blue-600/20 hover:bg-blue-600/30 text-blue-400 border border-blue-500/30 font-mono text-xs font-semibold transition">MAX</button>
-                </div>
-
-                <!-- Order Summary Breakdown -->
-                <div class="bg-slate-950/90 border border-slate-800/80 rounded-xl p-3 space-y-1.5 text-xs mb-4">
-                    <div class="flex justify-between">
-                        <span class="text-slate-400">Execution Price</span>
-                        <span id="estExecPrice" class="font-mono text-slate-200">$138.60</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span class="text-slate-400">Estimated Total</span>
-                        <span id="estTotalCost" class="font-mono font-bold text-white text-sm">$1,386.00</span>
-                    </div>
-                    <div class="flex justify-between pt-1 border-t border-slate-800/60">
-                        <span class="text-slate-400">Remaining Cash</span>
-                        <span id="estRemainingCash" class="font-mono text-emerald-400">$98,614.00</span>
-                    </div>
-                </div>
-
-                <!-- Submit Order Button -->
-                <button onclick="submitTradeOrder()" id="submitOrderBtn" class="w-full py-3 rounded-xl font-bold text-sm text-white bg-emerald-600 hover:bg-emerald-500 shadow-lg shadow-emerald-600/20 transition flex items-center justify-center space-x-2">
-                    <i class="fa-solid fa-check-circle"></i>
-                    <span id="submitOrderText">BUY NVDA</span>
+                <!-- Big Action Button -->
+                <button onclick="window.executeTrade()" id="tradeSubmitBtn" class="w-full py-3.5 rounded-2xl font-bold text-sm bg-mint hover:opacity-95 text-black shadow-lg shadow-mint/20 transition">
+                    Buy BTC
                 </button>
             </div>
 
-            <!-- Time Machine & Macro Catalyst Sandbox -->
-            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-xl flex-1 flex flex-col justify-between">
-                <div>
-                    <div class="flex items-center justify-between mb-2">
-                        <h3 class="font-semibold text-sm text-white flex items-center space-x-2">
-                            <i class="fa-solid fa-wand-magic-sparkles text-purple-400"></i>
-                            <span>Macro Event Sandbox</span>
-                        </h3>
-                        <span class="text-[10px] font-mono uppercase px-1.5 py-0.5 rounded bg-purple-500/10 text-purple-400 border border-purple-500/20">God Mode</span>
-                    </div>
-                    <p class="text-xs text-slate-400 mb-3">
-                        Trigger instant macroeconomic shocks or sector catalysts to stress-test your portfolio across time.
-                    </p>
-
-                    <div class="grid grid-cols-1 gap-2 text-xs">
-                        <button onclick="triggerCustomCatalyst('FED_CUT')" class="p-2.5 rounded-xl bg-slate-950 hover:bg-slate-800 border border-slate-800 flex items-center justify-between transition text-left">
-                            <div>
-                                <div class="font-semibold text-emerald-400">Emergency Fed Rate Cut (-50 bps)</div>
-                                <div class="text-[11px] text-slate-400">Boosts Tech & Crypto drift strongly</div>
-                            </div>
-                            <i class="fa-solid fa-arrow-trend-up text-emerald-400 text-base"></i>
-                        </button>
-
-                        <button onclick="triggerCustomCatalyst('AI_BOOM')" class="p-2.5 rounded-xl bg-slate-950 hover:bg-slate-800 border border-slate-800 flex items-center justify-between transition text-left">
-                            <div>
-                                <div class="font-semibold text-blue-400">AGI Super-Cycle Breakthrough</div>
-                                <div class="text-[11px] text-slate-400">Semiconductors & Big Tech surge</div>
-                            </div>
-                            <i class="fa-solid fa-microchip text-blue-400 text-base"></i>
-                        </button>
-
-                        <button onclick="triggerCustomCatalyst('INFLATION_SHOCK')" class="p-2.5 rounded-xl bg-slate-950 hover:bg-slate-800 border border-slate-800 flex items-center justify-between transition text-left">
-                            <div>
-                                <div class="font-semibold text-rose-400">CPI Inflation Spike / Black Swan</div>
-                                <div class="text-[11px] text-slate-400">High volatility market-wide correction</div>
-                            </div>
-                            <i class="fa-solid fa-triangle-exclamation text-rose-400 text-base"></i>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Auto-Invest / DRIP Toggle -->
-                <div class="mt-4 pt-3 border-t border-slate-800 flex items-center justify-between text-xs">
-                    <div>
-                        <span class="text-slate-200 font-medium block">Cash Interest Yield (4.5% APY)</span>
-                        <span class="text-[11px] text-slate-400">Uninvested cash earns daily yield in sim</span>
-                    </div>
-                    <input type="checkbox" id="cashYieldToggle" checked class="w-4 h-4 rounded accent-blue-500">
+            <!-- Your Investments List -->
+            <div class="bg-carddark border border-slate-800/90 rounded-3xl p-6 flex-1 flex flex-col">
+                <h3 class="font-bold text-sm text-white mb-4">Your Investments</h3>
+                <div id="holdingsList" class="space-y-3 flex-1 overflow-y-auto">
+                    <!-- Populated by JS -->
                 </div>
             </div>
 
-        </section>
+        </div>
+
     </main>
 
-    <!-- SETTINGS & API KEY MODAL -->
-    <div id="settingsModal" class="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-md w-full p-5 shadow-2xl">
-            <div class="flex items-center justify-between pb-3 border-b border-slate-800">
-                <h3 class="font-bold text-white text-base flex items-center space-x-2">
-                    <i class="fa-solid fa-satellite-dish text-blue-400"></i>
-                    <span>Live Market API & Sim Settings</span>
-                </h3>
-                <button onclick="closeSettingsModal()" class="text-slate-400 hover:text-white">
-                    <i class="fa-solid fa-xmark text-lg"></i>
-                </button>
-            </div>
+    <!-- TOAST NOTIFICATIONS -->
+    <div id="toastBox" class="fixed bottom-4 right-4 z-50 flex flex-col space-y-2 pointer-events-none"></div>
 
-            <div class="py-4 space-y-4 text-xs">
-                <div class="bg-blue-500/10 border border-blue-500/20 rounded-xl p-3 text-slate-300 leading-relaxed">
-                    <strong class="text-blue-400 block mb-1">How Hybrid Live + Time Simulation Works:</strong>
-                    1. <strong>Crypto (BTC, ETH, SOL)</strong> syncs automatically with real-time prices from Binance / CoinGecko public keyless APIs.<br>
-                    2. <strong>US Equities (NVDA, AAPL, TSLA, etc.)</strong> can sync live quotes if you provide a free <a href="https://finnhub.io" target="_blank" class="underline text-blue-400">Finnhub.io</a> API key below. From those real prices, you can fast-forward time!
-                </div>
+    <!-- FIREBASE & SIMULATOR SCRIPT -->
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getAnalytics, isSupported } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics.js";
+        import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-                <div>
-                    <label class="block text-slate-300 font-medium mb-1">Optional Finnhub API Key (For Live US Stock Quotes)</label>
-                    <input type="password" id="finnhubKeyInput" placeholder="Enter free Finnhub API key (or leave blank)..." 
-                        class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 font-mono text-white focus:outline-none focus:border-blue-500">
-                </div>
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyD47CV7A3CBN8WprDT190YBoja77HG6NJY",
+            authDomain: "advait-bd3da.firebaseapp.com",
+            databaseURL: "https://advait-bd3da-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "advait-bd3da",
+            storageBucket: "advait-bd3da.firebasestorage.app",
+            messagingSenderId: "816232706393",
+            appId: "1:816232706393:web:5aaa150277498ce2591c48",
+            measurementId: "G-KQ1MNHH754"
+        };
 
-                <div>
-                    <label class="block text-slate-300 font-medium mb-1">Simulation Volatility Multiplier</label>
-                    <select id="volatilityMultiplierSelect" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white">
-                        <option value="0.7">Low Volatility (Calm Institutional Market)</option>
-                        <option value="1.0" selected>Realistic Historical Volatility (1.0x)</option>
-                        <option value="1.6">High Octane / WallStreetBets Mode (1.6x)</option>
-                    </select>
-                </div>
-            </div>
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        isSupported().then(yes => { if (yes) getAnalytics(app); }).catch(() => {});
+        const auth = getAuth(app);
+        const db = getDatabase(app);
+        const googleProvider = new GoogleAuthProvider();
 
-            <div class="pt-3 border-t border-slate-800 flex justify-end space-x-2">
-                <button onclick="closeSettingsModal()" class="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 hover:bg-slate-700 text-xs font-medium">Cancel</button>
-                <button onclick="saveSettings()" class="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold">Save & Sync Now</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- TOAST NOTIFICATION CONTAINER -->
-    <div id="toastContainer" class="fixed bottom-4 right-4 z-50 flex flex-col space-y-2 pointer-events-none"></div>
-
-    <!-- APPLICATION SCRIPT -->
-    <script>
         /********************************************************************
-         * 1. INITIAL MARKET UNIVERSE & STATE CONFIGURATION
+         * 1. CLEAN SIMULATOR STATE
          ********************************************************************/
         const INITIAL_CASH = 100000;
 
-        const MARKET_UNIVERSE = [
-            { symbol: 'NVDA', name: 'NVIDIA Corporation', type: 'STOCK', sector: 'AI & Semis', price: 138.60, annualDrift: 0.24, annualVol: 0.45 },
-            { symbol: 'AAPL', name: 'Apple Inc.', type: 'STOCK', sector: 'Big Tech', price: 228.50, annualDrift: 0.14, annualVol: 0.24 },
-            { symbol: 'TSLA', name: 'Tesla, Inc.', type: 'STOCK', sector: 'EV & Robotics', price: 254.20, annualDrift: 0.18, annualVol: 0.56 },
-            { symbol: 'MSFT', name: 'Microsoft Corp.', type: 'STOCK', sector: 'Cloud & AI', price: 426.80, annualDrift: 0.15, annualVol: 0.22 },
-            { symbol: 'AMZN', name: 'Amazon.com, Inc.', type: 'STOCK', sector: 'E-Commerce', price: 210.40, annualDrift: 0.16, annualVol: 0.28 },
-            { symbol: 'META', name: 'Meta Platforms', type: 'STOCK', sector: 'Social & AI', price: 592.10, annualDrift: 0.18, annualVol: 0.34 },
-            { symbol: 'GOOGL', name: 'Alphabet Inc.', type: 'STOCK', sector: 'Search & Cloud', price: 181.90, annualDrift: 0.14, annualVol: 0.26 },
-            { symbol: 'SPY', name: 'S&P 500 Index ETF', type: 'STOCK', sector: 'Broad Index', price: 588.30, annualDrift: 0.10, annualVol: 0.15 },
-            { symbol: 'BTC', name: 'Bitcoin', type: 'CRYPTO', binancePair: 'BTCUSDT', coingeckoId: 'bitcoin', sector: 'Digital Gold', price: 76400.00, annualDrift: 0.30, annualVol: 0.62 },
-            { symbol: 'ETH', name: 'Ethereum', type: 'CRYPTO', binancePair: 'ETHUSDT', coingeckoId: 'ethereum', sector: 'Smart Contracts', price: 2920.00, annualDrift: 0.25, annualVol: 0.68 },
-            { symbol: 'SOL', name: 'Solana', type: 'CRYPTO', binancePair: 'SOLUSDT', coingeckoId: 'solana', sector: 'High-Speed L1', price: 198.50, annualDrift: 0.35, annualVol: 0.80 }
+        const ASSETS = [
+            { symbol: 'BTC', name: 'Bitcoin', type: 'CRYPTO', binance: 'BTCUSDT', gecko: 'bitcoin', price: 76400, drift: 0.25, vol: 0.60 },
+            { symbol: 'ETH', name: 'Ethereum', type: 'CRYPTO', binance: 'ETHUSDT', gecko: 'ethereum', price: 2920, drift: 0.22, vol: 0.65 },
+            { symbol: 'SOL', name: 'Solana', type: 'CRYPTO', binance: 'SOLUSDT', gecko: 'solana', price: 198.50, drift: 0.30, vol: 0.75 },
+            { symbol: 'NVDA', name: 'NVIDIA', type: 'STOCK', price: 138.60, drift: 0.22, vol: 0.42 },
+            { symbol: 'AAPL', name: 'Apple', type: 'STOCK', price: 228.50, drift: 0.14, vol: 0.24 },
+            { symbol: 'TSLA', name: 'Tesla', type: 'STOCK', price: 254.20, drift: 0.18, vol: 0.52 }
         ];
 
-        // Dynamic Macro Events Catalog for the Time Simulator
-        const MACRO_EVENTS = [
-            { title: "Fed signals dovish pivot, lowers terminal rate outlook", impact: 0.032, sector: 'ALL', sentiment: 'Bullish' },
-            { title: "Next-gen AI datacenter capex projections raised by 40%", impact: 0.055, sector: 'AI & Semis', sentiment: 'Bullish' },
-            { title: "Institutional ETF inflows hit record weekly high for Digital Assets", impact: 0.065, sector: 'CRYPTO', sentiment: 'Bullish' },
-            { title: "Stronger-than-expected US Jobs Report boosts consumer outlook", impact: 0.022, sector: 'ALL', sentiment: 'Bullish' },
-            { title: "Hotter CPI print sparks fears of prolonged higher interest rates", impact: -0.035, sector: 'ALL', sentiment: 'Bearish' },
-            { title: "Global semiconductor supply chain bottleneck reported in Taiwan", impact: -0.045, sector: 'AI & Semis', sentiment: 'Bearish' },
-            { title: "Antitrust regulators announce probe into Big Tech cloud dominance", impact: -0.028, sector: 'Big Tech', sentiment: 'Bearish' },
-            { title: "Autonomous Robotaxi regulatory approval fast-tracked", impact: 0.068, sector: 'EV & Robotics', sentiment: 'Bullish' },
-            { title: "S&P 500 corporate earnings season beats consensus by 8.4%", impact: 0.029, sector: 'ALL', sentiment: 'Bullish' },
-            { title: "Flash liquidity crunch triggers leveraged crypto liquidations", impact: -0.062, sector: 'CRYPTO', sentiment: 'Bearish' }
-        ];
-
-        // Global Application State
         let state = {
+            user: null,
             cash: INITIAL_CASH,
             initialDeposit: INITIAL_CASH,
-            simDate: new Date(2026, 10, 8, 9, 30, 0), // Starts Nov 8, 2026 09:30:00
-            simSecondsPerRealSecond: 900, // Default: 1 real sec = 900 sim secs (15 mins)
-            simDayAccumulator: 0,         // Tracks fractional simulated days elapsed for daily candle closes
-            volMultiplier: 1.0,
-            finnhubKey: localStorage.getItem('chronotrade_finnhub_key') || '',
-            selectedSymbol: 'NVDA',
-            marketFilter: 'ALL',
-            chartViewMode: 'PRICE', // 'PRICE' or 'PORTFOLIO'
-            chartStyle: 'LINE',     // 'LINE' or 'CANDLE'
-            chartTimeframe: 90,     // Days
-            orderSide: 'BUY',       // 'BUY' or 'SELL'
-            orderType: 'MARKET',    // 'MARKET', 'LIMIT', 'STOP'
+            simTimeMs: new Date(2026, 10, 8, 9, 30, 0).getTime(),
+            speed: 60, // Default: 1 real sec = 60 sim secs (1 min)
+            selected: 'BTC',
+            tradeSide: 'BUY',
             assets: {},
-            holdings: {},           // { symbol: { qty, avgCost } }
-            activeOrders: [],       // [{ id, symbol, side, type, qty, triggerPrice }]
-            tradeHistory: [],       // [{ date, side, symbol, qty, price, total }]
-            newsLog: [],            // [{ date, title, sentiment }]
-            portfolioHistory: []    // [{ dateStr, value }]
+            holdings: {} // { BTC: { qty, avgCost } }
         };
 
-        let simTimer = null;
-        let lastFrameTime = performance.now();
-        let lastUiRenderTime = 0;
-        let hoverIndex = null;
+        let lastFrame = performance.now();
+        let lastRender = 0;
+        let lastCloudSave = 0;
+        let hoverIdx = null;
 
         /********************************************************************
-         * 2. INITIALIZATION & HISTORICAL PRICE SEEDING
+         * 2. FIREBASE GOOGLE AUTH & CLOUD PORTFOLIO SYNC
          ********************************************************************/
-        function initApp() {
-            // Generate 120 days of realistic historical OHLC data leading up to today
-            const startSeedDate = new Date(state.simDate);
-            startSeedDate.setDate(startSeedDate.getDate() - 120);
-
-            MARKET_UNIVERSE.forEach(item => {
-                const history = [];
-                // Back-calculate a starting price so the 120th day lands near item.price
-                let p = item.price * (0.85 + Math.random() * 0.25);
-                const dailyVol = (item.annualVol / Math.sqrt(252));
-
-                for (let i = 0; i < 120; i++) {
-                    const d = new Date(startSeedDate);
-                    d.setDate(d.getDate() + i);
-                    const open = p;
-                    const change = (Math.random() - 0.485) * dailyVol * p;
-                    const close = Math.max(0.5, i === 119 ? item.price : open + change);
-                    const high = Math.max(open, close) * (1 + Math.random() * dailyVol * 0.6);
-                    const low = Math.min(open, close) * (1 - Math.random() * dailyVol * 0.6);
-
-                    history.push({
-                        date: formatDateShort(d),
-                        open: open,
-                        high: high,
-                        low: low,
-                        close: close
-                    });
-                    p = close;
+        window.signInWithGoogle = async function() {
+            try {
+                const result = await signInWithPopup(auth, googleProvider);
+                toast(`Signed in as ${result.user.displayName || result.user.email}!`, 'mint');
+            } catch (error) {
+                console.warn("Firebase Auth Popup Notice:", error.code, error.message);
+                if (error.code === 'auth/unauthorized-domain' || error.code === 'auth/operation-not-supported-in-this-environment' || error.code === 'auth/popup-blocked') {
+                    // Activate seamless fallback profile so the user can test inside sandboxed preview iframes
+                    const mockUser = {
+                        uid: 'local_preview_user',
+                        displayName: 'Advait (Preview Mode)',
+                        photoURL: 'https://placehold.co/32x32/00d09c/000000?text=A',
+                        isLocalFallback: true
+                    };
+                    applyUserSession(mockUser);
+                    toast(`Signed in (Preview Mode). Tip: Add this domain to Firebase Console -> Auth -> Authorized Domains for live popup.`, 'mint');
+                } else {
+                    toast(`Login note: ${error.message}`, 'coral');
                 }
-
-                state.assets[item.symbol] = {
-                    ...item,
-                    prevClose: history[history.length - 2].close,
-                    history: history,
-                    lastFlash: null
-                };
-            });
-
-            // Seed initial portfolio net worth history
-            for (let i = 30; i >= 0; i--) {
-                const d = new Date(state.simDate);
-                d.setDate(d.getDate() - i);
-                state.portfolioHistory.push({
-                    date: formatDateShort(d),
-                    value: INITIAL_CASH
-                });
             }
+        };
 
-            // Add welcome news event
-            addNewsItem("ChronoTrade Terminal initialized. Real-time Crypto API sync active.", "Neutral");
+        window.signOutUser = async function() {
+            try {
+                await signOut(auth);
+            } catch (e) {}
+            state.user = null;
+            document.getElementById('googleLoginBtn').classList.remove('hidden');
+            document.getElementById('userProfileBar').classList.add('hidden');
+            document.getElementById('userProfileBar').classList.remove('flex');
+            toast('Signed out.', 'slate');
+        };
 
-            // Setup UI & Canvas listeners
-            setupCanvasEvents();
-            document.getElementById('finnhubKeyInput').value = state.finnhubKey;
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                applyUserSession(user);
+                await loadCloudPortfolio(user.uid);
+            }
+        });
 
-            // Render everything
-            selectAsset('NVDA');
-            updateAllUI();
+        function applyUserSession(user) {
+            state.user = user;
+            document.getElementById('googleLoginBtn').classList.add('hidden');
+            const bar = document.getElementById('userProfileBar');
+            bar.classList.remove('hidden');
+            bar.classList.add('flex');
+            document.getElementById('userName').textContent = user.displayName || 'Trader';
+            if (user.photoURL) document.getElementById('userAvatar').src = user.photoURL;
+        }
 
-            // Automatically fetch live Crypto prices (and stocks if key saved)
-            syncLivePrices();
+        async function saveCloudPortfolio() {
+            // Save to localStorage first
+            const payload = {
+                cash: state.cash,
+                initialDeposit: state.initialDeposit,
+                simTimeMs: state.simTimeMs,
+                holdings: state.holdings,
+                updatedAt: Date.now()
+            };
+            localStorage.setItem('chronotrade_save_v2', JSON.stringify(payload));
 
-            // Start Simulation Loop at default 1 sec = 15 mins (900x)
-            setSimRate(900);
-            requestAnimationFrame(simulationTickLoop);
+            if (!state.user || state.user.isLocalFallback) return;
+            try {
+                const statusEl = document.getElementById('cloudStatus');
+                statusEl.textContent = '● Syncing...';
+                await set(ref(db, `users/${state.user.uid}/portfolio`), payload);
+                statusEl.textContent = '● Cloud Saved';
+            } catch (e) {
+                console.warn("Realtime DB sync note:", e.message);
+            }
+        }
+
+        async function loadCloudPortfolio(uid) {
+            try {
+                const snap = await get(ref(db, `users/${uid}/portfolio`));
+                if (snap.exists()) {
+                    const data = snap.val();
+                    state.cash = data.cash ?? INITIAL_CASH;
+                    state.initialDeposit = data.initialDeposit ?? INITIAL_CASH;
+                    state.simTimeMs = data.simTimeMs ?? state.simTimeMs;
+                    state.holdings = data.holdings || {};
+                    renderUI();
+                    toast('Loaded your cloud portfolio from Firebase!', 'mint');
+                } else {
+                    await saveCloudPortfolio();
+                }
+            } catch (e) {
+                console.warn("Could not read Firebase RTDB, using local save:", e.message);
+            }
         }
 
         /********************************************************************
-         * 3. FREE LIVE API SYNC ENGINE (BINANCE / COINGECKO + FINNHUB)
+         * 3. INITIALIZE ASSETS & LIVE CRYPTO API
          ********************************************************************/
-        async function syncLivePrices() {
-            const syncIcon = document.getElementById('syncIcon');
-            const apiBadge = document.getElementById('apiStatusBadge');
-            syncIcon.classList.add('fa-spin');
-            apiBadge.textContent = 'Syncing Live APIs...';
+        function initSimulator() {
+            // Seed 90 points of smooth price history for each asset
+            ASSETS.forEach(item => {
+                const history = [];
+                let p = item.price * 0.92;
+                const dailyVol = item.vol / Math.sqrt(252);
+                for (let i = 0; i < 90; i++) {
+                    p = Math.max(0.5, p * (1 + (Math.random() - 0.48) * dailyVol));
+                    history.push(i === 89 ? item.price : p);
+                }
+                state.assets[item.symbol] = {
+                    ...item,
+                    startPrice: history[0],
+                    history: history
+                };
+            });
 
-            let updatedCount = 0;
-
-            // 1. Fetch Live Crypto Prices from Binance Public Keyless API (Fallback to CoinGecko)
+            // Restore local save if available
             try {
-                const res = await fetch('https://api.binance.com/api/v3/ticker/24hr?symbols=["BTCUSDT","ETHUSDT","SOLUSDT"]');
+                const saved = JSON.parse(localStorage.getItem('chronotrade_save_v2'));
+                if (saved && typeof saved.cash === 'number') {
+                    state.cash = saved.cash;
+                    state.initialDeposit = saved.initialDeposit || INITIAL_CASH;
+                    state.simTimeMs = saved.simTimeMs || state.simTimeMs;
+                    state.holdings = saved.holdings || {};
+                }
+            } catch (e) {}
+
+            setupChartHover();
+            window.setSpeed(60); // Default 1 sec = 1 min
+            renderUI();
+            window.syncLiveMarket();
+            requestAnimationFrame(tickLoop);
+        }
+
+        window.syncLiveMarket = async function() {
+            const icon = document.getElementById('syncSpinner');
+            icon.classList.add('fa-spin');
+            let count = 0;
+
+            try {
+                const res = await fetch('https://api.binance.com/api/v3/ticker/price?symbols=["BTCUSDT","ETHUSDT","SOLUSDT"]');
                 if (res.ok) {
-                    const data = await res.json();
-                    data.forEach(ticker => {
-                        const asset = Object.values(state.assets).find(a => a.binancePair === ticker.symbol);
+                    const list = await res.json();
+                    list.forEach(row => {
+                        const asset = Object.values(state.assets).find(a => a.binance === row.symbol);
                         if (asset) {
-                            const livePrice = parseFloat(ticker.lastPrice);
-                            const openPrice = parseFloat(ticker.openPrice);
-                            if (livePrice > 0) {
-                                applyLivePriceToAsset(asset.symbol, livePrice, openPrice);
-                                updatedCount++;
+                            const liveP = parseFloat(row.price);
+                            if (liveP > 0) {
+                                rescaleHistory(asset, liveP);
+                                count++;
                             }
                         }
                     });
                 }
             } catch (e) {
-                // Fallback to CoinGecko Keyless API
                 try {
-                    const cgRes = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana&vs_currencies=usd&include_24hr_change=true');
-                    if (cgRes.ok) {
-                        const cgData = await cgRes.json();
+                    const cg = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana&vs_currencies=usd');
+                    if (cg.ok) {
+                        const data = await cg.json();
                         Object.values(state.assets).forEach(asset => {
-                            if (asset.coingeckoId && cgData[asset.coingeckoId]) {
-                                const livePrice = cgData[asset.coingeckoId].usd;
-                                const changePct = cgData[asset.coingeckoId].usd_24h_change || 0;
-                                const prev = livePrice / (1 + changePct / 100);
-                                applyLivePriceToAsset(asset.symbol, livePrice, prev);
-                                updatedCount++;
+                            if (asset.gecko && data[asset.gecko]?.usd) {
+                                rescaleHistory(asset, data[asset.gecko].usd);
+                                count++;
                             }
                         });
                     }
-                } catch (err) {
-                    console.warn("Live crypto API fallback offline, continuing with simulator engine.");
-                }
+                } catch (err) {}
             }
 
-            // 2. Optional Finnhub API for Real-Time US Stock Quotes
-            if (state.finnhubKey && state.finnhubKey.trim().length > 5) {
-                const stockAssets = Object.values(state.assets).filter(a => a.type === 'STOCK');
-                for (const stock of stockAssets) {
-                    try {
-                        const res = await fetch(`https://finnhub.io/api/v1/quote?symbol=${stock.symbol}&token=${state.finnhubKey.trim()}`);
-                        if (res.ok) {
-                            const q = await res.json();
-                            if (q && q.c > 0) {
-                                applyLivePriceToAsset(stock.symbol, q.c, q.pc || q.c);
-                                updatedCount++;
-                            }
-                        }
-                    } catch (err) {
-                        console.warn(`Finnhub fetch failed for ${stock.symbol}`);
-                    }
-                }
+            icon.classList.remove('fa-spin');
+            if (count > 0) {
+                renderUI();
+                toast(`Synced live prices for BTC, ETH & SOL!`, 'mint');
             }
+        };
 
-            syncIcon.classList.remove('fa-spin');
-            if (updatedCount > 0) {
-                apiBadge.textContent = `Synced ${updatedCount} Live Feeds`;
-                showToast(`Synced ${updatedCount} live market prices! Time simulation anchored to live quotes.`, 'emerald');
-                updateAllUI();
-            } else {
-                apiBadge.textContent = 'Sim Mode Active';
-                showToast('Running on internal GBM simulation engine.', 'blue');
-            }
-        }
-
-        function applyLivePriceToAsset(symbol, livePrice, prevClose) {
-            const asset = state.assets[symbol];
-            if (!asset) return;
-
-            // Scale historical series proportionally so there is no artificial vertical cliff on the chart
-            const ratio = livePrice / asset.price;
-            asset.history.forEach(candle => {
-                candle.open *= ratio;
-                candle.high *= ratio;
-                candle.low *= ratio;
-                candle.close *= ratio;
-            });
-
-            asset.price = livePrice;
-            asset.prevClose = prevClose || livePrice * 0.99;
-            const lastCandle = asset.history[asset.history.length - 1];
-            if (lastCandle) {
-                lastCandle.close = livePrice;
-                lastCandle.high = Math.max(lastCandle.high, livePrice);
-                lastCandle.low = Math.min(lastCandle.low, livePrice);
-            }
+        function rescaleHistory(asset, newPrice) {
+            const ratio = newPrice / asset.price;
+            asset.history = asset.history.map(v => v * ratio);
+            asset.startPrice *= ratio;
+            asset.price = newPrice;
         }
 
         /********************************************************************
-         * 4. REALISTIC TIME SIMULATION ENGINE (1 SEC = X SECS/MINS/HRS/DAYS)
+         * 4. TIME SIMULATION ENGINE (1 SEC = X SECS / MINS / HOURS / DAYS)
          ********************************************************************/
-        const PRESET_RATES = [0, 1, 30, 60, 900, 3600, 21600, 86400];
+        const SPEED_LABELS = {
+            0: 'Paused (1s = 0s)',
+            1: '1 sec = 1 sec',
+            60: '1 sec = 1 min',
+            3600: '1 sec = 1 hour',
+            86400: '1 sec = 1 day'
+        };
 
-        // Formats a rate (sim seconds per 1 real second) into human-readable "1 sec = X secs/mins/hours/days"
-        function formatSimRateText(simSecs, shortForm = false) {
-            if (simSecs <= 0) return shortForm ? "Paused" : "1 sec = 0 secs (Paused)";
-            if (simSecs < 60) {
-                const s = Math.round(simSecs);
-                return shortForm ? `${s} sec${s > 1 ? 's' : ''}/s` : `1 sec = ${s} sec${s > 1 ? 's' : ''}`;
-            }
-            if (simSecs < 3600) {
-                const m = +(simSecs / 60).toFixed(1);
-                return shortForm ? `${m} min${m > 1 ? 's' : ''}/s` : `1 sec = ${m} min${m > 1 ? 's' : ''}`;
-            }
-            if (simSecs < 86400) {
-                const h = +(simSecs / 3600).toFixed(1);
-                return shortForm ? `${h} hr${h > 1 ? 's' : ''}/s` : `1 sec = ${h} hour${h > 1 ? 's' : ''}`;
-            }
-            const d = +(simSecs / 86400).toFixed(1);
-            const h = Math.round(simSecs / 3600);
-            if (d === 1) {
-                return shortForm ? `24 hrs (1d)/s` : `1 sec = 24 hours (1 day)`;
-            }
-            return shortForm ? `${d} days/s` : `1 sec = ${d} days (${h} hrs)`;
-        }
+        window.setSpeed = function(simSecsPerRealSec) {
+            state.speed = simSecsPerRealSec;
+            lastFrame = performance.now();
 
-        function setSimRate(simSecondsPerSec, fromSlider = false) {
-            state.simSecondsPerRealSecond = simSecondsPerSec;
-            lastFrameTime = performance.now();
+            document.getElementById('simRateLabel').textContent = SPEED_LABELS[simSecsPerRealSec] || `1 sec = ${simSecsPerRealSec}s`;
+            document.getElementById('simDot').className = simSecsPerRealSec === 0
+                ? 'w-2 h-2 rounded-full bg-amber-400'
+                : 'w-2 h-2 rounded-full bg-mint animate-pulse';
 
-            // Update glowing rate badge
-            const badge = document.getElementById('simRateBadge');
-            if (badge) {
-                badge.textContent = `⏱️ ${formatSimRateText(simSecondsPerSec, false)}`;
-                badge.className = simSecondsPerSec === 0
-                    ? "px-2 py-0.5 text-[10px] font-mono font-bold rounded-md bg-amber-500/20 text-amber-300 border border-amber-500/40"
-                    : "px-2 py-0.5 text-[10px] font-mono font-bold rounded-md bg-blue-500/20 text-blue-300 border border-blue-500/40 shadow-sm";
-            }
+            const speedSelect = document.getElementById('speedSelect');
+            if (speedSelect) speedSelect.value = String(simSecsPerRealSec);
+        };
 
-            // Update custom slider label and position
-            const sliderLabel = document.getElementById('customSliderLabel');
-            if (sliderLabel) {
-                sliderLabel.textContent = formatSimRateText(simSecondsPerSec, true);
+        window.skipTime = function(simSeconds) {
+            // Break large jumps into 60 steps so the chart evolves smoothly
+            const steps = 60;
+            const chunk = simSeconds / steps;
+            for (let i = 0; i < steps; i++) {
+                stepMarket(chunk, true);
             }
-            if (!fromSlider) {
-                const slider = document.getElementById('customRateSlider');
-                if (slider) {
-                    if (simSecondsPerSec <= 0) slider.value = 0;
-                    else {
-                        // Logarithmic mapping between 1 sec (slider=1) and 7 days/604800 secs (slider=100)
-                        const maxLog = Math.log(604800);
-                        const pct = Math.min(100, Math.max(1, Math.round((Math.log(simSecondsPerSec) / maxLog) * 99 + 1)));
-                        slider.value = pct;
-                    }
+            renderUI();
+            saveCloudPortfolio();
+            toast('Fast-forwarded +1 Year!', 'mint');
+        };
+
+        function tickLoop(now) {
+            const dtReal = Math.min(0.25, (now - lastFrame) / 1000);
+            lastFrame = now;
+
+            if (state.speed > 0 && dtReal > 0) {
+                const simSecs = dtReal * state.speed;
+                stepMarket(simSecs, false);
+                updateClockText();
+
+                if (now - lastRender > 120) {
+                    lastRender = now;
+                    renderUI();
+                }
+                if (now - lastCloudSave > 10000) {
+                    lastCloudSave = now;
+                    saveCloudPortfolio();
                 }
             }
-
-            // Highlight matching preset button if applicable
-            const subLabels = {
-                0: '1s = 0s',
-                1: '1s = 1s',
-                30: '1s = 30s',
-                60: '1s = 1m',
-                900: '1s = 15m',
-                3600: '1s = 1h',
-                21600: '1s = 6h',
-                86400: '1s = 24h'
-            };
-
-            PRESET_RATES.forEach(r => {
-                const btn = document.getElementById(`rateBtn${r}`);
-                if (!btn) return;
-                const isActive = Math.abs(r - simSecondsPerSec) < 0.5;
-                if (isActive) {
-                    btn.className = "px-2 py-1 rounded-lg text-[10px] font-mono transition bg-blue-600 text-white font-semibold flex flex-col items-center leading-tight shadow";
-                    btn.querySelector('span:last-child').className = "text-[9px] text-blue-100";
-                } else {
-                    btn.className = "px-2 py-1 rounded-lg text-[10px] font-mono transition bg-slate-800 text-slate-300 hover:bg-slate-700 flex flex-col items-center leading-tight";
-                    btn.querySelector('span:last-child').className = "text-[9px] text-slate-400";
-                }
-            });
-
-            // Status Dot
-            const dot = document.getElementById('simStatusDot');
-            if (dot) {
-                dot.className = simSecondsPerSec === 0
-                    ? "w-2.5 h-2.5 rounded-full bg-amber-500 shrink-0"
-                    : "w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse shrink-0";
-            }
+            requestAnimationFrame(tickLoop);
         }
 
-        function onCustomRateSlider(sliderVal) {
-            const v = parseFloat(sliderVal);
-            if (v <= 0) {
-                setSimRate(0, true);
-                return;
-            }
-            // Logarithmic scale from 1 sec to 604,800 secs (7 days per second)
-            const maxLog = Math.log(604800);
-            const rawSecs = Math.exp(((v - 1) / 99) * maxLog);
-            // Snap to clean numbers
-            let snapped = Math.round(rawSecs);
-            if (snapped > 120 && snapped < 3600) snapped = Math.round(snapped / 30) * 30;
-            else if (snapped >= 3600) snapped = Math.round(snapped / 600) * 600;
-            setSimRate(snapped, true);
-        }
+        let pointAccumulator = 0;
+        function stepMarket(simSeconds, forcePushPoint) {
+            state.simTimeMs += simSeconds * 1000;
+            pointAccumulator += simSeconds;
 
-        // High-frequency requestAnimationFrame loop so seconds, minutes, and hours tick smoothly
-        function simulationTickLoop(now) {
-            const realDtSec = Math.min(0.25, (now - lastFrameTime) / 1000);
-            lastFrameTime = now;
+            const daysElapsed = simSeconds / 86400;
+            const yearsElapsed = daysElapsed / 252;
+            const pushNewChartPoint = forcePushPoint || pointAccumulator >= 3600; // Push a chart point every simulated hour or on jump
+            if (pushNewChartPoint) pointAccumulator = 0;
 
-            if (state.simSecondsPerRealSecond > 0 && realDtSec > 0) {
-                const simSecondsElapsed = realDtSec * state.simSecondsPerRealSecond;
-                advanceSimulatedSeconds(simSecondsElapsed, now);
-            }
-
-            requestAnimationFrame(simulationTickLoop);
-        }
-
-        function advanceSimulatedSeconds(simSeconds, nowTimestamp = performance.now()) {
-            // If jumping more than 2 days at once, step day-by-day so candles & history build cleanly
-            if (simSeconds > 86400 * 2) {
-                const totalDays = Math.floor(simSeconds / 86400);
-                for (let i = 0; i < totalDays; i++) {
-                    stepSimulationChunk(86400);
-                }
-                const rem = simSeconds % 86400;
-                if (rem > 0) stepSimulationChunk(rem);
-                updateClockDOM();
-                updateAllUI();
-                return;
-            }
-
-            stepSimulationChunk(simSeconds);
-            updateClockDOM();
-
-            // Throttle full table/chart DOM repaint to ~8 times per second for crisp performance
-            if (nowTimestamp - lastUiRenderTime > 125) {
-                lastUiRenderTime = nowTimestamp;
-                updateAllUI();
-            }
-        }
-
-        function stepSimulationChunk(simSeconds) {
-            const prevDayNumber = Math.floor(state.simDate.getTime() / 86400000);
-            state.simDate = new Date(state.simDate.getTime() + simSeconds * 1000);
-            const newDayNumber = Math.floor(state.simDate.getTime() / 86400000);
-            const crossedNewDay = newDayNumber > prevDayNumber;
-            const dateStr = formatDateShort(state.simDate);
-
-            // Fraction of a trading year elapsed (1 day = 86,400 secs; 252 trading days/yr)
-            const fractionOfDay = simSeconds / 86400;
-            const dtYears = fractionOfDay / 252;
-
-            // 1. Apply continuous interest yield on uninvested cash if enabled (4.5% APY)
-            const yieldEnabled = document.getElementById('cashYieldToggle')?.checked;
-            if (yieldEnabled && state.cash > 0) {
-                state.cash *= (1 + (0.045 / 365) * fractionOfDay);
-            }
-
-            // 2. Roll for random macroeconomic event (~8% chance per simulated day)
-            let activeEvent = null;
-            if (Math.random() < 0.08 * fractionOfDay) {
-                activeEvent = MACRO_EVENTS[Math.floor(Math.random() * MACRO_EVENTS.length)];
-                addNewsItem(activeEvent.title, activeEvent.sentiment);
-            }
-
-            // 3. Common market factor
-            const marketCommonZ = gaussianRandom();
-
-            // 4. Update each asset's live price & current candle (or open a new daily candle if midnight crossed)
             Object.values(state.assets).forEach(asset => {
-                const vol = asset.annualVol * state.volMultiplier;
-                const drift = asset.annualDrift * dtYears;
+                // Standard Geometric Brownian Motion step
+                const z = (Math.random() + Math.random() + Math.random() - 1.5) * 1.15;
+                const pct = (asset.drift - 0.5 * asset.vol * asset.vol) * yearsElapsed + asset.vol * Math.sqrt(yearsElapsed) * z;
+                asset.price = Math.max(0.05, asset.price * Math.exp(pct));
 
-                let eventShock = 0;
-                if (activeEvent) {
-                    if (activeEvent.sector === 'ALL' || activeEvent.sector === asset.sector || activeEvent.sector === asset.type) {
-                        eventShock = activeEvent.impact * (0.7 + Math.random() * 0.6);
-                    }
-                }
-
-                const idioZ = gaussianRandom();
-                const z = 0.35 * marketCommonZ + Math.sqrt(1 - 0.35 * 0.35) * idioZ;
-
-                const oldPrice = asset.price;
-                const returnPct = drift - 0.5 * vol * vol * dtYears + vol * Math.sqrt(dtYears) * z + eventShock;
-                const newPrice = Math.max(0.05, oldPrice * Math.exp(returnPct));
-
-                asset.price = newPrice;
-                asset.lastFlash = newPrice >= oldPrice ? 'up' : 'down';
-
-                const lastCandle = asset.history[asset.history.length - 1];
-                if (crossedNewDay) {
-                    asset.prevClose = lastCandle ? lastCandle.close : oldPrice;
-                    const intradaySwing = Math.abs(gaussianRandom()) * vol * Math.sqrt(dtYears) * 0.4;
-                    asset.history.push({
-                        date: dateStr,
-                        open: oldPrice,
-                        high: Math.max(oldPrice, newPrice) * (1 + intradaySwing),
-                        low: Math.min(oldPrice, newPrice) * Math.max(0.5, 1 - intradaySwing),
-                        close: newPrice
-                    });
-                    if (asset.history.length > 1000) asset.history.shift();
-                } else if (lastCandle) {
-                    lastCandle.close = newPrice;
-                    if (newPrice > lastCandle.high) lastCandle.high = newPrice;
-                    if (newPrice < lastCandle.low) lastCandle.low = newPrice;
+                if (pushNewChartPoint) {
+                    asset.history.push(asset.price);
+                    if (asset.history.length > 120) asset.history.shift();
+                } else {
+                    asset.history[asset.history.length - 1] = asset.price;
                 }
             });
-
-            // 5. Evaluate Pending Limit & Stop-Loss Orders
-            evaluatePendingOrders(dateStr);
-
-            // 6. Update Portfolio Net Worth History
-            const totalNetWorth = calculateNetWorth();
-            if (crossedNewDay || state.portfolioHistory.length === 0) {
-                state.portfolioHistory.push({
-                    date: dateStr,
-                    value: totalNetWorth
-                });
-                if (state.portfolioHistory.length > 1000) state.portfolioHistory.shift();
-            } else {
-                state.portfolioHistory[state.portfolioHistory.length - 1].value = totalNetWorth;
-            }
         }
 
-        function jumpSimTime(secondsToJump) {
-            advanceSimulatedSeconds(secondsToJump);
-            updateAllUI();
-            showToast(`Jumped forward +${formatSimRateText(secondsToJump, false).replace('1 sec = ', '')}!`, 'blue');
-        }
-
-        function updateClockDOM() {
-            const dEl = document.getElementById('simDateDisplay');
-            const tEl = document.getElementById('simTimeDisplay');
-            if (dEl) dEl.textContent = formatDateISO(state.simDate);
-            if (tEl) tEl.textContent = formatTimeHMS(state.simDate);
-        }
-
-        // Standard Normal variate using Box-Muller transform
-        function gaussianRandom() {
-            let u = 0, v = 0;
-            while (u === 0) u = Math.random();
-            while (v === 0) v = Math.random();
-            return Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
-        }
-
-        function triggerCustomCatalyst(catalystCode) {
-            let title = "";
-            let sentiment = "Bullish";
-            if (catalystCode === 'FED_CUT') {
-                title = "BREAKING: Federal Reserve announces emergency 50 bps rate cut!";
-                Object.values(state.assets).forEach(a => {
-                    a.prevClose = a.price;
-                    a.price *= (1 + 0.045 + Math.random() * 0.03);
-                    a.history[a.history.length - 1].close = a.price;
-                    a.history[a.history.length - 1].high = Math.max(a.history[a.history.length - 1].high, a.price);
-                });
-            } else if (catalystCode === 'AI_BOOM') {
-                title = "CATALYST: Next-gen AGI chip cluster efficiency doubles; Tech stocks surge!";
-                Object.values(state.assets).forEach(a => {
-                    const boost = (a.sector.includes('AI') || a.type === 'STOCK') ? (0.06 + Math.random() * 0.05) : 0.02;
-                    a.prevClose = a.price;
-                    a.price *= (1 + boost);
-                    a.history[a.history.length - 1].close = a.price;
-                    a.history[a.history.length - 1].high = Math.max(a.history[a.history.length - 1].high, a.price);
-                });
-            } else if (catalystCode === 'INFLATION_SHOCK') {
-                title = "ALERT: Surprise inflation spike & geopolitical supply shock rattles markets!";
-                sentiment = "Bearish";
-                Object.values(state.assets).forEach(a => {
-                    a.prevClose = a.price;
-                    a.price *= (1 - (0.05 + Math.random() * 0.04));
-                    a.history[a.history.length - 1].close = a.price;
-                    a.history[a.history.length - 1].low = Math.min(a.history[a.history.length - 1].low, a.price);
-                });
-            }
-
-            addNewsItem(title, sentiment);
-            evaluatePendingOrders(formatDateShort(state.simDate));
-            state.portfolioHistory[state.portfolioHistory.length - 1].value = calculateNetWorth();
-            updateAllUI();
-            showToast(title, sentiment === 'Bullish' ? 'emerald' : 'rose');
+        function updateClockText() {
+            const d = new Date(state.simTimeMs);
+            const pad = n => String(n).padStart(2, '0');
+            const str = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`; // Display only through seconds
+            document.getElementById('simClockDisplay').textContent = str;
         }
 
         /********************************************************************
-         * 5. TRADING TERMINAL & ORDER EXECUTION ENGINE
+         * 5. SIMPLE BUY / SELL TRADING ACTIONS
          ********************************************************************/
-        function setOrderSide(side) {
-            state.orderSide = side;
-            const buyBtn = document.getElementById('sideBtnBUY');
-            const sellBtn = document.getElementById('sideBtnSELL');
-            const submitBtn = document.getElementById('submitOrderBtn');
+        window.selectAsset = function(symbol) {
+            state.selected = symbol;
+            renderUI();
+        };
 
-            if (side === 'BUY') {
-                buyBtn.className = "py-2 rounded-lg font-semibold text-xs transition bg-emerald-600 text-white shadow";
-                sellBtn.className = "py-2 rounded-lg font-semibold text-xs transition text-slate-400 hover:text-white";
-                submitBtn.className = "w-full py-3 rounded-xl font-bold text-sm text-white bg-emerald-600 hover:bg-emerald-500 shadow-lg shadow-emerald-600/20 transition flex items-center justify-center space-x-2";
+        window.setTradeSide = function(side) {
+            state.tradeSide = side;
+            document.getElementById('tabBuy').className = side === 'BUY'
+                ? "py-2.5 rounded-xl font-bold text-xs bg-mint text-black transition"
+                : "py-2.5 rounded-xl font-bold text-xs text-slate-400 hover:text-white transition";
+            document.getElementById('tabSell').className = side === 'SELL'
+                ? "py-2.5 rounded-xl font-bold text-xs bg-coral text-white transition"
+                : "py-2.5 rounded-xl font-bold text-xs text-slate-400 hover:text-white transition";
+
+            const btn = document.getElementById('tradeSubmitBtn');
+            btn.className = side === 'BUY'
+                ? "w-full py-3.5 rounded-2xl font-bold text-sm bg-mint hover:opacity-95 text-black shadow-lg shadow-mint/20 transition"
+                : "w-full py-3.5 rounded-2xl font-bold text-sm bg-coral hover:opacity-95 text-white shadow-lg shadow-coral/20 transition";
+
+            window.updateTradePreview();
+        };
+
+        window.setQuickAmount = function(dollars) {
+            document.getElementById('tradeDollarInput').value = dollars;
+            window.updateTradePreview();
+        };
+
+        window.setMaxAmount = function() {
+            const asset = state.assets[state.selected];
+            if (state.tradeSide === 'BUY') {
+                document.getElementById('tradeDollarInput').value = Math.floor(state.cash * 100) / 100;
             } else {
-                sellBtn.className = "py-2 rounded-lg font-semibold text-xs transition bg-rose-600 text-white shadow";
-                buyBtn.className = "py-2 rounded-lg font-semibold text-xs transition text-slate-400 hover:text-white";
-                submitBtn.className = "w-full py-3 rounded-xl font-bold text-sm text-white bg-rose-600 hover:bg-rose-500 shadow-lg shadow-rose-600/20 transition flex items-center justify-center space-x-2";
+                const owned = state.holdings[asset.symbol]?.qty || 0;
+                document.getElementById('tradeDollarInput').value = Math.floor(owned * asset.price * 100) / 100;
             }
-            updateOrderEstimate();
-        }
+            window.updateTradePreview();
+        };
 
-        function setOrderType(type) {
-            state.orderType = type;
-            ['MARKET', 'LIMIT', 'STOP'].forEach(t => {
-                const btn = document.getElementById(`typeBtn${t}`);
-                if (t === type) {
-                    btn.className = "py-1.5 rounded-lg border border-blue-500 bg-blue-600/20 text-white font-medium";
-                } else {
-                    btn.className = "py-1.5 rounded-lg border border-slate-800 bg-slate-950 text-slate-400 hover:text-white";
-                }
-            });
+        window.updateTradePreview = function() {
+            const asset = state.assets[state.selected];
+            const dollars = Math.max(0, parseFloat(document.getElementById('tradeDollarInput').value) || 0);
+            const units = dollars / asset.price;
+            document.getElementById('estUnitsDisplay').textContent = `${units.toFixed(4)} ${asset.symbol}`;
+            document.getElementById('tradeSubmitBtn').textContent = `${state.tradeSide === 'BUY' ? 'Buy' : 'Sell'} ${asset.symbol}`;
+        };
 
-            const limitBox = document.getElementById('limitPriceContainer');
-            const limitLabel = document.getElementById('limitPriceLabel');
-            const triggerInput = document.getElementById('orderTriggerPrice');
-            const asset = state.assets[state.selectedSymbol];
-
-            if (type === 'MARKET') {
-                limitBox.classList.add('hidden');
-            } else {
-                limitBox.classList.remove('hidden');
-                limitLabel.textContent = type === 'LIMIT' ? 'Limit Trigger Price ($)' : 'Stop-Loss Trigger Price ($)';
-                const defaultMult = type === 'LIMIT' ? (state.orderSide === 'BUY' ? 0.97 : 1.05) : 0.94;
-                triggerInput.value = formatPriceRaw(asset.price * defaultMult);
-            }
-            updateOrderEstimate();
-        }
-
-        function setOrderFraction(fraction) {
-            const asset = state.assets[state.selectedSymbol];
-            const qtyInput = document.getElementById('orderQtyInput');
-
-            if (state.orderSide === 'BUY') {
-                const maxUnits = (state.cash * fraction) / asset.price;
-                const decimals = asset.type === 'CRYPTO' ? 4 : 2;
-                qtyInput.value = Math.max(0, parseFloat(maxUnits.toFixed(decimals)));
-            } else {
-                const holding = state.holdings[asset.symbol];
-                const owned = holding ? holding.qty : 0;
-                const decimals = asset.type === 'CRYPTO' ? 4 : 2;
-                qtyInput.value = Math.max(0, parseFloat((owned * fraction).toFixed(decimals)));
-            }
-            updateOrderEstimate();
-        }
-
-        function updateOrderEstimate() {
-            const asset = state.assets[state.selectedSymbol];
-            if (!asset) return;
-
-            const qty = Math.max(0, parseFloat(document.getElementById('orderQtyInput').value) || 0);
-            const execPrice = state.orderType === 'MARKET'
-                ? asset.price
-                : (parseFloat(document.getElementById('orderTriggerPrice').value) || asset.price);
-
-            const total = qty * execPrice;
-            const holding = state.holdings[asset.symbol]?.qty || 0;
-            const maxBuy = state.cash / asset.price;
-
-            document.getElementById('maxBuyableHint').textContent = state.orderSide === 'BUY'
-                ? `Max Buy: ${maxBuy.toFixed(2)}`
-                : `Owned: ${holding.toFixed(4)}`;
-
-            document.getElementById('estExecPrice').textContent = formatCurrency(execPrice);
-            document.getElementById('estTotalCost').textContent = formatCurrency(total);
-
-            const remCash = state.orderSide === 'BUY' ? state.cash - total : state.cash + total;
-            const remEl = document.getElementById('estRemainingCash');
-            remEl.textContent = formatCurrency(remCash);
-            remEl.className = remCash >= 0 ? "font-mono text-emerald-400" : "font-mono text-rose-400";
-
-            const actionLabel = state.orderType === 'MARKET' ? state.orderSide : `PLACE ${state.orderType} ${state.orderSide}`;
-            document.getElementById('submitOrderText').textContent = `${actionLabel} ${asset.symbol}`;
-        }
-
-        function submitTradeOrder() {
-            const asset = state.assets[state.selectedSymbol];
-            const qty = parseFloat(document.getElementById('orderQtyInput').value);
-
-            if (!qty || qty <= 0) {
-                showToast("Please enter a valid quantity greater than 0.", "rose");
+        window.executeTrade = function() {
+            const asset = state.assets[state.selected];
+            const dollars = parseFloat(document.getElementById('tradeDollarInput').value);
+            if (!dollars || dollars <= 0) {
+                toast('Enter a valid dollar amount.', 'coral');
                 return;
             }
 
-            if (state.orderType === 'MARKET') {
-                executeOrderImmediate(state.orderSide, asset.symbol, qty, asset.price, 'MARKET');
-            } else {
-                const triggerPrice = parseFloat(document.getElementById('orderTriggerPrice').value);
-                if (!triggerPrice || triggerPrice <= 0) {
-                    showToast("Please enter a valid trigger price.", "rose");
+            if (state.tradeSide === 'BUY') {
+                if (dollars > state.cash + 0.01) {
+                    toast('Not enough cash! Click +$10k Cash or Max.', 'coral');
                     return;
                 }
-                if (state.orderSide === 'SELL') {
-                    const owned = state.holdings[asset.symbol]?.qty || 0;
-                    if (qty > owned + 1e-6) {
-                        showToast(`Insufficient ${asset.symbol} shares to place sell order.`, "rose");
-                        return;
-                    }
-                }
-                state.activeOrders.push({
-                    id: Date.now() + Math.random(),
-                    symbol: asset.symbol,
-                    side: state.orderSide,
-                    type: state.orderType,
-                    qty: qty,
-                    triggerPrice: triggerPrice
-                });
-                showToast(`${state.orderType} ${state.orderSide} order queued for ${qty} ${asset.symbol} @ ${formatCurrency(triggerPrice)}`, "blue");
-                switchBottomTab('ORDERS');
-                updateAllUI();
-            }
-        }
+                const spend = Math.min(state.cash, dollars);
+                const units = spend / asset.price;
+                state.cash -= spend;
 
-        function executeOrderImmediate(side, symbol, qty, execPrice, orderTag = 'MARKET') {
-            const asset = state.assets[symbol];
-            const totalCost = qty * execPrice;
-
-            if (side === 'BUY') {
-                if (totalCost > state.cash + 0.01) {
-                    showToast(`Insufficient buying power! Need ${formatCurrency(totalCost)}.`, "rose");
-                    return false;
+                if (!state.holdings[asset.symbol]) {
+                    state.holdings[asset.symbol] = { qty: 0, avgCost: 0 };
                 }
-                state.cash = Math.max(0, state.cash - totalCost);
-                if (!state.holdings[symbol]) {
-                    state.holdings[symbol] = { qty: 0, avgCost: 0 };
-                }
-                const currentHolding = state.holdings[symbol];
-                const newTotalQty = currentHolding.qty + qty;
-                currentHolding.avgCost = ((currentHolding.qty * currentHolding.avgCost) + totalCost) / newTotalQty;
-                currentHolding.qty = newTotalQty;
+                const h = state.holdings[asset.symbol];
+                const totalQty = h.qty + units;
+                h.avgCost = ((h.qty * h.avgCost) + spend) / totalQty;
+                h.qty = totalQty;
 
-                showToast(`Bought ${qty.toFixed(2)} ${symbol} @ ${formatCurrency(execPrice)}`, "emerald");
+                toast(`Bought ${fmtMoney(spend)} of ${asset.symbol}!`, 'mint');
             } else {
-                const currentHolding = state.holdings[symbol];
-                if (!currentHolding || currentHolding.qty + 1e-6 < qty) {
-                    showToast(`You don't own enough ${symbol} to sell!`, "rose");
-                    return false;
+                const h = state.holdings[asset.symbol];
+                const ownedVal = (h?.qty || 0) * asset.price;
+                if (!h || ownedVal < 0.01) {
+                    toast(`You don't own any ${asset.symbol} to sell.`, 'coral');
+                    return;
                 }
-                const actualQty = Math.min(currentHolding.qty, qty);
-                const proceeds = actualQty * execPrice;
-                state.cash += proceeds;
-                currentHolding.qty -= actualQty;
+                const sellDollars = Math.min(ownedVal, dollars);
+                const sellUnits = sellDollars / asset.price;
+                h.qty -= sellUnits;
+                state.cash += sellDollars;
 
-                if (currentHolding.qty <= 1e-5) {
-                    delete state.holdings[symbol];
-                }
-                showToast(`Sold ${actualQty.toFixed(2)} ${symbol} @ ${formatCurrency(execPrice)}`, "amber");
+                if (h.qty <= 1e-6) delete state.holdings[asset.symbol];
+                toast(`Sold ${fmtMoney(sellDollars)} of ${asset.symbol}!`, 'mint');
             }
 
-            state.tradeHistory.unshift({
-                date: formatDateShort(state.simDate),
-                side: `${side} (${orderTag})`,
-                symbol: symbol,
-                qty: qty,
-                price: execPrice,
-                total: totalCost
-            });
+            renderUI();
+            saveCloudPortfolio();
+        };
 
-            updateAllUI();
-            return true;
-        }
+        window.addFreeCash = function(amt) {
+            state.cash += amt;
+            state.initialDeposit += amt;
+            renderUI();
+            saveCloudPortfolio();
+            toast(`Added +${fmtMoney(amt)} cash!`, 'mint');
+        };
 
-        function evaluatePendingOrders(dateStr) {
-            if (state.activeOrders.length === 0) return;
-
-            const remaining = [];
-            state.activeOrders.forEach(order => {
-                const asset = state.assets[order.symbol];
-                const candle = asset.history[asset.history.length - 1];
-                let triggered = false;
-
-                if (order.type === 'LIMIT') {
-                    if (order.side === 'BUY' && candle.low <= order.triggerPrice) triggered = true;
-                    if (order.side === 'SELL' && candle.high >= order.triggerPrice) triggered = true;
-                } else if (order.type === 'STOP') {
-                    if (order.side === 'SELL' && candle.low <= order.triggerPrice) triggered = true;
-                    if (order.side === 'BUY' && candle.high >= order.triggerPrice) triggered = true;
-                }
-
-                if (triggered) {
-                    const ok = executeOrderImmediate(order.side, order.symbol, order.qty, order.triggerPrice, order.type);
-                    if (ok) {
-                        addNewsItem(`Order Triggered: ${order.type} ${order.side} ${order.qty} ${order.symbol} @ ${formatCurrency(order.triggerPrice)}`, 'Neutral');
-                    }
-                } else {
-                    remaining.push(order);
-                }
-            });
-            state.activeOrders = remaining;
-        }
-
-        function cancelPendingOrder(orderId) {
-            state.activeOrders = state.activeOrders.filter(o => o.id !== orderId);
-            updateAllUI();
-            showToast("Pending order cancelled.", "slate");
-        }
+        window.resetAccount = function() {
+            state.cash = INITIAL_CASH;
+            state.initialDeposit = INITIAL_CASH;
+            state.holdings = {};
+            renderUI();
+            saveCloudPortfolio();
+            toast('Portfolio reset to $100,000.', 'mint');
+        };
 
         /********************************************************************
-         * 6. HTML5 CANVAS INTERACTIVE CHARTING ENGINE (LINE & CANDLESTICK)
+         * 6. UI RENDERING & CLEAN LINE CHART
          ********************************************************************/
-        function setupCanvasEvents() {
-            const canvas = document.getElementById('marketChart');
-            window.addEventListener('resize', () => drawChart());
+        function renderUI() {
+            updateClockText();
 
-            canvas.addEventListener('mousemove', (e) => {
-                const rect = canvas.getBoundingClientRect();
-                const mouseX = e.clientX - rect.left;
-                const series = getActiveChartSeries();
-                if (!series || series.length === 0) return;
-
-                const padLeft = 12, padRight = 65;
-                const plotWidth = rect.width - padLeft - padRight;
-                const ratio = Math.max(0, Math.min(1, (mouseX - padLeft) / plotWidth));
-                hoverIndex = Math.round(ratio * (series.length - 1));
-                drawChart();
+            // 1. Net Worth & Profit
+            let investedVal = 0;
+            Object.entries(state.holdings).forEach(([sym, h]) => {
+                if (state.assets[sym]) investedVal += h.qty * state.assets[sym].price;
             });
+            const netWorth = state.cash + investedVal;
+            const profit = netWorth - state.initialDeposit;
+            const profitPct = (profit / state.initialDeposit) * 100;
+            const isUp = profit >= 0;
 
-            canvas.addEventListener('mouseleave', () => {
-                hoverIndex = null;
-                document.getElementById('chartTooltip').classList.add('hidden');
-                drawChart();
-            });
+            document.getElementById('netWorthDisplay').textContent = fmtMoney(netWorth);
+            document.getElementById('cashDisplay').textContent = fmtMoney(state.cash);
+
+            const profEl = document.getElementById('profitDisplay');
+            profEl.textContent = `${isUp ? '+' : ''}${fmtMoney(profit)} (${isUp ? '+' : ''}${profitPct.toFixed(2)}%) All Time`;
+            profEl.className = `text-xs font-mono font-semibold mt-1 ${isUp ? 'text-mint' : 'text-coral'}`;
+
+            // 2. Render 6 Asset Pills
+            const pillsRow = document.getElementById('assetPillsRow');
+            pillsRow.innerHTML = Object.values(state.assets).map(a => {
+                const changePct = ((a.price - a.startPrice) / a.startPrice) * 100;
+                const up = changePct >= 0;
+                const active = a.symbol === state.selected;
+                return `
+                <button onclick="window.selectAsset('${a.symbol}')" 
+                    class="p-3 rounded-2xl border text-left transition ${active ? 'bg-slate-800/90 border-mint shadow-md' : 'bg-carddark border-slate-800/80 hover:border-slate-700'}">
+                    <div class="flex items-center justify-between">
+                        <span class="font-bold text-xs text-white">${a.symbol}</span>
+                        <span class="text-[10px] font-mono ${up ? 'text-mint' : 'text-coral'}">${up ? '+' : ''}${changePct.toFixed(1)}%</span>
+                    </div>
+                    <div class="font-mono font-semibold text-sm text-white mt-1 truncate">${fmtMoney(a.price)}</div>
+                </button>`;
+            }).join('');
+
+            // 3. Selected Asset Header
+            const activeAsset = state.assets[state.selected];
+            const activePct = ((activeAsset.price - activeAsset.startPrice) / activeAsset.startPrice) * 100;
+            document.getElementById('chartAssetName').textContent = activeAsset.name;
+            document.getElementById('chartAssetTicker').textContent = activeAsset.symbol;
+            document.getElementById('chartAssetPrice').textContent = fmtMoney(activeAsset.price);
+
+            const chgEl = document.getElementById('chartAssetChange');
+            chgEl.textContent = `${activePct >= 0 ? '+' : ''}${activePct.toFixed(2)}%`;
+            chgEl.className = `text-xs font-mono font-semibold ${activePct >= 0 ? 'text-mint' : 'text-coral'}`;
+
+            const ownedQty = state.holdings[activeAsset.symbol]?.qty || 0;
+            document.getElementById('chartOwnedBadge').innerHTML = `You own: <span class="text-white font-semibold">${ownedQty.toFixed(4)} ${activeAsset.symbol}</span> (${fmtMoney(ownedQty * activeAsset.price)})`;
+
+            window.updateTradePreview();
+
+            // 4. Render Holdings List
+            const hList = document.getElementById('holdingsList');
+            const entries = Object.entries(state.holdings);
+            if (entries.length === 0) {
+                hList.innerHTML = `<div class="text-xs text-slate-500 py-8 text-center">No investments yet. Pick an asset and click Buy!</div>`;
+            } else {
+                hList.innerHTML = entries.map(([sym, h]) => {
+                    const a = state.assets[sym];
+                    const val = h.qty * a.price;
+                    const cost = h.qty * h.avgCost;
+                    const pnl = val - cost;
+                    const pnlPct = (pnl / cost) * 100;
+                    const pos = pnl >= 0;
+                    return `
+                    <div onclick="window.selectAsset('${sym}')" class="p-3.5 rounded-2xl bg-bgdark border border-slate-800/80 hover:border-slate-700 flex items-center justify-between cursor-pointer transition">
+                        <div>
+                            <div class="font-bold text-sm text-white">${sym}</div>
+                            <div class="text-[11px] font-mono text-slate-400">${h.qty.toFixed(4)} units</div>
+                        </div>
+                        <div class="text-right font-mono">
+                            <div class="text-sm font-bold text-white">${fmtMoney(val)}</div>
+                            <div class="text-[11px] ${pos ? 'text-mint' : 'text-coral'}">
+                                ${pos ? '+' : ''}${fmtMoney(pnl)} (${pos ? '+' : ''}${pnlPct.toFixed(1)}%)
+                            </div>
+                        </div>
+                    </div>`;
+                }).join('');
+            }
+
+            drawChart();
         }
 
-        function getActiveChartSeries() {
-            if (state.chartViewMode === 'PORTFOLIO') {
-                return state.portfolioHistory.slice(-state.chartTimeframe);
-            } else {
-                const asset = state.assets[state.selectedSymbol];
-                return asset ? asset.history.slice(-state.chartTimeframe) : [];
-            }
+        function setupChartHover() {
+            const canvas = document.getElementById('priceChart');
+            window.addEventListener('resize', drawChart);
+            canvas.addEventListener('mousemove', (e) => {
+                const rect = canvas.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const hist = state.assets[state.selected].history;
+                const idx = Math.round((x / rect.width) * (hist.length - 1));
+                hoverIdx = Math.max(0, Math.min(hist.length - 1, idx));
+                drawChart();
+            });
+            canvas.addEventListener('mouseleave', () => {
+                hoverIdx = null;
+                document.getElementById('chartHoverBox').classList.add('hidden');
+                drawChart();
+            });
         }
 
         function drawChart() {
-            const canvas = document.getElementById('marketChart');
+            const canvas = document.getElementById('priceChart');
             if (!canvas) return;
             const ctx = canvas.getContext('2d');
-
-            // Handle High-DPI Retina displays
             const dpr = window.devicePixelRatio || 1;
             const rect = canvas.getBoundingClientRect();
             canvas.width = rect.width * dpr;
             canvas.height = rect.height * dpr;
             ctx.scale(dpr, dpr);
 
-            const width = rect.width;
-            const height = rect.height;
-            ctx.clearRect(0, 0, width, height);
+            const W = rect.width;
+            const H = rect.height;
+            ctx.clearRect(0, 0, W, H);
 
-            const series = getActiveChartSeries();
-            if (series.length < 2) return;
+            const asset = state.assets[state.selected];
+            const data = asset.history;
+            if (data.length < 2) return;
 
-            const padTop = 20, padBottom = 28, padLeft = 12, padRight = 68;
-            const plotW = width - padLeft - padRight;
-            const plotH = height - padTop - padBottom;
+            let min = Math.min(...data);
+            let max = Math.max(...data);
+            if (max === min) { max *= 1.02; min *= 0.98; }
+            const padY = 18;
+            const plotH = H - padY * 2;
 
-            // Compute min & max values
-            let minVal = Infinity, maxVal = -Infinity;
-            series.forEach(pt => {
-                if (state.chartViewMode === 'PORTFOLIO') {
-                    if (pt.value < minVal) minVal = pt.value;
-                    if (pt.value > maxVal) maxVal = pt.value;
-                } else {
-                    const low = state.chartStyle === 'CANDLE' ? pt.low : pt.close;
-                    const high = state.chartStyle === 'CANDLE' ? pt.high : pt.close;
-                    if (low < minVal) minVal = low;
-                    if (high > maxVal) maxVal = high;
-                }
+            const getX = i => (i / (data.length - 1)) * W;
+            const getY = v => padY + plotH - ((v - min) / (max - min)) * plotH;
+
+            const isUp = data[data.length - 1] >= data[0];
+            const color = isUp ? '#00d09c' : '#ff5252';
+
+            // Smooth Price Line
+            ctx.beginPath();
+            data.forEach((v, i) => {
+                const x = getX(i), y = getY(v);
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
             });
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 2.5;
+            ctx.stroke();
 
-            if (maxVal === minVal) {
-                maxVal *= 1.05;
-                minVal *= 0.95;
-            }
-            const valRange = maxVal - minVal;
+            // Subtle Area Gradient
+            const grad = ctx.createLinearGradient(0, 0, 0, H);
+            grad.addColorStop(0, isUp ? 'rgba(0, 208, 156, 0.22)' : 'rgba(255, 82, 82, 0.22)');
+            grad.addColorStop(1, 'rgba(11, 14, 20, 0)');
+            ctx.lineTo(W, H);
+            ctx.lineTo(0, H);
+            ctx.closePath();
+            ctx.fillStyle = grad;
+            ctx.fill();
 
-            // Helper coordinates
-            const getX = (i) => padLeft + (i / (series.length - 1)) * plotW;
-            const getY = (val) => padTop + plotH - ((val - minVal) / valRange) * plotH;
-
-            // Draw Horizontal Grid Lines & Y-Axis Labels
-            ctx.strokeStyle = 'rgba(51, 65, 85, 0.35)';
-            ctx.lineWidth = 1;
-            ctx.font = '10px "JetBrains Mono", monospace';
-            ctx.fillStyle = '#64748b';
-            ctx.textAlign = 'left';
-
-            const gridSteps = 4;
-            for (let i = 0; i <= gridSteps; i++) {
-                const yVal = minVal + (valRange * (i / gridSteps));
-                const y = getY(yVal);
-                ctx.beginPath();
-                ctx.moveTo(padLeft, y);
-                ctx.lineTo(width - padRight, y);
-                ctx.stroke();
-
-                ctx.fillText(formatCompactPrice(yVal), width - padRight + 6, y + 3);
-            }
-
-            // Determine overall trend color
-            const firstVal = state.chartViewMode === 'PORTFOLIO' ? series[0].value : series[0].close;
-            const lastVal = state.chartViewMode === 'PORTFOLIO' ? series[series.length - 1].value : series[series.length - 1].close;
-            const isPositive = lastVal >= firstVal;
-            const mainColor = isPositive ? '#10b981' : '#f43f5e';
-
-            // Draw Series (Line Area or Candlesticks)
-            if (state.chartViewMode === 'PORTFOLIO' || state.chartStyle === 'LINE') {
-                ctx.beginPath();
-                series.forEach((pt, idx) => {
-                    const val = state.chartViewMode === 'PORTFOLIO' ? pt.value : pt.close;
-                    const x = getX(idx);
-                    const y = getY(val);
-                    if (idx === 0) ctx.moveTo(x, y);
-                    else ctx.lineTo(x, y);
-                });
-                ctx.strokeStyle = mainColor;
-                ctx.lineWidth = 2.2;
-                ctx.stroke();
-
-                // Gradient Fill under line
-                const grad = ctx.createLinearGradient(0, padTop, 0, padTop + plotH);
-                grad.addColorStop(0, isPositive ? 'rgba(16, 185, 129, 0.28)' : 'rgba(244, 63, 94, 0.28)');
-                grad.addColorStop(1, 'rgba(15, 23, 42, 0.0)');
-                ctx.lineTo(getX(series.length - 1), padTop + plotH);
-                ctx.lineTo(getX(0), padTop + plotH);
-                ctx.closePath();
-                ctx.fillStyle = grad;
-                ctx.fill();
-            } else {
-                // Candlestick Chart
-                const candleWidth = Math.max(2, Math.min(12, (plotW / series.length) * 0.65));
-                series.forEach((pt, idx) => {
-                    const x = getX(idx);
-                    const isBull = pt.close >= pt.open;
-                    ctx.strokeStyle = isBull ? '#10b981' : '#f43f5e';
-                    ctx.fillStyle = isBull ? '#10b981' : '#f43f5e';
-
-                    // High-Low Wick
-                    ctx.beginPath();
-                    ctx.moveTo(x, getY(pt.high));
-                    ctx.lineTo(x, getY(pt.low));
-                    ctx.lineWidth = 1;
-                    ctx.stroke();
-
-                    // Open-Close Body
-                    const yOpen = getY(pt.open);
-                    const yClose = getY(pt.close);
-                    const topY = Math.min(yOpen, yClose);
-                    const bodyH = Math.max(1.5, Math.abs(yClose - yOpen));
-                    ctx.fillRect(x - candleWidth / 2, topY, candleWidth, bodyH);
-                });
-            }
-
-            // Draw user's average buy cost basis line if holding this asset
-            if (state.chartViewMode === 'PRICE') {
-                const holding = state.holdings[state.selectedSymbol];
-                if (holding && holding.qty > 0 && holding.avgCost >= minVal && holding.avgCost <= maxVal) {
-                    const costY = getY(holding.avgCost);
-                    ctx.save();
-                    ctx.setLineDash([4, 4]);
-                    ctx.strokeStyle = '#3b82f6';
-                    ctx.lineWidth = 1.2;
-                    ctx.beginPath();
-                    ctx.moveTo(padLeft, costY);
-                    ctx.lineTo(width - padRight, costY);
-                    ctx.stroke();
-                    ctx.fillStyle = '#3b82f6';
-                    ctx.fillText('Avg Cost', padLeft + 6, costY - 5);
-                    ctx.restore();
-                }
-            }
-
-            // Draw X-Axis Date Labels
-            ctx.fillStyle = '#64748b';
-            ctx.textAlign = 'center';
-            const dateSteps = 4;
-            for (let i = 0; i <= dateSteps; i++) {
-                const idx = Math.floor((i / dateSteps) * (series.length - 1));
-                const pt = series[idx];
-                if (pt) {
-                    ctx.fillText(pt.date, getX(idx), height - 8);
-                }
-            }
-
-            // Draw Hover Crosshair & Tooltip
-            if (hoverIndex !== null && series[hoverIndex]) {
-                const pt = series[hoverIndex];
-                const x = getX(hoverIndex);
-                const val = state.chartViewMode === 'PORTFOLIO' ? pt.value : pt.close;
-                const y = getY(val);
-
-                ctx.save();
-                ctx.setLineDash([3, 3]);
-                ctx.strokeStyle = '#94a3b8';
-                ctx.beginPath();
-                ctx.moveTo(x, padTop);
-                ctx.lineTo(x, padTop + plotH);
-                ctx.stroke();
-
-                ctx.beginPath();
-                ctx.arc(x, y, 4, 0, Math.PI * 2);
-                ctx.fillStyle = '#ffffff';
-                ctx.fill();
-                ctx.restore();
-
-                const tooltip = document.getElementById('chartTooltip');
-                tooltip.classList.remove('hidden');
-                if (state.chartViewMode === 'PORTFOLIO') {
-                    tooltip.innerHTML = `<span class="text-slate-400">${pt.date}</span> • <span class="text-white font-bold">Net Worth: ${formatCurrency(pt.value)}</span>`;
-                } else if (state.chartStyle === 'CANDLE') {
-                    tooltip.innerHTML = `<span class="text-slate-400">${pt.date}</span> | O: ${formatCurrency(pt.open)} H: ${formatCurrency(pt.high)} L: ${formatCurrency(pt.low)} C: <span class="text-white font-bold">${formatCurrency(pt.close)}</span>`;
-                } else {
-                    tooltip.innerHTML = `<span class="text-slate-400">${pt.date}</span> • <span class="text-white font-bold">${state.selectedSymbol}: ${formatCurrency(pt.close)}</span>`;
-                }
-            }
-        }
-
-        function setChartViewMode(mode) {
-            state.chartViewMode = mode;
-            document.getElementById('viewModePrice').className = mode === 'PRICE'
-                ? "px-2.5 py-1 rounded-lg bg-blue-600 text-white font-medium transition"
-                : "px-2.5 py-1 rounded-lg text-slate-400 hover:text-white transition";
-            document.getElementById('viewModePortfolio').className = mode === 'PORTFOLIO'
-                ? "px-2.5 py-1 rounded-lg bg-blue-600 text-white font-medium transition"
-                : "px-2.5 py-1 rounded-lg text-slate-400 hover:text-white transition";
-            drawChart();
-        }
-
-        function setChartStyle(style) {
-            state.chartStyle = style;
-            document.getElementById('styleBtnLine').className = style === 'LINE'
-                ? "px-2 py-1 rounded-lg bg-slate-800 text-white transition"
-                : "px-2 py-1 rounded-lg text-slate-400 hover:text-white transition";
-            document.getElementById('styleBtnCandle').className = style === 'CANDLE'
-                ? "px-2 py-1 rounded-lg bg-slate-800 text-white transition"
-                : "px-2 py-1 rounded-lg text-slate-400 hover:text-white transition";
-            drawChart();
-        }
-
-        function setChartTimeframe(days) {
-            state.chartTimeframe = days;
-            [30, 90, 365, 9999].forEach(tf => {
-                const btn = document.getElementById(`tfBtn${tf}`);
-                btn.className = tf === days
-                    ? "px-2 py-1 rounded-lg bg-slate-800 text-white font-semibold"
-                    : "px-2 py-1 rounded-lg text-slate-400 hover:text-white";
-            });
-            updateSelectedAssetHeader();
-            drawChart();
-        }
-
-        /********************************************************************
-         * 7. UI RENDERING & PORTFOLIO CALCULATIONS
-         ********************************************************************/
-        function calculateNetWorth() {
-            let holdingsVal = 0;
-            Object.entries(state.holdings).forEach(([sym, h]) => {
-                const asset = state.assets[sym];
-                if (asset) holdingsVal += h.qty * asset.price;
-            });
-            return state.cash + holdingsVal;
-        }
-
-        function updateAllUI() {
-            // 1. Update Simulated Date & HH:MM:SS Clock + Top KPIs
-            updateClockDOM();
-            const netWorth = calculateNetWorth();
-            const totalReturn = netWorth - state.initialDeposit;
-            const returnPct = (totalReturn / state.initialDeposit) * 100;
-
-            document.getElementById('kpiNetWorth').textContent = formatCurrency(netWorth);
-            document.getElementById('kpiCash').textContent = formatCurrency(state.cash);
-
-            const retEl = document.getElementById('kpiTotalReturn');
-            const sign = totalReturn >= 0 ? '+' : '';
-            retEl.textContent = `${sign}${formatCurrency(totalReturn)} (${sign}${returnPct.toFixed(2)}%)`;
-            retEl.className = `font-mono text-sm sm:text-base font-semibold ${totalReturn >= 0 ? 'text-emerald-400' : 'text-rose-400'}`;
-
-            // 2. Render Watchlist, Selected Asset Header, Order Box, and Tables
-            renderWatchlist();
-            updateSelectedAssetHeader();
-            updateOrderEstimate();
-            renderBottomTables();
-            drawChart();
-        }
-
-        function selectAsset(symbol) {
-            state.selectedSymbol = symbol;
-            document.getElementById('orderTerminalSymbol').textContent = symbol;
-            if (state.orderType !== 'MARKET') {
-                setOrderType(state.orderType);
-            }
-            updateAllUI();
-        }
-
-        function filterMarketList(filter) {
-            state.marketFilter = filter;
-            ['ALL', 'STOCK', 'CRYPTO'].forEach(f => {
-                const btn = document.getElementById(`filter${f}`);
-                btn.className = f === filter
-                    ? "px-2 py-0.5 rounded bg-blue-600 text-white font-medium"
-                    : "px-2 py-0.5 rounded bg-slate-800 text-slate-400 hover:text-white";
-            });
-            renderWatchlist();
-        }
-
-        function renderWatchlist() {
-            const container = document.getElementById('watchlistContainer');
-            const query = (document.getElementById('tickerSearch').value || '').toUpperCase();
-            let html = '';
-
-            Object.values(state.assets).forEach(asset => {
-                if (state.marketFilter !== 'ALL' && asset.type !== state.marketFilter) return;
-                if (query && !asset.symbol.includes(query) && !asset.name.toUpperCase().includes(query)) return;
-
-                const dayChangePct = ((asset.price - asset.prevClose) / asset.prevClose) * 100;
-                const isUp = dayChangePct >= 0;
-                const isSelected = asset.symbol === state.selectedSymbol;
-                const holdingQty = state.holdings[asset.symbol]?.qty || 0;
-                const flashClass = asset.lastFlash === 'up' ? 'flash-up' : (asset.lastFlash === 'down' ? 'flash-down' : '');
-                asset.lastFlash = null;
-
-                html += `
-                <div onclick="selectAsset('${asset.symbol}')" 
-                     class="p-3 flex items-center justify-between cursor-pointer transition ${flashClass} ${isSelected ? 'bg-blue-600/15 border-l-4 border-l-blue-500' : 'hover:bg-slate-800/50'}">
-                    <div class="flex items-center space-x-2.5">
-                        <div class="w-8 h-8 rounded-lg ${asset.type === 'CRYPTO' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' : 'bg-slate-800 text-slate-200'} flex items-center justify-center font-mono font-bold text-xs">
-                            ${asset.symbol.slice(0, 4)}
-                        </div>
-                        <div>
-                            <div class="flex items-center space-x-1.5">
-                                <span class="font-bold text-xs text-white">${asset.symbol}</span>
-                                ${holdingQty > 0 ? `<span class="px-1 py-0.2 text-[9px] font-mono bg-blue-500/20 text-blue-300 rounded">${holdingQty.toFixed(1)}</span>` : ''}
-                            </div>
-                            <div class="text-[11px] text-slate-400 truncate max-w-[115px]">${asset.name}</div>
-                        </div>
-                    </div>
-                    <div class="text-right font-mono">
-                        <div class="text-xs font-semibold text-white">${formatCurrency(asset.price)}</div>
-                        <div class="text-[11px] ${isUp ? 'text-emerald-400' : 'text-rose-400'}">
-                            ${isUp ? '+' : ''}${dayChangePct.toFixed(2)}%
-                        </div>
-                    </div>
-                </div>`;
-            });
-
-            container.innerHTML = html;
-        }
-
-        function updateSelectedAssetHeader() {
-            const asset = state.assets[state.selectedSymbol];
-            if (!asset) return;
-
-            document.getElementById('activeAssetBadge').textContent = asset.symbol;
-            document.getElementById('activeAssetName').textContent = asset.name;
-            document.getElementById('activeAssetSector').textContent = asset.sector;
-            document.getElementById('activeAssetPrice').textContent = formatCurrency(asset.price);
-
-            const slice = asset.history.slice(-state.chartTimeframe);
-            const startP = slice.length > 0 ? slice[0].close : asset.prevClose;
-            const periodPct = ((asset.price - startP) / startP) * 100;
-            const isUp = periodPct >= 0;
-
-            const changeEl = document.getElementById('activeAssetChange');
-            changeEl.textContent = `${isUp ? '+' : ''}${periodPct.toFixed(2)}% (${state.chartTimeframe === 9999 ? 'ALL' : state.chartTimeframe + 'D'})`;
-            changeEl.className = `font-mono text-xs sm:text-sm font-semibold ${isUp ? 'text-emerald-400' : 'text-rose-400'}`;
-
-            // Update Period High / Low / Volatility / Position
-            let pHigh = -Infinity, pLow = Infinity;
-            slice.forEach(c => {
-                if (c.high > pHigh) pHigh = c.high;
-                if (c.low < pLow) pLow = c.low;
-            });
-
-            document.getElementById('statHigh').textContent = formatCurrency(pHigh);
-            document.getElementById('statLow').textContent = formatCurrency(pLow);
-            document.getElementById('statVol').textContent = `${(asset.annualVol * state.volMultiplier * 100).toFixed(1)}%`;
-
+            // Average Cost Line if owned
             const holding = state.holdings[asset.symbol];
-            if (holding && holding.qty > 0) {
-                const val = holding.qty * asset.price;
-                document.getElementById('statPosition').textContent = `${holding.qty.toFixed(2)} (${formatCurrency(val)})`;
-            } else {
-                document.getElementById('statPosition').textContent = `None ($0.00)`;
+            if (holding && holding.avgCost >= min && holding.avgCost <= max) {
+                const cy = getY(holding.avgCost);
+                ctx.save();
+                ctx.setLineDash([4, 4]);
+                ctx.strokeStyle = '#64748b';
+                ctx.beginPath();
+                ctx.moveTo(0, cy);
+                ctx.lineTo(W, cy);
+                ctx.stroke();
+                ctx.fillStyle = '#94a3b8';
+                ctx.font = '10px "JetBrains Mono"';
+                ctx.fillText(`Your Avg: ${fmtMoney(holding.avgCost)}`, 8, cy - 6);
+                ctx.restore();
+            }
+
+            // Hover Crosshair
+            if (hoverIdx !== null && data[hoverIdx] !== undefined) {
+                const v = data[hoverIdx];
+                const x = getX(hoverIdx);
+                const y = getY(v);
+
+                ctx.strokeStyle = '#475569';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, H);
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.arc(x, y, 4.5, 0, Math.PI * 2);
+                ctx.fillStyle = color;
+                ctx.fill();
+
+                const box = document.getElementById('chartHoverBox');
+                box.classList.remove('hidden');
+                box.innerHTML = `<span class="text-slate-400">${asset.symbol}:</span> <span class="text-white font-bold">${fmtMoney(v)}</span>`;
             }
         }
 
-        function switchBottomTab(tabName) {
-            ['HOLDINGS', 'ORDERS', 'HISTORY', 'NEWS'].forEach(t => {
-                const btn = document.getElementById(`tabBtn${t}`);
-                const panel = document.getElementById(`tabPanel${t}`);
-                if (t === tabName) {
-                    btn.className = "px-3 py-2 border-b-2 border-blue-500 text-white flex items-center space-x-1.5";
-                    panel.classList.remove('hidden');
-                } else {
-                    btn.className = "px-3 py-2 border-b-2 border-transparent text-slate-400 hover:text-white flex items-center space-x-1.5";
-                    panel.classList.add('hidden');
-                }
-            });
+        function fmtMoney(v) {
+            const abs = Math.abs(v || 0);
+            return (v < 0 ? '-' : '') + '$' + abs.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         }
 
-        function renderBottomTables() {
-            // 1. Portfolio Holdings
-            const holdingsEntries = Object.entries(state.holdings);
-            document.getElementById('holdingsCountBadge').textContent = holdingsEntries.length;
-            const hBody = document.getElementById('holdingsTableBody');
-
-            if (holdingsEntries.length === 0) {
-                hBody.innerHTML = `<tr><td colspan="7" class="py-6 text-center text-slate-500 font-sans">No active holdings yet. Select an asset and place a BUY order to build your portfolio.</td></tr>`;
-            } else {
-                hBody.innerHTML = holdingsEntries.map(([sym, h]) => {
-                    const asset = state.assets[sym];
-                    const mktVal = h.qty * asset.price;
-                    const costBasis = h.qty * h.avgCost;
-                    const pnl = mktVal - costBasis;
-                    const pnlPct = (pnl / costBasis) * 100;
-                    const isPos = pnl >= 0;
-
-                    return `
-                    <tr class="hover:bg-slate-800/40 transition">
-                        <td class="py-2.5 px-2 font-bold text-white cursor-pointer" onclick="selectAsset('${sym}')">${sym}</td>
-                        <td class="py-2.5 px-2 text-right">${h.qty.toFixed(asset.type === 'CRYPTO' ? 4 : 2)}</td>
-                        <td class="py-2.5 px-2 text-right text-slate-400">${formatCurrency(h.avgCost)}</td>
-                        <td class="py-2.5 px-2 text-right text-slate-200">${formatCurrency(asset.price)}</td>
-                        <td class="py-2.5 px-2 text-right font-semibold text-white">${formatCurrency(mktVal)}</td>
-                        <td class="py-2.5 px-2 text-right font-semibold ${isPos ? 'text-emerald-400' : 'text-rose-400'}">
-                            ${isPos ? '+' : ''}${formatCurrency(pnl)} (${isPos ? '+' : ''}${pnlPct.toFixed(2)}%)
-                        </td>
-                        <td class="py-2.5 px-2 text-right">
-                            <button onclick="executeOrderImmediate('SELL', '${sym}', ${h.qty}, ${asset.price}, 'CLOSE')" 
-                                class="px-2 py-0.5 rounded bg-rose-500/15 hover:bg-rose-500/30 text-rose-400 border border-rose-500/20 text-[11px]">
-                                Sell All
-                            </button>
-                        </td>
-                    </tr>`;
-                }).join('');
-            }
-
-            // 2. Active Limit / Stop Orders
-            document.getElementById('ordersCountBadge').textContent = state.activeOrders.length;
-            const oBody = document.getElementById('activeOrdersBody');
-            if (state.activeOrders.length === 0) {
-                oBody.innerHTML = `<tr><td colspan="6" class="py-6 text-center text-slate-500 font-sans">No active Limit or Stop-Loss orders queued.</td></tr>`;
-            } else {
-                oBody.innerHTML = state.activeOrders.map(o => {
-                    const currentP = state.assets[o.symbol].price;
-                    return `
-                    <tr>
-                        <td class="py-2 px-2 font-bold text-white">${o.symbol}</td>
-                        <td class="py-2 px-2"><span class="px-1.5 py-0.5 rounded bg-slate-800 text-amber-400">${o.type} ${o.side}</span></td>
-                        <td class="py-2 px-2 text-right">${o.qty}</td>
-                        <td class="py-2 px-2 text-right text-blue-400 font-semibold">${formatCurrency(o.triggerPrice)}</td>
-                        <td class="py-2 px-2 text-right text-slate-300">${formatCurrency(currentP)}</td>
-                        <td class="py-2 px-2 text-right">
-                            <button onclick="cancelPendingOrder(${o.id})" class="text-rose-400 hover:underline">Cancel</button>
-                        </td>
-                    </tr>`;
-                }).join('');
-            }
-
-            // 3. Trade History
-            const histBody = document.getElementById('historyTableBody');
-            if (state.tradeHistory.length === 0) {
-                histBody.innerHTML = `<tr><td colspan="6" class="py-6 text-center text-slate-500 font-sans">No executed trades yet.</td></tr>`;
-            } else {
-                histBody.innerHTML = state.tradeHistory.slice(0, 40).map(t => {
-                    const isBuy = t.side.startsWith('BUY');
-                    return `
-                    <tr>
-                        <td class="py-2 px-2 text-slate-400">${t.date}</td>
-                        <td class="py-2 px-2 font-semibold ${isBuy ? 'text-emerald-400' : 'text-rose-400'}">${t.side}</td>
-                        <td class="py-2 px-2 font-bold text-white">${t.symbol}</td>
-                        <td class="py-2 px-2 text-right">${t.qty.toFixed(3)}</td>
-                        <td class="py-2 px-2 text-right">${formatCurrency(t.price)}</td>
-                        <td class="py-2 px-2 text-right text-white font-semibold">${formatCurrency(t.total)}</td>
-                    </tr>`;
-                }).join('');
-            }
+        function toast(msg, type = 'mint') {
+            const box = document.getElementById('toastBox');
+            const el = document.createElement('div');
+            const bg = type === 'coral' ? 'border-coral/50 text-coral' : 'border-mint/50 text-mint';
+            el.className = `px-4 py-2.5 rounded-2xl bg-carddark border ${bg} text-xs font-medium shadow-xl`;
+            el.textContent = msg;
+            box.appendChild(el);
+            setTimeout(() => el.remove(), 3000);
         }
 
-        function addNewsItem(title, sentiment) {
-            const dateStr = formatDateShort(state.simDate);
-            state.newsLog.unshift({ date: dateStr, title, sentiment });
-            if (state.newsLog.length > 30) state.newsLog.pop();
-
-            document.getElementById('newsTickerText').textContent = `[${dateStr}] ${title}`;
-            const badge = document.getElementById('marketSentimentBadge');
-            if (sentiment === 'Bullish') {
-                badge.textContent = 'Regime: Bullish';
-                badge.className = 'px-2 py-0.5 text-[10px] font-mono rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30';
-            } else if (sentiment === 'Bearish') {
-                badge.textContent = 'Regime: Bearish';
-                badge.className = 'px-2 py-0.5 text-[10px] font-mono rounded bg-rose-500/20 text-rose-400 border border-rose-500/30';
-            } else {
-                badge.textContent = 'Regime: Neutral';
-                badge.className = 'px-2 py-0.5 text-[10px] font-mono rounded bg-slate-800 text-slate-300';
-            }
-
-            const feedEl = document.getElementById('newsFeedList');
-            if (feedEl) {
-                feedEl.innerHTML = state.newsLog.map(item => `
-                    <div class="p-2.5 rounded-xl bg-slate-950/80 border border-slate-800/80 flex items-center justify-between text-xs">
-                        <div class="flex items-center space-x-2.5">
-                            <span class="font-mono text-[11px] text-slate-500">${item.date}</span>
-                            <span class="text-slate-200">${item.title}</span>
-                        </div>
-                        <span class="px-2 py-0.5 rounded text-[10px] font-mono ${item.sentiment === 'Bullish' ? 'bg-emerald-500/10 text-emerald-400' : (item.sentiment === 'Bearish' ? 'bg-rose-500/10 text-rose-400' : 'bg-slate-800 text-slate-400')}">${item.sentiment}</span>
-                    </div>
-                `).join('');
-            }
-        }
-
-        /********************************************************************
-         * 8. ACCOUNT ACTIONS, SETTINGS & UTILITIES
-         ********************************************************************/
-        function injectCash(amount) {
-            state.cash += amount;
-            state.initialDeposit += amount;
-            state.portfolioHistory[state.portfolioHistory.length - 1].value = calculateNetWorth();
-            updateAllUI();
-            showToast(`Injected +${formatCurrency(amount)} into your buying power!`, 'emerald');
-        }
-
-        function resetSimulator() {
-            state.cash = INITIAL_CASH;
-            state.initialDeposit = INITIAL_CASH;
-            state.holdings = {};
-            state.activeOrders = [];
-            state.tradeHistory = [];
-            state.portfolioHistory = [{
-                date: formatDateShort(state.simDate),
-                value: INITIAL_CASH
-            }];
-            updateAllUI();
-            showToast("Portfolio reset to $100,000.00 starting capital.", "blue");
-        }
-
-        function openSettingsModal() {
-            document.getElementById('settingsModal').classList.remove('hidden');
-        }
-
-        function closeSettingsModal() {
-            document.getElementById('settingsModal').classList.add('hidden');
-        }
-
-        function saveSettings() {
-            const key = document.getElementById('finnhubKeyInput').value.trim();
-            state.finnhubKey = key;
-            localStorage.setItem('chronotrade_finnhub_key', key);
-
-            const volMult = parseFloat(document.getElementById('volatilityMultiplierSelect').value) || 1.0;
-            state.volMultiplier = volMult;
-
-            closeSettingsModal();
-            syncLivePrices();
-        }
-
-        function formatCurrency(val) {
-            if (val === undefined || val === null || isNaN(val)) return '$0.00';
-            const absVal = Math.abs(val);
-            const decimals = (absVal > 0 && absVal < 1.0) ? 4 : 2;
-            return (val < 0 ? '-' : '') + '$' + absVal.toLocaleString('en-US', {
-                minimumFractionDigits: decimals,
-                maximumFractionDigits: decimals
-            });
-        }
-
-        function formatCompactPrice(val) {
-            if (val >= 10000) return '$' + (val / 1000).toFixed(1) + 'k';
-            return '$' + val.toFixed(2);
-        }
-
-        function formatPriceRaw(val) {
-            return val >= 1 ? val.toFixed(2) : val.toFixed(4);
-        }
-
-        function formatDateShort(d) {
-            return d.toLocaleDateString('en-US', { month: 'short', day: '2-digit' });
-        }
-
-        function formatDateLong(d) {
-            return d.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });
-        }
-
-        function formatDateISO(d) {
-            const yr = d.getFullYear();
-            const mo = String(d.getMonth() + 1).padStart(2, '0');
-            const da = String(d.getDate()).padStart(2, '0');
-            return `${yr}-${mo}-${da}`;
-        }
-
-        function formatTimeHMS(d) {
-            const hr = String(d.getHours()).padStart(2, '0');
-            const mn = String(d.getMinutes()).padStart(2, '0');
-            const sc = String(d.getSeconds()).padStart(2, '0');
-            return `${hr}:${mn}:${sc}`;
-        }
-
-        function showToast(message, color = 'blue') {
-            const container = document.getElementById('toastContainer');
-            const toast = document.createElement('div');
-            const colorClasses = {
-                emerald: 'bg-emerald-950/95 border-emerald-500/50 text-emerald-200',
-                rose: 'bg-rose-950/95 border-rose-500/50 text-rose-200',
-                amber: 'bg-amber-950/95 border-amber-500/50 text-amber-200',
-                blue: 'bg-slate-900/95 border-blue-500/50 text-blue-200',
-                slate: 'bg-slate-900/95 border-slate-600 text-slate-200'
-            };
-
-            toast.className = `px-4 py-2.5 rounded-xl border shadow-xl text-xs font-medium transition-all duration-300 transform translate-y-0 ${colorClasses[color] || colorClasses.blue}`;
-            toast.innerHTML = message;
-            container.appendChild(toast);
-
-            setTimeout(() => {
-                toast.style.opacity = '0';
-                setTimeout(() => toast.remove(), 300);
-            }, 3200);
-        }
-
-        window.onload = initApp;
+        window.addEventListener('DOMContentLoaded', initSimulator);
     </script>
 </body>
 </html>
