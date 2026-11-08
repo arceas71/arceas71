@@ -1,905 +1,460 @@
 <!DOCTYPE html>
 <html lang="en" class="dark">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ChronoTrade | Simple Stock & Time Simulator</title>
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Font Awesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
-
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                        mono: ['JetBrains Mono', 'monospace'],
-                    },
-                    colors: {
-                        bgdark: '#0b0e14',
-                        carddark: '#151922',
-                        mint: '#00d09c',
-                        coral: '#ff5252'
-                    }
-                }
-            }
-        }
-    </script>
-    <style>
-        body {
-            background-color: #0b0e14;
-            color: #f1f5f9;
-        }
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: #0b0e14; }
-        ::-webkit-scrollbar-thumb { background: #262d3d; border-radius: 3px; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ChronoTrade</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<script>
+tailwind.config={theme:{extend:{fontFamily:{sans:['Inter','sans-serif'],mono:['JetBrains Mono','monospace']},colors:{bgdark:'#0b0e14',card:'#151922',mint:'#00d09c',coral:'#ff5252'}}}}
+</script>
+<style>
+body{background:#0b0e14;color:#f1f5f9}
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-thumb{background:#262d3d;border-radius:3px}
+input:focus-visible,button:focus-visible{outline:2px solid #00d09c;outline-offset:2px}
+</style>
 </head>
-<body class="min-h-screen flex flex-col font-sans antialiased selection:bg-mint selection:text-black">
+<body class="min-h-screen font-sans antialiased">
 
-    <!-- CLEAN MINIMALIST TOP BAR -->
-    <header class="border-b border-slate-800/80 bg-[#0b0e14]/90 backdrop-blur-md sticky top-0 z-30">
-        <div class="max-w-6xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
-            
-            <!-- Left: Brand -->
-            <div class="flex items-center space-x-2.5">
-                <div class="w-9 h-9 rounded-xl bg-mint flex items-center justify-center text-black font-bold text-lg shadow-lg shadow-mint/20">
-                    <i class="fa-solid fa-bolt"></i>
-                </div>
-                <span class="font-bold text-lg tracking-tight text-white">ChronoTrade</span>
-            </div>
+<!-- HEADER -->
+<header class="border-b border-slate-800 bg-bgdark/90 backdrop-blur sticky top-0 z-30">
+  <div class="max-w-6xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+    <div class="font-bold text-lg text-white flex items-center gap-2">
+      <span class="w-8 h-8 rounded-lg bg-mint text-black flex items-center justify-center text-sm">⚡</span>ChronoTrade
+    </div>
 
-            <!-- Center: Simple Time Speed Controls (1 sec = X secs / mins / hours / days) -->
-            <div class="flex flex-wrap items-center bg-carddark border border-slate-800 rounded-2xl px-3 py-1.5 gap-3">
-                <div class="flex items-center space-x-2">
-                    <span id="simDot" class="w-2 h-2 rounded-full bg-mint animate-pulse"></span>
-                    <div class="text-xs font-mono">
-                        <span id="simClockDisplay" class="text-white font-semibold">2026-11-08 09:30:00</span>
-                        <span id="simRateLabel" class="ml-1.5 px-2 py-0.5 rounded-md bg-mint/15 text-mint font-bold text-[11px]">
-                            1 sec = 1 min
-                        </span>
-                    </div>
-                </div>
+    <div class="flex flex-wrap items-center gap-2 bg-card border border-slate-800 rounded-2xl px-3 py-1.5 text-xs font-mono">
+      <span id="clock" class="text-white font-semibold">2026-11-08 09:30:00</span>
+      <span id="speedBtns" class="flex gap-1"></span>
+    </div>
 
-                <!-- 5 Simple Speed Buttons -->
-                <div class="flex items-center space-x-1 text-xs font-mono">
-                    <button onclick="window.setSpeed(0)" id="spd0" class="px-2.5 py-1 rounded-lg bg-slate-800 text-slate-400 hover:text-white transition" title="Pause">
-                        ⏸ Pause
-                    </button>
-                    <button onclick="window.setSpeed(1)" id="spd1" class="px-2.5 py-1 rounded-lg bg-slate-800 text-slate-400 hover:text-white transition" title="1 real second = 1 simulated second">
-                        1s = 1s
-                    </button>
-                    <button onclick="window.setSpeed(60)" id="spd60" class="px-2.5 py-1 rounded-lg bg-mint text-black font-bold transition" title="1 real second = 1 simulated minute">
-                        1s = 1m
-                    </button>
-                    <button onclick="window.setSpeed(3600)" id="spd3600" class="px-2.5 py-1 rounded-lg bg-slate-800 text-slate-400 hover:text-white transition" title="1 real second = 1 simulated hour">
-                        1s = 1h
-                    </button>
-                    <button onclick="window.setSpeed(86400)" id="spd86400" class="px-2.5 py-1 rounded-lg bg-slate-800 text-slate-400 hover:text-white transition" title="1 real second = 24 simulated hours (1 day)">
-                        1s = 1d
-                    </button>
-                    <button onclick="window.skipTime(86400 * 365)" class="ml-1 px-2.5 py-1 rounded-lg bg-indigo-500/20 text-indigo-300 hover:bg-indigo-500/30 border border-indigo-500/30 transition" title="Instant Jump +1 Year">
-                        +1 Yr
-                    </button>
-                </div>
-            </div>
+    <div class="flex items-center gap-2 bg-card border border-slate-800 rounded-2xl px-3 py-1.5">
+      <div id="avatar" class="w-7 h-7 rounded-full bg-mint/20 text-mint font-bold text-xs flex items-center justify-center">?</div>
+      <button onclick="openName()" class="text-left" title="Change username">
+        <div id="uname" class="text-xs font-semibold text-white leading-tight">Pick a username</div>
+        <div id="status" class="text-[10px] font-mono text-slate-500">● connecting</div>
+      </button>
+      <button id="googleBtn" onclick="signInGoogle()" class="ml-1 px-2.5 py-1.5 rounded-lg bg-white text-slate-900 text-[11px] font-semibold">Save with Google</button>
+      <button id="outBtn" onclick="signOutUser()" class="hidden ml-1 text-[11px] text-slate-400 hover:text-coral">Sign out</button>
+    </div>
+  </div>
+</header>
 
-            <!-- Right: Firebase Google Auth Login / Profile -->
-            <div id="authContainer" class="flex items-center space-x-2">
-                <!-- Logged Out View -->
-                <button id="googleLoginBtn" onclick="window.signInWithGoogle()" class="px-3.5 py-2 rounded-xl bg-white hover:bg-slate-100 text-slate-900 font-semibold text-xs flex items-center space-x-2 shadow transition">
-                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" class="w-4 h-4" alt="Google">
-                    <span>Sign in with Google</span>
-                </button>
+<main class="max-w-6xl mx-auto px-4 py-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
 
-                <!-- Logged In View (Hidden by default) -->
-                <div id="userProfileBar" class="hidden items-center space-x-2.5 bg-carddark border border-slate-800 rounded-xl px-3 py-1.5">
-                    <img id="userAvatar" src="https://placehold.co/32x32/151922/00d09c?text=U" class="w-6 h-6 rounded-full" alt="Avatar">
-                    <div class="text-xs">
-                        <div id="userName" class="font-semibold text-white leading-none">Trader</div>
-                        <div id="cloudStatus" class="text-[10px] text-mint font-mono mt-0.5">● Cloud Saved</div>
-                    </div>
-                    <button onclick="window.signOutUser()" class="text-slate-400 hover:text-coral text-xs ml-2" title="Sign Out">
-                        <i class="fa-solid fa-right-from-bracket"></i>
-                    </button>
-                </div>
-            </div>
+  <!-- LEFT -->
+  <section class="lg:col-span-8 space-y-5">
+    <div class="bg-card border border-slate-800 rounded-3xl p-6 flex flex-wrap items-center justify-between gap-4">
+      <div>
+        <div class="text-xs text-slate-400">Total value</div>
+        <div id="nw" class="text-3xl sm:text-4xl font-bold font-mono">$100,000.00</div>
+        <div id="profit" class="text-xs font-mono font-semibold text-mint mt-1">+$0.00 (0.00%)</div>
+      </div>
+      <div class="text-right text-xs text-slate-400 space-y-2">
+        <div>Cash <span id="cash" class="font-mono font-bold text-white">$100,000.00</span></div>
+        <button onclick="resetAccount()" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-coral/20 hover:text-coral transition">Reset</button>
+      </div>
+    </div>
 
+    <div id="pills" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2.5"></div>
+
+    <div class="bg-card border border-slate-800 rounded-3xl p-6">
+      <div class="flex items-start justify-between mb-4 gap-3">
+        <div>
+          <div class="flex items-center gap-2"><h2 id="cName" class="text-lg font-bold">Bitcoin</h2><span id="cTick" class="text-xs font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-400">BTC</span></div>
+          <div class="flex items-baseline gap-2 mt-1"><span id="cPrice" class="text-2xl font-bold font-mono">$0</span><span id="cChg" class="text-xs font-mono font-semibold">0%</span></div>
         </div>
-    </header>
-
-    <!-- MAIN SIMPLE 2-COLUMN LAYOUT -->
-    <main class="flex-1 max-w-6xl w-full mx-auto px-4 py-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
-
-        <!-- LEFT COLUMN: PORTFOLIO VALUE + ASSET PILLS + CLEAN CHART (8 Cols) -->
-        <div class="lg:col-span-8 flex flex-col space-y-6">
-
-            <!-- Hero Portfolio Net Worth Banner -->
-            <div class="bg-carddark border border-slate-800/90 rounded-3xl p-6 flex flex-wrap items-center justify-between gap-4">
-                <div>
-                    <div class="text-xs text-slate-400 font-medium uppercase tracking-wider mb-1">Total Portfolio Value</div>
-                    <div id="netWorthDisplay" class="text-3xl sm:text-4xl font-bold font-mono text-white">$100,000.00</div>
-                    <div id="profitDisplay" class="text-xs font-mono font-semibold text-mint mt-1">
-                        +$0.00 (0.00%) All Time
-                    </div>
-                </div>
-
-                <div class="flex flex-col sm:items-end space-y-2">
-                    <div class="text-xs text-slate-400">
-                        Buying Power (Cash): <span id="cashDisplay" class="font-mono font-bold text-white">$100,000.00</span>
-                    </div>
-                    <div class="flex items-center space-x-2">
-                        <button onclick="window.addFreeCash(10000)" class="px-3 py-1.5 rounded-xl bg-mint/15 hover:bg-mint/25 text-mint font-mono text-xs font-semibold transition">
-                            +$10k Cash
-                        </button>
-                        <button onclick="window.syncLiveMarket()" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs transition" title="Pull latest live Crypto prices">
-                            <i id="syncSpinner" class="fa-solid fa-rotate mr-1"></i>Live API
-                        </button>
-                        <button onclick="window.resetAccount()" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-coral/20 hover:text-coral text-slate-400 text-xs transition">
-                            Reset
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 6 Simple Asset Pills -->
-            <div id="assetPillsRow" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2.5">
-                <!-- Populated by JS -->
-            </div>
-
-            <!-- Clean Chart Card -->
-            <div class="bg-carddark border border-slate-800/90 rounded-3xl p-6 flex flex-col">
-                <div class="flex items-center justify-between mb-4">
-                    <div>
-                        <div class="flex items-center space-x-2">
-                            <h2 id="chartAssetName" class="text-lg font-bold text-white">Bitcoin</h2>
-                            <span id="chartAssetTicker" class="text-xs font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-400">BTC</span>
-                        </div>
-                        <div class="flex items-baseline space-x-2.5 mt-1">
-                            <span id="chartAssetPrice" class="text-2xl font-bold font-mono text-white">$76,400.00</span>
-                            <span id="chartAssetChange" class="text-xs font-mono font-semibold text-mint">+0.00%</span>
-                        </div>
-                    </div>
-
-                    <!-- Owned Badge on Chart -->
-                    <div id="chartOwnedBadge" class="text-right font-mono text-xs text-slate-400">
-                        You own: <span class="text-white font-semibold">0 BTC</span>
-                    </div>
-                </div>
-
-                <!-- Smooth Line Chart Canvas -->
-                <div class="relative w-full h-[270px] sm:h-[310px] select-none">
-                    <canvas id="priceChart" class="w-full h-full cursor-crosshair"></canvas>
-                    <div id="chartHoverBox" class="hidden absolute top-2 left-2 bg-bgdark/90 border border-slate-700 rounded-xl px-3 py-1.5 text-xs font-mono pointer-events-none"></div>
-                </div>
-            </div>
-
-        </div>
-
-        <!-- RIGHT COLUMN: SIMPLE BUY/SELL CARD + YOUR INVESTMENTS (4 Cols) -->
-        <div class="lg:col-span-4 flex flex-col space-y-6">
-
-            <!-- Simple Trade Card -->
-            <div class="bg-carddark border border-slate-800/90 rounded-3xl p-6">
-                <!-- Buy / Sell Tabs -->
-                <div class="grid grid-cols-2 gap-2 p-1 bg-bgdark rounded-2xl mb-5">
-                    <button onclick="window.setTradeSide('BUY')" id="tabBuy" class="py-2.5 rounded-xl font-bold text-xs bg-mint text-black transition">
-                        Buy
-                    </button>
-                    <button onclick="window.setTradeSide('SELL')" id="tabSell" class="py-2.5 rounded-xl font-bold text-xs text-slate-400 hover:text-white transition">
-                        Sell
-                    </button>
-                </div>
-
-                <!-- Dollar Amount Input -->
-                <div class="mb-4">
-                    <label class="block text-xs text-slate-400 mb-1.5">Amount in USD ($)</label>
-                    <div class="relative">
-                        <span class="absolute left-4 top-3 font-mono text-slate-400 text-lg">$</span>
-                        <input type="number" id="tradeDollarInput" value="1000" min="1" step="any" oninput="window.updateTradePreview()"
-                            class="w-full bg-bgdark border border-slate-800 rounded-2xl pl-9 pr-4 py-3 font-mono text-xl font-bold text-white focus:outline-none focus:border-mint">
-                    </div>
-                </div>
-
-                <!-- Quick Dollar Buttons -->
-                <div class="grid grid-cols-4 gap-2 mb-5 font-mono text-xs">
-                    <button onclick="window.setQuickAmount(100)" class="py-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-200 transition">$100</button>
-                    <button onclick="window.setQuickAmount(1000)" class="py-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-200 transition">$1k</button>
-                    <button onclick="window.setQuickAmount(10000)" class="py-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-200 transition">$10k</button>
-                    <button onclick="window.setMaxAmount()" class="py-2 rounded-xl bg-mint/15 hover:bg-mint/25 text-mint font-bold transition">Max</button>
-                </div>
-
-                <!-- Estimated Units Summary -->
-                <div class="flex justify-between items-center text-xs text-slate-400 mb-5 px-1">
-                    <span>Estimated Shares / Units</span>
-                    <span id="estUnitsDisplay" class="font-mono text-white font-semibold">0.0000</span>
-                </div>
-
-                <!-- Big Action Button -->
-                <button onclick="window.executeTrade()" id="tradeSubmitBtn" class="w-full py-3.5 rounded-2xl font-bold text-sm bg-mint hover:opacity-95 text-black shadow-lg shadow-mint/20 transition">
-                    Buy BTC
-                </button>
-            </div>
-
-            <!-- Your Investments List -->
-            <div class="bg-carddark border border-slate-800/90 rounded-3xl p-6 flex-1 flex flex-col">
-                <h3 class="font-bold text-sm text-white mb-4">Your Investments</h3>
-                <div id="holdingsList" class="space-y-3 flex-1 overflow-y-auto">
-                    <!-- Populated by JS -->
-                </div>
-            </div>
-
-        </div>
-
-    </main>
-
-    <!-- TOAST NOTIFICATIONS -->
-    <div id="toastBox" class="fixed bottom-4 right-4 z-50 flex flex-col space-y-2 pointer-events-none"></div>
-
-    <!-- FIREBASE & SIMULATOR SCRIPT -->
-    <script type="module">
-        // Import the functions you need from the SDKs you need
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        import { getAnalytics, isSupported } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics.js";
-        import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-        import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
-
-        // Your web app's Firebase configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyD47CV7A3CBN8WprDT190YBoja77HG6NJY",
-            authDomain: "advait-bd3da.firebaseapp.com",
-            databaseURL: "https://advait-bd3da-default-rtdb.asia-southeast1.firebasedatabase.app",
-            projectId: "advait-bd3da",
-            storageBucket: "advait-bd3da.firebasestorage.app",
-            messagingSenderId: "816232706393",
-            appId: "1:816232706393:web:5aaa150277498ce2591c48",
-            measurementId: "G-KQ1MNHH754"
-        };
-
-        // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        isSupported().then(yes => { if (yes) getAnalytics(app); }).catch(() => {});
-        const auth = getAuth(app);
-        const db = getDatabase(app);
-        const googleProvider = new GoogleAuthProvider();
-
-        /********************************************************************
-         * 1. CLEAN SIMULATOR STATE
-         ********************************************************************/
-        const INITIAL_CASH = 100000;
-
-        const ASSETS = [
-            { symbol: 'BTC', name: 'Bitcoin', type: 'CRYPTO', binance: 'BTCUSDT', gecko: 'bitcoin', price: 76400, drift: 0.25, vol: 0.60 },
-            { symbol: 'ETH', name: 'Ethereum', type: 'CRYPTO', binance: 'ETHUSDT', gecko: 'ethereum', price: 2920, drift: 0.22, vol: 0.65 },
-            { symbol: 'SOL', name: 'Solana', type: 'CRYPTO', binance: 'SOLUSDT', gecko: 'solana', price: 198.50, drift: 0.30, vol: 0.75 },
-            { symbol: 'NVDA', name: 'NVIDIA', type: 'STOCK', price: 138.60, drift: 0.22, vol: 0.42 },
-            { symbol: 'AAPL', name: 'Apple', type: 'STOCK', price: 228.50, drift: 0.14, vol: 0.24 },
-            { symbol: 'TSLA', name: 'Tesla', type: 'STOCK', price: 254.20, drift: 0.18, vol: 0.52 }
-        ];
-
-        let state = {
-            user: null,
-            cash: INITIAL_CASH,
-            initialDeposit: INITIAL_CASH,
-            simTimeMs: new Date(2026, 10, 8, 9, 30, 0).getTime(),
-            speed: 60, // Default: 1 real sec = 60 sim secs (1 min)
-            selected: 'BTC',
-            tradeSide: 'BUY',
-            assets: {},
-            holdings: {} // { BTC: { qty, avgCost } }
-        };
-
-        let lastFrame = performance.now();
-        let lastRender = 0;
-        let lastCloudSave = 0;
-        let hoverIdx = null;
-
-        /********************************************************************
-         * 2. FIREBASE GOOGLE AUTH & CLOUD PORTFOLIO SYNC
-         ********************************************************************/
-        window.signInWithGoogle = async function() {
-            try {
-                const result = await signInWithPopup(auth, googleProvider);
-                toast(`Signed in as ${result.user.displayName || result.user.email}!`, 'mint');
-            } catch (error) {
-                console.warn("Firebase Auth Popup Notice:", error.code, error.message);
-                if (error.code === 'auth/unauthorized-domain' || error.code === 'auth/operation-not-supported-in-this-environment' || error.code === 'auth/popup-blocked') {
-                    // Activate seamless fallback profile so the user can test inside sandboxed preview iframes
-                    const mockUser = {
-                        uid: 'local_preview_user',
-                        displayName: 'Advait (Preview Mode)',
-                        photoURL: 'https://placehold.co/32x32/00d09c/000000?text=A',
-                        isLocalFallback: true
-                    };
-                    applyUserSession(mockUser);
-                    toast(`Signed in (Preview Mode). Tip: Add this domain to Firebase Console -> Auth -> Authorized Domains for live popup.`, 'mint');
-                } else {
-                    toast(`Login note: ${error.message}`, 'coral');
-                }
-            }
-        };
-
-        window.signOutUser = async function() {
-            try {
-                await signOut(auth);
-            } catch (e) {}
-            state.user = null;
-            document.getElementById('googleLoginBtn').classList.remove('hidden');
-            document.getElementById('userProfileBar').classList.add('hidden');
-            document.getElementById('userProfileBar').classList.remove('flex');
-            toast('Signed out.', 'slate');
-        };
-
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                applyUserSession(user);
-                await loadCloudPortfolio(user.uid);
-            }
-        });
-
-        function applyUserSession(user) {
-            state.user = user;
-            document.getElementById('googleLoginBtn').classList.add('hidden');
-            const bar = document.getElementById('userProfileBar');
-            bar.classList.remove('hidden');
-            bar.classList.add('flex');
-            document.getElementById('userName').textContent = user.displayName || 'Trader';
-            if (user.photoURL) document.getElementById('userAvatar').src = user.photoURL;
-        }
-
-        async function saveCloudPortfolio() {
-            // Save to localStorage first
-            const payload = {
-                cash: state.cash,
-                initialDeposit: state.initialDeposit,
-                simTimeMs: state.simTimeMs,
-                holdings: state.holdings,
-                updatedAt: Date.now()
-            };
-            localStorage.setItem('chronotrade_save_v2', JSON.stringify(payload));
-
-            if (!state.user || state.user.isLocalFallback) return;
-            try {
-                const statusEl = document.getElementById('cloudStatus');
-                statusEl.textContent = '● Syncing...';
-                await set(ref(db, `users/${state.user.uid}/portfolio`), payload);
-                statusEl.textContent = '● Cloud Saved';
-            } catch (e) {
-                console.warn("Realtime DB sync note:", e.message);
-            }
-        }
-
-        async function loadCloudPortfolio(uid) {
-            try {
-                const snap = await get(ref(db, `users/${uid}/portfolio`));
-                if (snap.exists()) {
-                    const data = snap.val();
-                    state.cash = data.cash ?? INITIAL_CASH;
-                    state.initialDeposit = data.initialDeposit ?? INITIAL_CASH;
-                    state.simTimeMs = data.simTimeMs ?? state.simTimeMs;
-                    state.holdings = data.holdings || {};
-                    renderUI();
-                    toast('Loaded your cloud portfolio from Firebase!', 'mint');
-                } else {
-                    await saveCloudPortfolio();
-                }
-            } catch (e) {
-                console.warn("Could not read Firebase RTDB, using local save:", e.message);
-            }
-        }
-
-        /********************************************************************
-         * 3. INITIALIZE ASSETS & LIVE CRYPTO API
-         ********************************************************************/
-        function initSimulator() {
-            // Seed 90 points of smooth price history for each asset
-            ASSETS.forEach(item => {
-                const history = [];
-                let p = item.price * 0.92;
-                const dailyVol = item.vol / Math.sqrt(252);
-                for (let i = 0; i < 90; i++) {
-                    p = Math.max(0.5, p * (1 + (Math.random() - 0.48) * dailyVol));
-                    history.push(i === 89 ? item.price : p);
-                }
-                state.assets[item.symbol] = {
-                    ...item,
-                    startPrice: history[0],
-                    history: history
-                };
-            });
-
-            // Restore local save if available
-            try {
-                const saved = JSON.parse(localStorage.getItem('chronotrade_save_v2'));
-                if (saved && typeof saved.cash === 'number') {
-                    state.cash = saved.cash;
-                    state.initialDeposit = saved.initialDeposit || INITIAL_CASH;
-                    state.simTimeMs = saved.simTimeMs || state.simTimeMs;
-                    state.holdings = saved.holdings || {};
-                }
-            } catch (e) {}
-
-            setupChartHover();
-            window.setSpeed(60); // Default 1 sec = 1 min
-            renderUI();
-            window.syncLiveMarket();
-            requestAnimationFrame(tickLoop);
-        }
-
-        window.syncLiveMarket = async function() {
-            const icon = document.getElementById('syncSpinner');
-            icon.classList.add('fa-spin');
-            let count = 0;
-
-            try {
-                const res = await fetch('https://api.binance.com/api/v3/ticker/price?symbols=["BTCUSDT","ETHUSDT","SOLUSDT"]');
-                if (res.ok) {
-                    const list = await res.json();
-                    list.forEach(row => {
-                        const asset = Object.values(state.assets).find(a => a.binance === row.symbol);
-                        if (asset) {
-                            const liveP = parseFloat(row.price);
-                            if (liveP > 0) {
-                                rescaleHistory(asset, liveP);
-                                count++;
-                            }
-                        }
-                    });
-                }
-            } catch (e) {
-                try {
-                    const cg = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana&vs_currencies=usd');
-                    if (cg.ok) {
-                        const data = await cg.json();
-                        Object.values(state.assets).forEach(asset => {
-                            if (asset.gecko && data[asset.gecko]?.usd) {
-                                rescaleHistory(asset, data[asset.gecko].usd);
-                                count++;
-                            }
-                        });
-                    }
-                } catch (err) {}
-            }
-
-            icon.classList.remove('fa-spin');
-            if (count > 0) {
-                renderUI();
-                toast(`Synced live prices for BTC, ETH & SOL!`, 'mint');
-            }
-        };
-
-        function rescaleHistory(asset, newPrice) {
-            const ratio = newPrice / asset.price;
-            asset.history = asset.history.map(v => v * ratio);
-            asset.startPrice *= ratio;
-            asset.price = newPrice;
-        }
-
-        /********************************************************************
-         * 4. TIME SIMULATION ENGINE (1 SEC = X SECS / MINS / HOURS / DAYS)
-         ********************************************************************/
-        const SPEED_LABELS = {
-            0: 'Paused (1s = 0s)',
-            1: '1 sec = 1 sec',
-            60: '1 sec = 1 min',
-            3600: '1 sec = 1 hour',
-            86400: '1 sec = 1 day'
-        };
-
-        window.setSpeed = function(simSecsPerRealSec) {
-            state.speed = simSecsPerRealSec;
-            lastFrame = performance.now();
-
-            document.getElementById('simRateLabel').textContent = SPEED_LABELS[simSecsPerRealSec] || `1 sec = ${simSecsPerRealSec}s`;
-            document.getElementById('simDot').className = simSecsPerRealSec === 0
-                ? 'w-2 h-2 rounded-full bg-amber-400'
-                : 'w-2 h-2 rounded-full bg-mint animate-pulse';
-
-            [0, 1, 60, 3600, 86400].forEach(spd => {
-                const btn = document.getElementById(`spd${spd}`);
-                if (!btn) return;
-                btn.className = (spd === simSecsPerRealSec)
-                    ? "px-2.5 py-1 rounded-lg bg-mint text-black font-bold transition"
-                    : "px-2.5 py-1 rounded-lg bg-slate-800 text-slate-400 hover:text-white transition";
-            });
-        };
-
-        window.skipTime = function(simSeconds) {
-            // Break large jumps into 60 steps so the chart evolves smoothly
-            const steps = 60;
-            const chunk = simSeconds / steps;
-            for (let i = 0; i < steps; i++) {
-                stepMarket(chunk, true);
-            }
-            renderUI();
-            saveCloudPortfolio();
-            toast('Fast-forwarded +1 Year!', 'mint');
-        };
-
-        function tickLoop(now) {
-            const dtReal = Math.min(0.25, (now - lastFrame) / 1000);
-            lastFrame = now;
-
-            if (state.speed > 0 && dtReal > 0) {
-                const simSecs = dtReal * state.speed;
-                stepMarket(simSecs, false);
-                updateClockText();
-
-                if (now - lastRender > 120) {
-                    lastRender = now;
-                    renderUI();
-                }
-                if (now - lastCloudSave > 10000) {
-                    lastCloudSave = now;
-                    saveCloudPortfolio();
-                }
-            }
-            requestAnimationFrame(tickLoop);
-        }
-
-        let pointAccumulator = 0;
-        function stepMarket(simSeconds, forcePushPoint) {
-            state.simTimeMs += simSeconds * 1000;
-            pointAccumulator += simSeconds;
-
-            const daysElapsed = simSeconds / 86400;
-            const yearsElapsed = daysElapsed / 252;
-            const pushNewChartPoint = forcePushPoint || pointAccumulator >= 3600; // Push a chart point every simulated hour or on jump
-            if (pushNewChartPoint) pointAccumulator = 0;
-
-            Object.values(state.assets).forEach(asset => {
-                // Standard Geometric Brownian Motion step
-                const z = (Math.random() + Math.random() + Math.random() - 1.5) * 1.15;
-                const pct = (asset.drift - 0.5 * asset.vol * asset.vol) * yearsElapsed + asset.vol * Math.sqrt(yearsElapsed) * z;
-                asset.price = Math.max(0.05, asset.price * Math.exp(pct));
-
-                if (pushNewChartPoint) {
-                    asset.history.push(asset.price);
-                    if (asset.history.length > 120) asset.history.shift();
-                } else {
-                    asset.history[asset.history.length - 1] = asset.price;
-                }
-            });
-        }
-
-        function updateClockText() {
-            const d = new Date(state.simTimeMs);
-            const pad = n => String(n).padStart(2, '0');
-            const str = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
-            document.getElementById('simClockDisplay').textContent = str;
-        }
-
-        /********************************************************************
-         * 5. SIMPLE BUY / SELL TRADING ACTIONS
-         ********************************************************************/
-        window.selectAsset = function(symbol) {
-            state.selected = symbol;
-            renderUI();
-        };
-
-        window.setTradeSide = function(side) {
-            state.tradeSide = side;
-            document.getElementById('tabBuy').className = side === 'BUY'
-                ? "py-2.5 rounded-xl font-bold text-xs bg-mint text-black transition"
-                : "py-2.5 rounded-xl font-bold text-xs text-slate-400 hover:text-white transition";
-            document.getElementById('tabSell').className = side === 'SELL'
-                ? "py-2.5 rounded-xl font-bold text-xs bg-coral text-white transition"
-                : "py-2.5 rounded-xl font-bold text-xs text-slate-400 hover:text-white transition";
-
-            const btn = document.getElementById('tradeSubmitBtn');
-            btn.className = side === 'BUY'
-                ? "w-full py-3.5 rounded-2xl font-bold text-sm bg-mint hover:opacity-95 text-black shadow-lg shadow-mint/20 transition"
-                : "w-full py-3.5 rounded-2xl font-bold text-sm bg-coral hover:opacity-95 text-white shadow-lg shadow-coral/20 transition";
-
-            window.updateTradePreview();
-        };
-
-        window.setQuickAmount = function(dollars) {
-            document.getElementById('tradeDollarInput').value = dollars;
-            window.updateTradePreview();
-        };
-
-        window.setMaxAmount = function() {
-            const asset = state.assets[state.selected];
-            if (state.tradeSide === 'BUY') {
-                document.getElementById('tradeDollarInput').value = Math.floor(state.cash * 100) / 100;
-            } else {
-                const owned = state.holdings[asset.symbol]?.qty || 0;
-                document.getElementById('tradeDollarInput').value = Math.floor(owned * asset.price * 100) / 100;
-            }
-            window.updateTradePreview();
-        };
-
-        window.updateTradePreview = function() {
-            const asset = state.assets[state.selected];
-            const dollars = Math.max(0, parseFloat(document.getElementById('tradeDollarInput').value) || 0);
-            const units = dollars / asset.price;
-            document.getElementById('estUnitsDisplay').textContent = `${units.toFixed(4)} ${asset.symbol}`;
-            document.getElementById('tradeSubmitBtn').textContent = `${state.tradeSide === 'BUY' ? 'Buy' : 'Sell'} ${asset.symbol}`;
-        };
-
-        window.executeTrade = function() {
-            const asset = state.assets[state.selected];
-            const dollars = parseFloat(document.getElementById('tradeDollarInput').value);
-            if (!dollars || dollars <= 0) {
-                toast('Enter a valid dollar amount.', 'coral');
-                return;
-            }
-
-            if (state.tradeSide === 'BUY') {
-                if (dollars > state.cash + 0.01) {
-                    toast('Not enough cash! Click +$10k Cash or Max.', 'coral');
-                    return;
-                }
-                const spend = Math.min(state.cash, dollars);
-                const units = spend / asset.price;
-                state.cash -= spend;
-
-                if (!state.holdings[asset.symbol]) {
-                    state.holdings[asset.symbol] = { qty: 0, avgCost: 0 };
-                }
-                const h = state.holdings[asset.symbol];
-                const totalQty = h.qty + units;
-                h.avgCost = ((h.qty * h.avgCost) + spend) / totalQty;
-                h.qty = totalQty;
-
-                toast(`Bought ${fmtMoney(spend)} of ${asset.symbol}!`, 'mint');
-            } else {
-                const h = state.holdings[asset.symbol];
-                const ownedVal = (h?.qty || 0) * asset.price;
-                if (!h || ownedVal < 0.01) {
-                    toast(`You don't own any ${asset.symbol} to sell.`, 'coral');
-                    return;
-                }
-                const sellDollars = Math.min(ownedVal, dollars);
-                const sellUnits = sellDollars / asset.price;
-                h.qty -= sellUnits;
-                state.cash += sellDollars;
-
-                if (h.qty <= 1e-6) delete state.holdings[asset.symbol];
-                toast(`Sold ${fmtMoney(sellDollars)} of ${asset.symbol}!`, 'mint');
-            }
-
-            renderUI();
-            saveCloudPortfolio();
-        };
-
-        window.addFreeCash = function(amt) {
-            state.cash += amt;
-            state.initialDeposit += amt;
-            renderUI();
-            saveCloudPortfolio();
-            toast(`Added +${fmtMoney(amt)} cash!`, 'mint');
-        };
-
-        window.resetAccount = function() {
-            state.cash = INITIAL_CASH;
-            state.initialDeposit = INITIAL_CASH;
-            state.holdings = {};
-            renderUI();
-            saveCloudPortfolio();
-            toast('Portfolio reset to $100,000.', 'mint');
-        };
-
-        /********************************************************************
-         * 6. UI RENDERING & CLEAN LINE CHART
-         ********************************************************************/
-        function renderUI() {
-            updateClockText();
-
-            // 1. Net Worth & Profit
-            let investedVal = 0;
-            Object.entries(state.holdings).forEach(([sym, h]) => {
-                if (state.assets[sym]) investedVal += h.qty * state.assets[sym].price;
-            });
-            const netWorth = state.cash + investedVal;
-            const profit = netWorth - state.initialDeposit;
-            const profitPct = (profit / state.initialDeposit) * 100;
-            const isUp = profit >= 0;
-
-            document.getElementById('netWorthDisplay').textContent = fmtMoney(netWorth);
-            document.getElementById('cashDisplay').textContent = fmtMoney(state.cash);
-
-            const profEl = document.getElementById('profitDisplay');
-            profEl.textContent = `${isUp ? '+' : ''}${fmtMoney(profit)} (${isUp ? '+' : ''}${profitPct.toFixed(2)}%) All Time`;
-            profEl.className = `text-xs font-mono font-semibold mt-1 ${isUp ? 'text-mint' : 'text-coral'}`;
-
-            // 2. Render 6 Asset Pills
-            const pillsRow = document.getElementById('assetPillsRow');
-            pillsRow.innerHTML = Object.values(state.assets).map(a => {
-                const changePct = ((a.price - a.startPrice) / a.startPrice) * 100;
-                const up = changePct >= 0;
-                const active = a.symbol === state.selected;
-                return `
-                <button onclick="window.selectAsset('${a.symbol}')" 
-                    class="p-3 rounded-2xl border text-left transition ${active ? 'bg-slate-800/90 border-mint shadow-md' : 'bg-carddark border-slate-800/80 hover:border-slate-700'}">
-                    <div class="flex items-center justify-between">
-                        <span class="font-bold text-xs text-white">${a.symbol}</span>
-                        <span class="text-[10px] font-mono ${up ? 'text-mint' : 'text-coral'}">${up ? '+' : ''}${changePct.toFixed(1)}%</span>
-                    </div>
-                    <div class="font-mono font-semibold text-sm text-white mt-1 truncate">${fmtMoney(a.price)}</div>
-                </button>`;
-            }).join('');
-
-            // 3. Selected Asset Header
-            const activeAsset = state.assets[state.selected];
-            const activePct = ((activeAsset.price - activeAsset.startPrice) / activeAsset.startPrice) * 100;
-            document.getElementById('chartAssetName').textContent = activeAsset.name;
-            document.getElementById('chartAssetTicker').textContent = activeAsset.symbol;
-            document.getElementById('chartAssetPrice').textContent = fmtMoney(activeAsset.price);
-
-            const chgEl = document.getElementById('chartAssetChange');
-            chgEl.textContent = `${activePct >= 0 ? '+' : ''}${activePct.toFixed(2)}%`;
-            chgEl.className = `text-xs font-mono font-semibold ${activePct >= 0 ? 'text-mint' : 'text-coral'}`;
-
-            const ownedQty = state.holdings[activeAsset.symbol]?.qty || 0;
-            document.getElementById('chartOwnedBadge').innerHTML = `You own: <span class="text-white font-semibold">${ownedQty.toFixed(4)} ${activeAsset.symbol}</span> (${fmtMoney(ownedQty * activeAsset.price)})`;
-
-            window.updateTradePreview();
-
-            // 4. Render Holdings List
-            const hList = document.getElementById('holdingsList');
-            const entries = Object.entries(state.holdings);
-            if (entries.length === 0) {
-                hList.innerHTML = `<div class="text-xs text-slate-500 py-8 text-center">No investments yet. Pick an asset and click Buy!</div>`;
-            } else {
-                hList.innerHTML = entries.map(([sym, h]) => {
-                    const a = state.assets[sym];
-                    const val = h.qty * a.price;
-                    const cost = h.qty * h.avgCost;
-                    const pnl = val - cost;
-                    const pnlPct = (pnl / cost) * 100;
-                    const pos = pnl >= 0;
-                    return `
-                    <div onclick="window.selectAsset('${sym}')" class="p-3.5 rounded-2xl bg-bgdark border border-slate-800/80 hover:border-slate-700 flex items-center justify-between cursor-pointer transition">
-                        <div>
-                            <div class="font-bold text-sm text-white">${sym}</div>
-                            <div class="text-[11px] font-mono text-slate-400">${h.qty.toFixed(4)} units</div>
-                        </div>
-                        <div class="text-right font-mono">
-                            <div class="text-sm font-bold text-white">${fmtMoney(val)}</div>
-                            <div class="text-[11px] ${pos ? 'text-mint' : 'text-coral'}">
-                                ${pos ? '+' : ''}${fmtMoney(pnl)} (${pos ? '+' : ''}${pnlPct.toFixed(1)}%)
-                            </div>
-                        </div>
-                    </div>`;
-                }).join('');
-            }
-
-            drawChart();
-        }
-
-        function setupChartHover() {
-            const canvas = document.getElementById('priceChart');
-            window.addEventListener('resize', drawChart);
-            canvas.addEventListener('mousemove', (e) => {
-                const rect = canvas.getBoundingClientRect();
-                const x = e.clientX - rect.left;
-                const hist = state.assets[state.selected].history;
-                const idx = Math.round((x / rect.width) * (hist.length - 1));
-                hoverIdx = Math.max(0, Math.min(hist.length - 1, idx));
-                drawChart();
-            });
-            canvas.addEventListener('mouseleave', () => {
-                hoverIdx = null;
-                document.getElementById('chartHoverBox').classList.add('hidden');
-                drawChart();
-            });
-        }
-
-        function drawChart() {
-            const canvas = document.getElementById('priceChart');
-            if (!canvas) return;
-            const ctx = canvas.getContext('2d');
-            const dpr = window.devicePixelRatio || 1;
-            const rect = canvas.getBoundingClientRect();
-            canvas.width = rect.width * dpr;
-            canvas.height = rect.height * dpr;
-            ctx.scale(dpr, dpr);
-
-            const W = rect.width;
-            const H = rect.height;
-            ctx.clearRect(0, 0, W, H);
-
-            const asset = state.assets[state.selected];
-            const data = asset.history;
-            if (data.length < 2) return;
-
-            let min = Math.min(...data);
-            let max = Math.max(...data);
-            if (max === min) { max *= 1.02; min *= 0.98; }
-            const padY = 18;
-            const plotH = H - padY * 2;
-
-            const getX = i => (i / (data.length - 1)) * W;
-            const getY = v => padY + plotH - ((v - min) / (max - min)) * plotH;
-
-            const isUp = data[data.length - 1] >= data[0];
-            const color = isUp ? '#00d09c' : '#ff5252';
-
-            // Smooth Price Line
-            ctx.beginPath();
-            data.forEach((v, i) => {
-                const x = getX(i), y = getY(v);
-                if (i === 0) ctx.moveTo(x, y);
-                else ctx.lineTo(x, y);
-            });
-            ctx.strokeStyle = color;
-            ctx.lineWidth = 2.5;
-            ctx.stroke();
-
-            // Subtle Area Gradient
-            const grad = ctx.createLinearGradient(0, 0, 0, H);
-            grad.addColorStop(0, isUp ? 'rgba(0, 208, 156, 0.22)' : 'rgba(255, 82, 82, 0.22)');
-            grad.addColorStop(1, 'rgba(11, 14, 20, 0)');
-            ctx.lineTo(W, H);
-            ctx.lineTo(0, H);
-            ctx.closePath();
-            ctx.fillStyle = grad;
-            ctx.fill();
-
-            // Average Cost Line if owned
-            const holding = state.holdings[asset.symbol];
-            if (holding && holding.avgCost >= min && holding.avgCost <= max) {
-                const cy = getY(holding.avgCost);
-                ctx.save();
-                ctx.setLineDash([4, 4]);
-                ctx.strokeStyle = '#64748b';
-                ctx.beginPath();
-                ctx.moveTo(0, cy);
-                ctx.lineTo(W, cy);
-                ctx.stroke();
-                ctx.fillStyle = '#94a3b8';
-                ctx.font = '10px "JetBrains Mono"';
-                ctx.fillText(`Your Avg: ${fmtMoney(holding.avgCost)}`, 8, cy - 6);
-                ctx.restore();
-            }
-
-            // Hover Crosshair
-            if (hoverIdx !== null && data[hoverIdx] !== undefined) {
-                const v = data[hoverIdx];
-                const x = getX(hoverIdx);
-                const y = getY(v);
-
-                ctx.strokeStyle = '#475569';
-                ctx.lineWidth = 1;
-                ctx.beginPath();
-                ctx.moveTo(x, 0);
-                ctx.lineTo(x, H);
-                ctx.stroke();
-
-                ctx.beginPath();
-                ctx.arc(x, y, 4.5, 0, Math.PI * 2);
-                ctx.fillStyle = color;
-                ctx.fill();
-
-                const box = document.getElementById('chartHoverBox');
-                box.classList.remove('hidden');
-                box.innerHTML = `<span class="text-slate-400">${asset.symbol}:</span> <span class="text-white font-bold">${fmtMoney(v)}</span>`;
-            }
-        }
-
-        function fmtMoney(v) {
-            const abs = Math.abs(v || 0);
-            return (v < 0 ? '-' : '') + '$' + abs.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-        }
-
-        function toast(msg, type = 'mint') {
-            const box = document.getElementById('toastBox');
-            const el = document.createElement('div');
-            const bg = type === 'coral' ? 'border-coral/50 text-coral' : 'border-mint/50 text-mint';
-            el.className = `px-4 py-2.5 rounded-2xl bg-carddark border ${bg} text-xs font-medium shadow-xl`;
-            el.textContent = msg;
-            box.appendChild(el);
-            setTimeout(() => el.remove(), 3000);
-        }
-
-        window.addEventListener('DOMContentLoaded', initSimulator);
-    </script>
+        <div id="cOwn" class="text-right font-mono text-xs text-slate-400"></div>
+      </div>
+      <div class="relative w-full h-[280px] select-none">
+        <canvas id="chart" class="w-full h-full cursor-crosshair"></canvas>
+        <div id="hover" class="hidden absolute top-2 left-2 bg-bgdark/90 border border-slate-700 rounded-xl px-3 py-1.5 text-xs font-mono pointer-events-none"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- RIGHT -->
+  <aside class="lg:col-span-4 space-y-5">
+    <div class="bg-card border border-slate-800 rounded-3xl p-6">
+      <div class="grid grid-cols-2 gap-2 p-1 bg-bgdark rounded-2xl mb-5">
+        <button id="tabBuy" onclick="setSide('BUY')" class="py-2.5 rounded-xl font-bold text-xs">Buy</button>
+        <button id="tabSell" onclick="setSide('SELL')" class="py-2.5 rounded-xl font-bold text-xs">Sell</button>
+      </div>
+      <label for="amt" class="block text-xs text-slate-400 mb-1.5">Amount in USD</label>
+      <div class="relative mb-3">
+        <span class="absolute left-4 top-3 font-mono text-slate-400 text-lg">$</span>
+        <input id="amt" type="number" value="1000" min="1" step="any" oninput="preview()" class="w-full bg-bgdark border border-slate-800 rounded-2xl pl-9 pr-4 py-3 font-mono text-xl font-bold focus:outline-none focus:border-mint">
+      </div>
+      <div class="grid grid-cols-4 gap-2 mb-4 font-mono text-xs">
+        <button onclick="quick(100)" class="py-2 rounded-xl bg-slate-800 hover:bg-slate-700">$100</button>
+        <button onclick="quick(1000)" class="py-2 rounded-xl bg-slate-800 hover:bg-slate-700">$1k</button>
+        <button onclick="quick(10000)" class="py-2 rounded-xl bg-slate-800 hover:bg-slate-700">$10k</button>
+        <button onclick="maxAmt()" class="py-2 rounded-xl bg-mint/15 hover:bg-mint/25 text-mint font-bold">Max</button>
+      </div>
+      <div class="flex justify-between text-xs text-slate-400 mb-4 px-1"><span>You get</span><span id="est" class="font-mono text-white font-semibold">0</span></div>
+      <button id="go" onclick="trade()" class="w-full py-3.5 rounded-2xl font-bold text-sm">Buy BTC</button>
+    </div>
+
+    <div class="bg-card border border-slate-800 rounded-3xl p-5">
+      <div class="grid grid-cols-2 gap-2 p-1 bg-bgdark rounded-2xl mb-4 text-xs font-bold">
+        <button id="tabBoard" onclick="setTab('board')" class="py-2 rounded-xl">Leaderboard</button>
+        <button id="tabHold" onclick="setTab('hold')" class="py-2 rounded-xl">My investments</button>
+      </div>
+      <div id="listBox" class="space-y-2 max-h-[420px] overflow-y-auto"></div>
+    </div>
+  </aside>
+</main>
+
+<!-- USERNAME MODAL -->
+<div id="nameModal" class="hidden fixed inset-0 z-50 bg-black/70 backdrop-blur-sm items-center justify-center p-4">
+  <div class="w-full max-w-sm bg-card border border-slate-700 rounded-3xl p-6">
+    <h2 class="text-lg font-bold">Choose your username</h2>
+    <p class="text-xs text-slate-400 mt-1 mb-4">This is the name other traders see on the leaderboard. Your Google name is never shown.</p>
+    <input id="nameInput" maxlength="16" autocomplete="off" placeholder="e.g. moon_trader" onkeydown="if(event.key==='Enter')submitName()" class="w-full bg-bgdark border border-slate-800 rounded-2xl px-4 py-3 font-mono font-bold focus:outline-none focus:border-mint">
+    <div id="nameErr" class="text-xs text-coral mt-2 min-h-[1rem]"></div>
+    <div class="flex gap-2 mt-3">
+      <button id="nameCancel" onclick="closeName()" class="hidden flex-1 py-3 rounded-2xl bg-slate-800 text-sm font-semibold">Cancel</button>
+      <button id="nameOk" onclick="submitName()" class="flex-1 py-3 rounded-2xl bg-mint text-black text-sm font-bold">Start trading</button>
+    </div>
+    <p class="text-[11px] text-slate-500 mt-3">3–16 characters: letters, numbers, underscore.</p>
+  </div>
+</div>
+
+<div id="toasts" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+<script type="module">
+import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {getAuth,GoogleAuthProvider,signInWithPopup,signInWithCredential,linkWithPopup,signInAnonymously,onAuthStateChanged,signOut} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import {getDatabase,ref,set,get,onValue,query,orderByChild,limitToLast,runTransaction} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+const app=initializeApp({
+  apiKey:"AIzaSyD47CV7A3CBN8WprDT190YBoja77HG6NJY",
+  authDomain:"advait-bd3da.firebaseapp.com",
+  databaseURL:"https://advait-bd3da-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId:"advait-bd3da",
+  storageBucket:"advait-bd3da.firebasestorage.app",
+  messagingSenderId:"816232706393",
+  appId:"1:816232706393:web:5aaa150277498ce2591c48"
+});
+const auth=getAuth(app), db=getDatabase(app), gp=new GoogleAuthProvider();
+const $=id=>document.getElementById(id);
+
+/* ---------- SHARED MARKET ----------
+   Prices are a fixed function of simulated time, so every player sees the
+   same price at the same moment and the leaderboard is fair. */
+const START=100000, YEAR=31557600, T0=Date.UTC(2026,10,8,9,30,0)/1000, LS='chronotrade_v3';
+const ASSETS=[
+  {s:'BTC',n:'Bitcoin',p:76400,d:.15,v:.6},{s:'ETH',n:'Ethereum',p:2920,d:.12,v:.65},
+  {s:'SOL',n:'Solana',p:198.5,d:.15,v:.75},{s:'NVDA',n:'NVIDIA',p:138.6,d:.15,v:.42},
+  {s:'AAPL',n:'Apple',p:228.5,d:.08,v:.24},{s:'TSLA',n:'Tesla',p:254.2,d:.1,v:.52}
+];
+const A=Object.fromEntries(ASSETS.map(a=>[a.s,a]));
+const PER=[11,47,420,3600,21600,86400,345600,1382400,5184000,17280000,63072000];
+const WT=[.004,.008,.03,.05,.07,.08,.09,.1,.1,.1,.1];
+const rnd=seed=>()=>{seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296};
+const f=(a,t)=>a.d*(t-T0)/YEAR+PER.reduce((s,P,i)=>s+a.v*WT[i]*Math.sin(6.2832*t/P+a.ph[i]),0);
+ASSETS.forEach(a=>{let h=7;for(const c of a.s)h=Math.imul(h^c.charCodeAt(0),16777619);const r=rnd(h);a.ph=PER.map(()=>r()*6.2832);a.f0=f(a,T0)});
+const priceAt=(a,t)=>a.p*Math.exp(f(a,t)-a.f0);
+
+/* ---------- STATE ---------- */
+const SPEEDS=[[0,'⏸'],[1,'1s'],[60,'1m'],[3600,'1h'],[86400,'1d']];
+const S={uid:null,name:'',online:false,google:false,ready:false,cash:START,start:START,t:T0,speed:60,span:7200,
+  sel:'BTC',side:'BUY',tab:'board',hold:{},board:[]};
+let hoverIdx=null;
+
+/* ---------- HELPERS ---------- */
+const money=v=>(v<0?'-':'')+'$'+Math.abs(v||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+const pct=v=>(v>=0?'+':'')+v.toFixed(2)+'%';
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmtT=t=>new Date(Math.floor(t)*1000).toISOString().slice(0,19).replace('T',' ');
+const setHTML=(el,h)=>{if(el._h!==h){el._h=h;el.innerHTML=h}};
+const px=sym=>priceAt(A[sym],S.t);
+const netWorth=()=>S.cash+Object.entries(S.hold).reduce((s,[k,h])=>s+h.qty*px(k),0);
+function topStr(){
+  const e=Object.entries(S.hold).map(([k,h])=>[k,h.qty*px(k)]).sort((a,b)=>b[1]-a[1]);
+  const tot=e.reduce((s,x)=>s+x[1],0)+S.cash;
+  return e.length?e.slice(0,3).map(([k,v])=>`${k} ${Math.round(v/tot*100)}%`).join(' · '):'All cash';
+}
+function toast(msg,bad){
+  const el=document.createElement('div');
+  el.className=`px-4 py-2.5 rounded-2xl bg-card border ${bad?'border-coral/50 text-coral':'border-mint/50 text-mint'} text-xs font-medium shadow-xl`;
+  el.textContent=msg;$('toasts').appendChild(el);setTimeout(()=>el.remove(),3000);
+}
+
+/* ---------- SAVE / SYNC ---------- */
+async function save(){
+  localStorage.setItem(LS,JSON.stringify({uid:S.uid,username:S.name,cash:S.cash,start:S.start,t:Math.floor(S.t),hold:S.hold}));
+  if(!S.online||!S.name||!S.ready)return;
+  const nw=netWorth(),now=Date.now();
+  try{
+    await Promise.all([
+      set(ref(db,'players/'+S.uid),{username:S.name,cash:S.cash,start:S.start,t:Math.floor(S.t),hold:S.hold,updatedAt:now}),
+      set(ref(db,'leaderboard/'+S.uid),{username:S.name,netWorth:Math.round(nw*100)/100,profitPct:Math.round((nw/S.start-1)*10000)/100,simSec:Math.floor(S.t),top:topStr(),updatedAt:now})
+    ]);
+    setStatus(true);
+  }catch(e){setStatus(false)}
+}
+function setStatus(ok){
+  const el=$('status');
+  el.textContent=ok?'● online':'● offline (saved locally)';
+  el.className='text-[10px] font-mono '+(ok?'text-mint':'text-amber-400');
+}
+
+let boardOn=false;
+function listenBoard(){
+  if(boardOn)return;boardOn=true;
+  onValue(query(ref(db,'leaderboard'),orderByChild('netWorth'),limitToLast(30)),snap=>{
+    const rows=[];snap.forEach(c=>{rows.push({uid:c.key,...c.val()})});S.board=rows;
+  },()=>{});
+}
+
+/* ---------- AUTH + USERNAME ---------- */
+onAuthStateChanged(auth,async user=>{
+  if(!user){try{await signInAnonymously(auth)}catch(e){boot(null)}return}
+  boot(user);
+});
+
+async function boot(user){
+  S.ready=false;
+  S.uid=user?user.uid:(localStorage.getItem('ct_guest')||(()=>{const g='guest_'+Math.random().toString(36).slice(2,10);localStorage.setItem('ct_guest',g);return g})());
+  S.online=!!user;
+  S.google=!!user?.providerData?.some(p=>p.providerId==='google.com');
+  let d=null;
+  if(user){try{const s=await get(ref(db,'players/'+S.uid));if(s.exists())d=s.val()}catch(e){S.online=false}}
+  if(!d){try{const l=JSON.parse(localStorage.getItem(LS));if(l&&l.uid===S.uid)d=l}catch(e){}}
+  Object.assign(S,{cash:d?.cash??START,start:d?.start??START,t:d?.t??T0,hold:d?.hold||{},name:d?.username||''});
+  S.ready=true;
+  if(S.online){listenBoard();setStatus(true)}else setStatus(false);
+  updateAuthUI();render();
+  if(!S.name)openName();else save();
+}
+
+function updateAuthUI(){
+  $('uname').textContent=S.name||'Pick a username';
+  $('avatar').textContent=(S.name||'?')[0].toUpperCase();
+  $('googleBtn').classList.toggle('hidden',S.google);
+  $('outBtn').classList.toggle('hidden',!S.google);
+}
+
+window.signInGoogle=async()=>{
+  try{
+    if(auth.currentUser?.isAnonymous){
+      await linkWithPopup(auth.currentUser,gp); // keeps your account, adds Google login
+      S.google=true;updateAuthUI();toast('Google linked. Your progress is safe.');
+    }else await signInWithPopup(auth,gp);
+  }catch(e){
+    if(e.code==='auth/credential-already-in-use'){
+      const c=GoogleAuthProvider.credentialFromError(e);
+      if(S.name){set(ref(db,'usernames/'+S.name.toLowerCase()),null).catch(()=>{});set(ref(db,'leaderboard/'+S.uid),null).catch(()=>{})}
+      try{await signInWithCredential(auth,c)}catch(err){toast(err.message,true)}
+    }else if(!['auth/popup-closed-by-user','auth/cancelled-popup-request'].includes(e.code)){
+      toast(e.code==='auth/unauthorized-domain'?'Add this domain in Firebase Console → Auth → Authorized domains.':e.message,true);
+    }
+  }
+};
+window.signOutUser=async()=>{try{await signOut(auth)}catch(e){}toast('Signed out.')};
+
+window.openName=()=>{
+  const m=$('nameModal');m.classList.remove('hidden');m.classList.add('flex');
+  $('nameInput').value=S.name;$('nameErr').textContent='';
+  $('nameCancel').classList.toggle('hidden',!S.name);
+  $('nameOk').textContent=S.name?'Save username':'Start trading';
+  setTimeout(()=>$('nameInput').focus(),50);
+};
+window.closeName=()=>{$('nameModal').classList.add('hidden');$('nameModal').classList.remove('flex')};
+
+async function claim(name){
+  if(!S.online)return{ok:true};
+  try{
+    const r=await runTransaction(ref(db,'usernames/'+name.toLowerCase()),cur=>(cur===null||cur===S.uid)?S.uid:undefined);
+    if(!r.committed)return{ok:false,err:'That username is taken. Try another.'};
+    if(S.name&&S.name.toLowerCase()!==name.toLowerCase())set(ref(db,'usernames/'+S.name.toLowerCase()),null).catch(()=>{});
+    return{ok:true};
+  }catch(e){S.online=false;setStatus(false);toast('Server unreachable. Playing offline.',true);return{ok:true}}
+}
+window.submitName=async()=>{
+  const v=$('nameInput').value.trim(),err=m=>{$('nameErr').textContent=m};
+  if(!/^[A-Za-z0-9_]{3,16}$/.test(v))return err('Use 3–16 letters, numbers or underscores.');
+  if(v===S.name)return closeName();
+  $('nameOk').disabled=true;
+  const r=await claim(v);
+  $('nameOk').disabled=false;
+  if(!r.ok)return err(r.err);
+  S.name=v;closeName();updateAuthUI();render();save();toast('Welcome, '+v+'!');
+};
+
+/* ---------- TRADING ---------- */
+const TAB_ON='py-2.5 rounded-xl font-bold text-xs ',TAB_OFF='text-slate-400 hover:text-white';
+window.setSide=side=>{
+  S.side=side;
+  $('tabBuy').className=TAB_ON+(side==='BUY'?'bg-mint text-black':TAB_OFF);
+  $('tabSell').className=TAB_ON+(side==='SELL'?'bg-coral text-white':TAB_OFF);
+  $('go').className='w-full py-3.5 rounded-2xl font-bold text-sm transition '+(side==='BUY'?'bg-mint text-black':'bg-coral text-white');
+  preview();
+};
+window.setTab=t=>{S.tab=t;render()};
+window.quick=n=>{$('amt').value=n;preview()};
+window.maxAmt=()=>{
+  const q=S.hold[S.sel]?.qty||0;
+  $('amt').value=Math.floor((S.side==='BUY'?S.cash:q*px(S.sel))*100)/100;preview();
+};
+window.preview=()=>{
+  const d=Math.max(0,parseFloat($('amt').value)||0);
+  $('est').textContent=(d/px(S.sel)).toFixed(4)+' '+S.sel;
+  $('go').textContent=(S.side==='BUY'?'Buy ':'Sell ')+S.sel;
+};
+window.trade=()=>{
+  const d=parseFloat($('amt').value),sym=S.sel,p=px(sym);
+  if(!d||d<=0)return toast('Enter an amount.',true);
+  if(S.side==='BUY'){
+    if(d>S.cash+.01)return toast('Not enough cash.',true);
+    const spend=Math.min(S.cash,d),u=spend/p;
+    S.cash-=spend;
+    const h=S.hold[sym]||(S.hold[sym]={qty:0,avgCost:0});
+    h.avgCost=(h.qty*h.avgCost+spend)/(h.qty+u);h.qty+=u;
+    toast(`Bought ${money(spend)} of ${sym}`);
+  }else{
+    const h=S.hold[sym],val=(h?.qty||0)*p;
+    if(val<.01)return toast(`You don't own any ${sym}.`,true);
+    const sell=Math.min(val,d);
+    h.qty-=sell/p;S.cash+=sell;
+    if(h.qty<=1e-6)delete S.hold[sym];
+    toast(`Sold ${money(sell)} of ${sym}`);
+  }
+  render();save();
+};
+window.resetAccount=()=>{
+  if(!confirm('Reset your cash, investments and date? Your username stays.'))return;
+  Object.assign(S,{cash:START,start:START,t:T0,hold:{}});render();save();toast('Portfolio reset.');
+};
+function setSpeed(v){
+  S.speed=v;if(v>0)S.span=Math.max(3600,v*120);
+  $('speedBtns').innerHTML=SPEEDS.map(([s,l])=>`<button data-sp="${s}" class="px-2.5 py-1 rounded-lg ${s===v?'bg-mint text-black font-bold':'bg-slate-800 text-slate-400 hover:text-white'}" title="${s?`1 real second = ${l.replace('s','')=== '1'?'1 second':l}`:'Pause'}">${s?'1s = '+l:l}</button>`).join('');
+}
+
+/* ---------- RENDER ---------- */
+const chg=a=>(priceAt(a,S.t)/priceAt(a,S.t-S.span)-1)*100;
+const pillCls=on=>'p-3 rounded-2xl border text-left transition '+(on?'bg-slate-800 border-mint':'bg-card border-slate-800 hover:border-slate-700');
+
+function render(){
+  $('clock').textContent=fmtT(S.t);
+  const nw=netWorth(),pr=nw-S.start,up=pr>=0;
+  $('nw').textContent=money(nw);$('cash').textContent=money(S.cash);
+  $('profit').textContent=`${up?'+':''}${money(pr)} (${pct(pr/S.start*100)})`;
+  $('profit').className='text-xs font-mono font-semibold mt-1 '+(up?'text-mint':'text-coral');
+
+  ASSETS.forEach(a=>{
+    const c=chg(a);
+    $('pill-'+a.s).className=pillCls(a.s===S.sel);
+    $('pc-'+a.s).textContent=money(priceAt(a,S.t));
+    $('pp-'+a.s).textContent=pct(c);
+    $('pp-'+a.s).className='text-[10px] font-mono '+(c>=0?'text-mint':'text-coral');
+  });
+
+  const a=A[S.sel],c=chg(a),own=S.hold[S.sel]?.qty||0;
+  $('cName').textContent=a.n;$('cTick').textContent=a.s;
+  $('cPrice').textContent=money(priceAt(a,S.t));
+  $('cChg').textContent=pct(c);$('cChg').className='text-xs font-mono font-semibold '+(c>=0?'text-mint':'text-coral');
+  $('cOwn').innerHTML=`You own <span class="text-white font-semibold">${own.toFixed(4)} ${a.s}</span><br>${money(own*priceAt(a,S.t))}`;
+  preview();
+
+  $('tabBoard').className='py-2 rounded-xl '+(S.tab==='board'?'bg-slate-700 text-white':TAB_OFF);
+  $('tabHold').className='py-2 rounded-xl '+(S.tab==='hold'?'bg-slate-700 text-white':TAB_OFF);
+  setHTML($('listBox'),S.tab==='board'?boardHTML(nw):holdHTML());
+  drawChart();
+}
+
+function boardHTML(nw){
+  let rows=S.board.filter(r=>r.uid!==S.uid);
+  if(S.name)rows.push({uid:S.uid,username:S.name,netWorth:nw,profitPct:(nw/S.start-1)*100,simSec:S.t,top:topStr(),me:true});
+  rows.sort((x,y)=>y.netWorth-x.netWorth);
+  if(!rows.length)return'<div class="text-xs text-slate-500 py-8 text-center">No traders yet.</div>';
+  const medal=['🥇','🥈','🥉'];
+  return rows.map((r,i)=>`
+    <div class="p-3 rounded-2xl border ${r.me?'bg-mint/10 border-mint/40':'bg-bgdark border-slate-800'} flex items-center gap-3">
+      <div class="w-6 text-center text-sm font-mono text-slate-400">${medal[i]||i+1}</div>
+      <div class="min-w-0 flex-1">
+        <div class="text-sm font-bold truncate">${esc(r.username)}${r.me?' <span class="text-[10px] text-mint font-normal">you</span>':''}</div>
+        <div class="text-[10px] font-mono text-slate-500 truncate">${esc(r.top||'')} · ${fmtT(r.simSec||T0).slice(0,10)}</div>
+      </div>
+      <div class="text-right font-mono">
+        <div class="text-sm font-bold">${money(r.netWorth)}</div>
+        <div class="text-[10px] ${r.profitPct>=0?'text-mint':'text-coral'}">${pct(r.profitPct||0)}</div>
+      </div>
+    </div>`).join('');
+}
+
+function holdHTML(){
+  const e=Object.entries(S.hold);
+  if(!e.length)return'<div class="text-xs text-slate-500 py-8 text-center">Nothing yet. Pick an asset and buy.</div>';
+  return e.map(([sym,h])=>{
+    const val=h.qty*px(sym),pnl=val-h.qty*h.avgCost,pp=pnl/(h.qty*h.avgCost)*100;
+    return`<div data-sym="${sym}" class="p-3 rounded-2xl bg-bgdark border border-slate-800 hover:border-slate-700 flex items-center justify-between cursor-pointer">
+      <div><div class="font-bold text-sm">${sym}</div><div class="text-[11px] font-mono text-slate-400">${h.qty.toFixed(4)} units</div></div>
+      <div class="text-right font-mono"><div class="text-sm font-bold">${money(val)}</div>
+      <div class="text-[11px] ${pnl>=0?'text-mint':'text-coral'}">${pnl>=0?'+':''}${money(pnl)} (${pct(pp)})</div></div></div>`;
+  }).join('');
+}
+
+/* ---------- CHART ---------- */
+const N=90,tAt=i=>S.t-S.span*(1-i/(N-1));
+function drawChart(){
+  const cv=$('chart'),ctx=cv.getContext('2d'),dpr=window.devicePixelRatio||1,r=cv.getBoundingClientRect();
+  if(!r.width)return;
+  cv.width=r.width*dpr;cv.height=r.height*dpr;ctx.scale(dpr,dpr);
+  const W=r.width,H=r.height,a=A[S.sel];
+  const d=Array.from({length:N},(_,i)=>priceAt(a,tAt(i)));
+  let min=Math.min(...d),max=Math.max(...d);if(max===min){max*=1.01;min*=.99}
+  const pad=18,X=i=>i/(N-1)*W,Y=v=>pad+(H-pad*2)*(1-(v-min)/(max-min));
+  const up=d[N-1]>=d[0],col=up?'#00d09c':'#ff5252';
+  ctx.beginPath();d.forEach((v,i)=>i?ctx.lineTo(X(i),Y(v)):ctx.moveTo(X(i),Y(v)));
+  ctx.strokeStyle=col;ctx.lineWidth=2.5;ctx.lineJoin='round';ctx.stroke();
+  const g=ctx.createLinearGradient(0,0,0,H);
+  g.addColorStop(0,up?'rgba(0,208,156,.22)':'rgba(255,82,82,.22)');g.addColorStop(1,'rgba(11,14,20,0)');
+  ctx.lineTo(W,H);ctx.lineTo(0,H);ctx.closePath();ctx.fillStyle=g;ctx.fill();
+  const h=S.hold[a.s];
+  if(h&&h.avgCost>=min&&h.avgCost<=max){
+    const y=Y(h.avgCost);ctx.save();ctx.setLineDash([4,4]);ctx.strokeStyle='#64748b';ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();
+    ctx.fillStyle='#94a3b8';ctx.font='10px "JetBrains Mono"';ctx.fillText('Your avg '+money(h.avgCost),8,y-6);ctx.restore();
+  }
+  const box=$('hover');
+  if(hoverIdx!==null){
+    const x=X(hoverIdx),y=Y(d[hoverIdx]);
+    ctx.strokeStyle='#475569';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();
+    ctx.beginPath();ctx.arc(x,y,4.5,0,6.2832);ctx.fillStyle=col;ctx.fill();
+    box.classList.remove('hidden');
+    box.innerHTML=`<span class="text-white font-bold">${money(d[hoverIdx])}</span> <span class="text-slate-400">${fmtT(tAt(hoverIdx))}</span>`;
+  }else box.classList.add('hidden');
+}
+
+/* ---------- INIT ---------- */
+ASSETS.forEach(a=>{
+  $('pills').insertAdjacentHTML('beforeend',`<button id="pill-${a.s}" data-sym="${a.s}"><div class="flex justify-between"><span class="font-bold text-xs">${a.s}</span><span id="pp-${a.s}"></span></div><div id="pc-${a.s}" class="font-mono font-semibold text-sm mt-1 truncate"></div></button>`);
+});
+// pointerdown (not click) so selection still works while the UI refreshes
+const pick=e=>{const el=e.target.closest('[data-sym]');if(el){S.sel=el.dataset.sym;render()}};
+$('pills').addEventListener('pointerdown',pick);
+$('listBox').addEventListener('pointerdown',pick);
+$('speedBtns').addEventListener('pointerdown',e=>{const b=e.target.closest('[data-sp]');if(b)setSpeed(+b.dataset.sp)});
+
+const cv=$('chart');
+cv.addEventListener('pointermove',e=>{const r=cv.getBoundingClientRect();hoverIdx=Math.max(0,Math.min(N-1,Math.round((e.clientX-r.left)/r.width*(N-1))));drawChart()});
+cv.addEventListener('pointerleave',()=>{hoverIdx=null;drawChart()});
+window.addEventListener('resize',drawChart);
+
+setSpeed(60);setSide('BUY');render();
+
+let last=performance.now(),lastR=0,lastS=0;
+(function loop(now){
+  const dt=Math.min(.25,(now-last)/1000);last=now;
+  if(S.speed>0)S.t+=dt*S.speed;
+  if(now-lastR>250){lastR=now;render()}
+  if(now-lastS>10000){lastS=now;save()}
+  requestAnimationFrame(loop);
+})(performance.now());
+window.addEventListener('beforeunload',save);
+</script>
 </body>
 </html>
