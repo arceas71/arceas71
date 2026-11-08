@@ -66,19 +66,26 @@
                     </div>
                 </div>
 
-                <!-- Compact simulation controls -->
-                <div class="flex items-center gap-2 text-xs font-mono">
-                    <select id="speedSelect" onchange="window.setSpeed(Number(this.value))"
-                        class="bg-bgdark border border-slate-700 rounded-lg px-3 py-2 text-slate-200 focus:outline-none focus:border-mint">
-                        <option value="0">Paused</option>
-                        <option value="1">1 sec = 1 sec</option>
-                        <option value="60" selected>1 sec = 1 min</option>
-                        <option value="3600">1 sec = 1 hour</option>
-                        <option value="86400">1 sec = 1 day</option>
-                    </select>
-                    <button onclick="window.skipTime(86400 * 365)"
-                        class="px-3 py-2 rounded-lg bg-slate-800 text-slate-300 hover:text-white transition"
-                        title="Fast-forward one year">+1 year</button>
+                <!-- 5 Simple Speed Buttons -->
+                <div class="flex items-center space-x-1 text-xs font-mono">
+                    <button onclick="window.setSpeed(0)" id="spd0" class="px-2.5 py-1 rounded-lg bg-slate-800 text-slate-400 hover:text-white transition" title="Pause">
+                        ⏸ Pause
+                    </button>
+                    <button onclick="window.setSpeed(1)" id="spd1" class="px-2.5 py-1 rounded-lg bg-slate-800 text-slate-400 hover:text-white transition" title="1 real second = 1 simulated second">
+                        1s = 1s
+                    </button>
+                    <button onclick="window.setSpeed(60)" id="spd60" class="px-2.5 py-1 rounded-lg bg-mint text-black font-bold transition" title="1 real second = 1 simulated minute">
+                        1s = 1m
+                    </button>
+                    <button onclick="window.setSpeed(3600)" id="spd3600" class="px-2.5 py-1 rounded-lg bg-slate-800 text-slate-400 hover:text-white transition" title="1 real second = 1 simulated hour">
+                        1s = 1h
+                    </button>
+                    <button onclick="window.setSpeed(86400)" id="spd86400" class="px-2.5 py-1 rounded-lg bg-slate-800 text-slate-400 hover:text-white transition" title="1 real second = 24 simulated hours (1 day)">
+                        1s = 1d
+                    </button>
+                    <button onclick="window.skipTime(86400 * 365)" class="ml-1 px-2.5 py-1 rounded-lg bg-indigo-500/20 text-indigo-300 hover:bg-indigo-500/30 border border-indigo-500/30 transition" title="Instant Jump +1 Year">
+                        +1 Yr
+                    </button>
                 </div>
             </div>
 
@@ -493,8 +500,13 @@
                 ? 'w-2 h-2 rounded-full bg-amber-400'
                 : 'w-2 h-2 rounded-full bg-mint animate-pulse';
 
-            const speedSelect = document.getElementById('speedSelect');
-            if (speedSelect) speedSelect.value = String(simSecsPerRealSec);
+            [0, 1, 60, 3600, 86400].forEach(spd => {
+                const btn = document.getElementById(`spd${spd}`);
+                if (!btn) return;
+                btn.className = (spd === simSecsPerRealSec)
+                    ? "px-2.5 py-1 rounded-lg bg-mint text-black font-bold transition"
+                    : "px-2.5 py-1 rounded-lg bg-slate-800 text-slate-400 hover:text-white transition";
+            });
         };
 
         window.skipTime = function(simSeconds) {
@@ -558,7 +570,7 @@
         function updateClockText() {
             const d = new Date(state.simTimeMs);
             const pad = n => String(n).padStart(2, '0');
-            const str = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`; // Display only through seconds
+            const str = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
             document.getElementById('simClockDisplay').textContent = str;
         }
 
