@@ -41,6 +41,16 @@ input:focus-visible,button:focus-visible{outline:2px solid #00d09c;outline-offse
   </div>
 </header>
 
+<div id="adminBar" class="hidden border-b border-amber-500/30 bg-amber-500/5">
+  <div class="max-w-6xl mx-auto px-4 py-2 flex flex-wrap items-center gap-2 text-xs font-mono">
+    <span class="text-amber-400 font-bold">Admin</span><span class="text-slate-400">Jump everyone forward:</span>
+    <button onclick="skip(3600)" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700">+1h</button>
+    <button onclick="skip(86400)" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700">+1d</button>
+    <button onclick="skip(2592000)" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700">+30d</button>
+    <button onclick="skip(31557600)" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700">+1y</button>
+    <button onclick="skip(0,true)" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-coral/20 hover:text-coral">Reset clock</button>
+  </div>
+</div>
 <main class="max-w-6xl mx-auto px-4 py-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
 
   <!-- LEFT -->
@@ -57,7 +67,15 @@ input:focus-visible,button:focus-visible{outline:2px solid #00d09c;outline-offse
       </div>
     </div>
 
-    <div id="pills" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2.5"></div>
+    <div class="bg-card border border-slate-800 rounded-3xl p-4">
+      <div class="flex flex-wrap items-center gap-2 mb-3">
+        <input id="search" placeholder="Search stocks & crypto" autocomplete="off" class="flex-1 min-w-[140px] bg-bgdark border border-slate-800 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-mint">
+        <div id="filters" class="flex flex-wrap gap-1 text-[11px] font-semibold">
+          <button data-f="all">All</button><button data-f="stock">Stocks</button><button data-f="crypto">Crypto</button><button data-f="owned">Owned</button><button data-f="gain">Top movers</button>
+        </div>
+      </div>
+      <div id="market" class="grid grid-cols-1 sm:grid-cols-2 gap-1.5 max-h-[250px] overflow-y-auto pr-1"></div>
+    </div>
 
     <div class="bg-card border border-slate-800 rounded-3xl p-6">
       <div class="flex items-start justify-between mb-4 gap-3">
@@ -127,7 +145,7 @@ input:focus-visible,button:focus-visible{outline:2px solid #00d09c;outline-offse
 <script type="module">
 import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {getAuth,GoogleAuthProvider,signInWithPopup,signInWithCredential,linkWithPopup,signInAnonymously,onAuthStateChanged,signOut} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import {getDatabase,ref,set,get,onValue,query,orderByChild,limitToLast,runTransaction} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+import {getDatabase,ref,set,get,onValue,query,orderByChild,limitToLast,runTransaction,serverTimestamp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 const app=initializeApp({
   apiKey:"AIzaSyD47CV7A3CBN8WprDT190YBoja77HG6NJY",
@@ -140,16 +158,27 @@ const app=initializeApp({
 });
 const auth=getAuth(app), db=getDatabase(app), gp=new GoogleAuthProvider();
 const $=id=>document.getElementById(id);
+const ADMINS=['sudarshansaxena718@gmail.com','sukhdevsaxena854@gmail.com'];
+const isAdmin=u=>!!(u&&u.email&&u.emailVerified&&ADMINS.includes(u.email.toLowerCase()));
 
 /* ---------- SHARED MARKET ----------
    Prices are a fixed function of simulated time, so every player sees the
    same price at the same moment and the leaderboard is fair. */
 const START=100000, YEAR=31557600, T0=Date.UTC(2026,10,8,9,30,0)/1000, LS='chronotrade_v3';
 const ASSETS=[
-  {s:'BTC',n:'Bitcoin',p:76400,d:.15,v:.6},{s:'ETH',n:'Ethereum',p:2920,d:.12,v:.65},
-  {s:'SOL',n:'Solana',p:198.5,d:.15,v:.75},{s:'NVDA',n:'NVIDIA',p:138.6,d:.15,v:.42},
-  {s:'AAPL',n:'Apple',p:228.5,d:.08,v:.24},{s:'TSLA',n:'Tesla',p:254.2,d:.1,v:.52}
-];
+['AAPL','Apple',228.5,.08,.24],['MSFT','Microsoft',430,.09,.22],['NVDA','NVIDIA',138.6,.15,.45],['GOOGL','Alphabet',175,.09,.27],
+['AMZN','Amazon',200,.1,.3],['META','Meta',590,.1,.36],['TSLA','Tesla',254.2,.1,.55],['NFLX','Netflix',850,.1,.35],
+['AMD','AMD',125,.12,.5],['INTC','Intel',22,.03,.45],['ORCL','Oracle',170,.09,.32],['CRM','Salesforce',320,.08,.3],
+['ADBE','Adobe',480,.07,.3],['AVGO','Broadcom',190,.12,.4],['PLTR','Palantir',75,.15,.6],['UBER','Uber',80,.1,.35],
+['COIN','Coinbase',260,.12,.65],['JPM','JPMorgan',245,.07,.2],['BAC','Bank of America',44,.06,.24],['GS','Goldman Sachs',580,.08,.27],
+['V','Visa',310,.08,.19],['MA','Mastercard',520,.08,.2],['BRK.B','Berkshire Hathaway',470,.07,.15],['JNJ','Johnson & Johnson',155,.04,.16],
+['PFE','Pfizer',26,.03,.22],['UNH','UnitedHealth',520,.06,.24],['LLY','Eli Lilly',780,.12,.3],['WMT','Walmart',95,.07,.17],
+['COST','Costco',980,.09,.2],['KO','Coca-Cola',62,.04,.14],['PEP','PepsiCo',150,.03,.15],['MCD','McDonald\'s',295,.05,.15],
+['NKE','Nike',75,.04,.27],['DIS','Disney',110,.05,.27],['XOM','Exxon Mobil',115,.04,.22],['CVX','Chevron',150,.04,.2],
+['BA','Boeing',170,.05,.35],['F','Ford',11,.02,.3],['SBUX','Starbucks',95,.05,.26],['T','AT&T',22,.03,.17],
+['BTC','Bitcoin',76400,.15,.6,'C'],['ETH','Ethereum',2920,.12,.65,'C'],['SOL','Solana',198.5,.15,.75,'C'],['BNB','BNB',600,.1,.55,'C'],
+['XRP','XRP',2.4,.1,.8,'C'],['ADA','Cardano',.9,.08,.8,'C'],['DOGE','Dogecoin',.32,.08,.95,'C'],['LINK','Chainlink',18,.1,.8,'C']
+].map(([s,n,p,d,v,t])=>({s,n,p,d,v,t:t||'S'}));
 const A=Object.fromEntries(ASSETS.map(a=>[a.s,a]));
 const PER=[11,47,420,3600,21600,86400,345600,1382400,5184000,17280000,63072000];
 const WT=[.004,.008,.03,.05,.07,.08,.09,.1,.1,.1,.1];
@@ -161,7 +190,7 @@ const priceAt=(a,t)=>a.p*Math.exp(f(a,t)-a.f0);
 /* ---------- STATE ---------- */
 const SPEEDS=[[0,'⏸'],[1,'1s'],[60,'1m'],[3600,'1h'],[86400,'1d']];
 const S={uid:null,name:'',online:false,google:false,ready:false,cash:START,start:START,t:T0,speed:60,span:7200,
-  sel:'BTC',side:'BUY',tab:'board',hold:{},log:[],board:[]};
+  sel:'BTC',side:'BUY',tab:'board',hold:{},log:[],board:[],q:'',f:'all'};
 let hoverIdx=null;
 
 /* ---------- HELPERS ---------- */
@@ -191,7 +220,7 @@ async function save(){
   try{
     await Promise.all([
       set(ref(db,'players/'+S.uid),{username:S.name,cash:S.cash,start:S.start,t:Math.floor(S.t),hold:S.hold,log:S.log,updatedAt:now}),
-      set(ref(db,'leaderboard/'+S.uid),{username:S.name,netWorth:Math.round(nw*100)/100,profitPct:Math.round((nw/S.start-1)*10000)/100,simSec:Math.floor(S.t),top:topStr(),updatedAt:now})
+      set(ref(db,'leaderboard/'+S.uid),{username:S.name,cash:S.cash,start:S.start,hold:Object.fromEntries(Object.entries(S.hold).map(([k,h])=>[k,h.qty])),updatedAt:now})
     ]);
     setStatus(true);
   }catch(e){setStatus(false)}
@@ -205,10 +234,35 @@ function setStatus(ok){
 let boardOn=false;
 function listenBoard(){
   if(boardOn)return;boardOn=true;
-  onValue(query(ref(db,'leaderboard'),orderByChild('netWorth'),limitToLast(30)),snap=>{
+  onValue(ref(db,'leaderboard'),snap=>{
     const rows=[];snap.forEach(c=>{rows.push({uid:c.key,...c.val()})});S.board=rows;
   },()=>{});
 }
+
+/* ---------- SHARED CLOCK (one clock for every player, admin controls it) ---------- */
+let off=0,clockOn=false;
+const nowMs=()=>Date.now()+off;
+function tickClock(){
+  const c=S.clock;if(!c)return;
+  S.speed=c.speed;if(c.speed>0)S.span=Math.max(3600,c.speed*120);
+  S.t=c.baseSim+(c.speed?Math.max(0,(nowMs()-c.baseReal)/1000)*c.speed:0);
+}
+function listenWorld(){
+  if(clockOn)return;clockOn=true;
+  onValue(ref(db,'.info/serverTimeOffset'),x=>{off=x.val()||0});
+  onValue(ref(db,'world/clock'),x=>{
+    if(x.exists())S.clock=x.val();
+    else set(ref(db,'world/clock'),{baseSim:T0,baseReal:serverTimestamp(),speed:60}).catch(()=>{});
+  },()=>{});
+  setTimeout(()=>{if(!S.clock)S.clock={baseSim:T0,baseReal:nowMs(),speed:60}},4000);
+}
+async function setClock(speed,skipSec=0,reset=false){
+  if(!S.admin)return;
+  const t=reset?T0:S.t+skipSec;
+  try{await set(ref(db,'world/clock'),{baseSim:Math.floor(t),baseReal:serverTimestamp(),speed:speed===undefined?S.speed:speed});toast(reset?'Clock reset for everyone.':skipSec?'Time jumped for everyone.':'Speed changed for everyone.')}
+  catch(e){toast('Blocked by database rules. Admin rules not set up yet.',true)}
+}
+window.skip=(sec,reset)=>setClock(undefined,sec,reset);
 
 /* ---------- AUTH + USERNAME ---------- */
 onAuthStateChanged(auth,async user=>{
@@ -221,19 +275,22 @@ async function boot(user){
   S.uid=user?user.uid:(localStorage.getItem('ct_guest')||(()=>{const g='guest_'+Math.random().toString(36).slice(2,10);localStorage.setItem('ct_guest',g);return g})());
   S.online=!!user;
   S.google=!!user?.providerData?.some(p=>p.providerId==='google.com');
+  S.admin=isAdmin(user);
   let d=null,migrated=false;
   if(user){try{const s=await get(ref(db,'players/'+S.uid));if(s.exists())d=s.val()}catch(e){S.online=false}}
   if(!d){try{const l=JSON.parse(localStorage.getItem(LS));if(l&&(l.uid===S.uid||(user&&String(l.uid).startsWith('guest_')))){d=l;migrated=l.uid!==S.uid}}catch(e){}}
   Object.assign(S,{cash:d?.cash??START,start:d?.start??START,t:d?.t??T0,hold:d?.hold||{},log:d?.log||[],name:d?.username||''});
+  for(const k of Object.keys(S.hold))if(!A[k]){S.cash+=S.hold[k].qty*S.hold[k].avgCost;delete S.hold[k]}
   if(migrated&&S.online&&S.name){const n=S.name;S.name='';const r=await claim(n);S.name=r.ok?n:''}
   S.ready=true;
-  if(S.online){listenBoard();setStatus(true)}else setStatus(false);
+  if(S.online){listenBoard();listenWorld();setStatus(true)}else{setStatus(false);S.clock={baseSim:d?.t??T0,baseReal:Date.now(),speed:60}}
   updateAuthUI();render();
   if(!S.name)openName();else save();
 }
 
 function updateAuthUI(){
-  $('uname').textContent=S.name||'Pick a username';
+  $('uname').textContent=(S.name||'Pick a username')+(S.admin?' 🛡':'');
+  $('adminBar').classList.toggle('hidden',!S.admin);
   $('avatar').textContent=(S.name||'?')[0].toUpperCase();
   $('googleBtn').classList.toggle('hidden',S.google);$('googleBtn').textContent=S.online?'Save with Google':'Sign in with Google';
   $('outBtn').classList.toggle('hidden',!S.google);
@@ -243,7 +300,8 @@ window.signInGoogle=async()=>{
   try{
     if(auth.currentUser?.isAnonymous){
       await linkWithPopup(auth.currentUser,gp); // keeps your account, adds Google login
-      S.google=true;updateAuthUI();toast('Google linked. Your progress is safe.');
+      await auth.currentUser.reload();await auth.currentUser.getIdToken(true);
+      S.google=true;S.admin=isAdmin(auth.currentUser);updateAuthUI();render();toast('Google linked. Your progress is safe.');
     }else await signInWithPopup(auth,gp);
   }catch(e){
     if(e.code==='auth/credential-already-in-use'){
@@ -329,12 +387,15 @@ window.trade=()=>{
 };
 const logT=(side,sym,usd,p)=>{S.log.unshift({t:Math.floor(S.t),side,sym,usd:Math.round(usd*100)/100,p:Math.round(p*100)/100});S.log=S.log.slice(0,30)};
 window.resetAccount=()=>{
-  if(!confirm('Reset your cash, investments and date? Your username stays.'))return;
+  if(!confirm('Reset your cash and investments? Your username stays.'))return;
   Object.assign(S,{cash:START,start:START,t:T0,hold:{},log:[]});render();save();toast('Portfolio reset.');
 };
-function setSpeed(v){
-  S.speed=v;if(v>0)S.span=Math.max(3600,v*120);
-  $('speedBtns').innerHTML=SPEEDS.map(([s,l])=>`<button data-sp="${s}" class="px-2.5 py-1 rounded-lg ${s===v?'bg-mint text-black font-bold':'bg-slate-800 text-slate-400 hover:text-white'}" title="${s?'1 real second = '+({1:'1 second',60:'1 minute',3600:'1 hour',86400:'1 day'}[s]):'Pause'}">${s?'1s = '+l:l}</button>`).join('');
+const SPLBL={0:'Paused',1:'1s = 1s',60:'1s = 1m',3600:'1s = 1h',86400:'1s = 1d'};
+function drawSpeed(){
+  const v=S.speed;
+  setHTML($('speedBtns'),S.admin
+    ?SPEEDS.map(([s,l])=>`<button data-sp="${s}" class="px-2.5 py-1 rounded-lg ${s===v?'bg-mint text-black font-bold':'bg-slate-800 text-slate-400 hover:text-white'}">${s?'1s = '+l:l}</button>`).join('')
+    :`<span class="px-2.5 py-1 rounded-lg bg-slate-800 text-slate-300" title="Set by the admin for all players">${SPLBL[v]||('1s = '+v+'s')} · shared</span>`);
 }
 
 /* ---------- RENDER ---------- */
@@ -342,19 +403,15 @@ const chg=a=>(priceAt(a,S.t)/priceAt(a,S.t-S.span)-1)*100;
 const pillCls=on=>'p-3 rounded-2xl border text-left transition '+(on?'bg-slate-800 border-mint':'bg-card border-slate-800 hover:border-slate-700');
 
 function render(){
+  drawSpeed();
   $('clock').textContent=fmtT(S.t);
   const nw=netWorth(),pr=nw-S.start,up=pr>=0;
   $('nw').textContent=money(nw);$('cash').textContent=money(S.cash);
   $('profit').textContent=`${up?'+':''}${money(pr)} (${pct(pr/S.start*100)})`;
   $('profit').className='text-xs font-mono font-semibold mt-1 '+(up?'text-mint':'text-coral');
 
-  ASSETS.forEach(a=>{
-    const c=chg(a);
-    $('pill-'+a.s).className=pillCls(a.s===S.sel);
-    $('pc-'+a.s).textContent=money(priceAt(a,S.t));
-    $('pp-'+a.s).textContent=pct(c);
-    $('pp-'+a.s).className='text-[10px] font-mono '+(c>=0?'text-mint':'text-coral');
-  });
+  setHTML($('market'),marketHTML());
+  document.querySelectorAll('#filters [data-f]').forEach(b=>{b.className='px-2.5 py-1.5 rounded-lg '+(b.dataset.f===S.f?'bg-mint text-black':'bg-slate-800 text-slate-400 hover:text-white')});
 
   const a=A[S.sel],c=chg(a),own=S.hold[S.sel]?.qty||0;
   $('cName').textContent=a.n;$('cTick').textContent=a.s;
@@ -370,24 +427,44 @@ function render(){
   drawChart();
 }
 
-function boardHTML(nw){
-  let rows=S.board.filter(r=>r.uid!==S.uid);
-  if(S.name)rows.push({uid:S.uid,username:S.name,netWorth:nw,profitPct:(nw/S.start-1)*100,simSec:S.t,top:topStr(),me:true});
-  rows.sort((x,y)=>y.netWorth-x.netWorth);
+const rowNW=r=>(r.cash||0)+Object.entries(r.hold||{}).reduce((t,[k,q])=>t+(A[k]?q*px(k):0),0);
+function rowTop(r){
+  const e=Object.entries(r.hold||{}).filter(([k])=>A[k]).map(([k,q])=>[k,q*px(k)]).sort((a,b)=>b[1]-a[1]);
+  return e.length?e.slice(0,2).map(([k,v])=>`${k} ${Math.round(v/(r.nw||1)*100)}%`).join(' · '):'All cash';
+}
+function marketHTML(){
+  const q=S.q.trim().toLowerCase();
+  const rows=ASSETS.filter(a=>(S.f==='all'||S.f==='gain'||(S.f==='stock'&&a.t==='S')||(S.f==='crypto'&&a.t==='C')||(S.f==='owned'&&S.hold[a.s]))
+    &&(!q||a.s.toLowerCase().includes(q)||a.n.toLowerCase().includes(q))).map(a=>({a,c:chg(a)}));
+  if(S.f==='gain')rows.sort((x,y)=>y.c-x.c);
+  if(!rows.length)return'<div class="col-span-full text-xs text-slate-500 py-6 text-center">No matches.</div>';
+  return rows.map(({a,c})=>`<button data-sym="${a.s}" class="${pillCls(a.s===S.sel)} flex items-center justify-between gap-2 !p-2.5">
+    <div class="min-w-0"><div class="font-bold text-xs">${a.s}</div><div class="text-[10px] text-slate-500 truncate">${esc(a.n)}</div></div>
+    <div class="text-right font-mono"><div class="text-xs font-semibold">${money(priceAt(a,S.t))}</div><div class="text-[10px] ${c>=0?'text-mint':'text-coral'}">${pct(c)}</div></div></button>`).join('');
+}
+function boardHTML(){
+  const rows=S.board.filter(r=>r.uid!==S.uid&&r.username).map(r=>({...r}));
+  if(S.name)rows.push({uid:S.uid,username:S.name,cash:S.cash,start:S.start,hold:Object.fromEntries(Object.entries(S.hold).map(([k,h])=>[k,h.qty])),me:true});
+  rows.forEach(r=>{r.nw=rowNW(r);r.pp=(r.nw/(r.start||START)-1)*100});
+  rows.sort((x,y)=>y.nw-x.nw);
   if(!rows.length)return'<div class="text-xs text-slate-500 py-8 text-center">No traders yet.</div>';
   const medal=['🥇','🥈','🥉'];
-  return rows.map((r,i)=>`
+  const row=(r,i)=>`
     <div class="p-3 rounded-2xl border ${r.me?'bg-mint/10 border-mint/40':'bg-bgdark border-slate-800'} flex items-center gap-3">
       <div class="w-6 text-center text-sm font-mono text-slate-400">${medal[i]||i+1}</div>
       <div class="min-w-0 flex-1">
         <div class="text-sm font-bold truncate">${esc(r.username)}${r.me?' <span class="text-[10px] text-mint font-normal">you</span>':''}</div>
-        <div class="text-[10px] font-mono text-slate-500 truncate">${esc(r.top||'')} · ${fmtT(r.simSec||T0).slice(0,10)}</div>
+        <div class="text-[10px] font-mono text-slate-500 truncate">${esc(rowTop(r))}</div>
       </div>
       <div class="text-right font-mono">
-        <div class="text-sm font-bold">${money(r.netWorth)}</div>
-        <div class="text-[10px] ${r.profitPct>=0?'text-mint':'text-coral'}">${pct(r.profitPct||0)}</div>
+        <div class="text-sm font-bold">${money(r.nw)}</div>
+        <div class="text-[10px] ${r.pp>=0?'text-mint':'text-coral'}">${pct(r.pp)}</div>
       </div>
-    </div>`).join('');
+    </div>`;
+  let out=rows.slice(0,30).map(row).join('');
+  const mi=rows.findIndex(r=>r.me);
+  if(mi>=30)out+='<div class="text-center text-slate-600 text-xs">···</div>'+row(rows[mi],mi);
+  return out;
 }
 
 function logHTML(){
@@ -442,28 +519,27 @@ function drawChart(){
 }
 
 /* ---------- INIT ---------- */
-ASSETS.forEach(a=>{
-  $('pills').insertAdjacentHTML('beforeend',`<button id="pill-${a.s}" data-sym="${a.s}"><div class="flex justify-between"><span class="font-bold text-xs">${a.s}</span><span id="pp-${a.s}"></span></div><div id="pc-${a.s}" class="font-mono font-semibold text-sm mt-1 truncate"></div></button>`);
-});
 // pointerdown (not click) so selection still works while the UI refreshes
 const pick=e=>{const el=e.target.closest('[data-sym]');if(el){S.sel=el.dataset.sym;render()}};
-$('pills').addEventListener('pointerdown',pick);
+$('market').addEventListener('pointerdown',pick);
+$('search').addEventListener('input',e=>{S.q=e.target.value;render()});
+$('filters').addEventListener('pointerdown',e=>{const b=e.target.closest('[data-f]');if(b){S.f=b.dataset.f;render()}});
 $('listBox').addEventListener('pointerdown',pick);
-$('speedBtns').addEventListener('pointerdown',e=>{const b=e.target.closest('[data-sp]');if(b)setSpeed(+b.dataset.sp)});
+$('speedBtns').addEventListener('pointerdown',e=>{const b=e.target.closest('[data-sp]');if(b&&S.admin)setClock(+b.dataset.sp)});
 
 const cv=$('chart');
 cv.addEventListener('pointermove',e=>{const r=cv.getBoundingClientRect();hoverIdx=Math.max(0,Math.min(N-1,Math.round((e.clientX-r.left)/r.width*(N-1))));drawChart()});
 cv.addEventListener('pointerleave',()=>{hoverIdx=null;drawChart()});
 window.addEventListener('resize',drawChart);
 
-setSpeed(60);setSide('BUY');render();
+setSide('BUY');render();
 
 let last=performance.now(),lastR=0,lastS=0;
 (function loop(now){
   const dt=Math.min(.25,(now-last)/1000);last=now;
-  if(S.speed>0)S.t+=dt*S.speed;
+  tickClock();
   if(now-lastR>250){lastR=now;render()}
-  if(now-lastS>10000){lastS=now;save()}
+  if(now-lastS>60000){lastS=now;save()}
   requestAnimationFrame(loop);
 })(performance.now());
 window.addEventListener('beforeunload',save);
