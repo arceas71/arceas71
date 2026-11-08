@@ -84,12 +84,12 @@ input:focus-visible,button:focus-visible{outline:2px solid #00d09c;outline-offse
       <label for="amt" class="block text-xs text-slate-400 mb-1.5">Amount in USD</label>
       <div class="relative mb-3">
         <span class="absolute left-4 top-3 font-mono text-slate-400 text-lg">$</span>
-        <input id="amt" type="number" value="1000" min="1" step="any" oninput="preview()" class="w-full bg-bgdark border border-slate-800 rounded-2xl pl-9 pr-4 py-3 font-mono text-xl font-bold focus:outline-none focus:border-mint">
+        <input id="amt" type="number" value="1000" min="1" step="any" oninput="preview()" onkeydown="if(event.key==='Enter')trade()" class="w-full bg-bgdark border border-slate-800 rounded-2xl pl-9 pr-4 py-3 font-mono text-xl font-bold focus:outline-none focus:border-mint">
       </div>
       <div class="grid grid-cols-4 gap-2 mb-4 font-mono text-xs">
-        <button onclick="quick(100)" class="py-2 rounded-xl bg-slate-800 hover:bg-slate-700">$100</button>
-        <button onclick="quick(1000)" class="py-2 rounded-xl bg-slate-800 hover:bg-slate-700">$1k</button>
-        <button onclick="quick(10000)" class="py-2 rounded-xl bg-slate-800 hover:bg-slate-700">$10k</button>
+        <button onclick="frac(.25)" class="py-2 rounded-xl bg-slate-800 hover:bg-slate-700">25%</button>
+        <button onclick="frac(.5)" class="py-2 rounded-xl bg-slate-800 hover:bg-slate-700">50%</button>
+        <button onclick="frac(.75)" class="py-2 rounded-xl bg-slate-800 hover:bg-slate-700">75%</button>
         <button onclick="maxAmt()" class="py-2 rounded-xl bg-mint/15 hover:bg-mint/25 text-mint font-bold">Max</button>
       </div>
       <div class="flex justify-between text-xs text-slate-400 mb-4 px-1"><span>You get</span><span id="est" class="font-mono text-white font-semibold">0</span></div>
@@ -97,9 +97,10 @@ input:focus-visible,button:focus-visible{outline:2px solid #00d09c;outline-offse
     </div>
 
     <div class="bg-card border border-slate-800 rounded-3xl p-5">
-      <div class="grid grid-cols-2 gap-2 p-1 bg-bgdark rounded-2xl mb-4 text-xs font-bold">
+      <div class="grid grid-cols-3 gap-2 p-1 bg-bgdark rounded-2xl mb-4 text-xs font-bold">
         <button id="tabBoard" onclick="setTab('board')" class="py-2 rounded-xl">Leaderboard</button>
-        <button id="tabHold" onclick="setTab('hold')" class="py-2 rounded-xl">My investments</button>
+        <button id="tabHold" onclick="setTab('hold')" class="py-2 rounded-xl">Holdings</button>
+        <button id="tabLog" onclick="setTab('log')" class="py-2 rounded-xl">History</button>
       </div>
       <div id="listBox" class="space-y-2 max-h-[420px] overflow-y-auto"></div>
     </div>
@@ -160,7 +161,7 @@ const priceAt=(a,t)=>a.p*Math.exp(f(a,t)-a.f0);
 /* ---------- STATE ---------- */
 const SPEEDS=[[0,'⏸'],[1,'1s'],[60,'1m'],[3600,'1h'],[86400,'1d']];
 const S={uid:null,name:'',online:false,google:false,ready:false,cash:START,start:START,t:T0,speed:60,span:7200,
-  sel:'BTC',side:'BUY',tab:'board',hold:{},board:[]};
+  sel:'BTC',side:'BUY',tab:'board',hold:{},log:[],board:[]};
 let hoverIdx=null;
 
 /* ---------- HELPERS ---------- */
@@ -184,12 +185,12 @@ function toast(msg,bad){
 
 /* ---------- SAVE / SYNC ---------- */
 async function save(){
-  localStorage.setItem(LS,JSON.stringify({uid:S.uid,username:S.name,cash:S.cash,start:S.start,t:Math.floor(S.t),hold:S.hold}));
+  localStorage.setItem(LS,JSON.stringify({uid:S.uid,username:S.name,cash:S.cash,start:S.start,t:Math.floor(S.t),hold:S.hold,log:S.log}));
   if(!S.online||!S.name||!S.ready)return;
   const nw=netWorth(),now=Date.now();
   try{
     await Promise.all([
-      set(ref(db,'players/'+S.uid),{username:S.name,cash:S.cash,start:S.start,t:Math.floor(S.t),hold:S.hold,updatedAt:now}),
+      set(ref(db,'players/'+S.uid),{username:S.name,cash:S.cash,start:S.start,t:Math.floor(S.t),hold:S.hold,log:S.log,updatedAt:now}),
       set(ref(db,'leaderboard/'+S.uid),{username:S.name,netWorth:Math.round(nw*100)/100,profitPct:Math.round((nw/S.start-1)*10000)/100,simSec:Math.floor(S.t),top:topStr(),updatedAt:now})
     ]);
     setStatus(true);
@@ -211,7 +212,7 @@ function listenBoard(){
 
 /* ---------- AUTH + USERNAME ---------- */
 onAuthStateChanged(auth,async user=>{
-  if(!user){try{await signInAnonymously(auth)}catch(e){boot(null)}return}
+  if(!user){try{await signInAnonymously(auth)}catch(e){boot(null);toast('Guest mode is off in Firebase. Sign in with Google to play online.',true)}return}
   boot(user);
 });
 
@@ -220,10 +221,11 @@ async function boot(user){
   S.uid=user?user.uid:(localStorage.getItem('ct_guest')||(()=>{const g='guest_'+Math.random().toString(36).slice(2,10);localStorage.setItem('ct_guest',g);return g})());
   S.online=!!user;
   S.google=!!user?.providerData?.some(p=>p.providerId==='google.com');
-  let d=null;
+  let d=null,migrated=false;
   if(user){try{const s=await get(ref(db,'players/'+S.uid));if(s.exists())d=s.val()}catch(e){S.online=false}}
-  if(!d){try{const l=JSON.parse(localStorage.getItem(LS));if(l&&l.uid===S.uid)d=l}catch(e){}}
-  Object.assign(S,{cash:d?.cash??START,start:d?.start??START,t:d?.t??T0,hold:d?.hold||{},name:d?.username||''});
+  if(!d){try{const l=JSON.parse(localStorage.getItem(LS));if(l&&(l.uid===S.uid||(user&&String(l.uid).startsWith('guest_')))){d=l;migrated=l.uid!==S.uid}}catch(e){}}
+  Object.assign(S,{cash:d?.cash??START,start:d?.start??START,t:d?.t??T0,hold:d?.hold||{},log:d?.log||[],name:d?.username||''});
+  if(migrated&&S.online&&S.name){const n=S.name;S.name='';const r=await claim(n);S.name=r.ok?n:''}
   S.ready=true;
   if(S.online){listenBoard();setStatus(true)}else setStatus(false);
   updateAuthUI();render();
@@ -233,7 +235,7 @@ async function boot(user){
 function updateAuthUI(){
   $('uname').textContent=S.name||'Pick a username';
   $('avatar').textContent=(S.name||'?')[0].toUpperCase();
-  $('googleBtn').classList.toggle('hidden',S.google);
+  $('googleBtn').classList.toggle('hidden',S.google);$('googleBtn').textContent=S.online?'Save with Google':'Sign in with Google';
   $('outBtn').classList.toggle('hidden',!S.google);
 }
 
@@ -299,6 +301,7 @@ window.maxAmt=()=>{
   const q=S.hold[S.sel]?.qty||0;
   $('amt').value=Math.floor((S.side==='BUY'?S.cash:q*px(S.sel))*100)/100;preview();
 };
+window.frac=f=>{const q=S.hold[S.sel]?.qty||0;$('amt').value=Math.floor((S.side==='BUY'?S.cash:q*px(S.sel))*f*100)/100;preview()};
 window.preview=()=>{
   const d=Math.max(0,parseFloat($('amt').value)||0);
   $('est').textContent=(d/px(S.sel)).toFixed(4)+' '+S.sel;
@@ -313,24 +316,25 @@ window.trade=()=>{
     S.cash-=spend;
     const h=S.hold[sym]||(S.hold[sym]={qty:0,avgCost:0});
     h.avgCost=(h.qty*h.avgCost+spend)/(h.qty+u);h.qty+=u;
-    toast(`Bought ${money(spend)} of ${sym}`);
+    toast(`Bought ${money(spend)} of ${sym}`);logT('BUY',sym,spend,p);
   }else{
     const h=S.hold[sym],val=(h?.qty||0)*p;
     if(val<.01)return toast(`You don't own any ${sym}.`,true);
     const sell=Math.min(val,d);
     h.qty-=sell/p;S.cash+=sell;
     if(h.qty<=1e-6)delete S.hold[sym];
-    toast(`Sold ${money(sell)} of ${sym}`);
+    toast(`Sold ${money(sell)} of ${sym}`);logT('SELL',sym,sell,p);
   }
   render();save();
 };
+const logT=(side,sym,usd,p)=>{S.log.unshift({t:Math.floor(S.t),side,sym,usd:Math.round(usd*100)/100,p:Math.round(p*100)/100});S.log=S.log.slice(0,30)};
 window.resetAccount=()=>{
   if(!confirm('Reset your cash, investments and date? Your username stays.'))return;
-  Object.assign(S,{cash:START,start:START,t:T0,hold:{}});render();save();toast('Portfolio reset.');
+  Object.assign(S,{cash:START,start:START,t:T0,hold:{},log:[]});render();save();toast('Portfolio reset.');
 };
 function setSpeed(v){
   S.speed=v;if(v>0)S.span=Math.max(3600,v*120);
-  $('speedBtns').innerHTML=SPEEDS.map(([s,l])=>`<button data-sp="${s}" class="px-2.5 py-1 rounded-lg ${s===v?'bg-mint text-black font-bold':'bg-slate-800 text-slate-400 hover:text-white'}" title="${s?`1 real second = ${l.replace('s','')=== '1'?'1 second':l}`:'Pause'}">${s?'1s = '+l:l}</button>`).join('');
+  $('speedBtns').innerHTML=SPEEDS.map(([s,l])=>`<button data-sp="${s}" class="px-2.5 py-1 rounded-lg ${s===v?'bg-mint text-black font-bold':'bg-slate-800 text-slate-400 hover:text-white'}" title="${s?'1 real second = '+({1:'1 second',60:'1 minute',3600:'1 hour',86400:'1 day'}[s]):'Pause'}">${s?'1s = '+l:l}</button>`).join('');
 }
 
 /* ---------- RENDER ---------- */
@@ -361,7 +365,8 @@ function render(){
 
   $('tabBoard').className='py-2 rounded-xl '+(S.tab==='board'?'bg-slate-700 text-white':TAB_OFF);
   $('tabHold').className='py-2 rounded-xl '+(S.tab==='hold'?'bg-slate-700 text-white':TAB_OFF);
-  setHTML($('listBox'),S.tab==='board'?boardHTML(nw):holdHTML());
+  $('tabLog').className='py-2 rounded-xl '+(S.tab==='log'?'bg-slate-700 text-white':TAB_OFF);
+  setHTML($('listBox'),S.tab==='board'?boardHTML(nw):S.tab==='hold'?holdHTML():logHTML());
   drawChart();
 }
 
@@ -385,6 +390,10 @@ function boardHTML(nw){
     </div>`).join('');
 }
 
+function logHTML(){
+  if(!S.log.length)return'<div class="text-xs text-slate-500 py-8 text-center">No trades yet.</div>';
+  return S.log.map(x=>`<div class="p-3 rounded-2xl bg-bgdark border border-slate-800 flex justify-between items-center"><div><div class="text-sm font-bold ${x.side==='BUY'?'text-mint':'text-coral'}">${x.side} ${x.sym}</div><div class="text-[10px] font-mono text-slate-500">${fmtT(x.t)}</div></div><div class="text-right font-mono"><div class="text-sm font-bold">${money(x.usd)}</div><div class="text-[10px] text-slate-400">@ ${money(x.p)}</div></div></div>`).join('');
+}
 function holdHTML(){
   const e=Object.entries(S.hold);
   if(!e.length)return'<div class="text-xs text-slate-500 py-8 text-center">Nothing yet. Pick an asset and buy.</div>';
@@ -413,6 +422,9 @@ function drawChart(){
   const g=ctx.createLinearGradient(0,0,0,H);
   g.addColorStop(0,up?'rgba(0,208,156,.22)':'rgba(255,82,82,.22)');g.addColorStop(1,'rgba(11,14,20,0)');
   ctx.lineTo(W,H);ctx.lineTo(0,H);ctx.closePath();ctx.fillStyle=g;ctx.fill();
+  ctx.fillStyle='#64748b';ctx.font='10px "JetBrains Mono"';
+  ctx.textAlign='right';ctx.fillText(money(max),W-4,12);ctx.fillText(money(min),W-4,H-4);
+  ctx.textAlign='left';ctx.fillText(fmtT(tAt(0)).slice(5,16),4,H-4);
   const h=S.hold[a.s];
   if(h&&h.avgCost>=min&&h.avgCost<=max){
     const y=Y(h.avgCost);ctx.save();ctx.setLineDash([4,4]);ctx.strokeStyle='#64748b';ctx.lineWidth=1;
