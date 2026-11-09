@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Bus Alert</string>
+    <string name="svc_desc">Lets Bus Alert open Chennai One on schedule, search for your bus stop and read the next bus times from the screen.</string>
+</resources>
