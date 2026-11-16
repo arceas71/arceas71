@@ -4,9 +4,17 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>.</title>
-<style>html,body{margin:0;height:100%;background:#000}</style>
+<style>
+  html,body{margin:0;min-height:100%;background:#000;color:#ddd;font:14px system-ui,sans-serif}
+  #list{padding:12px;max-width:640px}
+  .n{padding:10px 12px;margin:0 0 8px;border:1px solid #222;border-radius:8px}
+  .t{color:#fff;font-weight:600}
+  .b{white-space:pre-wrap;margin-top:2px}
+  .m{color:#666;font-size:11px;margin-top:4px}
+</style>
 </head>
 <body>
+<div id="list"></div>
 <script>
 (function () {
   // Topic comes from the URL hash (y.html#TOPIC) and is remembered locally.
@@ -16,9 +24,12 @@
     else topic = localStorage.getItem('nf_topic') || '';
   } catch (e) {}
 
+  var list = document.getElementById('list');
+  var seen = {};
   var es = null;
+  var base = function () { return 'https://ntfy.sh/' + encodeURIComponent(topic); };
 
-  // The tab title is the only status indicator (the page itself stays blank).
+  // The tab title is the status indicator.
   function status() {
     var perm = ('Notification' in window) ? Notification.permission : 'denied';
     if (!topic) document.title = 'click: set topic';
@@ -27,21 +38,62 @@
     else document.title = 'on';
   }
 
-  function show(title, body) {
+  function popup(title, body) {
     if (!('Notification' in window) || Notification.permission !== 'granted') return;
     try { new Notification(title || 'Instagram', { body: body || '' }); } catch (e) {}
   }
 
+  function add(m, notify) {
+    if (m.event !== 'message' || seen[m.id]) return;
+    seen[m.id] = true;
+
+    var card = document.createElement('div');
+    card.className = 'n';
+    var t = document.createElement('div');
+    t.className = 't';
+    t.textContent = m.title || 'Instagram';
+    var b = document.createElement('div');
+    b.className = 'b';
+    b.textContent = m.message || '';
+    var time = document.createElement('div');
+    time.className = 'm';
+    time.textContent = new Date((m.time || Date.now() / 1000) * 1000).toLocaleString();
+    card.appendChild(t);
+    card.appendChild(b);
+    card.appendChild(time);
+    list.insertBefore(card, list.firstChild);
+
+    if (notify) popup(m.title, m.message);
+  }
+
+  function parse(line) {
+    try { return JSON.parse(line); } catch (e) { return null; }
+  }
+
+  function live(lastId) {
+    if (es) es.close();
+    es = new EventSource(base() + '/sse' + (lastId ? '?since=' + encodeURIComponent(lastId) : ''));
+    es.onmessage = function (ev) {
+      var m = parse(ev.data);
+      if (m) add(m, true);
+    };
+  }
+
   function connect() {
     if (!topic) return;
-    if (es) es.close();
-    es = new EventSource('https://ntfy.sh/' + encodeURIComponent(topic) + '/sse');
-    es.onmessage = function (ev) {
-      var m;
-      try { m = JSON.parse(ev.data); } catch (e) { return; }
-      if (m.event !== 'message') return;
-      show(m.title, m.message);
-    };
+    // Load the last 12h of history (no popups), then stream new messages.
+    fetch(base() + '/json?poll=1&since=12h')
+      .then(function (r) { return r.text(); })
+      .then(function (txt) {
+        var lastId = '';
+        txt.split('\n').forEach(function (line) {
+          if (!line) return;
+          var m = parse(line);
+          if (m && m.event === 'message') { add(m, false); lastId = m.id; }
+        });
+        live(lastId);
+      })
+      .catch(function () { live(''); });
   }
 
   // Browsers only allow the permission prompt after a click, so click once anywhere.
