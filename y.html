@@ -1,0 +1,51 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>.</title>
+<style>html,body{margin:0;height:100%;background:#000}</style>
+</head>
+<body>
+<script>
+(function () {
+  // Topic comes from the URL hash (y.html#TOPIC) and is remembered locally.
+  var topic = decodeURIComponent(location.hash.slice(1));
+  try {
+    if (topic) localStorage.setItem('nf_topic', topic);
+    else topic = localStorage.getItem('nf_topic') || '';
+  } catch (e) {}
+  if (!topic) return;
+
+  var es = null;
+
+  function show(title, body) {
+    if (!('Notification' in window) || Notification.permission !== 'granted') return;
+    try { new Notification(title || 'Instagram', { body: body || '' }); } catch (e) {}
+  }
+
+  function connect() {
+    if (es) es.close();
+    es = new EventSource('https://ntfy.sh/' + encodeURIComponent(topic) + '/sse');
+    es.onmessage = function (ev) {
+      var m;
+      try { m = JSON.parse(ev.data); } catch (e) { return; }
+      if (m.event !== 'message') return;
+      show(m.title, m.message);
+    };
+  }
+
+  // Browsers only allow the permission prompt after a click, so click once anywhere.
+  function ask() {
+    if ('Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission();
+    }
+  }
+  document.addEventListener('click', ask);
+  ask();
+
+  connect();
+})();
+</script>
+</body>
+</html>

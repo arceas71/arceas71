@@ -1,0 +1,34 @@
+name: Build Notif Forwarder APK
+
+on:
+  push:
+    paths:
+      - 'notif-forwarder/**'
+      - '.github/workflows/notif-forwarder.yml'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: notif-forwarder
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.7'
+
+      - name: Build debug APK
+        run: gradle assembleDebug --no-daemon
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: notif-forwarder-debug-apk
+          path: notif-forwarder/app/build/outputs/apk/debug/app-debug.apk
