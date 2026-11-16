@@ -67,9 +67,7 @@ h4{margin:16px 0 6px;font-size:12px;text-transform:uppercase;letter-spacing:.08e
 <main>
   <div class="tip">For each topic: read the 30-second idea, then take the MCQs. Finishing the MCQs marks the topic done.</div>
   <div style="text-align:center;margin-bottom:12px">
-    <button class="btn" onclick="setToken()">🔑 Set GitHub token</button>
-    <button class="btn sec" onclick="ghPush()">☁️ Save now</button>
-    <button class="btn sec" onclick="doExport()">📋 Copy text</button>
+    <button class="btn" onclick="doExport()">📋 Export my progress</button>
     <div id="expmsg" class="tip" style="margin-top:6px"></div>
     <textarea id="exp" hidden readonly rows="9" style="width:100%;background:#0e0e12;color:var(--tx);border:1px solid var(--line);border-radius:10px;padding:8px;font:13px ui-monospace,monospace"></textarea>
   </div>
@@ -239,28 +237,6 @@ function report(){
   });
   return L.join('\n');
 }
-const GH={repo:'arceas71/arceas71',path:'progress.json'};
-function setToken(){
-  var t=prompt('Paste a GitHub fine-grained token (Contents: read & write on arceas71/arceas71). It stays only in this browser.');
-  if(t){try{localStorage.setItem('la_tok',t.trim())}catch(e){}ghSave()}
-}
-var ghTimer=null;
-function ghSave(){clearTimeout(ghTimer);ghTimer=setTimeout(ghPush,600)}
-async function ghPush(){
-  var tok='';try{tok=localStorage.getItem('la_tok')||''}catch(e){}
-  var m=$('#expmsg');
-  if(!tok){m.textContent='GitHub save is off — tap "Set GitHub token".';return}
-  var data={updated:new Date().toISOString(),done:done,scores:scores,report:report()};
-  var url='https://api.github.com/repos/'+GH.repo+'/contents/'+GH.path;
-  var H={'Authorization':'Bearer '+tok,'Accept':'application/vnd.github+json'};
-  try{
-    var sha;var g=await fetch(url,{headers:H});
-    if(g.ok)sha=(await g.json()).sha;
-    var body={message:'progress update',content:btoa(unescape(encodeURIComponent(JSON.stringify(data,null,1)))),sha:sha};
-    var r=await fetch(url,{method:'PUT',headers:H,body:JSON.stringify(body)});
-    m.textContent=r.ok?'Saved to GitHub ✓ '+new Date().toLocaleTimeString():'GitHub save failed ('+r.status+') — check token';
-  }catch(e){m.textContent='GitHub save failed — offline?'}
-}
 function doExport(){
   var txt=report(),box=$('#exp');
   box.value=txt;box.hidden=false;box.select();
@@ -328,7 +304,7 @@ function openNext(i){
   var c=n>=0?$('#c'+n):$('#cm');
   c.open=true;setTimeout(function(){c.scrollIntoView({behavior:'smooth',block:'start'})},60);
 }
-function setDone(i){done[i]=true;save();ghSave();$('#c'+i).classList.add('done');tick()}
+function setDone(i){done[i]=true;save();$('#c'+i).classList.add('done');tick()}
 
 T.forEach(function(t,i){
   if(done[i])$('#c'+i).classList.add('done');
