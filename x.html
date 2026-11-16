@@ -227,15 +227,9 @@ function save(){try{localStorage.setItem('la_done2',JSON.stringify(done))}catch(
 let scores={};
 try{scores=JSON.parse(localStorage.getItem('la_scores')||'{}')}catch(e){}
 function report(){
-  var d=new Date(),L=['LINEAR ALGEBRA PROGRESS @ '+d.toLocaleTimeString()];
-  var dc=0;T.forEach(function(t,i){if(done[i])dc++});
-  L.push('Topics done: '+dc+'/'+T.length+' | Study time left: '+$('#left').textContent);
-  T.forEach(function(t,i){
-    var s=scores[i];
-    L.push((i+1)+'. '+t.t+' — '+(s?s.s+'/'+s.n:(done[i]?'skipped':'not started')));
-    if(s&&s.w&&s.w.length)s.w.forEach(function(q){L.push('   missed: '+q)});
-  });
-  return L.join('\n');
+  var dc=0,w=[];
+  T.forEach(function(t,i){if(done[i])dc++;var s=scores[i];if(s&&s.s/s.n<0.75)w.push(i+1)});
+  return (dc+'/'+T.length+(w.length?' weak:'+w.join(','):'')).slice(0,20);
 }
 function doExport(){
   var txt=report(),box=$('#exp');
