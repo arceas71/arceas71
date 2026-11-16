@@ -7,11 +7,11 @@
 <style>
 :root{--bg:#0b0b0d;--card:#141418;--line:#2a2a31;--tx:#ececf1;--mut:#9a9aa6;--ac:#c9d1ff;--ok:#4ade80;--warn:#fbbf24;--bad:#f87171}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
-header{position:sticky;top:0;z-index:5;background:rgba(11,11,13,.96);border-bottom:1px solid var(--line);padding:10px 12px}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{position:sticky;top:0;z-index:5;background:rgba(11,11,13,.97);border-bottom:1px solid var(--line);padding:10px 12px}
 .row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;max-width:760px;margin:0 auto}
 .stat{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:8px 6px;text-align:center}
-.stat b{display:block;font-size:24px;font-variant-numeric:tabular-nums;letter-spacing:.02em}
+.stat b{display:block;font-size:24px;font-variant-numeric:tabular-nums}
 .stat span{font-size:10.5px;color:var(--mut);text-transform:uppercase;letter-spacing:.07em}
 .status{max-width:760px;margin:8px auto 0;font-size:13.5px;font-weight:600;text-align:center}
 .status.ok{color:var(--ok)}.status.warn{color:var(--warn)}.status.bad{color:var(--bad)}
@@ -26,29 +26,38 @@ summary::-webkit-details-marker{display:none}
 .n{flex:none;width:26px;height:26px;border-radius:50%;background:#23232b;display:grid;place-items:center;font-size:13px;color:var(--ac)}
 .tt{flex:1;font-weight:600}
 .bd{flex:none;font-size:12px;color:var(--mut);border:1px solid var(--line);border-radius:20px;padding:2px 8px}
-.ck{flex:none;width:22px;color:transparent;font-weight:700}
+.ck{flex:none;width:20px;color:transparent;font-weight:700}
 .card.done .ck{color:var(--ok)}
-.card.done .tt{color:var(--mut);text-decoration:line-through}
 .body{padding:0 14px 14px}
-h4{margin:14px 0 6px;font-size:11.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--ac)}
-ul{margin:0;padding-left:20px}li{margin:3px 0}
-.f{background:#0e0e12;border:1px solid var(--line);border-radius:10px;padding:8px 12px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13.5px}
-.f div{margin:3px 0}
-.ex{margin:0;background:#101018;border-left:3px solid #8d9bff;padding:8px 12px;border-radius:6px}
-.q{margin:8px 0;padding:8px 10px;border:1px dashed var(--line);border-radius:10px}
-.a{margin-top:6px;color:var(--ok);font-weight:600}
-button{font:inherit;cursor:pointer;color:var(--tx);background:#23232b;border:1px solid var(--line);border-radius:10px;padding:6px 12px}
-button:active{transform:scale(.97)}
-.rv{margin-top:6px;font-size:13px;padding:4px 10px}
-.dn{margin-top:14px;width:100%;background:#2b3260;border-color:#4b5278;padding:10px}
-.tip{max-width:760px;margin:0 auto 10px;font-size:12.5px;color:var(--mut);text-align:center}
+h4{margin:16px 0 6px;font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--ac)}
+.plain p{margin:6px 0}
+.plain b{color:#fff}
+.rem{background:#0e0e12;border:1px solid var(--line);border-radius:10px;padding:8px 12px}
+.rem div{margin:4px 0}
+.ex{background:#101018;border-left:3px solid #8d9bff;padding:8px 12px;border-radius:6px;margin:0}
+.qz{background:#0e0e12;border:1px solid var(--line);border-radius:12px;padding:12px}
+.qh{display:flex;justify-content:space-between;font-size:12px;color:var(--mut);margin-bottom:6px}
+.qq{font-weight:600;margin-bottom:10px;font-size:16.5px}
+.op{display:block;width:100%;text-align:left;margin:6px 0;padding:10px 12px;font:inherit;color:var(--tx);background:#1a1a21;border:1px solid var(--line);border-radius:10px;cursor:pointer}
+.op:active{transform:scale(.99)}
+.op.good{background:#12301f;border-color:var(--ok)}
+.op.bad{background:#341616;border-color:var(--bad)}
+.op[disabled]{cursor:default}
+.ex2{margin-top:8px;padding:8px 10px;border-radius:8px;background:#161620;font-size:14.5px}
+.btn{font:inherit;cursor:pointer;color:var(--tx);background:#2b3260;border:1px solid #4b5278;border-radius:10px;padding:9px 14px;margin-top:10px}
+.btn.sec{background:#23232b;border-color:var(--line)}
+.score{font-size:20px;font-weight:700;margin:4px 0}
+.mx{display:inline-flex;flex-direction:column;vertical-align:middle;border-left:2px solid var(--mut);border-right:2px solid var(--mut);border-radius:4px;padding:0 6px;margin:0 3px;line-height:1.3}
+.mr{display:flex;gap:12px;justify-content:center}
+.mr i{font-style:normal;min-width:1.2ch;text-align:center}
+.tip{max-width:760px;margin:0 auto 10px;font-size:13px;color:var(--mut);text-align:center}
 </style>
 </head>
 <body>
 <header>
   <div class="row">
     <div class="stat"><b id="left">--:--</b><span>Study time left</span></div>
-    <div class="stat"><b id="quiz">--:--</b><span>Quiz in</span></div>
+    <div class="stat"><b id="quizt">--:--</b><span>Quiz in</span></div>
     <div class="stat"><b id="est">-- min</b><span>Est. remaining</span></div>
   </div>
   <div class="status" id="status"></div>
@@ -56,188 +65,255 @@ button:active{transform:scale(.97)}
   <div class="cnt" id="cnt"></div>
 </header>
 <main>
-  <div class="tip">Work top to bottom. Read ideas, glance at the example, answer the quick checks, then tap Mark done. Badges adjust to the time you have left.</div>
+  <div class="tip">For each topic: read the 30-second idea, then take the MCQs. Finishing the MCQs marks the topic done.</div>
   <div id="list"></div>
 </main>
 <script>
+/* matrix syntax: {{1 2|3 4}} = 2x2 matrix, rows split by | */
+function F(s){return s.replace(/\{\{(.+?)\}\}/g,function(_,m){
+  return '<span class="mx">'+m.split('|').map(function(r){return '<span class="mr">'+r.trim().split(/\s+/).map(function(c){return '<i>'+c+'</i>'}).join('')+'</span>'}).join('')+'</span>'})}
+
 const T=[
-{t:"Vectors in Rⁿ, independence, span",m:3,
-pts:["Rⁿ = n-tuples; add and scale componentwise.",
-"Linear combination: c₁v₁ + … + cₖvₖ.",
-"Span{v₁..vₖ} = set of ALL linear combinations.",
-"Independent: c₁v₁+…+cₖvₖ = 0 only when every cᵢ = 0. Dependent: a non-trivial combo gives 0.",
-"Test: put vectors as columns of A, solve Ax = 0. Only x = 0 ⇒ independent (rank = k).",
-"More than n vectors in Rⁿ ⇒ always dependent. n vectors in Rⁿ independent ⇔ det ≠ 0. Any set with the zero vector ⇒ dependent."],
-f:["Independent ⇔ rank[v₁ … vₖ] = k","Dependent ⇔ one vector is a combo of the others"],
-ex:"(1,2,3) and (2,4,6): second = 2·first ⇒ dependent. (1,0),(0,1) are independent and span R².",
-q:[["Are (1,2),(3,4),(5,6) independent?","No — 3 vectors in R² (more than the dimension)."],["Is (1,1) in span{(1,0),(0,1)}?","Yes: 1·(1,0) + 1·(0,1)."]]},
+{t:"Vectors, independence, span",m:3,
+plain:["A <b>vector in Rⁿ</b> is just a list of n numbers, like (2, 5, 1).",
+"<b>Linear combination</b> = mix vectors: multiply each by a number and add.",
+"<b>Span</b> = everything you can make by mixing those vectors.",
+"<b>Independent</b> = no vector is a mix of the others (each adds something new). <b>Dependent</b> = at least one is redundant.",
+"Quick test: write the vectors as columns and row-reduce. A pivot in every column ⇒ independent."],
+rem:["More than n vectors in Rⁿ ⇒ always dependent","Set containing the zero vector ⇒ always dependent","n vectors in Rⁿ: independent ⇔ det ≠ 0"],
+ex:"(1,2) and (2,4): the second is 2 × the first, so they are dependent. (1,0) and (0,1) are independent and their span is all of R².",
+qs:[
+{q:"Are (1,2) and (2,4) independent or dependent?",o:["Independent","Dependent","Cannot tell","They span R²"],a:1,e:"(2,4) = 2·(1,2), so one is a multiple of the other ⇒ dependent."},
+{q:"What is the largest number of independent vectors you can have in R³?",o:["2","3","4","Infinite"],a:1,e:"dim R³ = 3. Any 4 vectors in R³ must be dependent."},
+{q:"What is the span of (1,0,0) and (0,1,0) in R³?",o:["The x-axis","The xy-plane","All of R³","Just the origin"],a:1,e:"Mixing a·(1,0,0)+b·(0,1,0) gives (a,b,0): every point of the xy-plane."},
+{q:"A set of vectors that contains the zero vector is…",o:["Always independent","Always dependent","Always a basis","Always spans R²"],a:1,e:"1·0 + 0·(others) = 0 is a non-trivial combination giving 0 ⇒ dependent."}]},
 
 {t:"Subspaces, basis, dimension",m:3,
-pts:["Subspace W of Rⁿ: contains 0, closed under addition, closed under scalar multiplication.",
-"Basis of W: linearly independent AND spans W.",
-"Dimension = number of vectors in any basis (same for all bases). dim Rⁿ = n.",
-"In a space of dim d: any d independent vectors, or any d spanning vectors, form a basis.",
-"Lines/planes through the origin are subspaces; if it misses 0 it is NOT a subspace."],
-f:["Subspace test: 0 ∈ W, u+v ∈ W, cu ∈ W","dim W = # of vectors in a basis"],
-ex:"W = {(x,y,z): x+y+z = 0}. Solve z = −x−y ⇒ basis (1,0,−1),(0,1,−1), so dim W = 2. Line y = x+1 is not a subspace (no origin).",
-q:[["Is {(x,y): y = x+1} a subspace of R²?","No — it does not contain (0,0)."],["dim of {(x,y,z): z = 0}?","2 (basis (1,0,0),(0,1,0))."]]},
+plain:["A <b>subspace</b> is a flat piece of space (line, plane…) that passes through the origin. Test: contains 0, adding two members stays inside, scaling a member stays inside.",
+"A <b>basis</b> is the smallest set of vectors that can still build the whole subspace: independent AND spanning.",
+"<b>Dimension</b> = number of vectors in a basis (a line has 1, a plane has 2).",
+"If the dimension is d, any d independent vectors already form a basis."],
+rem:["Subspace: 0 ∈ W, u+v ∈ W, c·u ∈ W","Basis = independent + spans","dim Rⁿ = n"],
+ex:"W = {(x,y,z) : x+y+z = 0}. Put z = −x−y, so (x,y,z) = x(1,0,−1) + y(0,1,−1). Basis = those two vectors ⇒ dim W = 2. The line y = x+1 is NOT a subspace (misses the origin).",
+qs:[
+{q:"Which of these is a subspace of R²?",o:["{(x,y): x + y = 1}","{(x,y): y = 2x}","{(x,y): x ≥ 0}","{(x,y): xy = 0}"],a:1,e:"y = 2x is a line through the origin, closed under + and scaling. x+y=1 misses 0; x ≥ 0 fails scaling by −1; xy=0 fails addition."},
+{q:"A basis of R³ must have exactly…",o:["2 vectors","3 vectors","4 vectors","Any number"],a:1,e:"Dimension of R³ is 3, so every basis has 3 independent vectors."},
+{q:"What is the dimension of the plane x + y + z = 0 in R³?",o:["1","2","3","0"],a:1,e:"One equation removes one degree of freedom: 3 − 1 = 2."},
+{q:"What is the dimension of span{(1,2),(2,4)}?",o:["0","1","2","4"],a:1,e:"(2,4) is a multiple of (1,2), so the span is just a line ⇒ dimension 1."}]},
 
-{t:"Linear systems: Gauss, Gauss–Jordan, existence & uniqueness",m:4,
-pts:["Write Ax = b as the augmented matrix [A | b].",
-"Row ops: swap rows, scale a row by a non-zero number, add a multiple of one row to another.",
-"Gauss elimination → row echelon form (REF), then back-substitute. Gauss–Jordan → reduced REF (leading 1s, zeros above and below), read solution directly.",
-"No solution (inconsistent): rank A < rank[A|b] (a row 0 0 0 | c with c ≠ 0).",
-"rank A = rank[A|b] = n (unknowns) ⇒ unique solution.",
-"rank A = rank[A|b] < n ⇒ infinitely many solutions, n − rank free variables.",
-"Homogeneous Ax = 0 always has x = 0; non-trivial solutions iff rank < n."],
-f:["Consistent ⇔ rank A = rank[A|b]","free variables = n − rank"],
-ex:"x+y = 3, x−y = 1: [1 1|3; 1 −1|1] → R₂−R₁ → [1 1|3; 0 −2|−2] ⇒ y = 1, x = 2 (unique).",
-q:[["rank A = 2, rank[A|b] = 3. Solutions?","None — inconsistent."],["3 unknowns, rank 2, consistent. Solutions?","Infinitely many, with 1 free variable."]]},
+{t:"Linear systems (Gauss, Gauss–Jordan)",m:4,
+plain:["Write the system Ax = b as an <b>augmented matrix</b> [A | b].",
+"<b>Row operations</b> (swap rows, scale a row, add a multiple of one row to another) do not change the solution.",
+"<b>Gauss elimination</b> → staircase form, then solve from the bottom up. <b>Gauss–Jordan</b> → go all the way to the reduced form so the answer can be read off.",
+"Look at the last rows: a row like <b>0 0 0 | 5</b> means <b>no solution</b>.",
+"Otherwise: pivots = number of unknowns ⇒ <b>one solution</b>. Fewer pivots ⇒ <b>infinitely many</b> (free variables)."],
+rem:["Consistent ⇔ rank A = rank [A|b]","Unique ⇔ rank = number of unknowns","Free variables = unknowns − rank","Ax = 0 always has x = 0"],
+ex:"x + y = 3, x − y = 1. Add the equations: 2x = 4 ⇒ x = 2, then y = 1. Unique solution (rank 2 = 2 unknowns).",
+qs:[
+{q:"After row reduction one row is  0 0 0 | 5.  The system has…",o:["A unique solution","Infinitely many solutions","No solution","Only x = 0"],a:2,e:"That row says 0 = 5, which is impossible ⇒ inconsistent."},
+{q:"3 unknowns, rank A = rank [A|b] = 3. How many solutions?",o:["None","Exactly one","Infinitely many","Exactly three"],a:1,e:"Consistent and rank = number of unknowns ⇒ unique solution."},
+{q:"4 unknowns, rank A = rank [A|b] = 2. How many free variables?",o:["0","1","2","4"],a:2,e:"Free variables = 4 − 2 = 2, so infinitely many solutions."},
+{q:"Gauss–Jordan elimination reduces the matrix to…",o:["Upper triangular form only","Reduced row echelon form","The transpose","The adjoint"],a:1,e:"Gauss–Jordan continues until leading 1s with zeros above and below (RREF)."}]},
 
-{t:"Rank; row, column and null spaces",m:3,
-pts:["Rank = number of pivots = dim(row space) = dim(column space).",
-"Row space: span of the rows. Basis = non-zero rows of the REF.",
-"Column space: span of the columns. Basis = pivot columns of the ORIGINAL A (not of the REF).",
-"Null space: {x : Ax = 0}. Nullity = dim null space = number of free variables.",
-"Rank–Nullity: rank + nullity = n (number of columns).",
-"Square A invertible ⇔ rank n ⇔ nullity 0 ⇔ det ≠ 0."],
-f:["rank(A) + nullity(A) = #columns","rank(A) = rank(Aᵀ)"],
-ex:"A = [1 2; 2 4]: R₂−2R₁ gives [1 2; 0 0] ⇒ rank 1, nullity 1. Null space: x+2y = 0 ⇒ span{(−2,1)}. Column space basis: (1,2).",
-q:[["4×6 matrix with rank 3: nullity?","6 − 3 = 3."],["Basis of column space: take pivot columns from REF or original A?","From the original A."]]},
+{t:"Rank, row / column / null space",m:3,
+plain:["<b>Rank</b> = number of pivots after row reduction = number of truly independent rows (and columns).",
+"<b>Row space</b> = span of the rows. <b>Column space</b> = span of the columns (basis: the pivot columns of the ORIGINAL matrix).",
+"<b>Null space</b> = all x with Ax = 0. Its dimension is the <b>nullity</b> = number of free variables.",
+"<b>Rank–Nullity:</b> rank + nullity = number of columns."],
+rem:["rank + nullity = #columns","rank A = rank Aᵀ","Square A invertible ⇔ rank = n"],
+ex:"A = {{1 2|2 4}}. Row 2 = 2 × row 1, so rank = 1. Null space: x + 2y = 0 ⇒ span{(−2, 1)}, nullity 1. Check: 1 + 1 = 2 columns.",
+qs:[
+{q:"A is 3×5 with rank 2. What is its nullity?",o:["2","3","5","1"],a:1,e:"Nullity = columns − rank = 5 − 2 = 3."},
+{q:"Rank of a matrix equals…",o:["Number of zero rows in the original","Number of pivots","Number of rows","Its determinant"],a:1,e:"Rank = number of pivots in the echelon form."},
+{q:"A basis for the column space comes from…",o:["Pivot columns of the original A","Pivot columns of the reduced form","Non-pivot columns","The rows of A"],a:0,e:"Row ops change the columns, so take the corresponding columns from the original A."},
+{q:"What is the rank of {{1 2|2 4}}?",o:["0","1","2","4"],a:1,e:"Second row is twice the first ⇒ only one independent row."}]},
 
 {t:"Determinants and Cramer's rule",m:3,
-pts:["2×2: det = ad − bc. 3×3: cofactor expansion along a row/column with sign pattern + − + / − + − / + − +.",
-"Swap two rows → sign flips. Scale a row by k → det × k. Add a multiple of one row to another → unchanged.",
-"Triangular matrix: det = product of diagonal. Equal rows or a zero row ⇒ det 0.",
-"det(AB) = det A · det B; det(Aᵀ) = det A; det(kA) = kⁿ det A (n×n).",
-"Cramer's rule (det A ≠ 0): xᵢ = det(Aᵢ)/det(A), where Aᵢ = A with column i replaced by b."],
-f:["xᵢ = det(Aᵢ) / det(A)","A invertible ⇔ det A ≠ 0"],
-ex:"2x + y = 5, x + 3y = 5. det A = 6 − 1 = 5. x = det[5 1; 5 3]/5 = 10/5 = 2. y = det[2 5; 1 5]/5 = 5/5 = 1.",
-q:[["det of [2 3; 4 6]?","12 − 12 = 0 (singular)."],["3×3 matrix A, det A = 2. det(2A)?","2³ · 2 = 16."]]},
+plain:["2×2: <b>det = ad − bc</b>. For 3×3, expand along a row using signs + − + / − + − / + − +.",
+"Row rules: <b>swap rows → sign flips</b>; <b>scale a row by k → det × k</b>; adding a multiple of a row → <b>no change</b>.",
+"Triangular matrix: det = product of the diagonal. Two equal rows or a zero row ⇒ det = 0.",
+"<b>Cramer's rule</b> (needs det A ≠ 0): to get xᵢ, replace column i of A by b, take its det, divide by det A."],
+rem:["det A ≠ 0 ⇔ A invertible","xᵢ = det(Aᵢ) / det(A)","det(AB) = det A · det B","n×n: det(kA) = kⁿ det A"],
+ex:"2x + y = 5, x + 3y = 5. det A = 6 − 1 = 5. x = det{{5 1|5 3}}/5 = 10/5 = 2.  y = det{{2 5|1 5}}/5 = 5/5 = 1.",
+qs:[
+{q:"What is det {{3 1|2 4}} ?",o:["14","10","12","2"],a:1,e:"ad − bc = 3·4 − 1·2 = 10."},
+{q:"If you swap two rows of a matrix, the determinant…",o:["Stays the same","Changes sign","Doubles","Becomes 0"],a:1,e:"A row swap multiplies det by −1."},
+{q:"A is 3×3 with det A = 3. What is det(2A)?",o:["6","12","24","9"],a:2,e:"det(kA) = kⁿ det A = 2³ · 3 = 24."},
+{q:"det of {{2 5 1|0 3 7|0 0 4}} is…",o:["14","24","0","9"],a:1,e:"Upper triangular: multiply the diagonal 2·3·4 = 24."},
+{q:"Cramer's rule can be used only when…",o:["det A = 0","det A ≠ 0","A is symmetric","b = 0"],a:1,e:"It divides by det A, so it needs det A ≠ 0 (unique solution)."}]},
 
 {t:"Inverse of a matrix",m:3,
-pts:["A⁻¹ exists ⇔ A is square and det A ≠ 0 (full rank). AA⁻¹ = A⁻¹A = I.",
-"2×2 formula below.",
-"Gauss–Jordan: row-reduce [A | I] → [I | A⁻¹].",
-"Adjoint method: A⁻¹ = adj(A)/det A, adj = transpose of the cofactor matrix.",
-"(AB)⁻¹ = B⁻¹A⁻¹ (order reverses). (Aᵀ)⁻¹ = (A⁻¹)ᵀ.",
-"Solve Ax = b ⇒ x = A⁻¹b."],
-f:["[a b; c d]⁻¹ = 1/(ad−bc) · [d −b; −c a]","A⁻¹ = adj(A) / det(A)"],
-ex:"A = [1 2; 3 4], det = 4 − 6 = −2. A⁻¹ = (−1/2)[4 −2; −3 1] = [−2 1; 3/2 −1/2].",
-q:[["Inverse of [2 0; 0 5]?","[1/2 0; 0 1/5]."],["(AB)⁻¹ = ?","B⁻¹A⁻¹."]]},
+plain:["A⁻¹ is the matrix that undoes A: A·A⁻¹ = I. It exists only if A is square and <b>det A ≠ 0</b>.",
+"<b>2×2 shortcut:</b> swap a and d, flip the signs of b and c, divide by det.",
+"<b>Gauss–Jordan method:</b> write [A | I] and row-reduce until the left becomes I; the right side is A⁻¹.",
+"<b>Adjoint method:</b> A⁻¹ = adj(A) / det A.",
+"Order flips for products: (AB)⁻¹ = B⁻¹A⁻¹."],
+rem:["{{a b|c d}}⁻¹ = 1/(ad−bc) · {{d −b|−c a}}","[A | I] → [I | A⁻¹]","(AB)⁻¹ = B⁻¹A⁻¹"],
+ex:"A = {{1 2|3 4}}, det = 4 − 6 = −2. A⁻¹ = (−1/2)·{{4 −2|−3 1}} = {{−2 1|1.5 −0.5}}.",
+qs:[
+{q:"A square matrix has an inverse exactly when…",o:["det A = 0","det A ≠ 0","A is diagonal","A is symmetric"],a:1,e:"Invertible ⇔ det ≠ 0 ⇔ full rank."},
+{q:"What is the inverse of {{2 1|1 1}} ?",o:["{{1 −1|−1 2}}","{{1 1|1 2}}","{{2 −1|−1 1}}","{{−1 1|1 −2}}"],a:0,e:"det = 2−1 = 1. Swap diagonal, negate off-diagonal: {{1 −1|−1 2}}."},
+{q:"(AB)⁻¹ equals…",o:["A⁻¹B⁻¹","B⁻¹A⁻¹","(A + B)⁻¹","ABᵀ"],a:1,e:"The order reverses: undo B first, then A."},
+{q:"In the Gauss–Jordan method you row-reduce [A | I] to get…",o:["[I | A]","[I | A⁻¹]","[A⁻¹ | I]","[0 | A]"],a:1,e:"When the left block becomes I, the right block is A⁻¹."}]},
 
 {t:"Linear transformation, change of basis",m:3,
-pts:["T: V→W is linear if T(u+v) = T(u)+T(v) and T(cu) = cT(u). Hence T(0) = 0.",
-"Standard matrix: columns are T(e₁), …, T(eₙ), so T(x) = Ax.",
-"Kernel = {x : T(x) = 0} = null space. Range = column space. dim ker + dim range = dim V. T is one-one ⇔ ker = {0}.",
-"Basis B with matrix P = [b₁ … bₙ] (basis vectors as columns): x = P[x]_B, so [x]_B = P⁻¹x.",
-"Matrix of T in basis B: [T]_B = P⁻¹AP (A and [T]_B are similar: same eigenvalues, det, trace)."],
-f:["[x]_B = P⁻¹ x","[T]_B = P⁻¹ A P"],
-ex:"T(x,y) = (x+y, x−y) has matrix [1 1; 1 −1] (linear). T(x,y) = (x+1, y) is NOT linear because T(0,0) ≠ 0.",
-q:[["Is T(x,y) = (xy, x) linear?","No — xy is non-linear."],["Formula for [T]_B?","P⁻¹AP."]]},
+plain:["A <b>linear transformation</b> T keeps the rules: T(u+v) = T(u)+T(v) and T(cu) = cT(u). So T(0) must be 0.",
+"Every one has a <b>matrix A</b>: its columns are T(e₁), T(e₂), … (where the unit vectors go).",
+"<b>Kernel</b> = inputs that become 0 (null space). <b>Range</b> = all outputs (column space). Kernel = {0} ⇔ one-one.",
+"<b>Change of basis:</b> same vector, different ruler. If P has the new basis vectors as columns, then [x]_B = P⁻¹x, and T in the new basis is <b>P⁻¹AP</b>."],
+rem:["Columns of A = T(e₁) … T(eₙ)","dim ker + dim range = dim V","[x]_B = P⁻¹ x","[T]_B = P⁻¹ A P"],
+ex:"T(x,y) = (x+y, x−y) is linear, matrix {{1 1|1 −1}}. T(x,y) = (x+1, y) is NOT linear because T(0,0) = (1,0) ≠ 0.",
+qs:[
+{q:"Which map is linear?",o:["T(x,y) = (x + 1, y)","T(x,y) = (xy, y)","T(x,y) = (x + y, 2x)","T(x,y) = (x², y)"],a:2,e:"Only (x+y, 2x) uses plain sums of x and y. The others have a constant, a product or a square."},
+{q:"For any linear transformation, T(0) is…",o:["Always 0","Always 1","Can be anything","Undefined"],a:0,e:"T(0) = T(0·v) = 0·T(v) = 0."},
+{q:"The columns of the standard matrix of T are…",o:["T(e₁), …, T(eₙ)","The eigenvectors","The rows of T","The kernel"],a:0,e:"Feed in each standard unit vector; the outputs are the columns."},
+{q:"A transformation is one-one exactly when its kernel is…",o:["The whole space","{0}","The range","Empty"],a:1,e:"Only 0 maps to 0 ⇒ no two different inputs share an output."},
+{q:"The matrix of T in a new basis B (with basis matrix P) is…",o:["PAP⁻¹","P⁻¹AP","PᵀAP","A⁻¹"],a:1,e:"Convert to standard (P), apply A, convert back (P⁻¹): P⁻¹AP."}]},
 
 {t:"Eigenvalues and eigenvectors",m:4,
-pts:["Av = λv with v ≠ 0. λ = eigenvalue, v = eigenvector.",
-"Step 1: solve det(A − λI) = 0 (characteristic equation) for λ.",
-"Step 2: for each λ solve (A − λI)v = 0; the solutions form the eigenspace.",
-"Sum of eigenvalues = trace; product = det A. Triangular matrix: eigenvalues are the diagonal entries.",
-"A singular ⇔ 0 is an eigenvalue. Aᵏ has eigenvalues λᵏ; A⁻¹ has 1/λ.",
-"Eigenvectors of distinct eigenvalues are linearly independent. Symmetric A: real eigenvalues, orthogonal eigenvectors."],
-f:["det(A − λI) = 0","Σλ = trace(A), Πλ = det(A)"],
-ex:"A = [2 1; 1 2]: (2−λ)² − 1 = 0 ⇒ λ = 1, 3. λ=3: (A−3I)v = 0 ⇒ v = (1,1). λ=1 ⇒ v = (1,−1). Check: trace 4 = 1+3, det 3 = 1·3.",
-q:[["Eigenvalues of [3 0; 0 7]?","3 and 7 (diagonal)."],["A has eigenvalue 2. Eigenvalue of A²?","4."]]},
+plain:["An <b>eigenvector</b> v is a direction that A only stretches: <b>Av = λv</b>. The stretch factor λ is the <b>eigenvalue</b>. (v ≠ 0)",
+"<b>Step 1:</b> solve det(A − λI) = 0 to get the λ's.",
+"<b>Step 2:</b> for each λ solve (A − λI)v = 0 to get its eigenvectors.",
+"Handy checks: sum of eigenvalues = trace, product = det A. Triangular matrix: eigenvalues are the diagonal entries.",
+"A singular ⇔ 0 is an eigenvalue. A² has eigenvalues λ², A⁻¹ has 1/λ."],
+rem:["det(A − λI) = 0","Σλ = trace A","Πλ = det A"],
+ex:"A = {{2 1|1 2}}. (2−λ)² − 1 = 0 ⇒ λ = 1 or 3. For λ = 3: (A−3I)v = 0 ⇒ v = (1,1). For λ = 1: v = (1,−1). Check: 1+3 = 4 = trace, 1·3 = 3 = det.",
+qs:[
+{q:"The characteristic equation of A is…",o:["det A = 0","det(A − λI) = 0","A − λ = 0","Av = 0"],a:1,e:"Non-zero v with (A−λI)v = 0 exists only when det(A − λI) = 0."},
+{q:"Eigenvalues of {{2 0|0 5}} are…",o:["2 and 5","0 and 7","10 only","1 and 3"],a:0,e:"A diagonal (or triangular) matrix has its diagonal entries as eigenvalues."},
+{q:"A = {{4 1|2 3}} has trace 7 and det 10. Its eigenvalues are…",o:["1 and 10","2 and 5","3 and 4","−2 and −5"],a:1,e:"λ² − 7λ + 10 = 0 ⇒ (λ−2)(λ−5) = 0."},
+{q:"If A is singular, then one eigenvalue is…",o:["1","0","−1","Not real"],a:1,e:"det A = product of eigenvalues = 0 ⇒ some λ = 0."},
+{q:"If A has eigenvalue 3, then A² has eigenvalue…",o:["6","9","3","√3"],a:1,e:"A²v = A(3v) = 3·3v = 9v."}]},
 
 {t:"Diagonalization",m:3,
-pts:["A is diagonalizable if A = PDP⁻¹ with D diagonal.",
-"D = eigenvalues on the diagonal; P = matching eigenvectors as columns (same order).",
-"Condition: n linearly independent eigenvectors (for every λ: geometric multiplicity = algebraic multiplicity).",
-"n distinct eigenvalues ⇒ diagonalizable (sufficient, not necessary).",
-"Use: Aᵏ = P Dᵏ P⁻¹.",
-"Symmetric A is orthogonally diagonalizable: A = QDQᵀ (Q orthogonal)."],
-f:["A = P D P⁻¹","Aᵏ = P Dᵏ P⁻¹"],
-ex:"A = [2 1; 1 2]: P = [1 1; 1 −1] (columns for λ = 3, 1), D = diag(3, 1). Not diagonalizable: [1 1; 0 1] — eigenvalue 1 twice but only one independent eigenvector.",
-q:[["3×3 matrix with eigenvalues 1, 2, 3. Diagonalizable?","Yes — 3 distinct eigenvalues."],["Fast way to compute A¹⁰⁰?","P D¹⁰⁰ P⁻¹."]]},
+plain:["Diagonalizing means writing <b>A = P D P⁻¹</b> where D is diagonal.",
+"<b>D</b> = eigenvalues on the diagonal. <b>P</b> = matching eigenvectors as columns (same order).",
+"It works only if A has <b>n independent eigenvectors</b>. If all n eigenvalues are different, it always works.",
+"Why bother? <b>Aᵏ = P Dᵏ P⁻¹</b>, and powers of a diagonal matrix are easy.",
+"Symmetric matrices are always diagonalizable, with orthogonal eigenvectors: A = Q D Qᵀ."],
+rem:["A = P D P⁻¹","Aᵏ = P Dᵏ P⁻¹","n distinct eigenvalues ⇒ diagonalizable","Symmetric ⇒ A = QDQᵀ"],
+ex:"A = {{2 1|1 2}}: P = {{1 1|1 −1}} (eigenvectors for λ = 3, 1) and D = diag(3, 1). Not diagonalizable: {{1 1|0 1}} has λ = 1 twice but only one independent eigenvector.",
+qs:[
+{q:"In A = PDP⁻¹, the columns of P are…",o:["Eigenvalues","Eigenvectors","Rows of A","Pivots"],a:1,e:"Each column of P is an eigenvector; D holds the matching eigenvalues."},
+{q:"A 3×3 matrix has eigenvalues 1, 2, 3. Is it diagonalizable?",o:["Yes","No","Only if symmetric","Only if det = 1"],a:0,e:"n distinct eigenvalues ⇒ n independent eigenvectors ⇒ diagonalizable."},
+{q:"If A = PDP⁻¹, then A³ equals…",o:["P³DP⁻¹","PD³P⁻¹","P³D³P⁻³","3PDP⁻¹"],a:1,e:"The P⁻¹P pairs cancel in the middle, leaving P D³ P⁻¹."},
+{q:"Is {{1 1|0 1}} diagonalizable?",o:["Yes, eigenvalue 1 twice","No, only one independent eigenvector","Yes, it is triangular","Only over complex numbers"],a:1,e:"λ = 1 repeated but (A−I)v = 0 gives just one direction, so no basis of eigenvectors."},
+{q:"A real symmetric matrix can always be…",o:["Made singular","Orthogonally diagonalized","Inverted","Made triangular only"],a:1,e:"Spectral theorem: A = QDQᵀ with Q orthogonal."}]},
 
-{t:"Inner product spaces, Gram–Schmidt",m:4,
-pts:["Inner product ⟨u,v⟩: symmetric, linear, positive definite (⟨v,v⟩ > 0 for v ≠ 0). In Rⁿ: u·v = Σuᵢvᵢ.",
-"Norm ‖v‖ = √⟨v,v⟩. Orthogonal: ⟨u,v⟩ = 0. Orthonormal: orthogonal + unit length.",
-"Cauchy–Schwarz: |⟨u,v⟩| ≤ ‖u‖‖v‖. Triangle: ‖u+v‖ ≤ ‖u‖+‖v‖. Angle: cosθ = ⟨u,v⟩ / (‖u‖‖v‖).",
-"Projection of v on u: (⟨v,u⟩/⟨u,u⟩) u.",
-"Gram–Schmidt turns independent v₁..vₖ into orthogonal u₁..uₖ: subtract projections on all earlier u's. Divide by length for orthonormal."],
-f:["u₁ = v₁","u₂ = v₂ − (⟨v₂,u₁⟩/⟨u₁,u₁⟩) u₁","u₃ = v₃ − (⟨v₃,u₁⟩/⟨u₁,u₁⟩)u₁ − (⟨v₃,u₂⟩/⟨u₂,u₂⟩)u₂","eᵢ = uᵢ / ‖uᵢ‖"],
-ex:"v₁ = (1,1,0), v₂ = (1,0,1). u₁ = (1,1,0). u₂ = v₂ − (1/2)u₁ = (1/2, −1/2, 1). Check u₁·u₂ = 1/2 − 1/2 = 0.",
-q:[["‖(3,4)‖?","5."],["⟨u,v⟩ = 0 means?","u and v are orthogonal."]]}
+{t:"Inner product, Gram–Schmidt",m:4,
+plain:["The <b>inner (dot) product</b> in Rⁿ: u·v = u₁v₁ + u₂v₂ + …. Length: ‖v‖ = √(v·v).",
+"<b>Orthogonal</b> = dot product 0 (perpendicular). <b>Orthonormal</b> = orthogonal and each of length 1.",
+"<b>Cauchy–Schwarz:</b> |u·v| ≤ ‖u‖‖v‖. Angle: cos θ = u·v / (‖u‖‖v‖).",
+"<b>Gram–Schmidt</b> turns any independent vectors into orthogonal ones: keep the first, then from each next vector subtract its shadow (projection) on the earlier ones. Divide by the length to get orthonormal."],
+rem:["u₁ = v₁","u₂ = v₂ − (v₂·u₁ / u₁·u₁) u₁","u₃ = v₃ − (v₃·u₁/u₁·u₁)u₁ − (v₃·u₂/u₂·u₂)u₂","eᵢ = uᵢ / ‖uᵢ‖"],
+ex:"v₁ = (1,1), v₂ = (1,0). u₁ = (1,1). v₂·u₁ = 1, u₁·u₁ = 2, so u₂ = (1,0) − ½(1,1) = (½, −½). Check: u₁·u₂ = ½ − ½ = 0 ✓.",
+qs:[
+{q:"What is (1,2,3)·(4,−5,6)?",o:["12","32","−12","0"],a:0,e:"4 − 10 + 18 = 12."},
+{q:"What is the length ‖(3,4)‖ ?",o:["7","5","25","1"],a:1,e:"√(9 + 16) = 5."},
+{q:"Two vectors are orthogonal when…",o:["Their dot product is 0","They are equal","Their lengths are 1","One is a multiple of the other"],a:0,e:"Dot product 0 means a 90° angle."},
+{q:"Gram–Schmidt on v₁ = (1,1), v₂ = (1,0) gives u₂ =",o:["(1/2, −1/2)","(1, −1)","(0, −1)","(1/2, 1/2)"],a:0,e:"u₂ = v₂ − (v₂·u₁ / u₁·u₁)u₁ = (1,0) − ½(1,1) = (½, −½)."},
+{q:"Cauchy–Schwarz inequality says…",o:["|u·v| ≤ ‖u‖‖v‖","‖u + v‖ = ‖u‖ + ‖v‖","u·v ≥ 0","‖u‖ ≤ ‖v‖"],a:0,e:"The dot product can never exceed the product of the lengths."}]}
 ];
 
 const $=s=>document.querySelector(s);
 let done={};
-try{done=JSON.parse(localStorage.getItem('la_done')||'{}')}catch(e){}
-function save(){try{localStorage.setItem('la_done',JSON.stringify(done))}catch(e){}}
+try{done=JSON.parse(localStorage.getItem('la_done2')||'{}')}catch(e){}
+function save(){try{localStorage.setItem('la_done2',JSON.stringify(done))}catch(e){}}
 
-function target(h,m){const d=new Date();d.setHours(h,m,0,0);return d}
-let endStudy=target(13,35),quiz=target(13,40);
-const qp=new URLSearchParams(location.search);
-if(qp.get('end')){const p=qp.get('end').split(':').map(Number);endStudy=target(p[0],p[1]);quiz=new Date(endStudy.getTime()+5*60000)}
+function shuffle(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t}return a}
 
-function fmt(ms){ms=Math.max(0,ms);const s=Math.floor(ms/1000);return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0')}
+/* quiz engine */
+function mkQuiz(el,qs,onFinish,label){
+  var i=0,score=0,wrong=[];
+  function show(){
+    var q=qs[i];
+    var idx=shuffle(q.o.map(function(_,k){return k}));
+    el.innerHTML='<div class="qh"><span>'+(label||'Question')+' '+(i+1)+' of '+qs.length+'</span><span>Score '+score+'</span></div>'+
+      '<div class="qq">'+F(q.q)+'</div>'+
+      idx.map(function(k){return '<button class="op" data-k="'+k+'">'+F(q.o[k])+'</button>'}).join('')+
+      '<div class="fb"></div>';
+    el.querySelectorAll('.op').forEach(function(b){
+      b.onclick=function(){
+        var k=+b.dataset.k,ok=(k===q.a);
+        if(ok)score++;else wrong.push(i);
+        el.querySelectorAll('.op').forEach(function(o){
+          o.disabled=true;
+          if(+o.dataset.k===q.a)o.classList.add('good');
+        });
+        if(!ok)b.classList.add('bad');
+        el.querySelector('.fb').innerHTML='<div class="ex2">'+(ok?'✅ Correct. ':'❌ Not quite. ')+F(q.e)+'</div>'+
+          '<button class="btn nx">'+(i<qs.length-1?'Next question →':'See score')+'</button>';
+        el.querySelector('.nx').onclick=function(){i++;if(i<qs.length)show();else finish()};
+      };
+    });
+  }
+  function finish(){
+    var pct=Math.round(score/qs.length*100);
+    el.innerHTML='<div class="score">'+score+' / '+qs.length+' ('+pct+'%)</div>'+
+      '<div>'+(pct===100?'Perfect. Move on!':pct>=60?'Good. Re-read the ideas you missed if you have time.':'Re-read the 30-second idea above, then retry.')+'</div>'+
+      '<button class="btn rt">Retry</button> '+
+      '<button class="btn sec nxt">Next topic →</button>';
+    el.querySelector('.rt').onclick=function(){i=0;score=0;wrong=[];show()};
+    el.querySelector('.nxt').onclick=function(){onFinish(true)};
+    onFinish(false);
+  }
+  show();
+}
 
 function card(i,t){
   return '<details class="card" id="c'+i+'"><summary><span class="n">'+(i+1)+'</span><span class="tt">'+t.t+'</span><span class="bd" data-i="'+i+'">'+t.m+' min</span><span class="ck">✓</span></summary><div class="body">'+
-  '<h4>Key ideas</h4><ul>'+t.pts.map(function(p){return '<li>'+p+'</li>'}).join('')+'</ul>'+
-  '<h4>Formulas</h4><div class="f">'+t.f.map(function(x){return '<div>'+x+'</div>'}).join('')+'</div>'+
-  '<h4>Worked example</h4><p class="ex">'+t.ex+'</p>'+
-  '<h4>Quick check</h4>'+t.q.map(function(x){return '<div class="q"><div>'+x[0]+'</div><button class="rv">Show answer</button><div class="a" hidden>'+x[1]+'</div></div>'}).join('')+
-  '<button class="dn" data-i="'+i+'"></button></div></details>';
+  '<h4>The idea in 30 seconds</h4><div class="plain">'+t.plain.map(function(p){return '<p>'+F(p)+'</p>'}).join('')+'</div>'+
+  '<h4>Remember</h4><div class="rem">'+t.rem.map(function(x){return '<div>'+F(x)+'</div>'}).join('')+'</div>'+
+  '<h4>Example</h4><p class="ex">'+F(t.ex)+'</p>'+
+  '<h4>Quiz</h4><div class="qz" id="qz'+i+'"></div>'+
+  '<button class="btn sec skip" data-i="'+i+'">Skip / mark done</button></div></details>';
 }
-$('#list').innerHTML=T.map(function(t,i){return card(i,t)}).join('');
+function mockCard(){
+  return '<details class="card" id="cm"><summary><span class="n">★</span><span class="tt">Mock quiz — all topics mixed</span><span class="bd">optional</span></summary><div class="body"><h4>Mixed practice</h4><div class="qz" id="qzm"></div></div></details>';
+}
+$('#list').innerHTML=T.map(function(t,i){return card(i,t)}).join('')+mockCard();
 
-function firstUndone(){for(var i=0;i<T.length;i++){if(!done[i])return i}return -1}
-function paintDone(i){
-  var c=$('#c'+i);c.classList.toggle('done',!!done[i]);
-  c.querySelector('.dn').innerHTML=done[i]?'Done ✓ (tap to undo)':'Mark done ✓ &amp; next';
+function openNext(i){
+  $('#c'+i).open=false;
+  var n=-1;for(var k=i+1;k<T.length;k++){if(!done[k]){n=k;break}}
+  if(n<0)for(var k2=0;k2<T.length;k2++){if(!done[k2]){n=k2;break}}
+  var c=n>=0?$('#c'+n):$('#cm');
+  c.open=true;setTimeout(function(){c.scrollIntoView({behavior:'smooth',block:'start'})},60);
 }
-T.forEach(function(t,i){paintDone(i)});
-(function(){var f=firstUndone();if(f<0)f=0;$('#c'+f).open=true})();
+function setDone(i){done[i]=true;save();$('#c'+i).classList.add('done');tick()}
+
+T.forEach(function(t,i){
+  if(done[i])$('#c'+i).classList.add('done');
+  mkQuiz($('#qz'+i),t.qs,function(go){setDone(i);if(go)openNext(i)});
+});
+var all=[];T.forEach(function(t){t.qs.forEach(function(q){all.push(q)})});
+mkQuiz($('#qzm'),shuffle(all).slice(0,15),function(){},'Mock');
 
 document.addEventListener('click',function(e){
-  var rv=e.target.closest('.rv');
-  if(rv){var a=rv.nextElementSibling;a.hidden=!a.hidden;rv.textContent=a.hidden?'Show answer':'Hide answer';return}
-  var dn=e.target.closest('.dn');
-  if(dn){
-    var i=+dn.dataset.i;done[i]=!done[i];save();paintDone(i);
-    if(done[i]){
-      $('#c'+i).open=false;
-      var n=firstUndone();
-      if(n>=0){var c=$('#c'+n);c.open=true;setTimeout(function(){c.scrollIntoView({behavior:'smooth',block:'start'})},50)}
-    }
-    tick();
-  }
+  var s=e.target.closest('.skip');
+  if(s){var i=+s.dataset.i;setDone(i);openNext(i)}
 });
+(function(){var f=0;for(var i=0;i<T.length;i++){if(!done[i]){f=i;break}}$('#c'+f).open=true})();
 
+/* timers */
+function target(h,m){var d=new Date();d.setHours(h,m,0,0);return d}
+var endStudy=target(13,35),quiz=target(13,40);
+var qp=new URLSearchParams(location.search);
+if(qp.get('end')){var p=qp.get('end').split(':').map(Number);endStudy=target(p[0],p[1]);quiz=new Date(endStudy.getTime()+5*60000)}
+function fmt(ms){ms=Math.max(0,ms);var s=Math.floor(ms/1000);return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0')}
 function tick(){
-  var now=Date.now(),left=endStudy-now,toQuiz=quiz-now;
-  var est=0,undone=0;
+  var now=Date.now(),left=endStudy-now,toQuiz=quiz-now,est=0,undone=0;
   T.forEach(function(t,i){if(!done[i]){est+=t.m;undone++}});
   var dc=T.length-undone;
-  $('#left').textContent=fmt(left);
-  $('#quiz').textContent=fmt(toQuiz);
-  $('#est').textContent=est+' min';
-  $('#pb').style.width=(dc/T.length*100)+'%';
-  $('#cnt').textContent=dc+' / '+T.length+' topics done';
+  $('#left').textContent=fmt(left);$('#quizt').textContent=fmt(toQuiz);$('#est').textContent=est+' min';
+  $('#pb').style.width=(dc/T.length*100)+'%';$('#cnt').textContent=dc+' / '+T.length+' topics done';
   var lm=Math.max(0,left/60000),spare=lm-est,el=$('#status'),scale=1;
-  if(undone===0){el.textContent='All topics covered. Re-do any quick checks you missed.';el.className='status ok'}
-  else if(left<=0){el.textContent='Study window over. Take a breath — you have prepared.';el.className='status ok'}
+  if(undone===0){el.textContent='All topics covered. Try the mock quiz!';el.className='status ok'}
+  else if(left<=0){el.textContent='Study time over. You have prepared. Good luck!';el.className='status ok'}
   else if(spare>=0){el.textContent='On track — '+Math.floor(spare)+' min spare';el.className='status ok'}
-  else{
-    scale=lm/est;
-    var per=Math.max(1,Math.round(lm/undone*10)/10);
-    el.textContent=Math.ceil(-spare)+' min behind — skim: ~'+per+' min per topic';
-    el.className='status '+(-spare<=5?'warn':'bad');
-  }
-  document.querySelectorAll('.bd').forEach(function(b){
-    var i=+b.dataset.i;
-    b.textContent=done[i]?'done':(Math.max(1,Math.round(T[i].m*scale))+' min');
-  });
+  else{scale=lm/est;var per=Math.max(1,Math.round(lm/undone*10)/10);
+    el.textContent=Math.ceil(-spare)+' min behind — skim: ~'+per+' min per topic';el.className='status '+(-spare<=5?'warn':'bad')}
+  document.querySelectorAll('.bd[data-i]').forEach(function(b){var i=+b.dataset.i;b.textContent=done[i]?'done':(Math.max(1,Math.round(T[i].m*scale))+' min')});
 }
 tick();setInterval(tick,1000);
 </script>
