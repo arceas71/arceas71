@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Linear Algebra Sprint</title>
+<style>
+:root{--bg:#0b0b0d;--card:#141418;--line:#2a2a31;--tx:#ececf1;--mut:#9a9aa6;--ac:#c9d1ff;--ok:#4ade80;--warn:#fbbf24;--bad:#f87171}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{position:sticky;top:0;z-index:5;background:rgba(11,11,13,.96);border-bottom:1px solid var(--line);padding:10px 12px}
+.row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;max-width:760px;margin:0 auto}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:8px 6px;text-align:center}
+.stat b{display:block;font-size:24px;font-variant-numeric:tabular-nums;letter-spacing:.02em}
+.stat span{font-size:10.5px;color:var(--mut);text-transform:uppercase;letter-spacing:.07em}
+.status{max-width:760px;margin:8px auto 0;font-size:13.5px;font-weight:600;text-align:center}
+.status.ok{color:var(--ok)}.status.warn{color:var(--warn)}.status.bad{color:var(--bad)}
+.bar{max-width:760px;margin:8px auto 0;height:6px;background:var(--line);border-radius:6px;overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#8d9bff,var(--ok));transition:width .3s}
+.cnt{max-width:760px;margin:4px auto 0;text-align:center;font-size:11.5px;color:var(--mut)}
+main{max-width:760px;margin:0 auto;padding:12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;margin-bottom:10px;overflow:hidden}
+.card[open]{border-color:#4b5278}
+summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:10px;padding:12px}
+summary::-webkit-details-marker{display:none}
+.n{flex:none;width:26px;height:26px;border-radius:50%;background:#23232b;display:grid;place-items:center;font-size:13px;color:var(--ac)}
+.tt{flex:1;font-weight:600}
+.bd{flex:none;font-size:12px;color:var(--mut);border:1px solid var(--line);border-radius:20px;padding:2px 8px}
+.ck{flex:none;width:22px;color:transparent;font-weight:700}
+.card.done .ck{color:var(--ok)}
+.card.done .tt{color:var(--mut);text-decoration:line-through}
+.body{padding:0 14px 14px}
+h4{margin:14px 0 6px;font-size:11.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--ac)}
+ul{margin:0;padding-left:20px}li{margin:3px 0}
+.f{background:#0e0e12;border:1px solid var(--line);border-radius:10px;padding:8px 12px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13.5px}
+.f div{margin:3px 0}
+.ex{margin:0;background:#101018;border-left:3px solid #8d9bff;padding:8px 12px;border-radius:6px}
+.q{margin:8px 0;padding:8px 10px;border:1px dashed var(--line);border-radius:10px}
+.a{margin-top:6px;color:var(--ok);font-weight:600}
+button{font:inherit;cursor:pointer;color:var(--tx);background:#23232b;border:1px solid var(--line);border-radius:10px;padding:6px 12px}
+button:active{transform:scale(.97)}
+.rv{margin-top:6px;font-size:13px;padding:4px 10px}
+.dn{margin-top:14px;width:100%;background:#2b3260;border-color:#4b5278;padding:10px}
+.tip{max-width:760px;margin:0 auto 10px;font-size:12.5px;color:var(--mut);text-align:center}
+</style>
+</head>
+<body>
+<header>
+  <div class="row">
+    <div class="stat"><b id="left">--:--</b><span>Study time left</span></div>
+    <div class="stat"><b id="quiz">--:--</b><span>Quiz in</span></div>
+    <div class="stat"><b id="est">-- min</b><span>Est. remaining</span></div>
+  </div>
+  <div class="status" id="status"></div>
+  <div class="bar"><i id="pb"></i></div>
+  <div class="cnt" id="cnt"></div>
+</header>
+<main>
+  <div class="tip">Work top to bottom. Read ideas, glance at the example, answer the quick checks, then tap Mark done. Badges adjust to the time you have left.</div>
+  <div id="list"></div>
+</main>
+<script>
+const T=[
+{t:"Vectors in Rⁿ, independence, span",m:3,
+pts:["Rⁿ = n-tuples; add and scale componentwise.",
+"Linear combination: c₁v₁ + … + cₖvₖ.",
+"Span{v₁..vₖ} = set of ALL linear combinations.",
+"Independent: c₁v₁+…+cₖvₖ = 0 only when every cᵢ = 0. Dependent: a non-trivial combo gives 0.",
+"Test: put vectors as columns of A, solve Ax = 0. Only x = 0 ⇒ independent (rank = k).",
+"More than n vectors in Rⁿ ⇒ always dependent. n vectors in Rⁿ independent ⇔ det ≠ 0. Any set with the zero vector ⇒ dependent."],
+f:["Independent ⇔ rank[v₁ … vₖ] = k","Dependent ⇔ one vector is a combo of the others"],
+ex:"(1,2,3) and (2,4,6): second = 2·first ⇒ dependent. (1,0),(0,1) are independent and span R².",
+q:[["Are (1,2),(3,4),(5,6) independent?","No — 3 vectors in R² (more than the dimension)."],["Is (1,1) in span{(1,0),(0,1)}?","Yes: 1·(1,0) + 1·(0,1)."]]},
+
+{t:"Subspaces, basis, dimension",m:3,
+pts:["Subspace W of Rⁿ: contains 0, closed under addition, closed under scalar multiplication.",
+"Basis of W: linearly independent AND spans W.",
+"Dimension = number of vectors in any basis (same for all bases). dim Rⁿ = n.",
+"In a space of dim d: any d independent vectors, or any d spanning vectors, form a basis.",
+"Lines/planes through the origin are subspaces; if it misses 0 it is NOT a subspace."],
+f:["Subspace test: 0 ∈ W, u+v ∈ W, cu ∈ W","dim W = # of vectors in a basis"],
+ex:"W = {(x,y,z): x+y+z = 0}. Solve z = −x−y ⇒ basis (1,0,−1),(0,1,−1), so dim W = 2. Line y = x+1 is not a subspace (no origin).",
+q:[["Is {(x,y): y = x+1} a subspace of R²?","No — it does not contain (0,0)."],["dim of {(x,y,z): z = 0}?","2 (basis (1,0,0),(0,1,0))."]]},
+
+{t:"Linear systems: Gauss, Gauss–Jordan, existence & uniqueness",m:4,
+pts:["Write Ax = b as the augmented matrix [A | b].",
+"Row ops: swap rows, scale a row by a non-zero number, add a multiple of one row to another.",
+"Gauss elimination → row echelon form (REF), then back-substitute. Gauss–Jordan → reduced REF (leading 1s, zeros above and below), read solution directly.",
+"No solution (inconsistent): rank A < rank[A|b] (a row 0 0 0 | c with c ≠ 0).",
+"rank A = rank[A|b] = n (unknowns) ⇒ unique solution.",
+"rank A = rank[A|b] < n ⇒ infinitely many solutions, n − rank free variables.",
+"Homogeneous Ax = 0 always has x = 0; non-trivial solutions iff rank < n."],
+f:["Consistent ⇔ rank A = rank[A|b]","free variables = n − rank"],
+ex:"x+y = 3, x−y = 1: [1 1|3; 1 −1|1] → R₂−R₁ → [1 1|3; 0 −2|−2] ⇒ y = 1, x = 2 (unique).",
+q:[["rank A = 2, rank[A|b] = 3. Solutions?","None — inconsistent."],["3 unknowns, rank 2, consistent. Solutions?","Infinitely many, with 1 free variable."]]},
+
+{t:"Rank; row, column and null spaces",m:3,
+pts:["Rank = number of pivots = dim(row space) = dim(column space).",
+"Row space: span of the rows. Basis = non-zero rows of the REF.",
+"Column space: span of the columns. Basis = pivot columns of the ORIGINAL A (not of the REF).",
+"Null space: {x : Ax = 0}. Nullity = dim null space = number of free variables.",
+"Rank–Nullity: rank + nullity = n (number of columns).",
+"Square A invertible ⇔ rank n ⇔ nullity 0 ⇔ det ≠ 0."],
+f:["rank(A) + nullity(A) = #columns","rank(A) = rank(Aᵀ)"],
+ex:"A = [1 2; 2 4]: R₂−2R₁ gives [1 2; 0 0] ⇒ rank 1, nullity 1. Null space: x+2y = 0 ⇒ span{(−2,1)}. Column space basis: (1,2).",
+q:[["4×6 matrix with rank 3: nullity?","6 − 3 = 3."],["Basis of column space: take pivot columns from REF or original A?","From the original A."]]},
+
+{t:"Determinants and Cramer's rule",m:3,
+pts:["2×2: det = ad − bc. 3×3: cofactor expansion along a row/column with sign pattern + − + / − + − / + − +.",
+"Swap two rows → sign flips. Scale a row by k → det × k. Add a multiple of one row to another → unchanged.",
+"Triangular matrix: det = product of diagonal. Equal rows or a zero row ⇒ det 0.",
+"det(AB) = det A · det B; det(Aᵀ) = det A; det(kA) = kⁿ det A (n×n).",
+"Cramer's rule (det A ≠ 0): xᵢ = det(Aᵢ)/det(A), where Aᵢ = A with column i replaced by b."],
+f:["xᵢ = det(Aᵢ) / det(A)","A invertible ⇔ det A ≠ 0"],
+ex:"2x + y = 5, x + 3y = 5. det A = 6 − 1 = 5. x = det[5 1; 5 3]/5 = 10/5 = 2. y = det[2 5; 1 5]/5 = 5/5 = 1.",
+q:[["det of [2 3; 4 6]?","12 − 12 = 0 (singular)."],["3×3 matrix A, det A = 2. det(2A)?","2³ · 2 = 16."]]},
+
+{t:"Inverse of a matrix",m:3,
+pts:["A⁻¹ exists ⇔ A is square and det A ≠ 0 (full rank). AA⁻¹ = A⁻¹A = I.",
+"2×2 formula below.",
+"Gauss–Jordan: row-reduce [A | I] → [I | A⁻¹].",
+"Adjoint method: A⁻¹ = adj(A)/det A, adj = transpose of the cofactor matrix.",
+"(AB)⁻¹ = B⁻¹A⁻¹ (order reverses). (Aᵀ)⁻¹ = (A⁻¹)ᵀ.",
+"Solve Ax = b ⇒ x = A⁻¹b."],
+f:["[a b; c d]⁻¹ = 1/(ad−bc) · [d −b; −c a]","A⁻¹ = adj(A) / det(A)"],
+ex:"A = [1 2; 3 4], det = 4 − 6 = −2. A⁻¹ = (−1/2)[4 −2; −3 1] = [−2 1; 3/2 −1/2].",
+q:[["Inverse of [2 0; 0 5]?","[1/2 0; 0 1/5]."],["(AB)⁻¹ = ?","B⁻¹A⁻¹."]]},
+
+{t:"Linear transformation, change of basis",m:3,
+pts:["T: V→W is linear if T(u+v) = T(u)+T(v) and T(cu) = cT(u). Hence T(0) = 0.",
+"Standard matrix: columns are T(e₁), …, T(eₙ), so T(x) = Ax.",
+"Kernel = {x : T(x) = 0} = null space. Range = column space. dim ker + dim range = dim V. T is one-one ⇔ ker = {0}.",
+"Basis B with matrix P = [b₁ … bₙ] (basis vectors as columns): x = P[x]_B, so [x]_B = P⁻¹x.",
+"Matrix of T in basis B: [T]_B = P⁻¹AP (A and [T]_B are similar: same eigenvalues, det, trace)."],
+f:["[x]_B = P⁻¹ x","[T]_B = P⁻¹ A P"],
+ex:"T(x,y) = (x+y, x−y) has matrix [1 1; 1 −1] (linear). T(x,y) = (x+1, y) is NOT linear because T(0,0) ≠ 0.",
+q:[["Is T(x,y) = (xy, x) linear?","No — xy is non-linear."],["Formula for [T]_B?","P⁻¹AP."]]},
+
+{t:"Eigenvalues and eigenvectors",m:4,
+pts:["Av = λv with v ≠ 0. λ = eigenvalue, v = eigenvector.",
+"Step 1: solve det(A − λI) = 0 (characteristic equation) for λ.",
+"Step 2: for each λ solve (A − λI)v = 0; the solutions form the eigenspace.",
+"Sum of eigenvalues = trace; product = det A. Triangular matrix: eigenvalues are the diagonal entries.",
+"A singular ⇔ 0 is an eigenvalue. Aᵏ has eigenvalues λᵏ; A⁻¹ has 1/λ.",
+"Eigenvectors of distinct eigenvalues are linearly independent. Symmetric A: real eigenvalues, orthogonal eigenvectors."],
+f:["det(A − λI) = 0","Σλ = trace(A), Πλ = det(A)"],
+ex:"A = [2 1; 1 2]: (2−λ)² − 1 = 0 ⇒ λ = 1, 3. λ=3: (A−3I)v = 0 ⇒ v = (1,1). λ=1 ⇒ v = (1,−1). Check: trace 4 = 1+3, det 3 = 1·3.",
+q:[["Eigenvalues of [3 0; 0 7]?","3 and 7 (diagonal)."],["A has eigenvalue 2. Eigenvalue of A²?","4."]]},
+
+{t:"Diagonalization",m:3,
+pts:["A is diagonalizable if A = PDP⁻¹ with D diagonal.",
+"D = eigenvalues on the diagonal; P = matching eigenvectors as columns (same order).",
+"Condition: n linearly independent eigenvectors (for every λ: geometric multiplicity = algebraic multiplicity).",
+"n distinct eigenvalues ⇒ diagonalizable (sufficient, not necessary).",
+"Use: Aᵏ = P Dᵏ P⁻¹.",
+"Symmetric A is orthogonally diagonalizable: A = QDQᵀ (Q orthogonal)."],
+f:["A = P D P⁻¹","Aᵏ = P Dᵏ P⁻¹"],
+ex:"A = [2 1; 1 2]: P = [1 1; 1 −1] (columns for λ = 3, 1), D = diag(3, 1). Not diagonalizable: [1 1; 0 1] — eigenvalue 1 twice but only one independent eigenvector.",
+q:[["3×3 matrix with eigenvalues 1, 2, 3. Diagonalizable?","Yes — 3 distinct eigenvalues."],["Fast way to compute A¹⁰⁰?","P D¹⁰⁰ P⁻¹."]]},
+
+{t:"Inner product spaces, Gram–Schmidt",m:4,
+pts:["Inner product ⟨u,v⟩: symmetric, linear, positive definite (⟨v,v⟩ > 0 for v ≠ 0). In Rⁿ: u·v = Σuᵢvᵢ.",
+"Norm ‖v‖ = √⟨v,v⟩. Orthogonal: ⟨u,v⟩ = 0. Orthonormal: orthogonal + unit length.",
+"Cauchy–Schwarz: |⟨u,v⟩| ≤ ‖u‖‖v‖. Triangle: ‖u+v‖ ≤ ‖u‖+‖v‖. Angle: cosθ = ⟨u,v⟩ / (‖u‖‖v‖).",
+"Projection of v on u: (⟨v,u⟩/⟨u,u⟩) u.",
+"Gram–Schmidt turns independent v₁..vₖ into orthogonal u₁..uₖ: subtract projections on all earlier u's. Divide by length for orthonormal."],
+f:["u₁ = v₁","u₂ = v₂ − (⟨v₂,u₁⟩/⟨u₁,u₁⟩) u₁","u₃ = v₃ − (⟨v₃,u₁⟩/⟨u₁,u₁⟩)u₁ − (⟨v₃,u₂⟩/⟨u₂,u₂⟩)u₂","eᵢ = uᵢ / ‖uᵢ‖"],
+ex:"v₁ = (1,1,0), v₂ = (1,0,1). u₁ = (1,1,0). u₂ = v₂ − (1/2)u₁ = (1/2, −1/2, 1). Check u₁·u₂ = 1/2 − 1/2 = 0.",
+q:[["‖(3,4)‖?","5."],["⟨u,v⟩ = 0 means?","u and v are orthogonal."]]}
+];
+
+const $=s=>document.querySelector(s);
+let done={};
+try{done=JSON.parse(localStorage.getItem('la_done')||'{}')}catch(e){}
+function save(){try{localStorage.setItem('la_done',JSON.stringify(done))}catch(e){}}
+
+function target(h,m){const d=new Date();d.setHours(h,m,0,0);return d}
+let endStudy=target(13,35),quiz=target(13,40);
+const qp=new URLSearchParams(location.search);
+if(qp.get('end')){const p=qp.get('end').split(':').map(Number);endStudy=target(p[0],p[1]);quiz=new Date(endStudy.getTime()+5*60000)}
+
+function fmt(ms){ms=Math.max(0,ms);const s=Math.floor(ms/1000);return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0')}
+
+function card(i,t){
+  return '<details class="card" id="c'+i+'"><summary><span class="n">'+(i+1)+'</span><span class="tt">'+t.t+'</span><span class="bd" data-i="'+i+'">'+t.m+' min</span><span class="ck">✓</span></summary><div class="body">'+
+  '<h4>Key ideas</h4><ul>'+t.pts.map(function(p){return '<li>'+p+'</li>'}).join('')+'</ul>'+
+  '<h4>Formulas</h4><div class="f">'+t.f.map(function(x){return '<div>'+x+'</div>'}).join('')+'</div>'+
+  '<h4>Worked example</h4><p class="ex">'+t.ex+'</p>'+
+  '<h4>Quick check</h4>'+t.q.map(function(x){return '<div class="q"><div>'+x[0]+'</div><button class="rv">Show answer</button><div class="a" hidden>'+x[1]+'</div></div>'}).join('')+
+  '<button class="dn" data-i="'+i+'"></button></div></details>';
+}
+$('#list').innerHTML=T.map(function(t,i){return card(i,t)}).join('');
+
+function firstUndone(){for(var i=0;i<T.length;i++){if(!done[i])return i}return -1}
+function paintDone(i){
+  var c=$('#c'+i);c.classList.toggle('done',!!done[i]);
+  c.querySelector('.dn').innerHTML=done[i]?'Done ✓ (tap to undo)':'Mark done ✓ &amp; next';
+}
+T.forEach(function(t,i){paintDone(i)});
+(function(){var f=firstUndone();if(f<0)f=0;$('#c'+f).open=true})();
+
+document.addEventListener('click',function(e){
+  var rv=e.target.closest('.rv');
+  if(rv){var a=rv.nextElementSibling;a.hidden=!a.hidden;rv.textContent=a.hidden?'Show answer':'Hide answer';return}
+  var dn=e.target.closest('.dn');
+  if(dn){
+    var i=+dn.dataset.i;done[i]=!done[i];save();paintDone(i);
+    if(done[i]){
+      $('#c'+i).open=false;
+      var n=firstUndone();
+      if(n>=0){var c=$('#c'+n);c.open=true;setTimeout(function(){c.scrollIntoView({behavior:'smooth',block:'start'})},50)}
+    }
+    tick();
+  }
+});
+
+function tick(){
+  var now=Date.now(),left=endStudy-now,toQuiz=quiz-now;
+  var est=0,undone=0;
+  T.forEach(function(t,i){if(!done[i]){est+=t.m;undone++}});
+  var dc=T.length-undone;
+  $('#left').textContent=fmt(left);
+  $('#quiz').textContent=fmt(toQuiz);
+  $('#est').textContent=est+' min';
+  $('#pb').style.width=(dc/T.length*100)+'%';
+  $('#cnt').textContent=dc+' / '+T.length+' topics done';
+  var lm=Math.max(0,left/60000),spare=lm-est,el=$('#status'),scale=1;
+  if(undone===0){el.textContent='All topics covered. Re-do any quick checks you missed.';el.className='status ok'}
+  else if(left<=0){el.textContent='Study window over. Take a breath — you have prepared.';el.className='status ok'}
+  else if(spare>=0){el.textContent='On track — '+Math.floor(spare)+' min spare';el.className='status ok'}
+  else{
+    scale=lm/est;
+    var per=Math.max(1,Math.round(lm/undone*10)/10);
+    el.textContent=Math.ceil(-spare)+' min behind — skim: ~'+per+' min per topic';
+    el.className='status '+(-spare<=5?'warn':'bad');
+  }
+  document.querySelectorAll('.bd').forEach(function(b){
+    var i=+b.dataset.i;
+    b.textContent=done[i]?'done':(Math.max(1,Math.round(T[i].m*scale))+' min');
+  });
+}
+tick();setInterval(tick,1000);
+</script>
+</body>
+</html>
