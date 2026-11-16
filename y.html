@@ -15,9 +15,17 @@
     if (topic) localStorage.setItem('nf_topic', topic);
     else topic = localStorage.getItem('nf_topic') || '';
   } catch (e) {}
-  if (!topic) return;
 
   var es = null;
+
+  // The tab title is the only status indicator (the page itself stays blank).
+  function status() {
+    var perm = ('Notification' in window) ? Notification.permission : 'denied';
+    if (!topic) document.title = 'click: set topic';
+    else if (perm === 'default') document.title = 'click: allow';
+    else if (perm === 'denied') document.title = 'blocked';
+    else document.title = 'on';
+  }
 
   function show(title, body) {
     if (!('Notification' in window) || Notification.permission !== 'granted') return;
@@ -25,6 +33,7 @@
   }
 
   function connect() {
+    if (!topic) return;
     if (es) es.close();
     es = new EventSource('https://ntfy.sh/' + encodeURIComponent(topic) + '/sse');
     es.onmessage = function (ev) {
@@ -36,14 +45,22 @@
   }
 
   // Browsers only allow the permission prompt after a click, so click once anywhere.
-  function ask() {
-    if ('Notification' in window && Notification.permission === 'default') {
-      Notification.requestPermission();
+  document.addEventListener('click', function () {
+    if (!topic) {
+      var t = prompt('Topic?');
+      if (t) {
+        topic = t.trim();
+        try { localStorage.setItem('nf_topic', topic); } catch (e) {}
+        connect();
+      }
     }
-  }
-  document.addEventListener('click', ask);
-  ask();
+    if ('Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission().then(status);
+    }
+    status();
+  });
 
+  status();
   connect();
 })();
 </script>
