@@ -66,6 +66,11 @@ h4{margin:16px 0 6px;font-size:12px;text-transform:uppercase;letter-spacing:.08e
 </header>
 <main>
   <div class="tip">For each topic: read the 30-second idea, then take the MCQs. Finishing the MCQs marks the topic done.</div>
+  <div style="text-align:center;margin-bottom:12px">
+    <button class="btn" onclick="doExport()">📋 Export my progress</button>
+    <div id="expmsg" class="tip" style="margin-top:6px"></div>
+    <textarea id="exp" hidden readonly rows="9" style="width:100%;background:#0e0e12;color:var(--tx);border:1px solid var(--line);border-radius:10px;padding:8px;font:13px ui-monospace,monospace"></textarea>
+  </div>
   <div id="list"></div>
 </main>
 <script>
@@ -219,6 +224,25 @@ const $=s=>document.querySelector(s);
 let done={};
 try{done=JSON.parse(localStorage.getItem('la_done2')||'{}')}catch(e){}
 function save(){try{localStorage.setItem('la_done2',JSON.stringify(done))}catch(e){}}
+let scores={};
+try{scores=JSON.parse(localStorage.getItem('la_scores')||'{}')}catch(e){}
+function report(){
+  var d=new Date(),L=['LINEAR ALGEBRA PROGRESS @ '+d.toLocaleTimeString()];
+  var dc=0;T.forEach(function(t,i){if(done[i])dc++});
+  L.push('Topics done: '+dc+'/'+T.length+' | Study time left: '+$('#left').textContent);
+  T.forEach(function(t,i){
+    var s=scores[i];
+    L.push((i+1)+'. '+t.t+' — '+(s?s.s+'/'+s.n:(done[i]?'skipped':'not started')));
+    if(s&&s.w&&s.w.length)s.w.forEach(function(q){L.push('   missed: '+q)});
+  });
+  return L.join('\n');
+}
+function doExport(){
+  var txt=report(),box=$('#exp');
+  box.value=txt;box.hidden=false;box.select();
+  var msg='Select all and copy, then paste it to Claude.';
+  try{navigator.clipboard.writeText(txt).then(function(){$('#expmsg').textContent='Copied! Paste it to Claude.'},function(){$('#expmsg').textContent=msg})}catch(e){$('#expmsg').textContent=msg}
+}
 
 function shuffle(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t}return a}
 
@@ -255,7 +279,7 @@ function mkQuiz(el,qs,onFinish,label){
       '<button class="btn sec nxt">Next topic →</button>';
     el.querySelector('.rt').onclick=function(){i=0;score=0;wrong=[];show()};
     el.querySelector('.nxt').onclick=function(){onFinish(true)};
-    onFinish(false);
+    onFinish(false,score,qs.length,wrong.map(function(k){return qs[k].q}));
   }
   show();
 }
@@ -284,7 +308,9 @@ function setDone(i){done[i]=true;save();$('#c'+i).classList.add('done');tick()}
 
 T.forEach(function(t,i){
   if(done[i])$('#c'+i).classList.add('done');
-  mkQuiz($('#qz'+i),t.qs,function(go){setDone(i);if(go)openNext(i)});
+  mkQuiz($('#qz'+i),t.qs,function(go,sc,tot,wr){
+    if(sc!=null){scores[i]={s:sc,n:tot,w:wr};try{localStorage.setItem('la_scores',JSON.stringify(scores))}catch(e){}}
+    setDone(i);if(go)openNext(i)});
 });
 var all=[];T.forEach(function(t){t.qs.forEach(function(q){all.push(q)})});
 mkQuiz($('#qzm'),shuffle(all).slice(0,15),function(){},'Mock');
