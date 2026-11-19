@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#050506">
+<meta name="color-scheme" content="dark">
+<title>23MAT121 · Mock Examination</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23050506'/%3E%3Cpath d='M9 22 16 8l7 14' fill='none' stroke='%23d9b872' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M12 18h8' stroke='%23d9b872' stroke-width='2.4' stroke-linecap='round'/%3E%3C/svg%3E">
+<style>
+:root{
+  --bg:#050506; --s1:#0c0c0e; --s2:#131316; --s3:#1b1b1f; --line:#26262b; --line2:#34343b;
+  --tx:#ecebe8; --tx2:#b3b3ba; --mut:#85858e;
+  --ac:#d9b872; --ac-d:#a8894a; --ac-bg:rgba(217,184,114,.10);
+  --ok:#78c79a; --ok-bg:rgba(120,199,154,.10); --bad:#e4746e; --bad-bg:rgba(228,116,110,.10);
+  --serif:"Source Serif 4","Charter","Iowan Old Style","Noto Serif","Cambria","Georgia",serif;
+  --sans:"Inter","SF Pro Text","Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --mono:ui-monospace,"SF Mono","JetBrains Mono",Menlo,Consolas,"Roboto Mono",monospace;
+  --r:14px;
+  --safe-b:env(safe-area-inset-bottom,0px);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+[hidden]{display:none!important}
+html{background:var(--bg);color-scheme:dark}
+body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.5 var(--sans);-webkit-font-smoothing:antialiased;min-height:100vh;min-height:100dvh;
+  background-image:radial-gradient(900px 420px at 50% -120px,rgba(217,184,114,.07),transparent 70%)}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none;padding:0}
+button:focus-visible,a:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+h1,h2,h3,p{margin:0}
+.wrap{max-width:1080px;margin:0 auto;padding:0 20px}
+
+/* ---------- math ---------- */
+.m{font-family:var(--serif)}
+.m sup,.m sub{font-size:.72em;line-height:0}
+.ss{display:inline-flex;flex-direction:column;vertical-align:middle;font-size:.72em;line-height:1.15;margin:0 .1em}
+.ss sup,.ss sub{font-size:1em;vertical-align:baseline;position:static;line-height:1.15}
+.frac{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;margin:0 .2em;font-size:.96em}
+.frac .num{padding:0 .3em;border-bottom:1px solid currentColor;line-height:1.3}
+.frac .den{padding:0 .3em;line-height:1.3}
+.rad .rb{border-top:1px solid currentColor;padding:0 .12em}
+.fn{font-style:normal}
+.thin{display:inline-block;width:.18em}
+.mat{display:inline-block;vertical-align:middle;border-left:1.5px solid currentColor;border-right:1.5px solid currentColor;border-radius:4px;padding:.05em .25em;margin:0 .2em}
+.mat table{border-collapse:collapse}
+.mat td{padding:.08em .45em;text-align:center;white-space:nowrap}
+
+/* ---------- common ---------- */
+.eyebrow{font:600 11px/1 var(--sans);letter-spacing:.16em;text-transform:uppercase;color:var(--ac)}
+.card{background:linear-gradient(180deg,var(--s2),var(--s1));border:1px solid var(--line);border-radius:var(--r)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 20px;border-radius:12px;font-weight:600;font-size:14.5px;border:1px solid var(--line2);background:var(--s3);transition:background .15s,border-color .15s,transform .1s}
+.btn:hover{background:#222227;border-color:#44444c}
+.btn:active{transform:scale(.98)}
+.btn.pri{background:var(--ac);border-color:var(--ac);color:#14110a}
+.btn.pri:hover{background:#e6c783;border-color:#e6c783}
+.btn.ghost{background:transparent}
+.btn.danger{color:var(--bad);border-color:rgba(228,116,110,.35)}
+.btn[disabled]{opacity:.35;pointer-events:none}
+.unit-tag{white-space:nowrap;display:inline-flex;align-items:center;gap:6px;font:600 11px/1 var(--sans);letter-spacing:.08em;text-transform:uppercase;color:var(--tx2);padding:6px 10px;border:1px solid var(--line);border-radius:99px;background:var(--s1)}
+.unit-tag i{width:6px;height:6px;border-radius:50%;background:var(--ac);display:block}
+.unit-tag.u2 i{background:#8fb6d9}.unit-tag.u3 i{background:#b79bd9}
+
+/* ---------- home ---------- */
+.home-hero{padding:56px 0 28px}
+.home-hero h1{font:600 clamp(40px,8vw,72px)/1 var(--serif);letter-spacing:-.02em;margin:18px 0 12px}
+.home-hero h1 span{color:var(--ac)}
+.home-hero p.sub{font:400 clamp(17px,2.6vw,22px)/1.35 var(--serif);color:var(--tx2);max-width:640px}
+.home-hero .meta{margin-top:14px;color:var(--mut);font-size:13px}
+.grid2{display:grid;grid-template-columns:1.35fr 1fr;gap:16px}
+.pad{padding:22px}
+.card h3{font:600 12px/1 var(--sans);letter-spacing:.12em;text-transform:uppercase;color:var(--mut);margin-bottom:16px}
+.spec{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.spec div{background:var(--s1);padding:14px 16px}
+.spec b{display:block;font:500 26px/1.1 var(--serif);letter-spacing:-.01em}
+.spec span{font-size:12px;color:var(--mut)}
+.comp{margin-top:18px;display:grid;gap:10px}
+.comp .row{display:flex;align-items:center;gap:12px;font-size:14px;color:var(--tx2)}
+.comp .row b{white-space:nowrap;margin-left:auto;font:500 16px var(--serif);color:var(--tx)}
+.excl{margin-top:18px;padding-top:16px;border-top:1px solid var(--line);font-size:12.5px;color:var(--mut);line-height:1.6}
+.internal .big{font:500 clamp(40px,6vw,54px)/1 var(--serif);letter-spacing:-.02em}
+.internal .big small{font-size:.5em;color:var(--mut);letter-spacing:0}
+.internal p{margin-top:10px;font-size:13px;color:var(--mut)}
+.opts-row{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 0}
+.chip{min-height:44px;padding:0 18px;border-radius:12px;border:1px solid var(--line2);background:var(--s1);color:var(--tx2);font-weight:600;font-size:14px}
+.chip[aria-pressed="true"]{border-color:var(--ac);color:var(--ac);background:var(--ac-bg)}
+.start-row{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:22px}
+.start-row .btn.pri{min-height:50px;padding:0 30px;font-size:15.5px}
+.resume{margin-top:16px;padding:16px 18px;border:1px solid rgba(217,184,114,.35);background:var(--ac-bg);border-radius:12px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.resume div{flex:1;min-width:200px}
+.resume b{font-variant-numeric:tabular-nums}
+.hist{display:grid;gap:8px}
+.hist .h{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;font-size:13px;color:var(--tx2);background:var(--s1)}
+.hist .h b{font:500 17px var(--serif);color:var(--tx)}
+.hist .h b small{font-size:.7em;color:var(--mut)}
+.empty{color:var(--mut);font-size:13px}
+footer.note{padding:36px 0 44px;color:var(--mut);font-size:12px}
+
+/* ---------- exam ---------- */
+#exam{min-height:100vh;min-height:100dvh;display:flex;flex-direction:column}
+.xbar{position:sticky;top:0;z-index:20;background:rgba(5,5,6,.88);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+.xbar-in{max-width:1080px;margin:0 auto;padding:10px 20px;display:flex;align-items:center;gap:12px}
+.xbrand{font:600 13px var(--serif);letter-spacing:.02em;display:flex;align-items:baseline;gap:8px}
+.xbrand span{color:var(--mut);font:500 12px var(--sans)}
+.xprog{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px;padding:0 6px}
+.xprog .lab{white-space:nowrap;display:flex;justify-content:space-between;font-size:12px;color:var(--mut);font-variant-numeric:tabular-nums}
+.bar{height:4px;background:var(--s3);border-radius:4px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--ac);border-radius:4px;transition:width .3s}
+.timer{font:600 18px/1 var(--mono);letter-spacing:.02em;padding:9px 12px;border-radius:10px;background:var(--s2);border:1px solid var(--line);font-variant-numeric:tabular-nums;min-width:86px;text-align:center}
+.timer.warn{color:var(--ac);border-color:rgba(217,184,114,.45)}
+.timer.crit{color:var(--bad);border-color:rgba(228,116,110,.5)}
+.iconbtn{width:44px;height:44px;border-radius:12px;border:1px solid var(--line);background:var(--s2);display:none;align-items:center;justify-content:center}
+.xbody{flex:1;max-width:1080px;width:100%;margin:0 auto;padding:22px 20px 110px;display:grid;grid-template-columns:minmax(0,1fr) 290px;gap:22px;align-items:start}
+.qpane{min-width:0}
+.qcard{padding:28px 30px 26px;animation:fade .18s ease}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.qmeta{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:18px}
+.qno{font:600 13px var(--sans);letter-spacing:.08em;text-transform:uppercase;color:var(--ac)}
+.flagpill{font:600 11px var(--sans);letter-spacing:.08em;text-transform:uppercase;color:var(--ac);border:1px solid rgba(217,184,114,.4);border-radius:99px;padding:5px 9px;background:var(--ac-bg)}
+.qtext{font:400 clamp(18px,2.4vw,21px)/1.65 var(--serif);color:var(--tx);margin-bottom:24px;overflow-wrap:anywhere}
+.opts{display:grid;gap:10px}
+.opt{display:flex;align-items:flex-start;gap:14px;text-align:left;width:100%;padding:14px 16px;border:1px solid var(--line);border-radius:12px;background:var(--s1);transition:border-color .15s,background .15s;min-height:56px}
+.opt:hover{border-color:var(--line2);background:var(--s2)}
+.opt .ol{flex:none;width:30px;height:30px;border-radius:50%;border:1px solid var(--line2);display:flex;align-items:center;justify-content:center;font:600 13px var(--sans);color:var(--tx2);margin-top:1px}
+.opt .ot{flex:1;min-width:0;font:400 18px/1.5 var(--serif);padding-top:2px;overflow-wrap:anywhere}
+.opt.sel{border-color:var(--ac);background:var(--ac-bg)}
+.opt.sel .ol{background:var(--ac);border-color:var(--ac);color:#14110a}
+.qfoot{display:flex;justify-content:space-between;align-items:center;margin-top:18px;color:var(--mut);font-size:13px}
+.linkbtn{color:var(--tx2);text-decoration:underline;text-underline-offset:3px;font-size:13px;min-height:36px;padding:0 4px}
+.linkbtn[disabled]{opacity:.35;pointer-events:none}
+.pal{position:sticky;top:78px;padding:18px}
+.pal h3{margin-bottom:14px}
+.pgrid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.pn{position:relative;min-height:40px;border-radius:10px;border:1px solid var(--line);background:var(--s1);font:600 13px var(--sans);color:var(--mut);font-variant-numeric:tabular-nums}
+.pn.ans{background:var(--s3);color:var(--tx);border-color:var(--line2)}
+.pn.cur{border-color:var(--ac);color:var(--ac);box-shadow:0 0 0 1px var(--ac) inset}
+.pn.mk::after{content:"";position:absolute;top:5px;right:5px;width:7px;height:7px;border-radius:50%;background:var(--ac)}
+.legend{display:grid;gap:8px;margin-top:16px;padding-top:14px;border-top:1px solid var(--line);font-size:12px;color:var(--mut)}
+.legend div{display:flex;align-items:center;gap:10px}
+.legend i{width:16px;height:16px;border-radius:5px;border:1px solid var(--line);display:block;position:relative}
+.legend i.a{background:var(--s3);border-color:var(--line2)}
+.legend i.m::after{content:"";position:absolute;top:3px;right:3px;width:6px;height:6px;border-radius:50%;background:var(--ac)}
+.legend i.c{border-color:var(--ac)}
+.legend b{margin-left:auto;color:var(--tx2);font-variant-numeric:tabular-nums}
+.pal .btn{width:100%;margin-top:16px}
+.xnav{position:fixed;left:0;right:0;bottom:0;z-index:20;background:rgba(5,5,6,.92);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid var(--line);padding-bottom:var(--safe-b)}
+.xnav-in{max-width:1080px;margin:0 auto;padding:10px 20px;display:grid;grid-template-columns:minmax(0,1fr) 290px;gap:22px}
+.xnav-btns{display:flex;gap:10px}
+.xnav-btns .btn{flex:1}
+.xnav-btns .btn.mk{flex:1.3}
+.btn.mk[aria-pressed="true"]{border-color:var(--ac);color:var(--ac);background:var(--ac-bg)}
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:40}
+
+/* ---------- modal ---------- */
+.modal{position:fixed;inset:0;z-index:60;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(0,0,0,.72);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px)}
+.mbox{width:100%;max-width:440px;padding:26px;background:var(--s2);border:1px solid var(--line2);border-radius:18px;box-shadow:0 30px 80px rgba(0,0,0,.6);animation:fade .18s ease}
+.mbox h2{font:600 22px/1.2 var(--serif);margin-bottom:8px}
+.mbox p{color:var(--tx2);font-size:14px}
+.mstats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:18px 0}
+.mstats div{padding:12px;border:1px solid var(--line);border-radius:10px;background:var(--s1);text-align:center}
+.mstats b{display:block;font:500 24px var(--serif)}
+.mstats span{font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.08em}
+.mbtns{display:flex;gap:10px;margin-top:20px}
+.mbtns .btn{flex:1}
+.warnline{margin-top:12px;padding:10px 12px;border-radius:10px;background:var(--bad-bg);color:#f0a29d;font-size:13px}
+
+/* ---------- result ---------- */
+.res-top{padding:44px 0 10px}
+.res-top .banner{margin-bottom:14px;padding:10px 14px;border:1px solid rgba(217,184,114,.4);background:var(--ac-bg);border-radius:10px;color:var(--ac);font-size:13px}
+.score-card{display:grid;grid-template-columns:auto 1fr;gap:34px;align-items:center;padding:28px}
+.ring{position:relative;width:176px;height:176px}
+.ring svg{width:100%;height:100%;transform:rotate(-90deg)}
+.ring circle{fill:none;stroke-width:9}
+.ring .tr{stroke:var(--s3)}
+.ring .pg{stroke:var(--ac);stroke-linecap:round;transition:stroke-dashoffset .9s cubic-bezier(.2,.7,.2,1)}
+.ring .c{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.ring .c b{font:500 54px/1 var(--serif);letter-spacing:-.02em}
+.ring .c span{font:500 15px var(--serif);color:var(--mut);margin-top:4px}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.kpi{padding:14px 16px;border:1px solid var(--line);border-radius:12px;background:var(--s1)}
+.kpi b{display:block;font:500 30px/1.1 var(--serif)}
+.kpi span{font-size:12px;color:var(--mut)}
+.kpi.ok b{color:var(--ok)}.kpi.bad b{color:var(--bad)}
+.sc-h{font:600 22px/1.2 var(--serif);margin-bottom:6px}
+.sc-p{color:var(--mut);font-size:13.5px;margin-bottom:18px}
+.units{display:grid;gap:14px}
+.urow .top{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:8px;font-size:14px}
+.urow .top b{font:500 20px var(--serif)}
+.urow .top b small{font-size:.65em;color:var(--mut)}
+.ubar{display:flex;height:8px;border-radius:6px;overflow:hidden;background:var(--s3);gap:2px}
+.ubar i{display:block;height:100%}
+.ubar .c{background:var(--ok)}.ubar .w{background:var(--bad)}.ubar .u{background:#3a3a42}
+.urow .sub{margin-top:7px;font-size:12px;color:var(--mut);display:flex;gap:14px;flex-wrap:wrap}
+.sec{margin-top:16px}
+.rev-h{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin:34px 0 14px}
+.rev-h h2{font:600 26px/1.2 var(--serif)}
+.filters{display:flex;gap:8px;flex-wrap:wrap}
+.filters .chip{min-height:38px;padding:0 14px;font-size:13px}
+.rv{padding:22px 24px;margin-bottom:14px}
+.rv-h{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.pill{font:600 11px var(--sans);letter-spacing:.08em;text-transform:uppercase;padding:5px 9px;border-radius:99px;border:1px solid}
+.pill.ok{color:var(--ok);border-color:rgba(120,199,154,.4);background:var(--ok-bg)}
+.pill.bad{color:var(--bad);border-color:rgba(228,116,110,.4);background:var(--bad-bg)}
+.pill.un{color:var(--mut);border-color:var(--line2)}
+.rv .topic{margin-left:auto;font-size:12px;color:var(--mut)}
+.rv .qtext{font-size:18.5px;margin-bottom:16px}
+.ropt{display:flex;gap:12px;align-items:flex-start;padding:11px 14px;border:1px solid var(--line);border-radius:10px;background:var(--s1);margin-bottom:8px}
+.ropt .ol{flex:none;width:26px;height:26px;border-radius:50%;border:1px solid var(--line2);display:flex;align-items:center;justify-content:center;font:600 12px var(--sans);color:var(--tx2)}
+.ropt .ot{flex:1;min-width:0;font:400 17px/1.5 var(--serif);overflow-wrap:anywhere}
+.ropt .tg{flex:none;font:600 10.5px var(--sans);letter-spacing:.08em;text-transform:uppercase;padding-top:5px;white-space:nowrap}
+.ropt.ok{border-color:rgba(120,199,154,.55);background:var(--ok-bg)}
+.ropt.ok .ol{background:var(--ok);border-color:var(--ok);color:#07140d}
+.ropt.ok .tg{color:var(--ok)}
+.ropt.bad{border-color:rgba(228,116,110,.55);background:var(--bad-bg)}
+.ropt.bad .ol{background:var(--bad);border-color:var(--bad);color:#190807}
+.ropt.bad .tg{color:var(--bad)}
+.expl{margin-top:14px;padding:14px 16px;border-left:2px solid var(--ac);background:var(--s1);border-radius:0 10px 10px 0;font:400 16px/1.7 var(--serif);color:var(--tx2)}
+.expl b{display:block;font:600 11px var(--sans);letter-spacing:.12em;text-transform:uppercase;color:var(--ac);margin-bottom:6px}
+.res-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px}
+
+/* ---------- responsive ---------- */
+@media (max-width:860px){
+  .grid2{grid-template-columns:1fr}
+  .xbody{grid-template-columns:1fr;padding-top:16px}
+  .xnav-in{grid-template-columns:1fr}
+  .iconbtn{display:inline-flex}
+  .pal{position:fixed;left:0;right:0;bottom:0;top:auto;z-index:50;border-radius:20px 20px 0 0;max-height:78dvh;max-height:78vh;overflow:auto;transform:translateY(105%);transition:transform .25s ease;padding-bottom:calc(18px + var(--safe-b));border-bottom:0}
+  .pal.open{transform:none}
+  .pgrid{grid-template-columns:repeat(6,1fr)}
+  .pn{min-height:44px}
+  .score-card{grid-template-columns:1fr;justify-items:center;text-align:center}
+  .kpis{grid-template-columns:repeat(2,1fr);width:100%}
+}
+@media (max-width:560px){
+  .wrap,.xbar-in,.xnav-in{padding-left:14px;padding-right:14px}
+  .xbody{padding:14px 14px 100px}
+  .home-hero{padding-top:34px}
+  .pad{padding:18px}
+  .spec{grid-template-columns:1fr 1fr 1fr}
+  .spec div{padding:12px 10px}
+  .spec b{font-size:21px}
+  .xbrand{display:none}
+  .w{display:none}
+  .xbar-in{gap:8px}
+  .timer{font-size:16px;min-width:76px;padding:9px 8px}
+  .xbar .btn{padding:0 14px;min-height:44px}
+  .qcard{padding:20px 18px 18px}
+  .qtext{font-size:18px;line-height:1.6;margin-bottom:20px}
+  .opt{padding:12px 12px;gap:12px}
+  .opt .ot{font-size:17px}
+  .rv{padding:18px 16px}
+  .ropt{padding:10px 10px;gap:10px}
+  .ropt .tg{display:none}
+  .ropt.ok .ot::after{content:"  ✓";color:var(--ok);font-family:var(--sans)}
+  .ropt.bad .ot::after{content:"  ✕ your answer";color:var(--bad);font:600 11px var(--sans);letter-spacing:.04em}
+  .ropt.ok.mine .ot::after{content:"  ✓ your answer"}
+  .rv .topic{margin-left:0;width:100%}
+  .mstats b{font-size:21px}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+@media print{.xnav,.xbar{display:none}}
+</style>
+</head>
+<body>
+
+<!-- =================== HOME =================== -->
+<section id="home" class="screen">
+  <div class="wrap">
+    <div class="home-hero">
+      <div class="eyebrow">Amrita Vishwa Vidyapeetham · Chennai</div>
+      <h1><span>23MAT121</span><br>Mock Examination</h1>
+      <p class="sub">Calculus and Linear Algebra — an end-semester style MCQ paper for B.Tech, Semester I. Every attempt draws a fresh paper from a verified question bank.</p>
+    </div>
+
+    <div class="grid2">
+      <div class="card pad">
+        <h3>Paper format</h3>
+        <div class="spec">
+          <div><b>50</b><span>Questions</span></div>
+          <div><b>50</b><span>Marks</span></div>
+          <div><b id="specMin">90</b><span>Minutes</span></div>
+        </div>
+        <div class="comp" id="comp"></div>
+        <div class="excl">One mark per question, four options, exactly one correct, no negative marking. Question and option order are shuffled every attempt. Answers and explanations stay hidden until you submit.<br><br>
+        Not examined in this paper: line integrals, line integrals independent of path, surfaces for surface integrals, surface integrals, triple integrals, Gauss divergence theorem and Stokes’ theorem.</div>
+      </div>
+
+      <div style="display:grid;gap:16px;align-content:start">
+        <div class="card pad internal">
+          <h3>Internal assessment marks</h3>
+          <div class="big m">49.50<small> / 60</small></div>
+          <p>Recorded separately. The mock paper below is scored directly out of 50 and is never combined with, or converted into, these marks.</p>
+        </div>
+        <div class="card pad">
+          <h3>Previous attempts</h3>
+          <div class="hist" id="hist"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card pad sec">
+      <h3>Start a new attempt</h3>
+      <div class="opts-row" role="group" aria-label="Time limit" id="durChips"></div>
+      <div class="resume" id="resumeBox" hidden>
+        <div><b>An exam is in progress.</b><br><span style="color:var(--tx2);font-size:13px">Time remaining <b id="resumeLeft">--:--</b>. Your answers were saved.</span></div>
+        <button class="btn pri" id="btnResume">Resume</button>
+        <button class="btn ghost" id="btnDiscard">Discard</button>
+      </div>
+      <div class="start-row">
+        <button class="btn pri" id="btnStart">Begin examination</button>
+        <span class="empty" id="startNote">Starting a new attempt replaces any unfinished one.</span>
+      </div>
+    </div>
+    <footer class="note">Works offline. Progress is kept in this browser only.</footer>
+  </div>
+</section>
+
+<!-- =================== EXAM =================== -->
+<section id="exam" class="screen" hidden>
+  <header class="xbar">
+    <div class="xbar-in">
+      <button class="iconbtn" id="btnPal" aria-label="Question palette">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="3" width="5.5" height="5.5" rx="1.2"/><rect x="11.5" y="3" width="5.5" height="5.5" rx="1.2"/><rect x="3" y="11.5" width="5.5" height="5.5" rx="1.2"/><rect x="11.5" y="11.5" width="5.5" height="5.5" rx="1.2"/></svg>
+      </button>
+      <div class="xbrand">23MAT121 <span>Mock exam</span></div>
+      <div class="xprog">
+        <div class="lab"><span id="xQ">Question 1 of 50</span><span id="xA">0 answered</span></div>
+        <div class="bar"><i id="xBar" style="width:0%"></i></div>
+      </div>
+      <div class="timer" id="timer" role="timer" aria-live="off">--:--</div>
+      <button class="btn pri" id="btnSubmitTop">Submit</button>
+    </div>
+  </header>
+
+  <div class="xbody">
+    <main class="qpane card qcard" id="qcard" aria-live="polite"></main>
+    <aside class="pal card" id="pal" aria-label="Question palette">
+      <h3>Question palette</h3>
+      <div class="pgrid" id="pgrid"></div>
+      <div class="legend">
+        <div><i class="a"></i>Answered <b id="lgA">0</b></div>
+        <div><i></i>Not answered <b id="lgU">0</b></div>
+        <div><i class="m"></i>Marked for review <b id="lgM">0</b></div>
+        <div><i class="c"></i>Current question</div>
+      </div>
+      <button class="btn pri" id="btnSubmitPal">Submit examination</button>
+    </aside>
+  </div>
+
+  <footer class="xnav">
+    <div class="xnav-in">
+      <div class="xnav-btns">
+        <button class="btn" id="btnPrev">← Prev</button>
+        <button class="btn mk" id="btnMark" aria-pressed="false">Mark for review</button>
+        <button class="btn pri" id="btnNext">Next →</button>
+      </div>
+      <span></span>
+    </div>
+  </footer>
+</section>
+<div class="scrim" id="scrim" hidden></div>
+
+<!-- =================== RESULT =================== -->
+<section id="result" class="screen" hidden>
+  <div class="wrap">
+    <div class="res-top">
+      <div id="resBanner"></div>
+      <div class="eyebrow">23MAT121 · Mock examination · Results</div>
+      <h1 style="font:600 clamp(30px,5vw,44px)/1.1 var(--serif);margin:14px 0 22px;letter-spacing:-.01em">Examination submitted</h1>
+      <div class="card score-card">
+        <div class="ring"><svg viewBox="0 0 100 100"><circle class="tr" cx="50" cy="50" r="44"/><circle class="pg" id="ringPg" cx="50" cy="50" r="44" stroke-dasharray="276.46" stroke-dashoffset="276.46"/></svg>
+          <div class="c m"><b id="resScore">0</b><span>out of 50</span></div></div>
+        <div class="kpis">
+          <div class="kpi ok"><b id="kC">0</b><span>Correct</span></div>
+          <div class="kpi bad"><b id="kW">0</b><span>Incorrect</span></div>
+          <div class="kpi"><b id="kU">0</b><span>Unanswered</span></div>
+          <div class="kpi"><b id="kT">0</b><span>Time taken</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid2 sec">
+      <div class="card pad">
+        <div class="sc-h">Unit-wise performance</div>
+        <div class="sc-p">Marks scored in each unit of the syllabus.</div>
+        <div class="units" id="unitRows"></div>
+      </div>
+      <div class="card pad internal">
+        <h3>Internal assessment marks</h3>
+        <div class="big m">49.50<small> / 60</small></div>
+        <p>Shown separately for reference. No weighting, conversion or combined percentage is applied to this mock score.</p>
+      </div>
+    </div>
+
+    <div class="rev-h">
+      <h2>Question-wise review</h2>
+      <div class="filters" id="filters" role="group" aria-label="Filter review"></div>
+    </div>
+    <div id="review"></div>
+
+    <div class="res-actions" style="margin:26px 0 54px">
+      <button class="btn pri" id="btnAgain">Start a new attempt</button>
+      <button class="btn ghost" id="btnTop">Back to top</button>
+    </div>
+  </div>
+</section>
+
+<!-- =================== MODAL =================== -->
+<div class="modal" id="modal" hidden role="dialog" aria-modal="true" aria-labelledby="mTitle">
+  <div class="mbox">
+    <h2 id="mTitle"></h2>
+    <div id="mBody"></div>
+    <div class="mbtns">
+      <button class="btn" id="mCancel">Cancel</button>
+      <button class="btn pri" id="mOk">OK</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+'use strict';
+
+/* ======================= QUESTION BANK =======================
+   68 questions. In each, option index 0 is the correct answer in the
+   stored data; options are shuffled per attempt. Every answer was
+   re-derived by an independent numerical / exact-arithmetic check. */
+const BANK = [{"id":1,"u":1,"t":"Shifting and scaling of graphs","q":"The point (4, −2) lies on the graph of y = f(x). Which point must then lie on the graph of y = 3 − f(2x − 6)?","o":["(5, 5)","(−1, 5)","(5, 1)","(10, 5)"],"e":"Need 2x − 6 = 4, so x = 5. Then y = 3 − f(4) = 3 − (−2) = 5. Hence (5, 5). The horizontal compression by 2 is applied after the shift: x = (4 + 6)/2, not 4 + 6."},{"id":2,"u":1,"t":"Functions and their graphs","q":"Let f(x) = ln(x + √(x^{2}+1)) for x ∈ ℝ. Then f is","o":["an odd function","an even function","neither even nor odd","periodic"],"e":"x + √(x^{2}+1) > 0 for all x, so f is defined on ℝ. f(−x) = ln(√(x^{2}+1) − x) = ln[ 1/(√(x^{2}+1) + x) ] = −f(x), because (√(x^{2}+1) − x)(√(x^{2}+1) + x) = 1. So f is odd (it is sinh^{−1} x), and strictly increasing, hence not periodic."},{"id":3,"u":1,"t":"Functions and their graphs (composition)","q":"Let f(x) = \\frac{1}{1−x} for x ≠ 1. Let g be the 100-fold composition g = f∘f∘…∘f (100 copies). Then g(5) =","o":["−\\frac{1}{4}","\\frac{4}{5}","5","−4"],"e":"f(5) = −1/4, f(f(5)) = 4/5, f(f(f(5))) = 5. More generally f∘f∘f = identity (wherever defined), so the iterates have period 3. Since 100 = 3·33 + 1, g(5) = f(5) = −1/4."},{"id":4,"u":1,"t":"Limits (two-sided)","q":"\\lim_{x→0} \\frac{\\tan 2x − \\sin 2x}{x^{3}} equals","o":["4","2","8","\\frac{1}{2}"],"e":"tan 2x − sin 2x = sin 2x (1 − cos 2x)/cos 2x. As x → 0: sin 2x ~ 2x, 1 − cos 2x ~ 2x^{2}, cos 2x → 1. So the numerator ~ 4x^{3} and the limit is 4."},{"id":5,"u":1,"t":"One-sided limits","q":"Let f(x) = \\frac{|x − 2|}{x^{2} − 4}, x ≠ ±2. Which statement about x → 2 is correct?","o":["The right-hand limit is \\frac{1}{4}, the left-hand limit is −\\frac{1}{4}, so \\lim_{x→2} f(x) does not exist.","\\lim_{x→2} f(x) = \\frac{1}{4}","\\lim_{x→2} f(x) = −\\frac{1}{4}","\\lim_{x→2} f(x) = ∞"],"e":"For x > 2: |x−2| = x−2 so f = 1/(x+2) → 1/4. For x < 2: |x−2| = −(x−2) so f = −1/(x+2) → −1/4. The one-sided limits are finite but unequal, so the two-sided limit does not exist."},{"id":6,"u":1,"t":"Limits at infinity","q":"\\lim_{x→∞} \\left( √(x^{2}+4x+1) − √(x^{2}−2x) \\right) equals","o":["3","6","1","0"],"e":"Multiply by the conjugate: the expression = (6x + 1)/(√(x^{2}+4x+1) + √(x^{2}−2x)). Dividing by x: (6 + 1/x)/(√(1+4/x+1/x^{2}) + √(1−2/x)) → 6/2 = 3."},{"id":7,"u":1,"t":"Continuity","q":"The function f(x) = x + 1 for x < 1;  f(x) = ax + b for 1 ≤ x ≤ 3;  f(x) = 3x − 1 for x > 3  is continuous on ℝ. Then the product ab equals","o":["−3","3","2","−2"],"e":"Continuity at x = 1: a + b = 1 + 1 = 2. Continuity at x = 3: 3a + b = 3(3) − 1 = 8. Subtracting, 2a = 6, so a = 3, b = −1 and ab = −3."},{"id":8,"u":1,"t":"Discontinuities","q":"Let f(x) = \\frac{x^{2}−1}{(x−1)(x+2)}. The discontinuities of f are","o":["x = 1: removable (with limit \\frac{2}{3});  x = −2: infinite","x = 1: infinite;  x = −2: removable","x = 1: jump;  x = −2: infinite","x = 1 and x = −2: both removable"],"e":"For x ≠ 1: f(x) = (x+1)/(x+2). At x = 1 the limit is 2/3 (finite) but f is undefined, so the discontinuity is removable. At x = −2 the denominator → 0 while the numerator → −1 ≠ 0, so |f| → ∞: an infinite discontinuity."},{"id":9,"u":1,"t":"Continuity (Intermediate Value Theorem)","q":"Let g(x) = x^{3} − 3x + 1. On how many of the intervals [−2,−1], [−1,0], [0,1], [1,2] do the endpoint values of g, together with the Intermediate Value Theorem, guarantee a root of g?","o":["3","2","4","1"],"e":"g(−2) = −1, g(−1) = 3, g(0) = 1, g(1) = −1, g(2) = 3. Sign changes occur on [−2,−1], [0,1] and [1,2]; on [−1,0] both values are positive, so the IVT gives no guarantee there. Total: 3."},{"id":10,"u":1,"t":"Monotonic functions and extreme values","q":"For f(x) = x^{2}e^{−x}, which statement is correct?","o":["f decreases on (−∞,0), increases on (0,2), decreases on (2,∞); f has a local minimum 0 at x = 0 and a local maximum 4e^{−2} at x = 2.","f increases on (−∞,0), decreases on (0,2), increases on (2,∞); local maximum 0 at x = 0 and local minimum 4e^{−2} at x = 2.","f is increasing on (0,∞) and has a local minimum only at x = 0.","f decreases on (−∞,2), increases on (2,∞); its only extremum is a minimum 4e^{−2} at x = 2."],"e":"f′(x) = e^{−x}(2x − x^{2}) = x(2 − x)e^{−x}. The sign of f′ is − on (−∞,0), + on (0,2), − on (2,∞). So x = 0 is a local minimum with f(0) = 0 and x = 2 is a local maximum with f(2) = 4e^{−2}."},{"id":11,"u":1,"t":"Extreme values of functions","q":"Let f(x) = x^{3} − 6x^{2} + 9x + 2 on the closed interval [−1, 4]. The difference (absolute maximum value) − (absolute minimum value) is","o":["20","4","8","22"],"e":"f′(x) = 3(x−1)(x−3), so critical points x = 1, 3. Compare f at critical points and endpoints: f(−1) = −14, f(1) = 6, f(3) = 2, f(4) = 6. Absolute maximum 6, absolute minimum −14; difference 20. (Using only the local extrema 6 and 2 gives the incorrect 4.)"},{"id":12,"u":1,"t":"Curve sketching (asymptotes)","q":"The curve y = \\frac{2x^{2} − 3x}{x − 1} has","o":["a vertical asymptote x = 1 and an oblique asymptote y = 2x − 1","a vertical asymptote x = 1 and a horizontal asymptote y = 2","a vertical asymptote x = 1 and an oblique asymptote y = 2x − 3","vertical asymptotes x = 0 and x = 1, and an oblique asymptote y = 2x"],"e":"Divide: 2x^{2} − 3x = (x − 1)(2x − 1) − 1, so y = 2x − 1 − 1/(x − 1). The remainder term → 0 as x → ±∞, giving the oblique asymptote y = 2x − 1 (no horizontal one since the degree of the numerator exceeds that of the denominator by 1). The denominator vanishes at x = 1 with numerator −1 ≠ 0, so x = 1 is a vertical asymptote. At x = 0 the numerator also vanishes, so there is no asymptote there."},{"id":13,"u":1,"t":"Definite integrals (properties)","q":"\\int_{−3}^{3} \\left( x^{3} \\cos x + 2x^{2} + |x| \\right) dx equals","o":["45","36","27","54"],"e":"x^{3}cos x is odd, so its integral over [−3,3] is 0. The even parts give 2∫_{0}^{3} 2x^{2} dx = 4·(27/3) = 36 and 2∫_{0}^{3} x dx = 9. Total 36 + 9 = 45."},{"id":14,"u":1,"t":"Mean value theorem for definite integrals","q":"Let f(x) = sin x on [0, π]. How many points c ∈ [0, π] satisfy f(c) = \\frac{1}{π}\\int_0^{π} f(x)\\,dx ?","o":["2","1","0","3"],"e":"The average value is (1/π)(−cos π + cos 0) = 2/π ≈ 0.64, which lies strictly between 0 and 1. sin c = 2/π has two solutions in [0,π]: c = arcsin(2/π) and c = π − arcsin(2/π). The theorem guarantees at least one such c; here there are exactly two."},{"id":15,"u":1,"t":"Fundamental theorem of calculus","q":"Let F(x) = \\int_{x}^{x^{2}} e^{−t^{2}}\\,dt. Then F′(1) equals","o":["\\frac{1}{e}","\\frac{3}{e}","\\frac{2}{e}","0"],"e":"By the FTC with the chain rule: F′(x) = e^{−(x^{2})^{2}}·2x − e^{−x^{2}}·1 = 2x e^{−x^{4}} − e^{−x^{2}}. At x = 1: 2/e − 1/e = 1/e. (Forgetting the minus sign for the lower limit gives 3/e.)"},{"id":16,"u":1,"t":"Integration techniques (substitution)","q":"\\int_0^{1} \\frac{x}{1 + x^{4}}\\,dx equals","o":["\\frac{π}{8}","\\frac{π}{4}","\\frac{π}{16}","\\frac{\\ln 2}{2}"],"e":"Let u = x^{2}, du = 2x dx. The integral becomes ½∫_{0}^{1} du/(1 + u^{2}) = ½·arctan 1 = π/8."},{"id":17,"u":1,"t":"Integration techniques (by parts)","q":"\\int_0^{π/2} e^{x}\\sin x\\,dx equals","o":["\\frac{e^{π/2} + 1}{2}","\\frac{e^{π/2} − 1}{2}","\\frac{e^{π/2}}{2}","e^{π/2} + 1"],"e":"Integrating by parts twice gives I = [e^x sin x − e^x cos x] − I, so 2I = [e^x(sin x − cos x)]_{0}^{π/2} = e^{π/2}(1) − (−1) = e^{π/2} + 1. Hence I = (e^{π/2} + 1)/2."},{"id":18,"u":1,"t":"Integration techniques (partial fractions)","q":"\\int_1^{2} \\frac{x + 4}{x(x + 2)}\\,dx equals","o":["\\ln 3","\\ln 2","\\ln 6","\\frac{3}{2}"],"e":"(x + 4)/(x(x+2)) = 2/x − 1/(x+2). Integral = [2 ln x − ln(x+2)]_{1}^{2} = (2 ln 2 − ln 4) − (0 − ln 3) = ln 3."},{"id":19,"u":1,"t":"Integration techniques (trigonometric substitution)","q":"\\int_0^{1} \\frac{x^{2}}{√(1 − x^{2})}\\,dx equals","o":["\\frac{π}{4}","\\frac{π}{2}","\\frac{π}{8}","\\frac{1}{3}"],"e":"Put x = sin θ, dx = cos θ dθ, θ from 0 to π/2. The integrand becomes sin^{2}θ, so the value is ∫_{0}^{π/2} sin^{2}θ dθ = π/4. (This is an improper integral at x = 1, but it converges.)"},{"id":20,"u":1,"t":"Definite integrals (area between curves)","q":"The area of the region enclosed by the curves y = x^{2} and y = 2x + 3 is","o":["\\frac{32}{3}","\\frac{16}{3}","9","\\frac{64}{3}"],"e":"Intersections: x^{2} = 2x + 3 gives x = −1 and x = 3. On [−1,3] the line lies above the parabola, so area = ∫₋_{1}^{3} (2x + 3 − x^{2}) dx = [x^{2} + 3x − x^{3}/3]₋_{1}^{3} = 9 − (−5/3) = 32/3."},{"id":21,"u":1,"t":"Infinite limits","q":"For f(x) = \\frac{x + 1}{x^{2} − 4}, the limits \\lim_{x→2^−} f(x) and \\lim_{x→−2^+} f(x) are, respectively,","o":["−∞ and +∞","+∞ and +∞","−∞ and −∞","+∞ and −∞"],"e":"f(x) = (x+1)/((x−2)(x+2)). As x → 2^{−}: numerator → 3 > 0, (x+2) → 4 > 0, (x−2) → 0^{−}, so f → −∞. As x → −2^{+}: numerator → −1 < 0, (x−2) → −4 < 0, (x+2) → 0^{+}; the quotient (−)/((−)(0^{+})) is positive, so f → +∞."},{"id":22,"u":1,"t":"Concavity and points of inflection","q":"Which of the following functions has f″(0) = 0 but does NOT have a point of inflection at x = 0?","o":["f(x) = x^{4}","f(x) = x^{3}","f(x) = x^{5}","f(x) = sin x"],"e":"x^{4}: f″ = 12x^{2} ≥ 0 on both sides of 0, so the concavity never changes (x = 0 is a minimum, not an inflection). For x^{3}, x^{5} and sin x, f″ = 6x, 20x^{3}, −sin x changes sign at 0, so each has an inflection point there."},{"id":23,"u":2,"t":"Functions of several variables: limits","q":"Consider f(x,y) = \\frac{x^{2}y}{x^{4} + y^{2}} for (x,y) ≠ (0,0). Which statement is correct?","o":["\\lim_{(x,y)→(0,0)} f does not exist: along y = x^{2} the value is \\frac{1}{2}, whereas along y = 0 it is 0.","The limit is 0, because f → 0 along every straight line through the origin.","The limit is \\frac{1}{2}, because f = \\frac{1}{2} along y = x^{2}.","The limit is 1, obtained by cancelling x^{2} from numerator and denominator."],"e":"Along y = x^{2}: f = x^{4}/(x^{4} + x^{4}) = 1/2 for all x ≠ 0. Along y = 0: f = 0. Two paths with different limits, so the limit does not exist. Straight lines y = mx give f = mx^{3}/(x^{4} + m^{2}x^{2}) → 0, but agreement along lines does not prove the limit exists."},{"id":24,"u":2,"t":"Functions of several variables: continuity","q":"Define f(x,y) = \\frac{1 − \\cos(x^{2} + y^{2})}{(x^{2} + y^{2})^{2}} for (x,y) ≠ (0,0) and f(0,0) = k. For which value of k is f continuous at the origin?","o":["\\frac{1}{2}","0","1","2"],"e":"Let u = x^{2} + y^{2} → 0^{+}. Then f = (1 − cos u)/u^{2} → 1/2, since 1 − cos u ≈ u^{2}/2. The limit exists (it depends only on u), so continuity requires k = 1/2."},{"id":25,"u":2,"t":"Partial differentiation","q":"For f(x,y) = x^{y} (x > 0), the mixed partial derivative f_{xy} at the point (e, 1) equals","o":["2","1","e","1 + e"],"e":"f_x = y x^{y−1}. Differentiate with respect to y: f_{xy} = x^{y−1} + y x^{y−1} ln x. At (e,1): e^{0} + 1·e^{0}·ln e = 1 + 1 = 2. (By Clairaut's theorem f_{yx} gives the same value, as f_{xy} and f_{yx} are continuous here.)"},{"id":26,"u":2,"t":"Total derivatives (chain rule)","q":"Let z = x^{2}y + y^{3} with x = t^{2} and y = e^{t}. Then \\frac{dz}{dt} at t = 1 equals","o":["5e + 3e^{3}","4e + 3e^{3}","5e + 3e^{2}","e + 3e^{3}"],"e":"dz/dt = z_x·x′ + z_y·y′ = 2xy·(2t) + (x^{2} + 3y^{2})·e^t. At t = 1: x = 1, y = e, so dz/dt = 2·e·2 + (1 + 3e^{2})·e = 4e + e + 3e^{3} = 5e + 3e^{3}."},{"id":27,"u":2,"t":"Differentiation of implicit functions","q":"The point (3,3) lies on the curve x^{3} + y^{3} = 6xy. The tangent line to the curve at (3,3) is","o":["x + y = 6","x − y = 0","y = 3","x = 3"],"e":"Let G = x^{3} + y^{3} − 6xy. Then dy/dx = −G_x/G_y = −(3x^{2} − 6y)/(3y^{2} − 6x) = (2y − x^{2})/(y^{2} − 2x). At (3,3): (6 − 9)/(9 − 6) = −1. Tangent: y − 3 = −(x − 3), i.e. x + y = 6. (x − y = 0 has slope +1 and is the normal.)"},{"id":28,"u":2,"t":"Jacobians","q":"If u = x + y and v = \\frac{y}{x + y}, then \\frac{∂(u,v)}{∂(x,y)} equals","o":["\\frac{1}{x + y}","x + y","\\frac{1}{(x + y)^{2}}","\\frac{x − y}{(x + y)^{2}}"],"e":"u_x = 1, u_y = 1, v_x = −y/(x+y)^{2}, v_y = x/(x+y)^{2}. J = u_x v_y − u_y v_x = x/(x+y)^{2} + y/(x+y)^{2} = (x + y)/(x + y)^{2} = 1/(x + y). (Consistent with x = u(1 − v), y = uv, whose Jacobian ∂(x,y)/∂(u,v) = u = x + y.)"},{"id":29,"u":2,"t":"Jacobians (functional dependence)","q":"Let u = \\frac{x − y}{x + y} and v = \\frac{xy}{(x + y)^{2}}. Which statement is correct?","o":["\\frac{∂(u,v)}{∂(x,y)} = 0, and u, v are related by v = \\frac{1 − u^{2}}{4}.","\\frac{∂(u,v)}{∂(x,y)} = 0, and u, v are related by v = \\frac{1 + u^{2}}{4}.","\\frac{∂(u,v)}{∂(x,y)} ≠ 0, so u and v are functionally independent.","\\frac{∂(u,v)}{∂(x,y)} = 0, and u, v are related by v = \\frac{u^{2}}{4}."],"e":"1 − u^{2} = [(x+y)^{2} − (x−y)^{2}]/(x+y)^{2} = 4xy/(x+y)^{2} = 4v. So v = (1 − u^{2})/4: v is a function of u alone, and therefore the Jacobian vanishes identically (functional dependence)."},{"id":30,"u":2,"t":"Taylor's series for two variables","q":"Using the Taylor polynomial of degree 2 of f(x,y) = x^{2}y about (1, 2), the approximate value of f(1.1, 2.1) is","o":["2.54","2.50","2.52","2.56"],"e":"With h = k = 0.1: f(1,2) = 2, f_x = 2xy = 4, f_y = x^{2} = 1, f_{xx} = 2y = 4, f_{xy} = 2x = 2, f_{yy} = 0. T_{2} = 2 + 4h + k + ½(4h^{2} + 2·2hk + 0) = 2 + 0.4 + 0.1 + 0.02 + 0.02 = 2.54. (Dropping the cross term gives 2.52; the linear approximation alone gives 2.50.)"},{"id":31,"u":2,"t":"Taylor's series for two variables","q":"The Taylor polynomial of degree 2 of f(x,y) = e^{x}\\cos y about (0,0) is","o":["1 + x + \\frac{x^{2} − y^{2}}{2}","1 + x + \\frac{x^{2} + y^{2}}{2}","1 + x + y + \\frac{x^{2} − y^{2}}{2}","1 + x + x^{2} − y^{2}"],"e":"f(0,0) = 1, f_x = e^x cos y → 1, f_y = −e^x sin y → 0; f_{xx} = e^x cos y → 1, f_{xy} = −e^x sin y → 0, f_{yy} = −e^x cos y → −1. So T_{2} = 1 + x + ½(x^{2} − y^{2})."},{"id":32,"u":2,"t":"Partial differentiation and total differential","q":"The radius and height of a cylinder are measured as r = 5 cm and h = 12 cm, with possible errors of 0.1 cm in r and 0.2 cm in h. Using the total differential of V = πr^{2}h, the approximate maximum error in V is","o":["17π cm^{3}","12π cm^{3}","5π cm^{3}","22π cm^{3}"],"e":"dV = V_r dr + V_h dh = 2πrh·dr + πr^{2}·dh = 2π(5)(12)(0.1) + π(25)(0.2) = 12π + 5π = 17π cm^{3}."},{"id":33,"u":2,"t":"Vector differentiation: arc length","q":"The length of the curve r(t) = (e^{t}\\cos t,\\; e^{t}\\sin t), 0 ≤ t ≤ ln 2, is","o":["√2","2√2","√2 \\ln 2","1"],"e":"r′(t) = e^t(cos t − sin t, sin t + cos t), so |r′| = e^t√((cos t − sin t)^{2} + (sin t + cos t)^{2}) = √2 e^t. Length = ∫_{0}^{ln 2} √2 e^t dt = √2(e^{ln 2} − 1) = √2(2 − 1) = √2."},{"id":34,"u":2,"t":"Vector differentiation: curves and tangents","q":"The tangent line to the curve r(t) = (t, t^{2}, t^{3}) at t = 1 meets the xy-plane at the point","o":["\\left(\\frac{2}{3}, \\frac{1}{3}, 0\\right)","\\left(\\frac{1}{3}, −\\frac{1}{3}, 0\\right)","\\left(\\frac{1}{3}, \\frac{2}{3}, 0\\right)","\\left(\\frac{4}{3}, \\frac{5}{3}, 0\\right)"],"e":"r(1) = (1,1,1), r′(t) = (1, 2t, 3t^{2}), so r′(1) = (1,2,3). Tangent line: (1 + s, 1 + 2s, 1 + 3s). z = 0 ⇒ s = −1/3, giving (2/3, 1/3, 0)."},{"id":35,"u":2,"t":"Curves in mechanics: velocity and acceleration","q":"A particle moves with position vector r(t) = (t, t^{2}, t^{3}). At t = 1 the component of acceleration along the direction of motion (tangential acceleration) is","o":["\\frac{22}{√14}","\\frac{22}{14}","2√10","6"],"e":"v = r′ = (1, 2t, 3t^{2}) = (1,2,3) at t = 1; a = r″ = (0, 2, 6t) = (0,2,6). Tangential component a_T = (v·a)/|v| = (0 + 4 + 18)/√14 = 22/√14. (2√10 = |a| is the full magnitude of the acceleration.)"},{"id":36,"u":2,"t":"Gradient and directional derivative","q":"Let f(x,y,z) = xy^{2} + yz^{3}. The directional derivative of f at P(1, 2, −1) in the direction of the vector a = (2, −1, 2) is","o":["\\frac{17}{3}","17","5","\\frac{11}{3}"],"e":"∇f = (y^{2}, 2xy + z^{3}, 3yz^{2}) = (4, 3, 6) at P. The unit vector along a is (2, −1, 2)/3, since |a| = 3. D_a f = (4·2 + 3·(−1) + 6·2)/3 = 17/3. (Omitting the normalisation gives 17.)"},{"id":37,"u":2,"t":"Gradient and directional derivative","q":"The temperature in a plate is T(x,y) = 100 − x^{2} − 2y^{2}. At the point (2, 1), the unit vectors along which the directional derivative of T is zero are","o":["±\\frac{1}{√2}(1, −1)","±\\frac{1}{√2}(1, 1)","±\\frac{1}{√5}(1, 2)","±\\frac{1}{√5}(2, 1)"],"e":"∇T = (−2x, −4y) = (−4, −4) at (2,1). D_u T = ∇T·u = 0 requires u ⟂ ∇T, i.e. u ∝ (1, −1) (tangent to the level curve through the point). Unit vectors: ±(1, −1)/√2."},{"id":38,"u":2,"t":"Divergence of a vector field","q":"Let r = (x, y, z) and F = \\frac{r}{|r|^{n}} on ℝ^{3} with the origin removed. For which value of n is div F = 0 everywhere in the domain?","o":["n = 3","n = 2","n = 1","n = 4"],"e":"div(r |r|^{−n}) = (div r)|r|^{−n} + r·∇(|r|^{−n}) = 3|r|^{−n} + r·(−n|r|^{−n−2} r) = (3 − n)|r|^{−n}. This vanishes exactly for n = 3 (the inverse-square field)."},{"id":39,"u":2,"t":"Curl of a vector field","q":"The vector field F = (2xy + z^{a},\\; x^{2},\\; 3xz^{2}) is irrotational (curl F = 0) for the value of a equal to","o":["3","2","1","4"],"e":"curl F = (R_y − Q_z, P_z − R_x, Q_x − P_y) = (0 − 0, a z^{a−1} − 3z^{2}, 2x − 2x) = (0, a z^{a−1} − 3z^{2}, 0). This is identically zero iff a z^{a−1} = 3z^{2}, i.e. a = 3."},{"id":40,"u":2,"t":"Vector and scalar fields; divergence and curl","q":"Let f be a smooth scalar field and F a smooth vector field in ℝ^{3}. Which of the following expressions is NOT defined?","o":["∇·(∇·F)","∇×(∇f)","∇·(∇×F)","∇(∇·F)"],"e":"∇·F is a scalar field, and the divergence operator can only act on a vector field, so ∇·(∇·F) is meaningless. The others are defined: ∇f is a vector so ∇×(∇f) is a vector (it equals 0); ∇×F is a vector so ∇·(∇×F) is a scalar (it equals 0); ∇·F is a scalar so ∇(∇·F) is a vector."},{"id":41,"u":2,"t":"Green's theorem in the plane","q":"Let C be the circle x^{2} + y^{2} = 4 traversed counter-clockwise. Using Green's theorem, \\oint_C (−y^{3}\\,dx + x^{3}\\,dy) equals","o":["24π","12π","48π","8π"],"e":"Green: ∮(P dx + Q dy) = ∬(Q_x − P_y) dA with P = −y^{3}, Q = x^{3}. Q_x − P_y = 3x^{2} + 3y^{2} = 3r^{2}. So the value is ∫_{0}^{2π}∫_{0}^{2} 3r^{2}·r dr dθ = 2π·3·(2^{4}/4) = 24π."},{"id":42,"u":2,"t":"Green's theorem in the plane","q":"Let C be the closed curve, traversed counter-clockwise, formed by y = x and y = x^{2} between (0,0) and (1,1). Then \\oint_C \\left[(2xy − x^{2})\\,dx + (x + y^{2})\\,dy\\right] equals","o":["0","\\frac{1}{6}","−\\frac{1}{6}","\\frac{1}{3}"],"e":"With P = 2xy − x^{2}, Q = x + y^{2}: Q_x − P_y = 1 − 2x. The region is 0 ≤ x ≤ 1, x^{2} ≤ y ≤ x. So ∬(1 − 2x) dA = ∫_{0}^{1} (1 − 2x)(x − x^{2}) dx = ∫_{0}^{1} (x − 3x^{2} + 2x^{3}) dx = ½ − 1 + ½ = 0. (The area of the region is 1/6, but the integrand changes sign.)"},{"id":43,"u":2,"t":"Green's theorem in the plane (area)","q":"Using the area formula A = ½∮_C (x\\,dy − y\\,dx) from Green's theorem, the area enclosed by the ellipse x = 3cos t, y = 2sin t (0 ≤ t ≤ 2π) is","o":["6π","3π","12π","5π"],"e":"x dy − y dx = (3cos t)(2cos t) dt − (2 sin t)(−3 sin t) dt = 6(cos^{2}t + sin^{2}t) dt = 6 dt. Hence A = ½∫_{0}^{2π} 6 dt = 6π (= πab with a = 3, b = 2)."},{"id":44,"u":3,"t":"Linear independence and dependence in ℝ^{n}","q":"The vectors (1,1,1), (1,2,3) and (1,4,k) in ℝ^{3} are linearly dependent if and only if k equals","o":["7","5","6","−7"],"e":"Three vectors in ℝ^{3} are dependent iff the determinant of the matrix they form is zero. det = 1(2k − 12) − 1(k − 3) + 1(4 − 2) = k − 7. So k = 7."},{"id":45,"u":3,"t":"Vector subspaces of ℝ^{n}","q":"Which of the following subsets of ℝ^{3} is a subspace of ℝ^{3}?","o":["S = {(x, y, z) : x = 2y and z = x − y}","S = {(x, y, z) : x + y + z = 1}","S = {(x, y, z) : xyz = 0}","S = {(x, y, z) : x^{2} + y^{2} + z^{2} ≤ 1}"],"e":"S = {x = 2y, z = x − y} is the solution set of a homogeneous linear system (a line spanned by (2,1,1)), so it contains 0 and is closed under addition and scaling. x + y + z = 1 omits 0; xyz = 0 is not closed under addition ((1,1,0) + (0,0,1) = (1,1,1)); the unit ball is not closed under scalar multiplication."},{"id":46,"u":3,"t":"Linear span of a set of vectors","q":"For which value of t does the vector (1, 2, t) lie in the span of {(1, 1, 0), (1, 0, 1)}?","o":["−1","1","0","3"],"e":"a(1,1,0) + b(1,0,1) = (a + b, a, b). Matching (1, 2, t): a = 2, b = t, and a + b = 1 ⇒ t = −1. Check: 2(1,1,0) − (1,0,1) = (1, 2, −1)."},{"id":47,"u":3,"t":"Basis and dimension","q":"Let W = {(a,b,c,d) ∈ ℝ^{4} : a + b + c + d = 0 and a − b + c − d = 0}. The dimension of W is","o":["2","1","3","4"],"e":"W is the null space of the 2×4 matrix [[1,1,1,1],[1,−1,1,−1]]. Its rows are linearly independent, so rank = 2 and dim W = 4 − 2 = 2. (Indeed a + c = 0 and b + d = 0, giving a basis (1,0,−1,0), (0,1,0,−1).)"},{"id":48,"u":3,"t":"Linear systems and Gauss elimination","q":"Solve x + y + z = 6, 2x − y + z = 3, x + 2y − z = 2. The value of x + 2y + 3z is","o":["14","12","6","11"],"e":"Gauss elimination: R_{2} → R_{2} − 2R_{1} gives −3y − z = −9; R_{3} → R_{3} − R_{1} gives y − 2z = −4. From the second, y = 2z − 4; substituting: −6z + 12 − z = −9 ⇒ z = 3, y = 2, x = 1. Then x + 2y + 3z = 1 + 4 + 9 = 14."},{"id":49,"u":3,"t":"Existence and uniqueness of solutions","q":"The system x + y + z = 6, x + 2y + 3z = 10, x + 2y + λz = μ has infinitely many solutions if and only if","o":["λ = 3 and μ = 10","λ = 3 and μ ≠ 10","λ ≠ 3 and μ = 10","λ ≠ 3 and μ ≠ 10"],"e":"Subtract Row 2 from Row 3: (λ − 3)z = μ − 10. If λ ≠ 3 there is a unique solution for every μ. If λ = 3 and μ ≠ 10 the system is inconsistent. If λ = 3 and μ = 10 the third equation is redundant: rank = 2 < 3 unknowns, so infinitely many solutions."},{"id":50,"u":3,"t":"Rank of a matrix; null space","q":"For A = \\mat{1,2,3,4; 2,4,6,8; 1,0,1,0; 0,2,2,4}, the rank of A and the dimension of the null space of A are, respectively,","o":["2 and 2","3 and 1","1 and 3","4 and 0"],"e":"R_{2} = 2R_{1} and R_{4} = R_{1} − R_{3}, so only R_{1} and R_{3} are independent: rank = 2. By the rank–nullity theorem the nullity is 4 − 2 = 2."},{"id":51,"u":3,"t":"Row space and column space; consistency","q":"Let A = \\mat{1,2,1; 2,4,3; 3,6,4}. The system Ax = (2, 5, k)^{T} is consistent if and only if k equals","o":["7","5","6","8"],"e":"Ax = b is consistent iff b lies in the column space of A. Column 2 = 2·Column 1, so the column space is spanned by (1,2,3) and (1,3,4). Solve x(1,2,3) + y(1,3,4) = (2,5,k): x + y = 2, 2x + 3y = 5 ⇒ y = 1, x = 1, so k = 3 + 4 = 7."},{"id":52,"u":3,"t":"Determinants","q":"A is a 3×3 invertible matrix with det A = 3. Then det(2A^{−1} adj(A)) equals","o":["24","72","8","12"],"e":"adj(A) = (det A)A^{−1} = 3A^{−1}, so 2A^{−1} adj(A) = 6A^{−2}. For a 3×3 matrix det(cM) = c^{3}det M, so det(6A^{−2}) = 6^{3}·(det A)^{−2} = 216/9 = 24."},{"id":53,"u":3,"t":"Cramer's rule","q":"Using Cramer's rule on 2x − y + z = 3, x + y + z = 6, x − 2y + 3z = 6, the value of y is","o":["2","3","1","\\frac{1}{2}"],"e":"Δ = det[[2,−1,1],[1,1,1],[1,−2,3]] = 9. Replace the y-column by the constants (3,6,6): Δ_y = det[[2,3,1],[1,6,1],[1,6,3]] = 18. So y = Δ_y/Δ = 2."},{"id":54,"u":3,"t":"Inverse of a matrix; Gauss–Jordan elimination","q":"Let A = \\mat{1,2,3; 0,1,4; 5,6,0}. The entry in row 2, column 3 of A^{−1} is","o":["−4","4","5","−5"],"e":"Gauss–Jordan on [A | I] gives A^{−1} = [[−24, 18, 5], [20, −15, −4], [−5, 4, 1]] (det A = 1). The (2,3) entry is −4. Check: row 2 of A times column 3 of A^{−1} = 0·5 + 1·(−4) + 4·1 = 0, as required for an off-diagonal entry of AA^{−1}."},{"id":55,"u":3,"t":"Vector spaces","q":"Under the usual addition and scalar multiplication, which of the following is a real vector space?","o":["The set of 2×2 real matrices with trace 0","The set of invertible 2×2 real matrices","The set of real polynomials of degree exactly 2","The set {f : ℝ → ℝ | f(0) = 1}"],"e":"Trace-zero matrices contain the zero matrix and are closed under addition and scalar multiplication (a subspace of M_{2×2}, dimension 3). The invertible matrices fail (the zero matrix is missing, and A + (−A) = 0 is not invertible); degree-exactly-2 polynomials fail since (x^{2}) + (−x^{2} + x) has degree 1; and f(0) = 1 fails since (f + g)(0) = 2."},{"id":56,"u":3,"t":"Linear independence in vector spaces","q":"Which of the following sets of polynomials in P_{2} (polynomials of degree ≤ 2) is linearly dependent?","o":["{1 + x, 1 − x, 1}","{1, 1 + x, 1 + x + x^{2}}","{1 + x, x + x^{2}, 1 + x^{2}}","{x, x^{2}, 1 + x + x^{2}}"],"e":"In {1 + x, 1 − x, 1}: (1 + x) + (1 − x) − 2·1 = 0, a non-trivial relation, so the set is dependent (three vectors in a span of dimension 2). The coefficient matrices of the other three sets have rank 3, so those sets are independent."},{"id":57,"u":3,"t":"Change of basis","q":"With respect to the basis B = {(1, 2), (3, 5)} of ℝ^{2}, the coordinate vector of v = (1, 0) is","o":["(−5, 2)","(1, 0)","(5, −2)","(2, −5)"],"e":"Solve c_{1}(1,2) + c_{2}(3,5) = (1,0): c_{1} + 3c_{2} = 1 and 2c_{1} + 5c_{2} = 0. From the second, c_{1} = −5c_{2}/2; then −5c_{2}/2 + 3c_{2} = 1 ⇒ c_{2} = 2, c_{1} = −5. Check: −5(1,2) + 2(3,5) = (1, 0)."},{"id":58,"u":3,"t":"Linear transformations; null space","q":"Let T : ℝ^{3} → ℝ^{3} be defined by T(x, y, z) = (x − y, y − z, z − x). The dimensions of ker T and of the range of T are, respectively,","o":["1 and 2","2 and 1","0 and 3","1 and 1"],"e":"T(x,y,z) = 0 ⇔ x = y = z, so ker T = span{(1,1,1)} (dimension 1). By rank–nullity, dim(range) = 3 − 1 = 2. (The three output components always sum to 0, confirming the range is 2-dimensional.)"},{"id":59,"u":3,"t":"Linear transformations (matrix of a transformation)","q":"T : ℝ^{2} → ℝ^{2} first rotates every vector through 90° counter-clockwise about the origin, and then reflects the result in the x-axis. Then T(2, 3) equals","o":["(−3, −2)","(3, 2)","(2, −3)","(−2, 3)"],"e":"Rotation by 90° maps (x, y) → (−y, x), so (2,3) → (−3, 2). Reflection in the x-axis maps (x, y) → (x, −y), giving (−3, −2). Equivalent matrix: [[1,0],[0,−1]]·[[0,−1],[1,0]] = [[0,−1],[−1,0]]. (Reversing the order gives (3, 2).)"},{"id":60,"u":3,"t":"Eigenvalues and eigenvectors","q":"Let A = \\mat{4,1; 2,3}. An eigenvector of A corresponding to its smaller eigenvalue is","o":["(1, −2)","(1, 1)","(1, 2)","(2, −1)"],"e":"Characteristic equation: λ^{2} − 7λ + 10 = 0, so λ = 2 or 5. For λ = 2: (A − 2I)v = 0 gives 2x + y = 0, so v ∝ (1, −2). Check: A(1,−2) = (4 − 2, 2 − 6) = (2, −4) = 2(1, −2). (The vector (1,1) belongs to λ = 5.)"},{"id":61,"u":3,"t":"Eigenvalues and eigenvectors (properties)","q":"A 3×3 matrix A has eigenvalues 1, 2 and 4. Then the trace of A^{3} − A is","o":["66","73","60","56"],"e":"If Av = λv then (A^{3} − A)v = (λ^{3} − λ)v, so the eigenvalues of A^{3} − A are 0, 6 and 60. The trace is the sum of eigenvalues: 66. (73 would be tr A^{3}.)"},{"id":62,"u":3,"t":"Diagonalization","q":"Let A = \\mat{2,1; 1,2}. Using diagonalization, the (1,2) entry of A^{5} is","o":["121","122","243","120"],"e":"Eigenvalues 3 (eigenvector (1,1)) and 1 (eigenvector (1,−1)). Then A^{n} = ½[[3^{n} + 1, 3^{n} − 1], [3^{n} − 1, 3^{n} + 1]]. For n = 5: (3^{5} − 1)/2 = 242/2 = 121. (The diagonal entries are 122.)"},{"id":63,"u":3,"t":"Diagonalization","q":"Which of the following matrices is NOT diagonalizable?","o":["\\mat{2,1; 0,2}","\\mat{2,0; 0,2}","\\mat{1,2; 2,1}","\\mat{1,1; 0,2}"],"e":"[[2,1],[0,2]] has the repeated eigenvalue 2, but A − 2I = [[0,1],[0,0]] has rank 1, so the eigenspace is only 1-dimensional: no basis of eigenvectors. The others are diagonal already, symmetric (so diagonalizable), or have two distinct eigenvalues (1 and 2)."},{"id":64,"u":3,"t":"Inner product spaces","q":"On ℝ^{2} define ⟨u, v⟩ = 2u_{1}v_{1} + 3u_{2}v_{2}. For which value of k are the vectors u = (1, 2) and v = (k, 1) orthogonal with respect to this inner product?","o":["−3","3","−2","−6"],"e":"⟨u,v⟩ = 2(1)(k) + 3(2)(1) = 2k + 6 = 0 ⇒ k = −3. (The Euclidean dot product would give k + 2 = 0, i.e. k = −2, but that is a different inner product.)"},{"id":65,"u":3,"t":"Inner product spaces (function spaces)","q":"On C[0,1] with the inner product ⟨f, g⟩ = \\int_0^{1} f(x)g(x)\\,dx, the functions f(x) = x and g(x) = x − c are orthogonal when c equals","o":["\\frac{2}{3}","\\frac{1}{2}","\\frac{1}{3}","\\frac{3}{4}"],"e":"⟨f,g⟩ = ∫_{0}^{1} x(x − c) dx = 1/3 − c/2. Setting this to 0 gives c = 2/3."},{"id":66,"u":3,"t":"Gram–Schmidt orthogonalization","q":"Apply the Gram–Schmidt process (without normalising) to v_{1} = (1,1,0), v_{2} = (1,0,1), v_{3} = (0,1,1) to get orthogonal vectors w_{1}, w_{2}, w_{3}. Then ‖w_{3}‖^{2} equals","o":["\\frac{4}{3}","\\frac{3}{2}","1","\\frac{2}{3}"],"e":"w_{1} = (1,1,0). w_{2} = v_{2} − (v_{2}·w_{1}/w_{1}·w_{1})w_{1} = (1,0,1) − ½(1,1,0) = (½, −½, 1), with ‖w_{2}‖^{2} = 3/2. w_{3} = v_{3} − (v_{3}·w_{1}/w_{1}·w_{1})w_{1} − (v_{3}·w_{2}/w_{2}·w_{2})w_{2} = (0,1,1) − ½(1,1,0) − \\frac{1}{3}(½,−½,1) = (−\\frac{2}{3}, \\frac{2}{3}, \\frac{2}{3}). ‖w_{3}‖^{2} = 4/9 + 4/9 + 4/9 = 4/3."},{"id":67,"u":3,"t":"Linear systems (application: curve fitting)","q":"The parabola y = ax^{2} + bx + c passes through (1, 2), (2, 3) and (3, 6). Its value at x = 4 is","o":["11","10","12","9"],"e":"Substituting the points: a + b + c = 2, 4a + 2b + c = 3, 9a + 3b + c = 6. Subtracting consecutive equations: 3a + b = 1 and 5a + b = 3, so a = 1, b = −2, c = 3. Then y(4) = 16 − 8 + 3 = 11."},{"id":68,"u":3,"t":"Determinants","q":"The value of the determinant \\mat{1,1,1; 1,2,4; 1,4,16} (rows are 1, x_{i}, x_{i}^{2} for x = 1, 2, 4) is","o":["6","12","8","18"],"e":"This is a Vandermonde determinant: det = ∏_{i<j}(x_{j} − x_{i}) = (2 − 1)(4 − 1)(4 − 2) = 1·3·2 = 6. Direct check: R_{2} − R_{1} = (0,1,3), R_{3} − R_{1} = (0,3,15), so det = 1·15 − 3·3 = 6."}];
+
+const CFG = {
+  total: 50,
+  quota: { 1: 17, 2: 16, 3: 17 },
+  minutes: [60, 90, 120],
+  defaultMinutes: 90,
+  keys: { state: 'mat121.mock.state.v1', hist: 'mat121.mock.history.v1', dur: 'mat121.mock.duration.v1' }
+};
+const UNIT_NAME = { 1: 'Unit 1 · Single Variable Calculus', 2: 'Unit 2 · Multivariable Calculus', 3: 'Unit 3 · Basic Linear Algebra' };
+const LETTERS = ['A', 'B', 'C', 'D'];
+const BY = {}; BANK.forEach(q => { BY[q.id] = q; });
+
+/* ======================= STORAGE (safe) ======================= */
+const mem = {};
+const store = {
+  get(k) { try { const v = localStorage.getItem(k); return v === null ? (mem[k] ?? null) : v; } catch (e) { return mem[k] ?? null; } },
+  set(k, v) { mem[k] = v; try { localStorage.setItem(k, v); } catch (e) {} },
+  del(k) { delete mem[k]; try { localStorage.removeItem(k); } catch (e) {} }
+};
+const jget = (k, d) => { try { const v = store.get(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } };
+
+/* ======================= MATH MARKUP ======================= */
+function esc(c) { return c === '<' ? '&lt;' : c === '>' ? '&gt;' : c === '&' ? '&amp;' : c; }
+function grp(s, i) {
+  let d = 0, j = i;
+  for (; j < s.length; j++) { if (s[j] === '{') d++; else if (s[j] === '}') { d--; if (d === 0) break; } }
+  return [s.slice(i + 1, j), j + 1];
+}
+function script(s, i) {            // s[i] is ^ or _ ; returns [kind, body, next]
+  const kind = s[i];
+  if (s[i + 1] === '{') { const [a, n] = grp(s, i + 1); return [kind, a, n]; }
+  return [kind, s[i + 1] || '', i + 2];
+}
+function rm(s) {
+  let out = '', i = 0;
+  while (i < s.length) {
+    const c = s[i];
+    if (c === '\\') {
+      let j = i + 1, name = '';
+      while (j < s.length && /[A-Za-z]/.test(s[j])) { name += s[j]; j++; }
+      if (!name) { const n = s[j]; i = j + 1; out += (n === ',' || n === ';') ? '<span class="thin"></span>' : esc(n || ''); continue; }
+      i = j;
+      if (name === 'frac') { const [a, i1] = grp(s, i); const [b, i2] = grp(s, i1); out += '<span class="frac"><span class="num">' + rm(a) + '</span><span class="den">' + rm(b) + '</span></span>'; i = i2; }
+      else if (name === 'sqrt') { const [a, i1] = grp(s, i); out += '<span class="rad">√<span class="rb">' + rm(a) + '</span></span>'; i = i1; }
+      else if (name === 'mat') {
+        const [a, i1] = grp(s, i); i = i1;
+        out += '<span class="mat"><table>' + a.split(';').map(r => '<tr>' + r.split(',').map(x => '<td>' + rm(x.trim()) + '</td>').join('') + '</tr>').join('') + '</table></span>';
+      }
+      else if (name === 'left' || name === 'right') { /* delimiters printed as normal characters */ }
+      else if (name === 'lim' || name === 'ln' || name === 'sin' || name === 'cos' || name === 'tan') out += '<span class="fn">' + name + '</span>';
+      else if (name === 'int') out += '∫';
+      else if (name === 'oint') out += '∮';
+      else out += esc(name);
+      continue;
+    }
+    if (c === '^' || c === '_') {
+      const [k1, b1, n1] = script(s, i);
+      const other = k1 === '^' ? '_' : '^';
+      if (s[n1] === other) {
+        const [k2, b2, n2] = script(s, n1);
+        const sup = k1 === '^' ? b1 : b2, sub = k1 === '^' ? b2 : b1;
+        out += '<span class="ss"><sup>' + rm(sup) + '</sup><sub>' + rm(sub) + '</sub></span>'; i = n2;
+      } else {
+        out += (k1 === '^' ? '<sup>' : '<sub>') + rm(b1) + (k1 === '^' ? '</sup>' : '</sub>'); i = n1;
+      }
+      continue;
+    }
+    if (c === '\n') { out += '<br>'; i++; continue; }
+    out += esc(c); i++;
+  }
+  return out;
+}
+const M = s => '<span class="m">' + rm(s) + '</span>';
+
+/* ======================= HELPERS ======================= */
+const $ = id => document.getElementById(id);
+function rnd(n) {
+  if (window.crypto && crypto.getRandomValues) { const a = new Uint32Array(1); crypto.getRandomValues(a); return a[0] % n; }
+  return Math.floor(Math.random() * n);
+}
+function shuffle(a) { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = rnd(i + 1); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+const pad2 = n => String(n).padStart(2, '0');
+function fmt(ms) { const s = Math.max(0, Math.ceil(ms / 1000)); const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), x = s % 60; return (h ? h + ':' + pad2(m) : pad2(m)) + ':' + pad2(x); }
+function fmtMin(ms) { const m = Math.round(ms / 60000); return m < 1 ? '<1 min' : m + ' min'; }
+
+/* ======================= STATE ======================= */
+let S = null;          // current attempt
+let timerId = null;
+let modalOk = null;
+
+function save() { if (S) store.set(CFG.keys.state, JSON.stringify(S)); }
+function load() {
+  const s = jget(CFG.keys.state, null);
+  if (!s || !Array.isArray(s.ids) || !s.ids.every(id => BY[id]) || s.ids.length !== CFG.total) return null;
+  return s;
+}
+function newAttempt(min) {
+  let ids = [];
+  [1, 2, 3].forEach(u => {
+    const pool = BANK.filter(q => q.u === u).map(q => q.id);
+    ids = ids.concat(shuffle(pool).slice(0, CFG.quota[u]));
+  });
+  ids = shuffle(ids);
+  const opt = {}; ids.forEach(id => { opt[id] = shuffle([0, 1, 2, 3]); });
+  const now = Date.now();
+  S = { ids, opt, ans: {}, mk: {}, cur: 0, start: now, end: now + min * 60000, dur: min, done: false, auto: false, fin: null };
+  save();
+}
+
+/* ======================= SCREENS ======================= */
+function show(id) {
+  ['home', 'exam', 'result'].forEach(x => { $(x).hidden = x !== id; });
+  window.scrollTo(0, 0);
+}
+
+/* ---------- home ---------- */
+let chosenMin = CFG.defaultMinutes;
+function renderHome() {
+  const d = parseInt(store.get(CFG.keys.dur), 10);
+  if (CFG.minutes.includes(d)) chosenMin = d;
+  $('durChips').innerHTML = CFG.minutes.map(m => '<button class="chip" data-m="' + m + '" aria-pressed="' + (m === chosenMin) + '">' + m + ' minutes</button>').join('');
+  $('specMin').textContent = chosenMin;
+  $('comp').innerHTML = [1, 2, 3].map(u => '<div class="row"><span class="unit-tag u' + u + '"><i></i>' + UNIT_NAME[u].split(' · ')[0] + '</span>' + UNIT_NAME[u].split(' · ')[1] + '<b>' + CFG.quota[u] + ' questions</b></div>').join('');
+  const hist = jget(CFG.keys.hist, []);
+  $('hist').innerHTML = hist.length
+    ? hist.slice().reverse().slice(0, 6).map(h => '<div class="h"><span>' + new Date(h.t).toLocaleDateString(undefined, { day: 'numeric', month: 'short' }) + ' · ' + h.c + ' correct</span><b>' + h.s + '<small> / 50</small></b></div>').join('')
+    : '<div class="empty">No attempts yet. Your scores will appear here.</div>';
+  const s = load();
+  const live = s && !s.done;
+  $('resumeBox').hidden = !live;
+  if (live) $('resumeLeft').textContent = fmt(s.end - Date.now());
+  $('btnStart').textContent = live ? 'Start a new attempt' : 'Begin examination';
+}
+
+/* ---------- exam ---------- */
+function answeredCount() { return S.ids.filter(id => S.ans[id] !== undefined).length; }
+function renderExam() {
+  const id = S.ids[S.cur], q = BY[id], perm = S.opt[id];
+  const sel = S.ans[id];
+  $('xQ').innerHTML = '<span class="w">Question </span>' + (S.cur + 1) + ' / ' + S.ids.length;
+  const a = answeredCount();
+  $('xA').innerHTML = '✓ ' + a + '<span class="w"> answered</span>';
+  $('xBar').style.width = (a / S.ids.length * 100) + '%';
+  let h = '<div class="qmeta"><span class="qno">Question ' + (S.cur + 1) + '</span><span class="unit-tag u' + q.u + '"><i></i>' + UNIT_NAME[q.u].split(' · ')[0] + '</span>' + (S.mk[id] ? '<span class="flagpill">Marked for review</span>' : '') + '</div>';
+  h += '<div class="qtext">' + M(q.q) + '</div><div class="opts" role="radiogroup" aria-label="Answer options">';
+  perm.forEach((orig, k) => {
+    const on = sel === orig;
+    h += '<button class="opt' + (on ? ' sel' : '') + '" role="radio" aria-checked="' + on + '" data-k="' + k + '"><span class="ol">' + LETTERS[k] + '</span><span class="ot">' + M(q.o[orig]) + '</span></button>';
+  });
+  h += '</div><div class="qfoot"><button class="linkbtn" id="btnClear"' + (sel === undefined ? ' disabled' : '') + '>Clear response</button><span>' + (sel === undefined ? 'Not answered' : 'Answer saved') + '</span></div>';
+  const card = $('qcard'); card.innerHTML = h;
+  card.style.animation = 'none'; void card.offsetWidth; card.style.animation = '';
+  $('btnMark').setAttribute('aria-pressed', !!S.mk[id]);
+  $('btnMark').innerHTML = S.mk[id] ? 'Marked ✓' : 'Mark<span class="w"> for review</span>';
+  $('btnPrev').disabled = S.cur === 0;
+  const last = S.cur === S.ids.length - 1;
+  $('btnNext').textContent = last ? 'Finish ✓' : 'Next →';
+  renderPalette();
+}
+function renderPalette() {
+  let a = 0, m = 0;
+  $('pgrid').innerHTML = S.ids.map((id, i) => {
+    const an = S.ans[id] !== undefined, mk = !!S.mk[id];
+    if (an) a++; if (mk) m++;
+    return '<button class="pn' + (an ? ' ans' : '') + (mk ? ' mk' : '') + (i === S.cur ? ' cur' : '') + '" data-i="' + i + '" aria-label="Question ' + (i + 1) + (an ? ', answered' : ', not answered') + (mk ? ', marked' : '') + '">' + (i + 1) + '</button>';
+  }).join('');
+  $('lgA').textContent = a; $('lgU').textContent = S.ids.length - a; $('lgM').textContent = m;
+}
+function go(i) {
+  if (i < 0 || i >= S.ids.length) return;
+  S.cur = i; save(); renderExam(); closePal();
+  window.scrollTo({ top: 0 });
+}
+function choose(k) {
+  const id = S.ids[S.cur]; S.ans[id] = S.opt[id][k]; save();
+  const a = answeredCount();
+  $('xA').innerHTML = '✓ ' + a + '<span class="w"> answered</span>'; $('xBar').style.width = (a / S.ids.length * 100) + '%';
+  document.querySelectorAll('#qcard .opt').forEach((b, n) => { const on = n === k; b.classList.toggle('sel', on); b.setAttribute('aria-checked', on); });
+  document.querySelector('#qcard .qfoot span').textContent = 'Answer saved';
+  $('btnClear').disabled = false;
+  renderPalette();
+}
+function clearAns() {
+  const id = S.ids[S.cur]; delete S.ans[id]; save(); renderExam();
+}
+function toggleMark() {
+  const id = S.ids[S.cur]; if (S.mk[id]) delete S.mk[id]; else S.mk[id] = 1; save(); renderExam();
+}
+function openPal() { $('pal').classList.add('open'); $('scrim').hidden = false; }
+function closePal() { $('pal').classList.remove('open'); $('scrim').hidden = true; }
+
+/* ---------- timer ---------- */
+function tick() {
+  if (!S || S.done) return;
+  const left = S.end - Date.now();
+  const t = $('timer');
+  t.textContent = fmt(left);
+  t.classList.toggle('crit', left <= 5 * 60000);
+  t.classList.toggle('warn', left > 5 * 60000 && left <= 10 * 60000);
+  if (left <= 0) { hideModal(); submit(true); }
+}
+function startTimer() { stopTimer(); tick(); timerId = setInterval(tick, 500); }
+function stopTimer() { if (timerId) { clearInterval(timerId); timerId = null; } }
+
+/* ---------- modal ---------- */
+function showModal(o) {
+  $('mTitle').textContent = o.title;
+  $('mBody').innerHTML = o.body;
+  $('mOk').textContent = o.ok || 'OK';
+  $('mOk').className = 'btn ' + (o.danger ? 'danger' : 'pri');
+  $('mCancel').textContent = o.cancel || 'Cancel';
+  $('mCancel').hidden = o.cancel === false;
+  modalOk = o.onOk || null;
+  $('modal').hidden = false;
+  $('mOk').focus();
+}
+function hideModal() { $('modal').hidden = true; modalOk = null; }
+function confirmSubmit() {
+  const a = answeredCount(), n = S.ids.length, mk = Object.keys(S.mk).length;
+  showModal({
+    title: 'Submit examination?',
+    body: '<p>Once submitted, answers cannot be changed. Time remaining: <b>' + fmt(S.end - Date.now()) + '</b>.</p>' +
+      '<div class="mstats"><div><b>' + a + '</b><span>Answered</span></div><div><b>' + (n - a) + '</b><span>Unanswered</span></div><div><b>' + mk + '</b><span>Marked</span></div></div>' +
+      (n - a > 0 ? '<div class="warnline">' + (n - a) + ' question' + (n - a === 1 ? ' is' : 's are') + ' still unanswered.</div>' : ''),
+    ok: 'Submit exam', cancel: 'Keep working', onOk: () => submit(false)
+  });
+}
+
+/* ---------- submit & grade ---------- */
+function grade() {
+  const units = { 1: { n: 0, c: 0, w: 0, u: 0 }, 2: { n: 0, c: 0, w: 0, u: 0 }, 3: { n: 0, c: 0, w: 0, u: 0 } };
+  let c = 0, w = 0, u = 0;
+  S.ids.forEach(id => {
+    const q = BY[id], a = S.ans[id], U = units[q.u];
+    U.n++;
+    if (a === undefined) { u++; U.u++; } else if (a === 0) { c++; U.c++; } else { w++; U.w++; }
+  });
+  return { c, w, u, units };
+}
+function submit(auto) {
+  if (!S || S.done) return;
+  stopTimer();
+  S.done = true; S.auto = !!auto; S.fin = Math.min(Date.now(), S.end);
+  save();
+  const g = grade();
+  const hist = jget(CFG.keys.hist, []);
+  hist.push({ t: Date.now(), s: g.c, c: g.c, w: g.w, u: g.u });
+  store.set(CFG.keys.hist, JSON.stringify(hist.slice(-12)));
+  closePal();
+  renderResult(true);
+}
+
+/* ---------- result ---------- */
+let filterKey = 'all';
+function renderResult(animate) {
+  const g = grade();
+  show('result');
+  $('resBanner').innerHTML = S.auto ? '<div class="banner">Time expired — your answers were submitted automatically.</div>' : '';
+  $('resScore').textContent = g.c;
+  $('kC').textContent = g.c; $('kW').textContent = g.w; $('kU').textContent = g.u; $('kT').textContent = fmtMin(S.fin - S.start);
+  const C = 276.46, ring = $('ringPg');
+  ring.style.strokeDashoffset = C;
+  requestAnimationFrame(() => requestAnimationFrame(() => { ring.style.strokeDashoffset = C * (1 - g.c / CFG.total); }));
+  $('unitRows').innerHTML = [1, 2, 3].map(u => {
+    const x = g.units[u], p = k => (x[k] / x.n * 100) + '%';
+    return '<div class="urow"><div class="top"><span><span class="unit-tag u' + u + '"><i></i>' + UNIT_NAME[u].split(' · ')[0] + '</span> &nbsp;' + UNIT_NAME[u].split(' · ')[1] + '</span><b>' + x.c + '<small> / ' + x.n + '</small></b></div>' +
+      '<div class="ubar"><i class="c" style="width:' + p('c') + '"></i><i class="w" style="width:' + p('w') + '"></i><i class="u" style="width:' + p('u') + '"></i></div>' +
+      '<div class="sub"><span>' + x.c + ' correct</span><span>' + x.w + ' incorrect</span><span>' + x.u + ' unanswered</span></div></div>';
+  }).join('');
+  const mk = Object.keys(S.mk).length;
+  const fl = [['all', 'All', S.ids.length], ['wrong', 'Incorrect', g.w], ['un', 'Unanswered', g.u], ['right', 'Correct', g.c], ['mark', 'Marked', mk]];
+  $('filters').innerHTML = fl.map(f => '<button class="chip" data-f="' + f[0] + '" aria-pressed="' + (f[0] === filterKey) + '">' + f[1] + ' (' + f[2] + ')</button>').join('');
+  renderReview();
+}
+function renderReview() {
+  let h = '';
+  S.ids.forEach((id, i) => {
+    const q = BY[id], a = S.ans[id];
+    const st = a === undefined ? 'un' : a === 0 ? 'right' : 'wrong';
+    if (filterKey === 'wrong' && st !== 'wrong') return;
+    if (filterKey === 'un' && st !== 'un') return;
+    if (filterKey === 'right' && st !== 'right') return;
+    if (filterKey === 'mark' && !S.mk[id]) return;
+    h += '<article class="card rv"><div class="rv-h"><span class="qno">Question ' + (i + 1) + '</span><span class="pill ' + (st === 'right' ? 'ok' : st === 'wrong' ? 'bad' : 'un') + '">' + (st === 'right' ? 'Correct · 1 / 1' : st === 'wrong' ? 'Incorrect · 0 / 1' : 'Unanswered · 0 / 1') + '</span>' +
+      (S.mk[id] ? '<span class="flagpill">Marked</span>' : '') + '<span class="topic">' + UNIT_NAME[q.u].split(' · ')[0] + ' · ' + rm(q.t) + '</span></div>';
+    h += '<div class="qtext">' + M(q.q) + '</div>';
+    S.opt[id].forEach((orig, k) => {
+      const isC = orig === 0, isMine = a === orig;
+      const cls = isC ? 'ok' + (isMine ? ' mine' : '') : (isMine ? 'bad' : '');
+      const tag = isC ? (isMine ? 'Correct · your answer' : 'Correct answer') : (isMine ? 'Your answer' : '');
+      h += '<div class="ropt ' + cls + '"><span class="ol">' + LETTERS[k] + '</span><span class="ot">' + M(q.o[orig]) + '</span><span class="tg">' + tag + '</span></div>';
+    });
+    h += '<div class="expl"><b>Explanation</b>' + M(q.e) + '</div></article>';
+  });
+  $('review').innerHTML = h || '<div class="card pad empty">No questions in this category.</div>';
+}
+
+/* ======================= EVENTS ======================= */
+function begin(resume) {
+  show('exam');
+  renderExam();
+  startTimer();
+}
+function startNew() {
+  newAttempt(chosenMin);
+  begin();
+}
+$('durChips').addEventListener('click', e => {
+  const b = e.target.closest('[data-m]'); if (!b) return;
+  chosenMin = parseInt(b.dataset.m, 10); store.set(CFG.keys.dur, String(chosenMin));
+  $('specMin').textContent = chosenMin;
+  document.querySelectorAll('#durChips .chip').forEach(x => x.setAttribute('aria-pressed', x === b));
+});
+$('btnStart').addEventListener('click', () => {
+  const s = load();
+  if (s && !s.done) {
+    showModal({ title: 'Replace unfinished exam?', body: '<p>Your saved in-progress attempt will be discarded and a new paper will start.</p>', ok: 'Start new', danger: true, onOk: startNew });
+  } else startNew();
+});
+$('btnResume').addEventListener('click', () => {
+  S = load(); if (!S) return renderHome();
+  if (S.end <= Date.now()) { submit(true); return; }
+  begin(true);
+});
+$('btnDiscard').addEventListener('click', () => {
+  showModal({ title: 'Discard this attempt?', body: '<p>Your saved answers will be deleted. This cannot be undone.</p>', ok: 'Discard', danger: true, onOk: () => { store.del(CFG.keys.state); S = null; renderHome(); } });
+});
+$('qcard').addEventListener('click', e => {
+  const o = e.target.closest('.opt'); if (o) { choose(parseInt(o.dataset.k, 10)); return; }
+  if (e.target.id === 'btnClear') clearAns();
+});
+$('pgrid').addEventListener('click', e => { const b = e.target.closest('.pn'); if (b) go(parseInt(b.dataset.i, 10)); });
+$('btnPrev').addEventListener('click', () => go(S.cur - 1));
+$('btnNext').addEventListener('click', () => { if (S.cur === S.ids.length - 1) confirmSubmit(); else go(S.cur + 1); });
+$('btnMark').addEventListener('click', toggleMark);
+$('btnSubmitTop').addEventListener('click', confirmSubmit);
+$('btnSubmitPal').addEventListener('click', () => { closePal(); confirmSubmit(); });
+$('btnPal').addEventListener('click', openPal);
+$('scrim').addEventListener('click', closePal);
+$('mCancel').addEventListener('click', hideModal);
+$('mOk').addEventListener('click', () => { const f = modalOk; hideModal(); if (f) f(); });
+$('modal').addEventListener('click', e => { if (e.target === $('modal') && !$('mCancel').hidden) hideModal(); });
+$('filters').addEventListener('click', e => { const b = e.target.closest('[data-f]'); if (!b) return; filterKey = b.dataset.f; document.querySelectorAll('#filters .chip').forEach(x => x.setAttribute('aria-pressed', x === b)); renderReview(); });
+$('btnAgain').addEventListener('click', () => { filterKey = 'all'; store.del(CFG.keys.state); S = null; renderHome(); show('home'); });
+$('btnTop').addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+
+document.addEventListener('keydown', e => {
+  if (e.ctrlKey || e.metaKey || e.altKey) return;
+  if (!$('modal').hidden) { if (e.key === 'Escape' && !$('mCancel').hidden) hideModal(); return; }
+  if ($('exam').hidden || !S || S.done) return;
+  const k = e.key.toLowerCase();
+  if (e.key === 'ArrowRight') go(S.cur + 1);
+  else if (e.key === 'ArrowLeft') go(S.cur - 1);
+  else if (['a', 'b', 'c', 'd'].includes(k)) choose('abcd'.indexOf(k));
+  else if (['1', '2', '3', '4'].includes(k)) choose(parseInt(k, 10) - 1);
+  else if (k === 'm') toggleMark();
+  else if (e.key === 'Escape') closePal();
+});
+window.addEventListener('beforeunload', e => { if (S && !S.done && !$('exam').hidden) { e.preventDefault(); e.returnValue = ''; } });
+document.addEventListener('visibilitychange', () => { if (!document.hidden && S && !S.done && !$('exam').hidden) tick(); });
+
+/* ======================= BOOT ======================= */
+(function boot() {
+  const s = load();
+  if (s && s.done) { S = s; filterKey = 'all'; renderResult(false); return; }
+  if (s && !s.done && s.end <= Date.now()) { S = s; submit(true); return; }
+  renderHome(); show('home');
+  setInterval(() => { if (!$('home').hidden) { const x = load(); if (x && !x.done) $('resumeLeft').textContent = fmt(x.end - Date.now()); } }, 1000);
+})();
+
+/* test hook (no effect on normal use) */
+window.__mat121 = { BANK, CFG, grade: () => S && grade(), state: () => S };
+})();
+</script>
+</body>
+</html>
