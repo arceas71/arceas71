@@ -287,7 +287,7 @@ footer.note{padding:36px 0 44px;color:var(--mut);font-size:12px}
         <div class="card pad internal">
           <h3>Internal assessment marks</h3>
           <div class="big m">49.50<small> / 60</small></div>
-          <p>Recorded separately. The mock paper below is scored directly out of 50 and is never combined with, or converted into, these marks.</p>
+          <p>The mock paper is scored out of 50, then scaled to 40 and added to these marks to give an overall percentage out of 100.</p>
         </div>
         <div class="card pad">
           <h3>Previous attempts</h3>
@@ -384,9 +384,13 @@ footer.note{padding:36px 0 44px;color:var(--mut);font-size:12px}
         <div class="units" id="unitRows"></div>
       </div>
       <div class="card pad internal">
-        <h3>Internal assessment marks</h3>
-        <div class="big m">49.50<small> / 60</small></div>
-        <p>Shown separately for reference. No weighting, conversion or combined percentage is applied to this mock score.</p>
+        <h3>Overall percentage</h3>
+        <div class="big m"><span id="ovPct">0.00</span><small> %</small></div>
+        <div class="comp" style="margin-top:16px">
+          <div class="row">Internal assessment<b>49.50 / 60</b></div>
+          <div class="row">Mock score (<span id="ovRaw">0</span> / 50) scaled to 40<b id="ovScaled">0.00 / 40</b></div>
+          <div class="row" style="border-top:1px solid var(--line);padding-top:10px">Total<b id="ovTotal">0.00 / 100</b></div>
+        </div>
       </div>
     </div>
 
@@ -683,6 +687,8 @@ function renderResult(animate) {
   show('result');
   $('resBanner').innerHTML = S.auto ? '<div class="banner">Time expired — your answers were submitted automatically.</div>' : '';
   $('resScore').textContent = g.c;
+  const sc = g.c * 40 / CFG.total, tot = 49.5 + sc;
+  $('ovRaw').textContent = g.c; $('ovScaled').textContent = sc.toFixed(2) + ' / 40'; $('ovTotal').textContent = tot.toFixed(2) + ' / 100'; $('ovPct').textContent = tot.toFixed(2);
   $('kC').textContent = g.c; $('kW').textContent = g.w; $('kU').textContent = g.u; $('kT').textContent = fmtMin(S.fin - S.start);
   const C = 276.46, ring = $('ringPg');
   ring.style.strokeDashoffset = C;
