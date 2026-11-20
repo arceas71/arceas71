@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Split Screen</string>
+    <string name="tile_label">Split screen</string>
+    <string name="service_desc">Lets Split Screen toggle split-screen mode for the app you are using. It does not read or store anything on your screen.</string>
+</resources>
