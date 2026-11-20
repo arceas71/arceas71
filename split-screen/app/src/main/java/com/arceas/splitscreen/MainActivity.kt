@@ -1,6 +1,7 @@
 package com.arceas.splitscreen
 
 import android.app.Activity
+import android.app.AlertDialog
 import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
@@ -90,5 +91,24 @@ class MainActivity : Activity() {
         val on = SplitService.instance != null
         status.text = if (on) "● Service running" else "○ Service off — enable it below"
         status.setTextColor(Color.parseColor(if (on) "#7CFC9A" else "#FF7A7A"))
+        if (!on) showPermissionDialog()
+    }
+
+    private var dialog: AlertDialog? = null
+
+    private fun showPermissionDialog() {
+        if (dialog?.isShowing == true) return
+        dialog = AlertDialog.Builder(this, android.R.style.Theme_Material_Dialog_Alert)
+            .setTitle("Permission needed")
+            .setMessage(
+                "Split Screen needs the Accessibility service to trigger split-screen. " +
+                    "Tap Open settings, choose Split Screen and turn it on.\n\n" +
+                    "If it is greyed out: App info > three dots > Allow restricted settings."
+            )
+            .setPositiveButton("Open settings") { _, _ ->
+                startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
+            }
+            .setNegativeButton("Later", null)
+            .show()
     }
 }

@@ -11,6 +11,7 @@ import android.view.MotionEvent
 import android.view.WindowManager
 import android.view.accessibility.AccessibilityEvent
 import android.widget.TextView
+import android.widget.Toast
 
 class SplitService : AccessibilityService() {
 
@@ -22,7 +23,19 @@ class SplitService : AccessibilityService() {
         if (Prefs.bubble(this)) showBubble()
     }
 
-    override fun onAccessibilityEvent(event: AccessibilityEvent?) {}
+    override fun onAccessibilityEvent(event: AccessibilityEvent?) {
+        if (event?.eventType != AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) return
+        val pkg = event.packageName?.toString() ?: return
+        if (pkg in PAYMENT_APPS) {
+            // Payment apps refuse to run while an accessibility service is on, so switch ourselves off.
+            Toast.makeText(
+                this,
+                "Split Screen turned itself off for payments. Re-enable it in Accessibility settings when done.",
+                Toast.LENGTH_LONG
+            ).show()
+            disableSelf()
+        }
+    }
 
     override fun onInterrupt() {}
 
@@ -116,6 +129,11 @@ class SplitService : AccessibilityService() {
     }
 
     companion object {
+        // Apps that must never see an active accessibility service. Add more package names here.
+        val PAYMENT_APPS = setOf(
+            "com.google.android.apps.nbu.paisa.user" // Google Pay (India)
+        )
+
         @Volatile
         var instance: SplitService? = null
     }
