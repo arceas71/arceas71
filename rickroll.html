@@ -6,59 +6,79 @@
 <title>Never Gonna Give You Up</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  html, body { height: 100%; background: #000; color: #fff; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
-  body { display: flex; align-items: center; justify-content: center; overflow: hidden; }
-  #stage { position: fixed; inset: 0; }
-  #player { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; display: none; }
-  #gate {
-    position: absolute; inset: 0; display: flex; flex-direction: column;
-    align-items: center; justify-content: center; gap: 22px; cursor: pointer;
-    background: radial-gradient(circle at 50% 40%, #1c1c1c, #000 70%);
-    text-align: center; padding: 24px;
+  html, body { height: 100%; background: #000; overflow: hidden; }
+  #stage { position: fixed; inset: 0; overflow: hidden; background: #000; }
+
+  /* Oversized so YouTube's title bar / branding fall outside the screen */
+  #yt {
+    position: absolute; top: 50%; left: 50%; border: 0;
+    width: max(100vw, 177.78vh); height: max(56.25vw, 100vh);
+    transform: translate(-50%, -50%) scale(1.25);
+    pointer-events: none;
   }
-  #gate h1 { font-size: clamp(1.6rem, 5vw, 3rem); letter-spacing: .02em; }
-  #gate p { color: #9a9a9a; font-size: clamp(.9rem, 2.5vw, 1.1rem); }
-  .btn {
-    padding: 14px 34px; border-radius: 999px; border: 1px solid #fff;
-    background: transparent; color: #fff; font-size: 1.1rem; cursor: pointer;
-    transition: background .2s, color .2s;
+  #local {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    object-fit: cover; pointer-events: none;
   }
-  .btn:hover { background: #fff; color: #000; }
-  #fallback {
-    position: fixed; bottom: 12px; left: 0; right: 0; text-align: center;
-    font-size: .8rem; color: #777; z-index: 5;
+  /* Blocks every click so no suggestions, pause screen or links can appear */
+  #shield { position: absolute; inset: 0; z-index: 3; cursor: pointer; }
+  #hint {
+    position: absolute; bottom: 18px; left: 50%; transform: translateX(-50%);
+    z-index: 4; padding: 8px 16px; border-radius: 999px;
+    background: rgba(0,0,0,.6); color: #fff; font: 14px system-ui, sans-serif;
+    pointer-events: none; transition: opacity .4s;
   }
-  #fallback a { color: #aaa; }
+  [hidden] { display: none !important; }
 </style>
 </head>
 <body>
 <div id="stage">
-  <iframe id="player" title="Rick Astley - Never Gonna Give You Up"
-    allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
-    allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>
-  <div id="gate">
-    <h1>You've been invited to something special</h1>
-    <p>Tap to continue</p>
-    <button class="btn" type="button">Continue</button>
-  </div>
+  <video id="local" muted loop playsinline autoplay preload="auto" hidden></video>
+  <iframe id="yt" title="video" hidden
+    allow="autoplay; encrypted-media" referrerpolicy="strict-origin-when-cross-origin"></iframe>
+  <div id="shield"></div>
+  <div id="hint">Tap for sound 🔊</div>
 </div>
-<div id="fallback">Video not loading? <a id="alt" href="https://www.youtube.com/watch?v=dQw4w9WgXcQ" target="_blank" rel="noopener">Open on YouTube</a></div>
 
 <script>
   var VIDEO_ID = "dQw4w9WgXcQ";
-  var player = document.getElementById("player");
-  var gate = document.getElementById("gate");
+  var LOCAL_FILE = "rickroll.mp4";   // drop your own copy next to this file for a 100% ad-free version
 
-  function play() {
-    // youtube-nocookie: no tracking cookies. rel=0: no related videos; modestbranding/controls=0: minimal UI.
-    player.src = "https://www.youtube-nocookie.com/embed/" + VIDEO_ID +
-      "?autoplay=1&rel=0&modestbranding=1&playsinline=1&iv_load_policy=3&loop=1&playlist=" + VIDEO_ID;
-    player.style.display = "block";
-    gate.style.display = "none";
+  var local = document.getElementById("local");
+  var yt = document.getElementById("yt");
+  var hint = document.getElementById("hint");
+  var mode = null;
+
+  function startYouTube() {
+    mode = "yt";
+    yt.src = "https://www.youtube-nocookie.com/embed/" + VIDEO_ID +
+      "?autoplay=1&mute=1&controls=0&disablekb=1&fs=0&rel=0&modestbranding=1" +
+      "&playsinline=1&iv_load_policy=3&cc_load_policy=0&loop=1&playlist=" + VIDEO_ID +
+      "&enablejsapi=1&origin=" + encodeURIComponent(location.origin);
+    yt.hidden = false;
   }
-  gate.addEventListener("click", play);
-  document.addEventListener("keydown", function (e) {
-    if (e.key === "Enter" || e.key === " ") play();
+
+  function startLocal() {
+    mode = "local";
+    local.hidden = false;
+    var p = local.play();
+    if (p && p.catch) p.catch(function () {});
+  }
+
+  // Prefer a local file (no ads possible); fall back to YouTube if it is missing.
+  local.addEventListener("error", function () { local.hidden = true; if (mode !== "yt") startYouTube(); });
+  local.addEventListener("loadeddata", function () { if (mode !== "local") startLocal(); });
+  local.src = LOCAL_FILE;
+  setTimeout(function () { if (!mode) startYouTube(); }, 1500);
+
+  function send(func, args) {
+    yt.contentWindow.postMessage(JSON.stringify({ event: "command", func: func, args: args || [] }), "*");
+  }
+
+  document.getElementById("shield").addEventListener("click", function () {
+    if (mode === "local") { local.muted = false; local.volume = 1; local.play(); }
+    else if (mode === "yt") { send("unMute"); send("setVolume", [100]); send("playVideo"); }
+    hint.style.opacity = 0;
   });
 </script>
 </body>
