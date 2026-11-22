@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Never Gonna Give You Up</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; background: #000; color: #fff; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
+  body { display: flex; align-items: center; justify-content: center; overflow: hidden; }
+  #stage { position: fixed; inset: 0; }
+  #player { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; display: none; }
+  #gate {
+    position: absolute; inset: 0; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 22px; cursor: pointer;
+    background: radial-gradient(circle at 50% 40%, #1c1c1c, #000 70%);
+    text-align: center; padding: 24px;
+  }
+  #gate h1 { font-size: clamp(1.6rem, 5vw, 3rem); letter-spacing: .02em; }
+  #gate p { color: #9a9a9a; font-size: clamp(.9rem, 2.5vw, 1.1rem); }
+  .btn {
+    padding: 14px 34px; border-radius: 999px; border: 1px solid #fff;
+    background: transparent; color: #fff; font-size: 1.1rem; cursor: pointer;
+    transition: background .2s, color .2s;
+  }
+  .btn:hover { background: #fff; color: #000; }
+  #fallback {
+    position: fixed; bottom: 12px; left: 0; right: 0; text-align: center;
+    font-size: .8rem; color: #777; z-index: 5;
+  }
+  #fallback a { color: #aaa; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <iframe id="player" title="Rick Astley - Never Gonna Give You Up"
+    allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
+    allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>
+  <div id="gate">
+    <h1>You've been invited to something special</h1>
+    <p>Tap to continue</p>
+    <button class="btn" type="button">Continue</button>
+  </div>
+</div>
+<div id="fallback">Video not loading? <a id="alt" href="https://www.youtube.com/watch?v=dQw4w9WgXcQ" target="_blank" rel="noopener">Open on YouTube</a></div>
+
+<script>
+  var VIDEO_ID = "dQw4w9WgXcQ";
+  var player = document.getElementById("player");
+  var gate = document.getElementById("gate");
+
+  function play() {
+    // youtube-nocookie: no tracking cookies. rel=0: no related videos; modestbranding/controls=0: minimal UI.
+    player.src = "https://www.youtube-nocookie.com/embed/" + VIDEO_ID +
+      "?autoplay=1&rel=0&modestbranding=1&playsinline=1&iv_load_policy=3&loop=1&playlist=" + VIDEO_ID;
+    player.style.display = "block";
+    gate.style.display = "none";
+  }
+  gate.addEventListener("click", play);
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Enter" || e.key === " ") play();
+  });
+</script>
+</body>
+</html>
