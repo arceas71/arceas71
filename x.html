@@ -3,8 +3,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>23MAT129 · 19-day plan</title>
 <style>
-:root{--bg:#edf1f7;--card:#fff;--ink:#13203b;--mute:#5b6783;--line:#cfd7e6;--acc:#2559c7;--ok:#17744c;--bad:#b8322a;--okbg:#dff3e8;--badbg:#f8e0de;--grid:#dbe2ef}
-@media(prefers-color-scheme:dark){:root{--bg:#0f1626;--card:#18223a;--ink:#e6ebf7;--mute:#9aa6c4;--line:#2c3a5c;--acc:#7aa2ff;--ok:#5fd09b;--bad:#ff8a80;--okbg:#14382b;--badbg:#412220;--grid:#18233c}}
+:root{color-scheme:light dark;--onacc:#fff;--bg:#edf1f7;--card:#fff;--ink:#13203b;--mute:#5b6783;--line:#cfd7e6;--acc:#2559c7;--ok:#17744c;--bad:#b8322a;--okbg:#dff3e8;--badbg:#f8e0de;--grid:#dbe2ef}
+@media(prefers-color-scheme:dark){:root{--bg:#0f1626;--card:#18223a;--ink:#e6ebf7;--mute:#9aa6c4;--line:#2c3a5c;--acc:#7aa2ff;--ok:#5fd09b;--bad:#ff8a80;--okbg:#14382b;--badbg:#412220;--grid:#18233c;--onacc:#0f1626}}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 system-ui,sans-serif;background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:28px 28px}
 main{max-width:720px;margin:0 auto;padding:18px 14px 60px}
@@ -15,7 +15,7 @@ h2{font:700 1.2rem Georgia,serif;margin:0 0 8px}
 .bar i{display:block;height:100%;background:var(--acc)}
 nav{display:flex;gap:6px;margin:14px 0}
 nav button,.btn{font:inherit;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:8px 14px;border-radius:8px;cursor:pointer}
-nav button.on,.btn.pri{background:var(--acc);color:#fff;border-color:var(--acc)}
+nav button.on,.btn.pri{background:var(--acc);color:var(--onacc);border-color:var(--acc)}
 nav button{flex:1}
 .box{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px;margin:12px 0}
 details{border-top:1px solid var(--line);padding:9px 0}
@@ -26,15 +26,18 @@ details p{margin:6px 0 0;font:1.05rem/1.5 "Cambria Math","STIX Two Math",Georgia
 .opt.ok{background:var(--okbg);border-color:var(--ok)}.opt.no{background:var(--badbg);border-color:var(--bad)}
 .why{margin:8px 0;color:var(--mute)}
 .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-.pl{display:flex;justify-content:space-between;gap:8px;padding:9px 4px;border-top:1px solid var(--line);cursor:pointer}
+.pl{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;width:100%;padding:9px 4px;border:0;border-top:1px solid var(--line);background:none;color:inherit;font:inherit;text-align:left;cursor:pointer}
+.pl .tag{flex:none;text-align:right;white-space:nowrap}.pl .tag span{display:block}
 .pl:first-child{border:0}.pl.cur{font-weight:700}
 .tag{font-size:.8rem;color:var(--mute)}.done{color:var(--ok)}
 .big{font:1.25rem "Cambria Math",Georgia,serif;margin:8px 0}
 :focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.day{min-width:44px;min-height:44px}.btn:disabled{opacity:.45;cursor:default}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
 </style></head><body><main>
 <h1>23MAT129 · Differential Equations & Transforms</h1>
-<div class="sub" id="meta"></div><div class="bar"><i id="pb"></i></div>
-<nav><button data-v="today">Today</button><button data-v="rev">Review</button><button data-v="plan">Plan</button></nav>
+<div class="sub" id="meta"></div><div class="bar" id="bar" role="progressbar" aria-label="Days done" aria-valuemin="0"><i id="pb"></i></div>
+<nav aria-label="Sections"><button data-v="today">Today</button><button data-v="rev">Review</button><button data-v="plan">Plan</button></nav>
 <div id="app"></div></main>
 <script>
 // ===== CONTENT: c = [front, back] recall cards, q = [question, options, correctIndex, why] =====
@@ -44,7 +47,7 @@ const D=[
 ["Linear: y′ + p(x)y = r(x)","μ = e^(∫p dx);  y = (1/μ)[∫μ·r dx + C]"],
 ["Homogeneous: y′ = f(y/x)","Put y = ux, so y′ = u + xu′. Result is separable in u, x."],
 ["Cooling and growth","T′ = −k(T − Tₑ) ⇒ T = Tₑ + (T₀ − Tₑ)e^(−kt).  P′ = kP ⇒ P = P₀e^(kt)."]],
-q:[["Solve y′ = 2xy.",["y = Cx²","y = Ce^(x²)","y = e^(2x) + C","y = C ln x"],1,"dy/y = 2x dx → ln y = x² + c."],
+q:[["Solve y′ = 2xy.",["y = Cx²","y = Ce^(x²)","y = e^(2x) + C","y = C ln x"],1,"dy/y = 2x dx → ln|y| = x² + c."],
 ["Integrating factor for y′ + (2/x)y = x (x>0)?",["x²","eˣ","1/x²","2x"],0,"μ = e^(2 ln x) = x²."],
 ["For y′ = y/x + 1 which substitution works?",["u = xy","y = ux","u = y′","y = eᵘ"],1,"y = ux gives xu′ = 1, separable."],
 ["A hot object cools in a cold room. As t → ∞, T →",["0","T₀","Tₑ (room temp)","∞"],2,"The exponential term vanishes, leaving Tₑ."]]},
@@ -66,7 +69,7 @@ q:[["y″ − 5y′ + 6y = 0",["c₁e²ˣ + c₂e³ˣ","c₁e⁻²ˣ + c₂e⁻�
 ["m = 1, c = 2, k = 5. The motion is",["overdamped","critically damped","underdamped","undamped"],2,"c² − 4mk = 4 − 20 < 0."]]},
 {t:"Euler–Cauchy, Wronskian, existence & uniqueness",c:[
 ["Euler–Cauchy: x²y″ + axy′ + by = 0","Try y = xᵐ: m(m−1) + am + b = 0. Double root: (c₁ + c₂ ln x)xᵐ."],
-["Wronskian","W = y₁y₂′ − y₂y₁′.  W ≠ 0 ⇒ independent (a basis).  W = 0 ⇒ dependent."],
+["Wronskian","W = y₁y₂′ − y₂y₁′.  For two solutions of y″ + p y′ + q y = 0 (p, q continuous): W ≠ 0 ⇒ independent (a basis).  W = 0 ⇒ dependent."],
 ["Existence & uniqueness","y″ + p y′ + q y = 0 with p, q continuous: the IVP y(x₀)=K₀, y′(x₀)=K₁ has exactly one solution."],
 ["Abel's idea","W = C·e^(−∫p dx): it is either never zero or always zero on an interval."]],
 q:[["x²y″ − 2xy′ + 2y = 0 has solutions",["x, x²","x⁻¹, x²","1, x","x², x³"],0,"m² − 3m + 2 = 0 → m = 1, 2."],
@@ -139,7 +142,7 @@ q:[["y′ + 2y = 0, y(0) = 3. Then Y(s) =",["3/(s+2)","3/(s−2)","3s/(s+2)","1/
 ["Transfer function","H(s) = Y(s)/X(s) with zero initial conditions."],
 ["Poles and stability","Poles = roots of the denominator. Stable iff all poles have Re < 0."],
 ["Convolution","L{f * g} = F·G, where (f * g)(t) = ∫₀ᵗ f(τ)g(t − τ)dτ.  Output y = h * x."],
-["Special inputs","Step response: Y = H(s)/s.  Impulse: L{δ(t − a)} = e^(−as), so y = h(t)."]],
+["Special inputs","Step response: Y = H(s)/s.  Impulse: L{δ(t − a)} = e^(−as).  Input δ(t) gives y = h(t); input δ(t − a) gives y = h(t − a)·u(t − a)."]],
 q:[["y′ + 3y = x(t). H(s) =",["1/(s+3)","1/(s−3)","s+3","3/s"],0,"(s+3)Y = X."],
 ["Poles of 1/(s²+2s+5)",["−1 ± 2i, stable","1 ± 2i, unstable","±i√5, center","−5, −1, stable"],0,"s = −1 ± √(1−5) = −1 ± 2i."],
 ["Step response of H = 1/(s+3)",["(1 − e⁻³ᵗ)/3","e⁻³ᵗ","(1 + e⁻³ᵗ)/3","3(1 − e⁻ᵗ)"],0,"1/(s(s+3)) = (1/3)(1/s − 1/(s+3))."]]},
@@ -182,46 +185,61 @@ q:[["Laplace's equation describes",["a steady state (no time dependence)","wave 
 const $=s=>document.querySelector(s),N=D.length,INT=[0,1,2,4,7,12];
 let S={done:{},box:{},due:{}};try{S=Object.assign(S,JSON.parse(localStorage.getItem('de26')))}catch(e){}
 const save=()=>{try{localStorage.setItem('de26',JSON.stringify(S))}catch(e){}};
+// plain text to safe HTML (so 0<x<a shows as written), with x_y drawn as a subscript
+const tx=s=>s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/([A-Za-zÀ-ɏ̂])_([a-z]{1,2})/g,'$1<sub>$2</sub>');
+const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const focusOn=s=>{const e=$(s);if(e)e.focus({preventScroll:true})};
 const START=new Date(2026,10,25),n_=d=>Math.round((new Date(d.getFullYear(),d.getMonth(),d.getDate())-START)/864e5);
-const today=n_(new Date()),dl=i=>new Date(2026,10,25+i).toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});
+const now=()=>n_(new Date()),dl=i=>new Date(2026,10,25+i).toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});
 const next=()=>{for(let i=0;i<N;i++)if(!S.done[i])return i;return N-1};
-let view='today',cur=next(),quiz=null,rq=null;
-function add(i){(D[i].c||[]).forEach((_,j)=>{const k=i+'.'+j;if(!S.box[k]){S.box[k]=1;S.due[k]=Math.max(today,0)+1}});save()}
+let view='today',cur=next(),quiz=null,rq=null,day=now();
+function add(i){(D[i].c||[]).forEach((_,j)=>{const k=i+'.'+j;if(!S.box[k]){S.box[k]=1;S.due[k]=Math.max(now(),0)+1}});save()}
 function head(){const d=Object.keys(S.done).length,left=Math.max(0,Math.round((new Date(2026,11,13)-new Date(new Date().toDateString()))/864e5));
-$('#meta').textContent=d+' of '+N+' days done · '+left+' days until 13 Dec · aim for 10–30 min a day';$('#pb').style.width=100*d/N+'%';
-document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.v==view))}
+$('#meta').textContent=d+' of '+N+' days done · '+left+(left==1?' day':' days')+' until 13 Dec · aim for 10–30 min a day';$('#pb').style.width=100*d/N+'%';
+$('#bar').setAttribute('aria-valuemax',N);$('#bar').setAttribute('aria-valuenow',d);
+document.querySelectorAll('nav button').forEach(b=>{const on=b.dataset.v==view;b.classList.toggle('on',on);on?b.setAttribute('aria-current','page'):b.removeAttribute('aria-current')})}
 function render(){head();const a=$('#app');a.innerHTML=view=='today'?vToday():view=='rev'?vRev():vPlan()}
-function vToday(){const d=D[cur],late=cur<today&&!S.done[cur];
-let h='<div class="row"><button class="btn" onclick="go(-1)">‹</button><div style="flex:1"><div class="tag">Day '+(cur+1)+' of '+N+' · '+dl(cur)+(S.done[cur]?' · <span class="done">done ✓</span>':'')+'</div><h2>'+d.t+'</h2></div><button class="btn" onclick="go(1)">›</button></div>';
+function vToday(){const d=D[cur],late=cur<now()&&!S.done[cur];
+let h='<div class="row"><button class="btn day" data-k="prev" aria-label="Previous day" onclick="go(-1)"'+(cur==0?' disabled':'')+'>‹</button><div style="flex:1"><div class="tag">Day '+(cur+1)+' of '+N+' · '+dl(cur)+(S.done[cur]?' · <span class="done">done ✓</span>':'')+'</div><h2 id="dt" tabindex="-1">'+tx(d.t)+'</h2></div><button class="btn day" data-k="next" aria-label="Next day" onclick="go(1)"'+(cur==N-1?' disabled':'')+'>›</button></div>';
 if(late)h+='<div class="box">You are behind plan. Do this day now; do not double up. Skipping a day costs less than a rushed day.</div>';
 if(quiz)return h+vQuiz();
-if(d.mix)return h+'<div class="box">Mixed questions from earlier days, with no new material. This is where retention is built: answer before you read the options carefully.<br><br><button class="btn pri" onclick="startQ()">Start quiz ('+d.n+' questions)</button></div>';
+if(d.mix)return h+'<div class="box">Mixed questions from earlier days, with no new material. This is where retention is built: work out your answer before you look at the options.<br><br><button class="btn pri" onclick="startQ()">Start quiz ('+d.n+' questions)</button></div>';
 h+='<div class="box"><b>Step 1 · Recall (5–10 min).</b> Read each prompt, say or write the answer, then open it. Mistakes are useful.';
-d.c.forEach(c=>h+='<details><summary>'+c[0]+'</summary><p>'+c[1]+'</p></details>');
-h+='<div style="margin-top:8px"><button class="btn" onclick="add('+cur+');this.textContent=\'Added to review ✓\'">Add these cards to my review deck</button></div></div>';
+d.c.forEach(c=>h+='<details><summary>'+tx(c[0])+'</summary><p>'+tx(c[1])+'</p></details>');
+const inDeck=d.c.every((_,j)=>S.box[cur+'.'+j]);
+h+='<div style="margin-top:8px"><button class="btn" onclick="add('+cur+');this.textContent=\'Added to review ✓\';this.disabled=true"'+(inDeck?' disabled>In your review deck ✓':'>Add these cards to my review deck')+'</button></div></div>';
 return h+'<div class="box"><b>Step 2 · Quiz (3–5 min).</b> '+d.q.length+' questions.<br><br><button class="btn pri" onclick="startQ()">Start quiz</button></div>'}
-function go(x){cur=Math.min(N-1,Math.max(0,cur+x));quiz=null;render()}
+function go(x){cur=Math.min(N-1,Math.max(0,cur+x));quiz=null;render();focusOn('[data-k='+(x<0?'prev':'next')+']')}
+function openDay(i){cur=i;view='today';quiz=null;render();scrollTo(0,0);focusOn('#dt')}
+// "both" / "all" / "none" stay last; the other choices are reshuffled on every attempt
+const LAST=['both','all','all equal','none'];
+function mixOpts([text,o,right,why]){const m=shuffle(o.filter(x=>!LAST.includes(x))).concat(o.filter(x=>LAST.includes(x)));return[text,m,m.indexOf(o[right]),why]}
 function startQ(){const d=D[cur];let qs;
-if(d.mix){qs=[];d.mix.forEach(i=>D[i].q.forEach(q=>qs.push(q)));qs.sort(()=>Math.random()-.5);qs=qs.slice(0,d.n)}else qs=d.q.slice();
-quiz={qs,i:0,s:0,a:-1};render()}
+// mixed days: take one question per topic in turn, so no topic crowds out the others
+if(d.mix){const pools=shuffle(d.mix.map(i=>shuffle(D[i].q.slice())));qs=[];
+while(qs.length<d.n&&pools.some(p=>p.length))pools.forEach(p=>{if(p.length&&qs.length<d.n)qs.push(p.pop())});shuffle(qs)}else qs=d.q.slice();
+quiz={qs:qs.map(mixOpts),i:0,s:0,a:-1};render();focusOn('.opt')}
 function vQuiz(){const q=quiz.qs[quiz.i];
-if(!q)return'<div class="box"><h2>Score: '+quiz.s+' / '+quiz.qs.length+'</h2><p>'+(quiz.s==quiz.qs.length?'Perfect. Come back tomorrow for the review cards.':'Retake it tomorrow after reviewing the cards. Retrieval after a gap is what makes it stick.')+'</p><button class="btn pri" onclick="quiz=null;cur=Math.min(N-1,cur+1);render()">Next day</button> <button class="btn" onclick="startQ()">Retry</button></div>';
-let h='<div class="box"><div class="tag">Question '+(quiz.i+1)+' / '+quiz.qs.length+'</div><div class="big">'+q[0]+'</div>';
-q[1].forEach((o,k)=>{let c='opt';if(quiz.a>=0){if(k==q[2])c+=' ok';else if(k==quiz.a)c+=' no'}h+='<button class="'+c+'" '+(quiz.a>=0?'disabled':'onclick="pick('+k+')"')+'>'+o+'</button>'});
-if(quiz.a>=0)h+='<div class="why">'+q[3]+'</div><button class="btn pri" onclick="quiz.i++;quiz.a=-1;render()">'+(quiz.i+1<quiz.qs.length?'Next':'Finish')+'</button>';
+if(!q)return'<div class="box"><h2 id="score" tabindex="-1">Score: '+quiz.s+' / '+quiz.qs.length+'</h2><p>'+(quiz.s==quiz.qs.length?'Perfect. Come back tomorrow for the review cards.':'Retake it tomorrow after reviewing the cards. Retrieval after a gap is what makes it stick.')+'</p>'+(cur<N-1?'<button class="btn pri" onclick="openDay(cur+1)">Next day</button> ':'')+'<button class="btn" onclick="startQ()">Retry</button></div>';
+let h='<div class="box"><div class="tag">Question '+(quiz.i+1)+' / '+quiz.qs.length+'</div><div class="big">'+tx(q[0])+'</div>';
+q[1].forEach((o,k)=>{let c='opt',m='';if(quiz.a>=0){if(k==q[2]){c+=' ok';m=' ✓<span class="sr"> correct</span>'}else if(k==quiz.a){c+=' no';m=' ✗<span class="sr"> your answer, wrong</span>'}}h+='<button class="'+c+'" '+(quiz.a>=0?'disabled':'onclick="pick('+k+')"')+'>'+tx(o)+m+'</button>'});
+if(quiz.a>=0)h+='<div class="why" id="why">'+tx(q[3])+'</div><button class="btn pri" data-k="qn" aria-describedby="why" onclick="step()">'+(quiz.i+1<quiz.qs.length?'Next':'Finish')+'</button>';
 return h+'</div>'}
 function pick(k){const q=quiz.qs[quiz.i];quiz.a=k;if(k==q[2])quiz.s++;
-if(quiz.i+1>=quiz.qs.length){S.done[cur]=1;add(cur)}save();render()}
-function dueIds(){return Object.keys(S.box).filter(k=>S.due[k]<=today)}
+if(quiz.i+1>=quiz.qs.length){S.done[cur]=1;add(cur)}save();render();focusOn('[data-k=qn]')}
+function step(){quiz.i++;quiz.a=-1;render();focusOn(quiz.i<quiz.qs.length?'.opt':'#score')}
+function dueIds(){return Object.keys(S.box).filter(k=>S.due[k]<=now())}
 function vRev(){const tot=Object.keys(S.box).length;
-if(!rq)rq=dueIds().sort(()=>Math.random()-.5);
+if(!rq)rq=shuffle(dueIds());
 if(!tot)return'<div class="box">Your review deck is empty. Finish a day, or press "Add these cards", and cards will show up here on a schedule (1, 2, 4, 7, 12 days).</div>';
 if(!rq.length)return'<div class="box"><h2>Nothing due 🎉</h2>'+tot+' cards in your deck. Cards you miss come back tomorrow; cards you get right come back later.</div>';
 const k=rq[0],[i,j]=k.split('.'),c=D[i].c[j];
-return'<div class="box"><div class="tag">'+rq.length+' left · from Day '+(+i+1)+'</div><div class="big">'+c[0]+'</div><details><summary>Show answer</summary><p>'+c[1]+'</p><div class="row" style="margin-top:10px"><button class="btn" onclick="rate(0)">Missed it</button><button class="btn pri" onclick="rate(1)">Got it</button></div></details></div>'}
-function rate(g){const k=rq.shift();if(g){S.box[k]=Math.min(5,S.box[k]+1);S.due[k]=today+INT[S.box[k]]}else{S.box[k]=1;S.due[k]=today+1;}save();render()}
-function vPlan(){let h='<div class="box">';for(let i=0;i<N;i++)h+='<div class="pl'+(i==cur?' cur':'')+'" onclick="cur='+i+';view=\'today\';quiz=null;render()"><span>'+(i+1)+'. '+D[i].t+'</span><span class="tag">'+dl(i)+(S.done[i]?' <span class="done">✓</span>':i<today?' missed':'')+'</span></div>';
+return'<div class="box"><div class="tag">'+rq.length+' left · from Day '+(+i+1)+' · '+tx(D[i].t)+'</div><div class="big">'+tx(c[0])+'</div><details><summary>Show answer</summary><p>'+tx(c[1])+'</p><div class="row" style="margin-top:10px"><button class="btn" onclick="rate(0)">Missed it</button><button class="btn pri" onclick="rate(1)">Got it</button></div></details></div>'}
+function rate(g){const k=rq.shift();if(g){S.box[k]=Math.min(5,S.box[k]+1);S.due[k]=now()+INT[S.box[k]]}else{S.box[k]=1;S.due[k]=now()+1;}save();render();focusOn('#app summary')}
+function vPlan(){let h='<div class="box">';for(let i=0;i<N;i++)h+='<button class="pl'+(i==cur?' cur':'')+'"'+(i==cur?' aria-current="true"':'')+' onclick="openDay('+i+')"><span>'+(i+1)+'. '+tx(D[i].t)+'</span><span class="tag">'+dl(i)+(S.done[i]?'<span class="done">✓ done</span>':i<now()?'<span>missed</span>':'')+'</span></button>';
 return h+'</div><div class="box tag">Syllabus covered: ODEs (first/second/higher order, systems, stability), Fourier series & transforms, Laplace & transfer functions, wave/heat/Laplace PDEs. Skipped: long derivations, MATLAB work, case studies. Add those from Kreyszig after Dec 13 if time allows.</div><button class="btn" onclick="if(confirm(\'Erase all progress?\')){S={done:{},box:{},due:{}};save();cur=0;rq=null;render()}">Reset progress</button>'}
 document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{view=b.dataset.v;quiz=null;rq=null;render()});
+// phones keep tabs open for days: refresh dates and due cards once the day has changed
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&now()!==day){day=now();rq=null;render()}});
 render();
 </script></body></html>
