@@ -88,7 +88,7 @@ h3{font:700 1.12rem/1.3 var(--serif);margin:0}
 
 /* the day's live graph */
 .hero{position:relative;margin:0 0 14px;border:1px solid var(--line2);border-radius:22px;overflow:hidden;background:radial-gradient(90% 80% at 50% 40%,rgba(255,160,50,.14),transparent 72%),#0b0908;box-shadow:0 0 44px rgba(255,145,35,.12),inset 0 1px 0 rgba(255,230,200,.06)}
-.hero canvas{display:block;width:100%;height:210px}
+.hero canvas{display:block;width:100%;height:184px}
 @media(min-width:640px){.hero canvas{height:270px}}
 .pause{position:absolute;top:8px;right:8px;width:40px;height:40px;display:grid;place-items:center;padding:0;border-radius:50%;border:1px solid var(--line);background:rgba(10,8,6,.78);color:var(--ink);cursor:pointer}
 .pause svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
@@ -160,6 +160,7 @@ details[open]>.a{animation:reveal .28s ease-out}
 .mark .katex{font-size:1em}
 .ring{display:grid;place-items:center;width:132px;height:132px;margin:0 auto;border-radius:50%;background:conic-gradient(var(--acc) calc(var(--p) * 1%),#2a241d 0);box-shadow:0 0 34px rgba(255,150,40,.22)}
 .ring>span{display:grid;place-items:center;width:108px;height:108px;border-radius:50%;background:#0e0b08;font:1.5rem var(--serif);color:var(--acc)}
+.ring>.tick{font-size:2.8rem}
 .qed{margin:6px 0 0;color:var(--mute);font:italic 1.05rem var(--serif)}
 .score h2{margin:16px 0 8px;font-size:1.7rem}
 .score h2:focus{outline:none}
@@ -223,6 +224,7 @@ details[open]>.a{animation:reveal .28s ease-out}
 .stage.todo .node{border-color:transparent;background:var(--gloss);color:var(--onacc)}
 .stage.done .node{border-color:var(--ok);background:var(--okbg);color:var(--ok)}
 .wide{width:100%}
+.path>.wide{margin:0 0 14px}
 .browse{margin:20px 0 0}
 .browse>summary{display:flex;justify-content:space-between;align-items:center;gap:12px;min-height:52px;padding:8px 18px;border:1px solid var(--line);border-radius:18px;font-weight:600;font-size:.95rem}
 .browse[open]>summary{margin-bottom:10px}
@@ -754,8 +756,8 @@ h+=hero();
 if(now()>PLAN[cur]&&!S.done[cur])h+='<p class="note">You are behind plan. Do your earliest unfinished session now. Skipping one costs less than rushing it.</p>';
 if(d.mix)return h+'<section class="step"><h3>Mixed quiz</h3><p class="hint">Mixed questions from earlier sessions, with no new material. This is where retention is built: work out your answer before you look at the options.</p><button class="btn pri" data-k="start" onclick="startQ()">Start quiz ('+d.n+' questions)</button></section>';
 const names={learn:['Learn','One idea, a worked example, one question','3 min'],recall:['Recall',d.c.length+' cards from memory. Misses come back.','5–10 min'],quiz:['Quiz',d.q.length+' questions. Misses come back.','3–5 min']},steps=Object.keys(names),todo=steps.find(k=>!finished(k));
-h+='<section class="path"><ol>'+steps.map((k,n)=>{const ok=finished(k),[name,what,time]=names[k];return'<li><button class="stage'+(ok?' done':'')+(k==todo?' todo':'')+'" data-stage="'+k+'" onclick="startStage(\''+k+'\')"><span class="node">'+(ok?'✓':n+1)+'</span><span><b>'+name+(ok?'<span class="sr">, done</span>':'')+'</b><small>'+what+'</small></span><span class="time">'+time+'</span></button></li>'}).join('')+'</ol>';
-h+='<button class="btn pri wide" data-k="start" onclick="startStage(\''+(todo||'quiz')+'\')">'+(!todo?'Take the quiz again':todo=='learn'?'Start session':'Continue to '+todo)+'</button></section>';
+const go1='<button class="btn pri wide" data-k="start" onclick="startStage(\''+(todo||'quiz')+'\')">'+(!todo?'Take the quiz again':todo=='learn'?'Start session':'Continue to '+todo)+'</button>';
+h+='<section class="path">'+go1+'<ol>'+steps.map((k,n)=>{const ok=finished(k),[name,what,time]=names[k];return'<li><button class="stage'+(ok?' done':'')+(k==todo?' todo':'')+'" data-stage="'+k+'" onclick="startStage(\''+k+'\')"><span class="node">'+(ok?'✓':n+1)+'</span><span><b>'+name+(ok?'<span class="sr">, done</span>':'')+'</b><small>'+what+'</small></span><span class="time">'+time+'</span></button></li>'}).join('')+'</ol></section>';
 const inDeck=d.c.every((_,j)=>S.box[cur+'.'+j]);
 return h+'<details class="browse"><summary>All '+d.c.length+' cards in this session<span class="chev" aria-hidden="true"></span></summary>'+d.c.map(card).join('')+'<button class="btn" onclick="add('+cur+');this.textContent=\'In your review deck ✓\';this.disabled=true"'+(inDeck?' disabled>In your review deck ✓':'>Add these cards to my review deck')+'</button></details>'}
 function vLearn(){const l=L[cur],all=act.n>=l.steps.length,which=act.n?'next':'first';
@@ -765,12 +767,12 @@ h+='<p class="keep"><strong>Remember:</strong> '+tx(l.keep)+'</p><h4>Your turn</
 if(act.a>=0)h+=reason(act.q[3],'Continue to recall',"startStage('recall')");
 return h+'</section>'}
 function vRecall(){const c=D[cur].c,n=c.length;
-if(!act.queue.length){const m=Object.keys(act.missed).length;return'<section class="score"><div class="mark" aria-hidden="true">'+tx('$\\blacksquare$')+'</div><h2 id="score" tabindex="-1">All '+n+' recalled</h2><p>'+(m?m+(m==1?' card':' cards')+' needed another try. Review brings every card back tomorrow.':'Every card from memory on the first try. Review brings them back tomorrow.')+'</p><div class="row"><button class="btn pri" data-k="qn" onclick="startQ()">Continue to quiz</button><button class="btn" onclick="leave()">Back to session</button></div></section>'}
+if(!act.queue.length){const m=Object.keys(act.missed).length;return'<section class="score"><div class="ring" aria-hidden="true" style="--p:100"><span class="tick">✓</span></div><h2 id="score" tabindex="-1">All '+n+' recalled</h2><p>'+(m?m+(m==1?' card':' cards')+' needed another try. Review brings every card back tomorrow.':'Every card from memory on the first try. Review brings them back tomorrow.')+'</p><div class="row"><button class="btn pri" data-k="qn" onclick="startQ()">Continue to quiz</button><button class="btn" onclick="leave()">Back to session</button></div></section>'}
 const j=act.queue[0];
 return'<section class="drill">'+phase('Recall')+'<div class="segs" aria-hidden="true">'+c.map((_,k)=>'<i class="'+(k==j?'cur':!act.queue.includes(k)?(act.missed[k]?'fixed':'ok'):act.missed[k]?'no':'')+'"></i>').join('')+'</div><p class="count">'+act.queue.length+' of '+n+' to go'+(act.missed[j]?'. This one is back: try again.':'')+'</p>'+flip(tx(c[j][0]),tx(c[j][1]),'rated')+'<p class="hint">Say or write the answer before you look. Be strict: if you hesitated badly, count it as missed.</p></section>'}
 const segs=()=>{const q=quiz.qs[quiz.i];return'<div class="segs" aria-hidden="true">'+Array.from({length:quiz.first},(_,i)=>'<i class="'+(q&&q[4]==i&&quiz.a<0?'cur':i in quiz.res?(quiz.res[i]?'ok':quiz.fixed[i]?'fixed':'no'):'')+'"></i>').join('')+'</div>'};
 function vQuiz(){const n=quiz.first,q=quiz.qs[quiz.i];
-if(!q){const all=quiz.s==n;return'<section class="score">'+segs()+(all?'<div class="mark" aria-hidden="true">'+tx('$\\blacksquare$')+'</div><p class="qed" aria-hidden="true">Q.E.D.</p>':'<div class="ring" aria-hidden="true" style="--p:'+100*quiz.s/n+'"><span>'+tx('$'+Math.round(100*quiz.s/n)+'\\%$')+'</span></div>')+'<h2 id="score" tabindex="-1">Score: '+quiz.s+' / '+n+'</h2><p>'+(all?'Perfect. Come back tomorrow for the review cards.':'You then got every miss right. Those questions return in Review tomorrow: retrieval after a gap is what makes it stick.')+'</p><div class="row">'+(cur<N-1?'<button class="btn pri" onclick="openDay(cur+1)">Next session</button>':'')+'<button class="btn" onclick="startQ()">Retry</button></div></section>'}
+if(!q){const all=quiz.s==n;return'<section class="score">'+segs()+(all?'<div class="mark" aria-hidden="true">'+tx('$\\blacksquare$')+'</div><p class="qed" aria-hidden="true">Q.E.D.</p>':'<div class="ring" aria-hidden="true" style="--p:'+100*quiz.s/n+'"><span>'+tx('$'+Math.round(100*quiz.s/n)+'\\%$')+'</span></div>')+'<h2 id="score" tabindex="-1">Score: '+quiz.s+' / '+n+'</h2><p>'+(all?'Perfect. Come back tomorrow for the review cards.':(n-quiz.s==1?'You then got that miss right. The question returns':'You then got every miss right. Those questions return')+' in Review tomorrow: recalling after a gap is what makes it stick.')+'</p><div class="row">'+(cur<N-1?'<button class="btn pri" onclick="openDay(cur+1)">Next session</button>':'')+'<button class="btn" onclick="startQ()">Retry</button></div></section>'}
 let h='<section class="quiz">'+phase('Quiz')+segs()+'<p class="count">'+(quiz.i<n?'Question '+(quiz.i+1)+' of '+n:'Second chance: you missed this one')+'</p><div class="big">'+tx(q[0])+'</div>'+options(q,quiz.a,'pick');
 if(quiz.a>=0)h+=reason(q[3],quiz.i+1<quiz.qs.length?'Next':'Finish','step()');
 return h+'</section>'}
@@ -779,7 +781,7 @@ const empty=(title,text,more='')=>'<section class="empty"><div class="glyph" ari
 if(!tot)return empty('Your review deck is empty','Finish a session, or press "Add these cards", and cards will show up here on a schedule (1, 2, 4, 7, 12 days).');
 if(!rq.length){const c=Object.keys(S.box).length,m=Object.keys(S.qbox).length;return empty('Nothing due',c+(c==1?' card':' cards')+(m?' and '+m+' missed '+(m==1?'question':'questions'):'')+' in your deck. What you miss comes back tomorrow; what you get right comes back later.','<div class="row"><button class="btn pri" onclick="openDay(next())">Go to my session</button><button class="btn" onclick="practiseAll()">Practise all '+tot+'</button></div>')}
 const id=rq[0],isQ=id[0]=='q',[i,j]=(isQ?id.slice(1):id).split('.'),item=isQ?D[i].q[j]:D[i].c[j];
-return'<p class="count">'+rq.length+' left. '+(isQ?'A question you missed in':'From')+' session '+(+i+1)+': '+tx(D[i].t)+'</p>'+flip(tx(item[0]),isQ?'<div class="answer">'+tx(item[1][item[2]])+'</div><div class="because">'+tx(item[3])+'</div>':tx(item[1]),'rate')}
+return'<p class="count">'+rq.length+' left. '+(isQ?'A question you missed in':'From')+' session '+(+i+1)+' ('+tx(D[i].t)+')</p>'+flip(tx(item[0]),isQ?'<div class="answer">'+tx(item[1][item[2]])+'</div><div class="because">'+tx(item[3])+'</div>':tx(item[1]),'rate')}
 const GROUPS=[[0,7,'Differential equations'],[7,14,'Fourier and Laplace'],[14,18,'Partial differential equations'],[18,19,'Final mock']];
 function vPlan(){const t=now(),row=i=>{const done=S.done[i];return'<button class="pl'+(done?' done':'')+(i==cur?' cur':'')+'"'+(i==cur?' aria-current="true"':'')+' onclick="openDay('+i+')"><span class="node">'+(i+1)+'</span><span class="name">'+tx(D[i].t)+'</span><span class="tag"><span>'+dl(i)+'</span>'+(done?'<span class="ok">✓ done</span>':PLAN[i]<t?'<span>missed</span>':PLAN[i]==t?'<span class="today">today</span>':'')+'</span></button>'};
 return GROUPS.map(([a,b,name])=>'<section class="group"><h3>'+name+'</h3><div class="list">'+D.slice(a,b).map((_,k)=>row(a+k)).join('')+'</div></section>').join('')+'<p class="foot">Syllabus covered: ODEs (first/second/higher order, systems, stability), Fourier series &amp; transforms, Laplace &amp; transfer functions, wave/heat/Laplace PDEs. Skipped: long derivations, MATLAB work, case studies. Add those from Kreyszig after Dec 13 if time allows.</p><button class="btn" onclick="resetAll()">Reset progress</button>'}
