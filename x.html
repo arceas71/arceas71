@@ -132,6 +132,7 @@ details[open]>.a{animation:reveal .28s ease-out}
 .segs i.cur{background:var(--acc);box-shadow:0 0 10px rgba(255,179,71,.7)}
 .segs i.ok{background:var(--ok)}
 .segs i.no{background:var(--bad)}
+.segs i.fixed{background:linear-gradient(90deg,var(--bad) 50%,var(--ok) 50%)}
 .count{margin:0 0 8px;color:var(--mute);font-size:.85rem}
 .big{margin:0 0 14px;padding:24px 16px;border:1px solid var(--line2);border-radius:22px;background:radial-gradient(110% 130% at 50% 0,rgba(255,160,50,.17),transparent 68%),#0c0a08;font:1.28rem/1.6 var(--serif);text-align:center;box-shadow:0 0 40px rgba(255,145,35,.1)}
 .opts{display:grid;grid-template-columns:minmax(0,1fr);gap:10px}
@@ -203,6 +204,48 @@ details[open]>.a{animation:reveal .28s ease-out}
 .foot{margin:20px 2px;color:var(--mute);font-size:.84rem}
 
 .nw{white-space:nowrap}
+/* warm-up banner and the session path */
+.warm{display:flex;align-items:center;gap:16px;width:100%;margin:0 0 14px;padding:14px 18px;border:1px solid var(--acc);border-radius:22px;background:linear-gradient(180deg,rgba(255,170,60,.22),rgba(255,140,40,.07));color:var(--ink);font:inherit;text-align:left;cursor:pointer;box-shadow:0 0 30px rgba(255,150,40,.18)}
+.warm strong{min-width:1.4em;color:var(--acc);font:700 2.2rem/1 var(--serif);text-align:center;text-shadow:0 0 22px rgba(255,160,50,.7)}
+.warm b,.warm small{display:block}
+.warm b{font:700 1.1rem var(--serif)}
+.warm small{color:#d8c9b3;font-size:.85rem}
+.path{margin:0 0 14px}
+.path ol{position:relative;margin:0 0 6px;padding:0;list-style:none}
+.stage{display:grid;grid-template-columns:42px minmax(0,1fr) auto;align-items:center;gap:14px;width:100%;margin:0 0 10px;padding:13px 14px;border:1px solid var(--line);border-radius:20px;background:linear-gradient(180deg,#15120e,#0c0a08);color:var(--ink);font:inherit;text-align:left;cursor:pointer;transition:border-color .2s,box-shadow .2s,transform .12s}
+.stage:hover{border-color:var(--line2)}
+.stage:active{transform:scale(.985)}
+.stage .node{width:42px;height:42px}
+.stage b,.stage small{display:block}
+.stage b{font:700 1.14rem/1.3 var(--serif)}
+.stage small{color:var(--mute);font-size:.84rem;line-height:1.4}
+.stage.todo{border-color:var(--acc);box-shadow:0 0 28px rgba(255,150,40,.17)}
+.stage.todo .node{border-color:transparent;background:var(--gloss);color:var(--onacc)}
+.stage.done .node{border-color:var(--ok);background:var(--okbg);color:var(--ok)}
+.wide{width:100%}
+.browse{margin:20px 0 0}
+.browse>summary{display:flex;justify-content:space-between;align-items:center;gap:12px;min-height:52px;padding:8px 18px;border:1px solid var(--line);border-radius:18px;font-weight:600;font-size:.95rem}
+.browse[open]>summary{margin-bottom:10px}
+.browse[open]>summary .chev{transform:translateY(2px) rotate(225deg)}
+
+/* lesson, recall and quiz */
+.phase{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:0 2px 8px}
+.phase h3{color:var(--acc)}
+.link{min-height:44px;padding:0 4px;border:0;background:none;color:var(--mute);font:600 .88rem var(--sans);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.idea{margin:0 2px;font:1.15rem/1.7 var(--serif)}
+h4{margin:22px 2px 10px;color:var(--mute);font:700 1rem var(--serif)}
+.problem{padding:14px 16px;border:1px solid var(--line2);border-radius:18px;background:radial-gradient(110% 130% at 50% 0,rgba(255,160,50,.15),transparent 70%),#0c0a08;font:1.15rem/1.65 var(--serif)}
+.steps{margin:10px 0;padding:0;list-style:none;counter-reset:step}
+.steps li{position:relative;margin:0 0 10px;padding:11px 12px 11px 50px;border:1px solid var(--line);border-radius:18px;background:var(--s2);font:1.08rem/1.65 var(--serif);counter-increment:step;animation:reveal .3s ease-out;scroll-margin-top:12px}
+.steps li::before{content:counter(step);position:absolute;left:11px;top:13px;display:grid;place-items:center;width:28px;height:28px;border-radius:50%;background:rgba(255,179,71,.17);color:var(--acc);font:700 .82rem var(--sans)}
+.steps .katex-display{color:#ffdfae}
+.lesson>.hint,.drill>.hint{text-align:center}
+.keep{margin:16px 0;padding:14px 18px;border-radius:18px;background:var(--gloss);color:var(--onacc);font:1.14rem/1.6 var(--serif);box-shadow:0 8px 30px rgba(255,150,40,.28),inset 0 1px 0 rgba(255,255,255,.5)}
+.drill .flash{margin-bottom:34px}
+.answer{color:var(--ok);font-size:1.15em}
+.because{margin-top:8px;color:var(--mute)}
+.empty .row{justify-content:center;margin-top:20px}
+
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
 .katex{font-size:1.08em}
 .katex-display{margin:.55em 0;padding:2px 0;overflow-x:auto;overflow-y:hidden}
@@ -249,7 +292,7 @@ q:[[r`Solve $y' = 2xy$.`,[r`$y = Cx^2$`,r`$y = Ce^{x^2}$`,r`$y = e^{2x} + C$`,r`
 $\dfrac{N_x - M_y}{M}$ function of $y$ only $\Rightarrow F = e^{\int \text{that}\,dy}$.`],
 [r`Bernoulli: $y' + p\,y = g\,y^a$`,r`Let $u = y^{1-a}$. It becomes linear in $u$.`]],
 q:[[r`$2xy\,dx + x^2\,dy = 0$ is exact. Solution?`,[r`$xy^2 = C$`,r`$x^2y = C$`,r`$x^2 + y = C$`,"Not exact"],1,r`$M_y = 2x = N_x$; $u = x^2y$.`],
-[r`$y\,dx - x\,dy = 0$ is not exact. An integrating factor is`,[r`$x$`,r`$y$`,r`$\dfrac{1}{x^2}$`,r`$\dfrac{1}{y^3}$`],2,r`$\dfrac{M_y - N_x}{N} = -\dfrac{2}{x}$ $\Rightarrow F = e^{-2\ln x} = \dfrac{1}{x^2}.$`],
+[r`$y\,dx - x\,dy = 0$ is not exact. An integrating factor in $x$ alone is`,[r`$x$`,r`$y$`,r`$\dfrac{1}{x^2}$`,r`$\dfrac{1}{y^3}$`],2,r`$\dfrac{M_y - N_x}{N} = -\dfrac{2}{x}$ $\Rightarrow F = e^{-2\ln x} = \dfrac{1}{x^2}.$`],
 [r`For $y' + y = x\,y^3$ use`,[r`$u = y^2$`,r`$u = y^{-2}$`,r`$u = y^3$`,r`$u = \dfrac{1}{x}$`],1,r`$a = 3$, so $u = y^{1-3} = y^{-2}$.`]]},
 
 {t:"2nd-order linear, constant coefficients",c:[
@@ -259,9 +302,9 @@ Double: $(c_1 + c_2x)\,e^{\lambda x}$
 Complex $\alpha \pm i\beta$: $e^{\alpha x}(A\cos\beta x + B\sin\beta x)$`],
 [r`Spring: $mx'' + cx' + kx = 0$`,r`$c^2 - 4mk > 0$ overdamped, $= 0$ critical, $< 0$ underdamped (oscillates).
 Undamped $\omega = \sqrt{k/m}$.`]],
-q:[[r`$y'' - 5y' + 6y = 0$`,[r`$c_1e^{2x} + c_2e^{3x}$`,r`$c_1e^{-2x} + c_2e^{-3x}$`,r`$(c_1 + c_2x)\,e^{2x}$`,r`$c_1\cos 2x + c_2\sin 3x$`],0,r`$\lambda^2 - 5\lambda + 6 = (\lambda - 2)(\lambda - 3).$`],
-[r`$y'' + 4y = 0$`,[r`$c_1e^{2x} + c_2e^{-2x}$`,r`$c_1\cos 2x + c_2\sin 2x$`,r`$(c_1 + c_2x)\,e^{2x}$`,r`$c_1\cos 4x + c_2\sin 4x$`],1,r`$\lambda = \pm 2i$, so $\alpha = 0$, $\beta = 2$.`],
-[r`$y'' + 6y' + 9y = 0$`,[r`$c_1e^{3x} + c_2e^{-3x}$`,r`$(c_1 + c_2x)\,e^{-3x}$`,r`$(c_1 + c_2x)\,e^{3x}$`,r`$e^{-3x}(A\cos x + B\sin x)$`],1,r`$(\lambda + 3)^2 = 0$, double root $-3$.`],
+q:[[r`Solve $y'' - 5y' + 6y = 0$`,[r`$c_1e^{2x} + c_2e^{3x}$`,r`$c_1e^{-2x} + c_2e^{-3x}$`,r`$(c_1 + c_2x)\,e^{2x}$`,r`$c_1\cos 2x + c_2\sin 3x$`],0,r`$\lambda^2 - 5\lambda + 6 = (\lambda - 2)(\lambda - 3).$`],
+[r`Solve $y'' + 4y = 0$`,[r`$c_1e^{2x} + c_2e^{-2x}$`,r`$c_1\cos 2x + c_2\sin 2x$`,r`$(c_1 + c_2x)\,e^{2x}$`,r`$c_1\cos 4x + c_2\sin 4x$`],1,r`$\lambda = \pm 2i$, so $\alpha = 0$, $\beta = 2$.`],
+[r`Solve $y'' + 6y' + 9y = 0$`,[r`$c_1e^{3x} + c_2e^{-3x}$`,r`$(c_1 + c_2x)\,e^{-3x}$`,r`$(c_1 + c_2x)\,e^{3x}$`,r`$e^{-3x}(A\cos x + B\sin x)$`],1,r`$(\lambda + 3)^2 = 0$, double root $-3$.`],
 [r`$m = 1,\; c = 2,\; k = 5$. The motion is`,["overdamped","critically damped","underdamped","undamped"],2,r`$c^2 - 4mk = 4 - 20 < 0.$`]]},
 
 {t:"Euler–Cauchy, Wronskian, existence & uniqueness",c:[
@@ -399,7 +442,7 @@ IC $u(x,0) = f(x)$.`],
 ["Insulated ends",r`$u_x = 0$ at both ends $\Rightarrow$ cosine series. Higher modes decay faster.`]],
 q:[[r`As $t \to \infty$ with both ends at $0^\circ$, $u \to$`,[r`$0$`,r`$f(x)$`,r`$\infty$`,"a sine wave"],0,"Every term has a decaying exponential."],
 [r`Steady-state temperature in a bar, ends at $20^\circ$ and $80^\circ$, is`,[r`linear in $x$`,r`quadratic in $x$`,r`constant $50^\circ$`,"sinusoidal"],0,r`$u'' = 0.$`],
-["In the heat solution, which mode decays fastest?",[r`$n = 1$`,r`$n = 5$`,"all equal","none"],1,r`The decay rate $\lambda_n^2$ grows like $n^2$.`]]},
+[r`In the heat solution, which decays faster: mode $n = 5$ or mode $n = 1$?`,[r`$n = 1$`,r`$n = 5$`,"all equal","none"],1,r`The decay rate $\lambda_n^2$ grows like $n^2$.`]]},
 
 {t:"Heat in a long bar, Laplace equation",c:[
 ["Infinite bar via Fourier transform",r`Transform in $x$:$$\hat{U}_t = -c^2w^2\hat{U}$$$$\Rightarrow\; \hat{U} = \hat{F}(w)\,e^{-c^2w^2t}$$`],
@@ -412,6 +455,105 @@ q:[["Laplace's equation describes",["a steady state (no time dependence)","wave 
 
 {t:"Final mock: everything",mix:[0,1,2,3,4,5,7,8,9,10,11,12,14,15,16,17],n:15}
 ];
+
+// ===== SHORT LESSONS, keyed by session index: one idea, one worked example, one thing to keep, one check =====
+const L={
+0:{idea:r`A first-order ODE links $y'$ to $x$ and $y$. Spot the type first, because the type picks the method: separable (split the variables), linear (integrating factor) or homogeneous (put $y = ux$).`,
+ex:r`Solve $y' = 3x^2y$ with $y(0) = 2$.`,
+steps:[r`It is separable, so put every $y$ on one side:$$\frac{dy}{y} = 3x^2\,dx$$`,r`Integrate both sides:$$\ln|y| = x^3 + c$$`,r`Solve for $y$:$$y = Ce^{x^3}$$`,r`$y(0) = 2$ gives $C = 2$:$$y = 2e^{x^3}$$`],
+keep:r`Name the type before you touch the algebra.`,
+check:[r`Which type is $y' + \dfrac{y}{x} = x^2$?`,["linear","separable","homogeneous","none of these"],0,r`It has the form $y' + p(x)\,y = r(x)$ with $p = 1/x$. The $x^2$ stops it separating, and it is not a function of $y/x$ alone.`]},
+
+1:{idea:r`$M\,dx + N\,dy = 0$ is exact when the left side is the total change of one function $u(x,y)$. Then the answer is simply $u = C$. The test is $M_y = N_x$.`,
+ex:r`Solve $(2xy + 1)\,dx + (x^2 + 3y^2)\,dy = 0$.`,
+steps:[r`Test: $M_y = 2x$ and $N_x = 2x$. Exact.`,r`Integrate $M$ in $x$, adding an unknown $k(y)$:$$u = x^2y + x + k(y)$$`,r`Match $u_y$ with $N$: $x^2 + k'(y) = x^2 + 3y^2$, so $k = y^3$.`,r`$$x^2y + x + y^3 = C$$`],
+keep:r`Test first: $M_y = N_x$.`,
+check:[r`Is $y^2\,dx + 2xy\,dy = 0$ exact?`,[r`yes: $M_y = N_x = 2y$`,r`no: $M_y \ne N_x$`,r`only when $x = 0$`,r`only after multiplying by $x$`],0,r`$M = y^2$ gives $M_y = 2y$, and $N = 2xy$ gives $N_x = 2y$. So $xy^2 = C$.`]},
+
+2:{idea:r`Try $y = e^{\lambda x}$ in $y'' + ay' + by = 0$. The differential equation turns into the quadratic $\lambda^2 + a\lambda + b = 0$, and its roots fix the shape of the solution.`,
+ex:r`Solve $y'' + 2y' + 5y = 0$.`,
+steps:[r`Characteristic equation:$$\lambda^2 + 2\lambda + 5 = 0$$`,r`Roots:$$\lambda = -1 \pm 2i$$`,r`Complex, with $\alpha = -1$ and $\beta = 2$:$$y = e^{-x}(A\cos 2x + B\sin 2x)$$`],
+keep:r`Two real roots: two exponentials. Double root: add an $x$. Complex roots: oscillation times $e^{\alpha x}$.`,
+check:[r`$y'' - 4y' + 4y = 0$ has the solution`,[r`$(c_1 + c_2x)\,e^{2x}$`,r`$c_1e^{2x} + c_2e^{-2x}$`,r`$c_1\cos 2x + c_2\sin 2x$`,r`$c_1e^{4x} + c_2$`],0,r`$(\lambda - 2)^2 = 0$ is a double root, so the second solution picks up a factor $x$.`]},
+
+3:{idea:r`In $x^2y'' + axy' + by = 0$ every term ends up with the same power of $x$, so try $y = x^m$. The Wronskian $W = y_1y_2' - y_2y_1'$ checks that your two solutions really are different.`,
+ex:r`Solve $x^2y'' - 4xy' + 6y = 0$ for $x > 0$.`,
+steps:[r`Put $y = x^m$:$$m(m-1) - 4m + 6 = 0$$`,r`$m^2 - 5m + 6 = 0$, so $m = 2$ or $3$.`,r`$$y = c_1x^2 + c_2x^3$$`,r`Check: $W = x^2\cdot 3x^2 - x^3\cdot 2x = x^4 \ne 0$, so they are independent.`],
+keep:r`$W \ne 0$ means you have a basis.`,
+check:[r`$x^2y'' - 3xy' + 4y = 0$ gives the double root $m = 2$. For $x > 0$, $y =$`,[r`$(c_1 + c_2\ln x)\,x^2$`,r`$(c_1 + c_2x)\,x^2$`,r`$c_1x^2 + c_2x^{-2}$`,r`$(c_1 + c_2x)\,e^{2x}$`],0,r`A double root in Euler–Cauchy brings in $\ln x$, not $x$.`]},
+
+4:{idea:r`Split the answer: $y = y_h + y_p$. $y_h$ solves the equation with $0$ on the right. $y_p$ is any one solution that produces the right side, and you guess its shape from $r(x)$.`,
+ex:r`Solve $y'' + y = 2x$.`,
+steps:[r`$\lambda = \pm i$, so $y_h = A\cos x + B\sin x$.`,r`The right side is a degree-1 polynomial, so try $y_p = Kx + M$.`,r`Substitute: $Kx + M = 2x$, so $K = 2$ and $M = 0$.`,r`$$y = A\cos x + B\sin x + 2x$$`],
+keep:r`If your guess already solves the homogeneous equation, multiply it by $x$.`,
+check:[r`For $y'' - 4y = e^{2x}$ the right trial for $y_p$ is`,[r`$Axe^{2x}$`,r`$Ae^{2x}$`,r`$Ax^2e^{2x}$`,r`$A\cos 2x$`],0,r`$\lambda = \pm 2$, so $e^{2x}$ is already in $y_h$. It is a single root: multiply by $x$ once.`]},
+
+5:{idea:r`For $\mathbf{y}' = A\mathbf{y}$ the eigenvalues tell the story near the origin. Negative real parts pull solutions in, positive ones push them out, and an imaginary part makes them turn.`,
+ex:r`Classify the origin for$$A = \begin{pmatrix} 0 & 1 \\ -2 & -3 \end{pmatrix}$$`,
+steps:[r`$$\det(A - \lambda I) = \lambda^2 + 3\lambda + 2 = 0$$`,r`$\lambda = -1$ and $\lambda = -2$.`,r`Both real and negative: a stable node.`],
+keep:r`Check the sign of $\operatorname{Re}\lambda$, then look for an imaginary part.`,
+check:[r`Eigenvalues $\lambda = 1 \pm 3i$. The origin is`,["an unstable spiral","a stable spiral","a center","a saddle"],0,r`$\operatorname{Re}\lambda = 1 > 0$ pushes outward, and the imaginary part makes it spiral.`]},
+
+7:{idea:r`A periodic signal can be built from sines and cosines. Each coefficient measures how much of one wave is inside $f$: multiply by that wave and integrate. Symmetry often removes half of the work.`,
+ex:r`Find the series of $f(x) = x$ on $(-\pi, \pi)$.`,
+steps:[r`$f$ is odd, so $a_0 = 0$ and every $a_n = 0$.`,r`$$b_n = \frac{2}{\pi}\int_0^{\pi} x\sin nx\,dx$$`,r`Integrating by parts:$$b_n = \frac{2(-1)^{n+1}}{n}$$`,r`$$\begin{aligned} x = 2\Big(&\sin x - \frac{\sin 2x}{2} \\ &+ \frac{\sin 3x}{3} - \cdots\Big) \end{aligned}$$`],
+keep:r`Check even or odd before you integrate.`,
+check:[r`At $x = \pi$ the series of $f(x) = x$ converges to`,[r`$0$`,r`$\pi$`,r`$-\pi$`,r`$2\pi$`],0,r`The periodic extension jumps from $\pi$ to $-\pi$ there, so the series takes the average, $0$.`]},
+
+8:{idea:r`If $f$ is only given on $(0, L)$, you choose how to mirror it. An even mirror leaves only cosines (and a constant). An odd mirror leaves only sines.`,
+ex:r`Find the sine series of $f(x) = 1$ on $(0, \pi)$.`,
+steps:[r`Use the odd extension:$$b_n = \frac{2}{\pi}\int_0^{\pi}\sin nx\,dx$$`,r`$$b_n = \frac{2\,(1 - \cos n\pi)}{n\pi}$$`,r`So $b_n = \dfrac{4}{n\pi}$ for odd $n$ and $0$ for even $n$:$$1 = \frac{4}{\pi}\Big(\sin x + \frac{\sin 3x}{3} + \cdots\Big)$$`],
+keep:r`Even extension: cosines. Odd extension: sines.`,
+check:[r`The cosine half-range series of $f(x) = 3$ on $(0, L)$ is just`,[r`$3$`,r`$\dfrac{12}{\pi}\sin\dfrac{\pi x}{L}$`,r`$0$`,r`$3\cos\dfrac{\pi x}{L}$`],0,r`The even extension of a constant is that constant: $a_0 = 3$ and every $a_n = 0$.`]},
+
+9:{idea:r`A signal that never repeats needs every frequency, so the sum becomes an integral. $F(w)$ says how much of frequency $w$ is inside $f$.`,
+ex:r`Transform the pulse $f = 1$ on $|x| < 1$ (zero elsewhere).`,
+steps:[r`$$F(w) = \frac{1}{\sqrt{2\pi}}\int_{-1}^{1} e^{-iwx}\,dx$$`,r`$$F(w) = \frac{1}{\sqrt{2\pi}}\cdot\frac{e^{iw} - e^{-iw}}{iw}$$`,r`Use $e^{iw} - e^{-iw} = 2i\sin w$:$$F(w) = \sqrt{\frac{2}{\pi}}\,\frac{\sin w}{w}$$`],
+keep:r`A derivative in $x$ becomes multiplication by $iw$.`,
+check:[r`If $\mathcal{F}\{f\} = F(w)$, then $\mathcal{F}\{f''\} =$`,[r`$-w^2F(w)$`,r`$w^2F(w)$`,r`$iw^2F(w)$`,r`$2iwF(w)$`],0,r`Each derivative multiplies by $iw$, and $(iw)^2 = -w^2$.`]},
+
+10:{idea:r`The Laplace transform trades a function of $t$ for a function of $s$, and calculus turns into algebra. Know a few table entries and the two shift rules; most questions combine them.`,
+ex:r`Find $\mathcal{L}\{t^2e^{3t}\}$.`,
+steps:[r`From the table:$$\mathcal{L}\{t^2\} = \frac{2}{s^3}$$`,r`The factor $e^{3t}$ replaces $s$ by $s - 3$.`,r`$$\mathcal{L}\{t^2e^{3t}\} = \frac{2}{(s-3)^3}$$`],
+keep:r`A factor $e^{at}$ in $t$ means $s \to s - a$.`,
+check:[r`$\mathcal{L}\{e^{-t}\sin 2t\} =$`,[r`$\dfrac{2}{(s+1)^2+4}$`,r`$\dfrac{2}{(s-1)^2+4}$`,r`$\dfrac{s+1}{(s+1)^2+4}$`,r`$\dfrac{2}{s^2+4} - 1$`],0,r`Start from $\dfrac{2}{s^2+4}$ and shift with $a = -1$: replace $s$ by $s + 1$.`]},
+
+11:{idea:r`Transform the whole equation. The initial conditions slip in by themselves, you solve for $Y(s)$ with ordinary algebra, and inverting $Y$ gives $y(t)$.`,
+ex:r`Solve $y' + y = 2$ with $y(0) = 0$.`,
+steps:[r`Transform:$$sY - 0 + Y = \frac{2}{s}$$`,r`$$Y = \frac{2}{s(s+1)}$$`,r`Partial fractions:$$Y = \frac{2}{s} - \frac{2}{s+1}$$`,r`$$y = 2 - 2e^{-t}$$`],
+keep:r`$\mathcal{L}\{y'\} = sY - y(0)$. Never drop $y(0)$.`,
+check:[r`For $y' - y = 0$ with $y(0) = 4$, $Y(s) =$`,[r`$\dfrac{4}{s-1}$`,r`$\dfrac{4}{s+1}$`,r`$\dfrac{1}{s-4}$`,r`$\dfrac{4s}{s-1}$`],0,r`$sY - 4 - Y = 0$.`]},
+
+12:{idea:r`With zero initial conditions a linear system is just multiplication: $Y = HX$. $H$ is the transfer function, and its poles decide whether the output dies out or blows up.`,
+ex:r`Analyse $y'' + 3y' + 2y = x(t)$.`,
+steps:[r`Zero initial conditions: $(s^2 + 3s + 2)\,Y = X$.`,r`$$H(s) = \frac{1}{(s+1)(s+2)}$$`,r`Poles at $-1$ and $-2$, both negative: stable.`,r`Impulse response:$$h(t) = e^{-t} - e^{-2t}$$`],
+keep:r`Stable means every pole has $\operatorname{Re} < 0$.`,
+check:[r`$H(s) = \dfrac{1}{s - 2}$ describes a system that is`,[r`unstable: pole at $+2$`,r`stable: pole at $-2$`,r`stable: pole at $+2$`,r`unstable: pole at $0$`],0,r`The pole is the root of the denominator, $s = 2 > 0$, so $h(t) = e^{2t}$ grows.`]},
+
+14:{idea:r`Separate the variables, $u = F(x)\,G(t)$. Fixed ends allow only the shapes $\sin\dfrac{n\pi x}{L}$, and each shape vibrates at its own frequency $\lambda_n = \dfrac{cn\pi}{L}$.`,
+ex:r`$L = \pi$, $c = 1$. The string starts at rest with shape $f = 2\sin 3x$. Find $u$.`,
+steps:[r`At rest means $g = 0$, so every $B_n^* = 0$.`,r`$f$ is already a single mode: $B_3 = 2$ and the rest are $0$.`,r`$\lambda_3 = 3$, so$$u = 2\cos 3t\,\sin 3x$$`],
+keep:r`Initial shape gives $B_n$. Initial velocity gives $B_n^*$.`,
+check:[r`Same string, but $f = 0$ and $g = \sin 2x$. Then $u =$`,[r`$\tfrac{1}{2}\sin 2t\,\sin 2x$`,r`$\sin 2t\,\sin 2x$`,r`$\cos 2t\,\sin 2x$`,r`$2\sin 2t\,\sin 2x$`],0,r`$u_t(x,0) = \lambda_2B_2^*\sin 2x$ with $\lambda_2 = 2$, so $B_2^* = \tfrac{1}{2}$.`]},
+
+15:{idea:r`On a long string the solution is two travelling waves. A shape released from rest splits into two half-height copies that move apart at speed $c$.`,
+ex:r`$c = 2$, $f = e^{-x^2}$, $g = 0$. Find $u$.`,
+steps:[r`No initial velocity, so the integral term vanishes.`,r`$$u = \tfrac{1}{2}\big[f(x+2t) + f(x-2t)\big]$$`,r`$$\begin{aligned} u = \tfrac{1}{2}\big[&e^{-(x+2t)^2} \\ &+ e^{-(x-2t)^2}\big] \end{aligned}$$`,r`At $t = 5$: two bumps of height about $\tfrac{1}{2}$, at $x = \pm 10$.`],
+keep:r`$x - ct$ travels right. $x + ct$ travels left.`,
+check:[r`On a long string with $f = 0$ and $g = 1$, $u =$`,[r`$t$`,r`$1$`,r`$ct$`,r`$\dfrac{t}{2}$`],0,r`$u = \dfrac{1}{2c}\displaystyle\int_{x-ct}^{x+ct} 1\,ds = \dfrac{2ct}{2c} = t$.`]},
+
+16:{idea:r`Heat smooths things out. Each sine mode keeps its shape and shrinks like $e^{-\lambda_n^2t}$, so the wiggly ones (large $n$) die first.`,
+ex:r`$L = \pi$, $c = 1$, ends at $0$, $f = 5\sin x + \sin 4x$. Find $u$.`,
+steps:[r`$f$ is already two modes: $B_1 = 5$ and $B_4 = 1$.`,r`$\lambda_n = n$, so the decay factors are $e^{-t}$ and $e^{-16t}$.`,r`$$u = 5e^{-t}\sin x + e^{-16t}\sin 4x$$`],
+keep:r`Mode $n$ decays like $e^{-\lambda_n^2t}$ with $\lambda_n = cn\pi/L$.`,
+check:[r`A bar has its end $x = 0$ held at $0^\circ$ and its end $x = L$ at $100^\circ$. The steady state is`,[r`$\dfrac{100x}{L}$`,r`$50$`,r`$100\sin\dfrac{\pi x}{L}$`,r`$0$`],0,r`$u'' = 0$ gives a straight line from $0$ to $100$.`]},
+
+17:{idea:r`For a long bar, the Fourier transform turns the heat equation into one simple ODE for each frequency. For steady heat on a rectangle, separating variables gives sines one way and $\sinh$ the other.`,
+ex:r`$u_{xx} + u_{yy} = 0$ for $0<x<\pi$, $0<y<1$. $u = 0$ on three sides and $u(x,1) = \sin 2x$.`,
+steps:[r`Zero at $x = 0$ and $x = \pi$ allows only $\sin nx$.`,r`$Y'' = n^2Y$ with $Y(0) = 0$ gives $\sinh ny$.`,r`The top edge needs only $n = 2$, with $A\sinh 2 = 1$.`,r`$$u = \frac{\sinh 2y}{\sinh 2}\,\sin 2x$$`],
+keep:r`Zero on two opposite sides: sines that way, $\sinh$ the other.`,
+check:[r`$\hat{U}_t = -c^2w^2\hat{U}$ with $\hat{U}(w,0) = \hat{F}(w)$ gives $\hat{U} =$`,[r`$\hat{F}(w)\,e^{-c^2w^2t}$`,r`$\hat{F}(w)\,e^{c^2w^2t}$`,r`$\hat{F}(w)\cos cwt$`,r`$\hat{F}(w) - c^2w^2t$`],0,r`For each $w$ it is first order in $t$, so it decays exponentially from $\hat{F}(w)$.`]}
+};
 
 // ===== PICTURES: one live plot per day, computed from that day's mathematics =====
 const PLOTS=(()=>{
@@ -536,7 +678,9 @@ const v=square(g,w,h,1.18),sx=Math.min(1.9,v.x1*.9),p=q=>[sx*sin(3*q+t*.28),sin(
 
 // ===== ENGINE =====
 const $=s=>document.querySelector(s),N=D.length,INT=[0,1,2,4,7,12];
-let S={done:{},box:{},due:{}};try{S=Object.assign(S,JSON.parse(localStorage.getItem('de26')))}catch(e){}
+// box/due: review cards. qbox/qdue: missed quiz questions. step: lesson and recall finished, per session.
+const fresh=()=>({done:{},box:{},due:{},qbox:{},qdue:{},step:{}});
+let S=fresh();try{S=Object.assign(S,JSON.parse(localStorage.getItem('de26')))}catch(e){}
 const save=()=>{try{localStorage.setItem('de26',JSON.stringify(S))}catch(e){}};
 // text with LaTeX between $…$ or $$…$$ to safe HTML; everything outside the maths is shown as written
 const esc=s=>s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
@@ -552,19 +696,30 @@ let t=p.t;if(parts[i-1]?.block)t=t.replace(/^\s*\n/,'');if(parts[i+1]?.block)t=t
 memo.set(s,out);return out}
 const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
 const focusOn=s=>{const e=$(s);if(e)e.focus({preventScroll:true})};
+const reach=s=>{const e=$(s);if(e)e.scrollIntoView({block:'nearest'})};
+
+// ----- dates and spacing -----
 // saved due dates count days from 25 Nov, as on the earlier page
 const EPOCH=new Date(2026,10,25),now=()=>{const d=new Date();return Math.round((new Date(d.getFullYear(),d.getMonth(),d.getDate())-EPOCH)/864e5)};
 // the day each session is planned for: 28 Nov to 13 Dec, with two sessions on 4, 10 and 11 Dec
 const PLAN=[0,1,2,3,4,5,6,6,7,8,9,10,11,12,12,13,13,14,15].map(d=>d+3);
 const dl=i=>new Date(2026,10,25+PLAN[i]).toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});
+// no review is pushed past 12 Dec, so everything in the deck gets one more look before the 13th
+const LASTDAY=17,later=n=>{const t=now();return t<LASTDAY?Math.min(t+n,LASTDAY):t+n};
 const next=()=>{for(let i=0;i<N;i++)if(!S.done[i])return i;return N-1};
-let view='today',cur=next(),quiz=null,rq=null,day=now();
+let view='today',cur=next(),act=null,quiz=null,rq=null,again={},practice=false,day=now();
 function add(i){(D[i].c||[]).forEach((_,j)=>{const k=i+'.'+j;if(!S.box[k]){S.box[k]=1;S.due[k]=Math.max(now(),0)+1}});save()}
-const dueIds=()=>Object.keys(S.box).filter(k=>S.due[k]<=now());
+const QKEY=new Map();D.forEach((d,i)=>(d.q||[]).forEach((q,k)=>QKEY.set(q[0],i+'.'+k)));
+// review ids: "session.card", or "q" + "session.question" for a missed question
+const dueIds=()=>Object.keys(S.box).filter(k=>S.due[k]<=now()).concat(Object.keys(S.qbox).filter(k=>S.qdue[k]<=now()).map(k=>'q'+k));
+const allIds=()=>Object.keys(S.box).concat(Object.keys(S.qbox).map(k=>'q'+k));
+const finished=k=>k=='quiz'?!!S.done[cur]:!!(S.step[cur]||{})[k];
+const finish=k=>{S.step[cur]=Object.assign({},S.step[cur],{[k]:1})};
+
 const svg=d=>'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="'+d+'"/></svg>';
 const ICON={prev:svg('M15 5l-7 7 7 7'),next:svg('M9 5l7 7-7 7'),pause:svg('M8.5 5v14M15.5 5v14'),play:'<svg viewBox="0 0 24 24" aria-hidden="true"><path class="f" d="M8 5l12 7-12 7z"/></svg>'};
 
-// ----- the day's live graph -----
+// ----- the session's live graph -----
 const calm=window.matchMedia('(prefers-reduced-motion: reduce)');
 let raf=0,paused=calm.matches,clock=0,stamp=0,shown=-1;
 function paintPlot(){const c=$('#plot');if(!c)return;const w=c.clientWidth,h=c.clientHeight;if(!w||!h)return;
@@ -586,57 +741,92 @@ document.querySelectorAll('.tabs button').forEach(b=>{const on=b.dataset.v==view
 function render(){head();$('#app').innerHTML=view=='today'?vToday():view=='rev'?vRev():vPlan();plotSync()}
 function dayHead(){return'<div class="dayhead"><button class="btn day" data-k="prev" aria-label="Previous session" onclick="go(-1)"'+(cur==0?' disabled':'')+'>'+ICON.prev+'</button><div class="daytitle"><p class="when"><span>Session '+(cur+1)+' of '+N+'</span><span>'+dl(cur)+'</span>'+(S.done[cur]?'<span class="chip">Done ✓</span>':'')+'</p><h2 id="dt" tabindex="-1">'+tx(D[cur].t)+'</h2></div><button class="btn day" data-k="next" aria-label="Next session" onclick="go(1)"'+(cur==N-1?' disabled':'')+'>'+ICON.next+'</button></div>'}
 function hero(){const p=PLOTS[cur];return'<figure class="hero"><canvas id="plot" role="img" aria-label="'+p.cap+'"></canvas><button class="pause" data-k="pause" onclick="togglePlot()"></button><figcaption><span class="cap">'+p.cap+'</span>'+(p.key?'<span class="legend">'+p.key.map(([k,l])=>'<span><i class="'+k+'" aria-hidden="true"></i>'+tx(l)+'</span>').join('')+'</span>':'')+'</figcaption></figure>'}
-function vToday(){const d=D[cur];let h=dayHead();
-if(quiz)return h+vQuiz();
+const card=c=>'<details class="card"><summary><span class="q">'+tx(c[0])+'</span><span class="chev" aria-hidden="true"></span></summary><div class="a">'+tx(c[1])+'</div></details>';
+const flip=(front,back,fn)=>'<article class="flash"><div class="big">'+front+'</div><details class="reveal"><summary class="btn pri">Show answer</summary><div class="a">'+back+'</div><div class="row rate"><button class="btn" onclick="'+fn+'(0)">Missed it</button><button class="btn pri" onclick="'+fn+'(1)">Got it</button></div></details></article>';
+const phase=name=>'<div class="phase"><h3>'+name+'</h3><button class="link" onclick="leave()">Back to session</button></div>';
+const options=(q,a,fn)=>'<div class="opts'+(a>=0?' locked':'')+'">'+q[1].map((o,k)=>{let c='opt',m='';if(a>=0){if(k==q[2]){c+=' ok';m='✓<span class="sr"> correct</span>'}else if(k==a){c+=' no';m='✗<span class="sr"> your answer, wrong</span>'}}
+return'<button class="'+c+'" '+(a>=0?'disabled':'onclick="'+fn+'('+k+')"')+'><span class="key" aria-hidden="true">'+'ABCD'[k]+'</span><span class="val">'+tx(o)+'</span><span class="res">'+m+'</span></button>'}).join('')+'</div>';
+const reason=(text,label,fn)=>'<div class="why" id="why">'+tx(text)+'</div><button class="btn pri next" data-k="qn" aria-describedby="why" onclick="'+fn+'">'+label+'</button>';
+function vToday(){return dayHead()+(quiz?vQuiz():!act?vOverview():act.kind=='learn'?vLearn():vRecall())}
+function vOverview(){const d=D[cur],due=dueIds().length;let h='';
+if(due)h+='<button class="warm" data-k="warm" onclick="tab(\'rev\')"><strong>'+due+'</strong><span><b>Warm up first</b><small>Due for review. Recall '+(due==1?'it':'these')+' before anything new.</small></span></button>';
 h+=hero();
 if(now()>PLAN[cur]&&!S.done[cur])h+='<p class="note">You are behind plan. Do your earliest unfinished session now. Skipping one costs less than rushing it.</p>';
 if(d.mix)return h+'<section class="step"><h3>Mixed quiz</h3><p class="hint">Mixed questions from earlier sessions, with no new material. This is where retention is built: work out your answer before you look at the options.</p><button class="btn pri" data-k="start" onclick="startQ()">Start quiz ('+d.n+' questions)</button></section>';
+const names={learn:['Learn','One idea, a worked example, one question','3 min'],recall:['Recall',d.c.length+' cards from memory. Misses come back.','5–10 min'],quiz:['Quiz',d.q.length+' questions. Misses come back.','3–5 min']},steps=Object.keys(names),todo=steps.find(k=>!finished(k));
+h+='<section class="path"><ol>'+steps.map((k,n)=>{const ok=finished(k),[name,what,time]=names[k];return'<li><button class="stage'+(ok?' done':'')+(k==todo?' todo':'')+'" data-stage="'+k+'" onclick="startStage(\''+k+'\')"><span class="node">'+(ok?'✓':n+1)+'</span><span><b>'+name+(ok?'<span class="sr">, done</span>':'')+'</b><small>'+what+'</small></span><span class="time">'+time+'</span></button></li>'}).join('')+'</ol>';
+h+='<button class="btn pri wide" data-k="start" onclick="startStage(\''+(todo||'quiz')+'\')">'+(!todo?'Take the quiz again':todo=='learn'?'Start session':'Continue to '+todo)+'</button></section>';
 const inDeck=d.c.every((_,j)=>S.box[cur+'.'+j]);
-h+='<section class="step"><div class="stephead"><h3>Step 1: recall</h3><span class="time">5–10 min</span></div><p class="hint">Read each prompt, say or write the answer, then open it. Mistakes are useful.</p>'+d.c.map(c=>'<details class="card"><summary><span class="q">'+tx(c[0])+'</span><span class="chev" aria-hidden="true"></span></summary><div class="a">'+tx(c[1])+'</div></details>').join('')+'<button class="btn" onclick="add('+cur+');this.textContent=\'In your review deck ✓\';this.disabled=true"'+(inDeck?' disabled>In your review deck ✓':'>Add these cards to my review deck')+'</button></section>';
-return h+'<section class="step"><div class="stephead"><h3>Step 2: quiz</h3><span class="time">3–5 min</span></div><button class="btn pri" data-k="start" onclick="startQ()">Start quiz ('+d.q.length+' questions)</button></section>'}
-const segs=()=>'<div class="segs" aria-hidden="true">'+quiz.qs.map((_,i)=>'<i class="'+(i<quiz.res.length?(quiz.res[i]?'ok':'no'):i==quiz.i?'cur':'')+'"></i>').join('')+'</div>';
-function vQuiz(){const n=quiz.qs.length,q=quiz.qs[quiz.i];
-if(!q){const all=quiz.s==n;return'<section class="score">'+segs()+''+(all?'<div class="mark" aria-hidden="true">'+tx('$\\blacksquare$')+'</div><p class="qed" aria-hidden="true">Q.E.D.</p>':'<div class="ring" aria-hidden="true" style="--p:'+100*quiz.s/n+'"><span>'+tx('$'+Math.round(100*quiz.s/n)+'\\%$')+'</span></div>')+'<h2 id="score" tabindex="-1">Score: '+quiz.s+' / '+n+'</h2><p>'+(all?'Perfect. Come back tomorrow for the review cards.':'Retake it tomorrow after reviewing the cards. Retrieval after a gap is what makes it stick.')+'</p><div class="row">'+(cur<N-1?'<button class="btn pri" onclick="openDay(cur+1)">Next session</button>':'')+'<button class="btn" onclick="startQ()">Retry</button></div></section>'}
-const answered=quiz.a>=0;
-let h='<section class="quiz">'+segs()+'<p class="count">Question '+(quiz.i+1)+' of '+n+'</p><div class="big">'+tx(q[0])+'</div><div class="opts'+(answered?' locked':'')+'">';
-q[1].forEach((o,k)=>{let c='opt',m='';if(answered){if(k==q[2]){c+=' ok';m='✓<span class="sr"> correct</span>'}else if(k==quiz.a){c+=' no';m='✗<span class="sr"> your answer, wrong</span>'}}
-h+='<button class="'+c+'" '+(answered?'disabled':'onclick="pick('+k+')"')+'><span class="key" aria-hidden="true">'+'ABCD'[k]+'</span><span class="val">'+tx(o)+'</span><span class="res">'+m+'</span></button>'});
-h+='</div>';
-if(answered)h+='<div class="why" id="why">'+tx(q[3])+'</div><button class="btn pri next" data-k="qn" aria-describedby="why" onclick="step()">'+(quiz.i+1<n?'Next':'Finish')+'</button>';
+return h+'<details class="browse"><summary>All '+d.c.length+' cards in this session<span class="chev" aria-hidden="true"></span></summary>'+d.c.map(card).join('')+'<button class="btn" onclick="add('+cur+');this.textContent=\'In your review deck ✓\';this.disabled=true"'+(inDeck?' disabled>In your review deck ✓':'>Add these cards to my review deck')+'</button></details>'}
+function vLearn(){const l=L[cur],all=act.n>=l.steps.length,which=act.n?'next':'first';
+let h='<section class="lesson">'+phase('Learn')+'<div class="idea">'+tx(l.idea)+'</div><h4>Worked example</h4><div class="problem">'+tx(l.ex)+'</div><ol class="steps">'+l.steps.slice(0,act.n).map(s=>'<li>'+tx(s)+'</li>').join('')+'</ol>';
+if(!all)return h+'<p class="hint">Work out the '+which+' step yourself, then check.</p><button class="btn pri wide next" data-k="reveal" onclick="reveal()">Show the '+which+' step</button></section>';
+h+='<p class="keep"><strong>Remember:</strong> '+tx(l.keep)+'</p><h4>Your turn</h4><div class="big">'+tx(act.q[0])+'</div>'+options(act.q,act.a,'answer');
+if(act.a>=0)h+=reason(act.q[3],'Continue to recall',"startStage('recall')");
 return h+'</section>'}
-function vRev(){const tot=Object.keys(S.box).length;if(!rq)rq=shuffle(dueIds());
-const empty=(title,text)=>'<section class="empty"><div class="glyph" aria-hidden="true">∅</div><h2 id="none" tabindex="-1">'+title+'</h2><p>'+text+'</p></section>';
+function vRecall(){const c=D[cur].c,n=c.length;
+if(!act.queue.length){const m=Object.keys(act.missed).length;return'<section class="score"><div class="mark" aria-hidden="true">'+tx('$\\blacksquare$')+'</div><h2 id="score" tabindex="-1">All '+n+' recalled</h2><p>'+(m?m+(m==1?' card':' cards')+' needed another try. Review brings every card back tomorrow.':'Every card from memory on the first try. Review brings them back tomorrow.')+'</p><div class="row"><button class="btn pri" data-k="qn" onclick="startQ()">Continue to quiz</button><button class="btn" onclick="leave()">Back to session</button></div></section>'}
+const j=act.queue[0];
+return'<section class="drill">'+phase('Recall')+'<div class="segs" aria-hidden="true">'+c.map((_,k)=>'<i class="'+(k==j?'cur':!act.queue.includes(k)?(act.missed[k]?'fixed':'ok'):act.missed[k]?'no':'')+'"></i>').join('')+'</div><p class="count">'+act.queue.length+' of '+n+' to go'+(act.missed[j]?'. This one is back: try again.':'')+'</p>'+flip(tx(c[j][0]),tx(c[j][1]),'rated')+'<p class="hint">Say or write the answer before you look. Be strict: if you hesitated badly, count it as missed.</p></section>'}
+const segs=()=>{const q=quiz.qs[quiz.i];return'<div class="segs" aria-hidden="true">'+Array.from({length:quiz.first},(_,i)=>'<i class="'+(q&&q[4]==i&&quiz.a<0?'cur':i in quiz.res?(quiz.res[i]?'ok':quiz.fixed[i]?'fixed':'no'):'')+'"></i>').join('')+'</div>'};
+function vQuiz(){const n=quiz.first,q=quiz.qs[quiz.i];
+if(!q){const all=quiz.s==n;return'<section class="score">'+segs()+(all?'<div class="mark" aria-hidden="true">'+tx('$\\blacksquare$')+'</div><p class="qed" aria-hidden="true">Q.E.D.</p>':'<div class="ring" aria-hidden="true" style="--p:'+100*quiz.s/n+'"><span>'+tx('$'+Math.round(100*quiz.s/n)+'\\%$')+'</span></div>')+'<h2 id="score" tabindex="-1">Score: '+quiz.s+' / '+n+'</h2><p>'+(all?'Perfect. Come back tomorrow for the review cards.':'You then got every miss right. Those questions return in Review tomorrow: retrieval after a gap is what makes it stick.')+'</p><div class="row">'+(cur<N-1?'<button class="btn pri" onclick="openDay(cur+1)">Next session</button>':'')+'<button class="btn" onclick="startQ()">Retry</button></div></section>'}
+let h='<section class="quiz">'+phase('Quiz')+segs()+'<p class="count">'+(quiz.i<n?'Question '+(quiz.i+1)+' of '+n:'Second chance: you missed this one')+'</p><div class="big">'+tx(q[0])+'</div>'+options(q,quiz.a,'pick');
+if(quiz.a>=0)h+=reason(q[3],quiz.i+1<quiz.qs.length?'Next':'Finish','step()');
+return h+'</section>'}
+function vRev(){const tot=allIds().length;if(!rq){rq=shuffle(dueIds());again={};practice=false}
+const empty=(title,text,more='')=>'<section class="empty"><div class="glyph" aria-hidden="true">∅</div><h2 id="none" tabindex="-1">'+title+'</h2><p>'+text+'</p>'+more+'</section>';
 if(!tot)return empty('Your review deck is empty','Finish a session, or press "Add these cards", and cards will show up here on a schedule (1, 2, 4, 7, 12 days).');
-if(!rq.length)return empty('Nothing due',tot+' cards in your deck. Cards you miss come back tomorrow; cards you get right come back later.');
-const[i,j]=rq[0].split('.'),c=D[i].c[j];
-return'<p class="count">'+rq.length+' left, from session '+(+i+1)+': '+tx(D[i].t)+'</p><article class="flash"><div class="big">'+tx(c[0])+'</div><details class="reveal"><summary class="btn pri">Show answer</summary><div class="a">'+tx(c[1])+'</div><div class="row rate"><button class="btn" onclick="rate(0)">Missed it</button><button class="btn pri" onclick="rate(1)">Got it</button></div></details></article>'}
+if(!rq.length){const c=Object.keys(S.box).length,m=Object.keys(S.qbox).length;return empty('Nothing due',c+(c==1?' card':' cards')+(m?' and '+m+' missed '+(m==1?'question':'questions'):'')+' in your deck. What you miss comes back tomorrow; what you get right comes back later.','<div class="row"><button class="btn pri" onclick="openDay(next())">Go to my session</button><button class="btn" onclick="practiseAll()">Practise all '+tot+'</button></div>')}
+const id=rq[0],isQ=id[0]=='q',[i,j]=(isQ?id.slice(1):id).split('.'),item=isQ?D[i].q[j]:D[i].c[j];
+return'<p class="count">'+rq.length+' left. '+(isQ?'A question you missed in':'From')+' session '+(+i+1)+': '+tx(D[i].t)+'</p>'+flip(tx(item[0]),isQ?'<div class="answer">'+tx(item[1][item[2]])+'</div><div class="because">'+tx(item[3])+'</div>':tx(item[1]),'rate')}
 const GROUPS=[[0,7,'Differential equations'],[7,14,'Fourier and Laplace'],[14,18,'Partial differential equations'],[18,19,'Final mock']];
 function vPlan(){const t=now(),row=i=>{const done=S.done[i];return'<button class="pl'+(done?' done':'')+(i==cur?' cur':'')+'"'+(i==cur?' aria-current="true"':'')+' onclick="openDay('+i+')"><span class="node">'+(i+1)+'</span><span class="name">'+tx(D[i].t)+'</span><span class="tag"><span>'+dl(i)+'</span>'+(done?'<span class="ok">✓ done</span>':PLAN[i]<t?'<span>missed</span>':PLAN[i]==t?'<span class="today">today</span>':'')+'</span></button>'};
 return GROUPS.map(([a,b,name])=>'<section class="group"><h3>'+name+'</h3><div class="list">'+D.slice(a,b).map((_,k)=>row(a+k)).join('')+'</div></section>').join('')+'<p class="foot">Syllabus covered: ODEs (first/second/higher order, systems, stability), Fourier series &amp; transforms, Laplace &amp; transfer functions, wave/heat/Laplace PDEs. Skipped: long derivations, MATLAB work, case studies. Add those from Kreyszig after Dec 13 if time allows.</p><button class="btn" onclick="resetAll()">Reset progress</button>'}
 
 // ----- actions -----
-function go(x){cur=Math.min(N-1,Math.max(0,cur+x));quiz=null;render();const s='[data-k='+(x<0?'prev':'next')+']';focusOn($(s).disabled?'#dt':s)}
-function openDay(i){cur=i;view='today';quiz=null;render();scrollTo(0,0);focusOn('#dt')}
+const clear=()=>{act=quiz=rq=null};
+function go(x){cur=Math.min(N-1,Math.max(0,cur+x));clear();render();const s='[data-k='+(x<0?'prev':'next')+']';focusOn($(s).disabled?'#dt':s)}
+function openDay(i){cur=i;view='today';clear();render();scrollTo(0,0);focusOn('#dt')}
+function tab(v){view=v;clear();render();scrollTo(0,0)}
+function leave(){openDay(cur)}
 // "both" / "all" / "none" stay last; the other choices are reshuffled on every attempt
-const LAST=['both','all','all equal','none'];
+const LAST=['both','all','all equal','none','none of these'];
 function mixOpts([text,o,right,why]){const m=shuffle(o.filter(x=>!LAST.includes(x))).concat(o.filter(x=>LAST.includes(x)));return[text,m,m.indexOf(o[right]),why]}
+function startStage(k){if(k=='quiz')return startQ();quiz=null;
+act=k=='learn'?{kind:k,n:0,a:-1,q:mixOpts(L[cur].check)}:{kind:k,queue:D[cur].c.map((_,j)=>j),missed:{}};
+render();scrollTo(0,0);focusOn(k=='learn'?'[data-k=reveal]':'#app summary')}
+function reveal(){act.n++;render();if(act.n<L[cur].steps.length){focusOn('[data-k=reveal]');reach('[data-k=reveal]')}else{focusOn('.lesson .opt');const e=$('.steps li:last-child');if(e)e.scrollIntoView({block:'start',behavior:calm.matches?'auto':'smooth'})}}
+function answer(k){act.a=k;finish('learn');save();render();focusOn('[data-k=qn]');reach('[data-k=qn]')}
+function rated(g){const j=act.queue.shift(),k=cur+'.'+j;
+if(!g){act.missed[j]=1;act.queue.push(j)}
+// a card joins the deck as soon as it has been tried, so a closed tab loses nothing; a miss starts it over
+if(!g||!S.box[k]){S.box[k]=1;S.due[k]=Math.max(now(),0)+1}
+if(!act.queue.length)finish('recall');save();render();focusOn(act.queue.length?'#app summary':'#score');reach('.dayhead')}
 function startQ(){const d=D[cur];let qs;
 // mixed days: take one question per topic in turn, so no topic crowds out the others
 if(d.mix){const pools=shuffle(d.mix.map(i=>shuffle(D[i].q.slice())));qs=[];
 while(qs.length<d.n&&pools.some(p=>p.length))pools.forEach(p=>{if(p.length&&qs.length<d.n)qs.push(p.pop())});shuffle(qs)}else qs=d.q.slice();
-quiz={qs:qs.map(mixOpts),i:0,s:0,a:-1,res:[]};render();scrollTo(0,0);focusOn('.opt')}
-function pick(k){const q=quiz.qs[quiz.i],right=k==q[2];quiz.a=k;quiz.res[quiz.i]=right;if(right)quiz.s++;
-if(quiz.i+1>=quiz.qs.length){S.done[cur]=1;add(cur)}save();render();focusOn('[data-k=qn]');$('[data-k=qn]').scrollIntoView({block:'nearest'})}
+act=null;quiz={qs:qs.map((q,i)=>mixOpts(q).concat(i)),first:qs.length,i:0,s:0,a:-1,res:[],fixed:{}};render();scrollTo(0,0);focusOn('.opt')}
+// a missed question joins the end of this quiz and tomorrow's review
+function pick(k){const q=quiz.qs[quiz.i],right=k==q[2],o=q[4];quiz.a=k;
+if(quiz.i<quiz.first){quiz.res[o]=right;if(right)quiz.s++;else{const id=QKEY.get(q[0]);S.qbox[id]=1;S.qdue[id]=Math.max(now(),0)+1}}else if(right)quiz.fixed[o]=1;
+if(!right)quiz.qs.push(mixOpts(q).concat(o));
+if(quiz.i==quiz.first-1){S.done[cur]=1;add(cur)}save();render();focusOn('[data-k=qn]');reach('[data-k=qn]')}
 function step(){quiz.i++;quiz.a=-1;render();const end=quiz.i>=quiz.qs.length;focusOn(end?'#score':'.opt');
-const e=$('.dayhead');if(e.getBoundingClientRect().top<0)e.scrollIntoView();if(end&&quiz.s==quiz.qs.length)burst()}
+const e=$('.dayhead');if(e.getBoundingClientRect().top<0)e.scrollIntoView();if(end&&quiz.s==quiz.first)burst()}
 // a shower of symbols for a perfect score
 function burst(){if(calm.matches)return;const box=document.createElement('div'),set='∑∫π∞∂√λΔ∇e';box.className='burst';box.setAttribute('aria-hidden','true');
 for(let i=0;i<22;i++){const s=document.createElement('span'),a=i/22*2*Math.PI,d=70+Math.random()*100;s.textContent=set[i%set.length];
 s.style.setProperty('--dx',Math.round(Math.cos(a)*d)+'px');s.style.setProperty('--dy',Math.round(Math.sin(a)*d)+'px');s.style.setProperty('--r',Math.round(Math.random()*180-90)+'deg');box.appendChild(s)}
 $('.score').appendChild(box);setTimeout(()=>box.remove(),1600)}
-function rate(g){const k=rq.shift();if(g){S.box[k]=Math.min(5,S.box[k]+1);S.due[k]=now()+INT[S.box[k]]}else{S.box[k]=1;S.due[k]=now()+1}save();render();focusOn(rq.length?'#app summary':'#none')}
-function resetAll(){if(confirm('Erase all progress?')){S={done:{},box:{},due:{}};save();cur=0;rq=null;render()}}
-document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{view=b.dataset.v;quiz=null;rq=null;render();scrollTo(0,0)});
+// in review, a miss comes round again in the same sitting and stays due tomorrow
+function rate(g){const id=rq.shift(),isQ=id[0]=='q',k=isQ?id.slice(1):id,box=isQ?S.qbox:S.box,due=isQ?S.qdue:S.due;
+if(!g){again[id]=1;box[k]=1;due[k]=now()+1;rq.push(id)}else if(!again[id]&&!practice){box[k]=Math.min(5,box[k]+1);due[k]=later(INT[box[k]])}
+save();render();focusOn(rq.length?'#app summary':'#none')}
+function practiseAll(){rq=shuffle(allIds());again={};practice=true;render();focusOn('#app summary')}
+function resetAll(){if(confirm('Erase all progress?')){S=fresh();save();cur=0;clear();render()}}
+document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>tab(b.dataset.v));
 // phones keep tabs open for days: refresh dates and due cards once the day has changed
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&now()!==day){day=now();rq=null;render()}});
 addEventListener('resize',paintPlot);
